@@ -377,6 +377,32 @@ describe("notification workflow", () => {
     await ui.click(screen.getByRole("button", { name: "Apply filters" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("MM/DD/YYYY");
   });
+  it("restores calendar selection while keeping the English display format", async () => {
+    const ui = mount();
+    await screen.findByText("New application received");
+    const fromCalendar = screen.getByLabelText(
+      "Choose From date from calendar",
+    );
+    const toCalendar = screen.getByLabelText("Choose To date from calendar");
+    expect(fromCalendar).toHaveAttribute("type", "date");
+    expect(toCalendar).toHaveAttribute("type", "date");
+    fireEvent.change(fromCalendar, {
+      target: { value: "2026-09-01" },
+    });
+    fireEvent.change(toCalendar, {
+      target: { value: "2026-09-09" },
+    });
+    expect(screen.getByLabelText("From date")).toHaveValue("09/01/2026");
+    expect(screen.getByLabelText("To date")).toHaveValue("09/09/2026");
+    await ui.click(screen.getByRole("button", { name: "Apply filters" }));
+    await waitFor(() =>
+      expect(
+        fetcher.mock.calls.some(([url]) =>
+          url.includes("from=2026-09-01&to=2026-09-09"),
+        ),
+      ).toBe(true),
+    );
+  });
   it("shows only a clearly labeled read-only application summary", async () => {
     const ui = mount();
     await ui.click(

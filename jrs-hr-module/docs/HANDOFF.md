@@ -1,3 +1,5 @@
+> 2026-09-11 日期控件修正：上次把浏览器原生可见 date 输入改成英文文本框时误删了日历选择入口。现已恢复 From/To 的日历按钮，用户可手输或从日历选择；可见值始终为 `MM/DD/YYYY`，请求前仍转换为 ISO `YYYY-MM-DD`。修改目的为同时满足“可选日期”和“不显示中文日”的要求。前端 3 文件 / 45 项和生产 build 通过，浏览器已确认两个日历点击区域与英文占位符。
+
 > 2026-09-11 侧栏交互补充：用户指出不可点击的团队栏目会让蓝色高亮永久停留在 Notifications。现已为 Dashboard、Applications、Candidates、Job Postings、Interviews 增加可点击的独立占位路由，高亮随当前地址移动；占位页不读取 API、不模拟数据，也不越界实现队友业务。修改目的为补齐 Figma 导航交互并保留模块职责边界。
 
 > 2026-09-11 导航与日期更新：已按 Figma `Final project` 的 WORKSPACE 结构调整侧栏，顺序为 Dashboard、Applications、Candidates、Job Postings、Interviews、Notifications；只有 Notifications 进入本模块。My Profile 已从侧栏移除，头像菜单不再提供 Edit Profile，编辑入口保留在 My Profile 页面。通知与日志日期字段固定显示 `MM/DD/YYYY`，API 查询前转换为 ISO 日期。前端 3 文件 / 43 项和生产 build 通过；本地浏览器已核对移动侧栏、头像菜单、日期占位符及资料页跳转。本次没有重跑后端和真实 MySQL 测试。

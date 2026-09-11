@@ -1,3 +1,11 @@
+## 2026-09-11 日期日历选择恢复（已完成）
+
+- [x] 为 Notification Center 和 Notification Log 的 From/To 日期字段恢复可点击日历按钮。
+- [x] 保留可手动输入的 `MM/DD/YYYY` 英文显示，日历选值后自动转换为该格式；请求 API 时继续使用 `YYYY-MM-DD`。
+- [x] To date 的日历最小日期跟随有效的 From date，原有非法日期和起止顺序校验继续生效。
+- [x] 更新目的：修复上次为移除中文“日”而误删的日历选择能力，同时不重新引入受系统中文区域设置影响的可见日期格式。
+- [x] 前端测试 3 文件 / 45 项通过，生产 build 通过；浏览器已确认两个日历点击区域和英文占位符均存在。
+
 ## 2026-09-11 侧栏可点击路由修正（已完成）
 
 - [x] Dashboard、Applications、Candidates、Job Postings、Interviews 均改为真实可点击链接，并各自拥有独立占位路由。

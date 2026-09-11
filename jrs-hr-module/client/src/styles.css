@@ -466,6 +466,44 @@ button:disabled {
 .form-control[readonly] {
   background: #f7f9fc;
 }
+.date-input-control {
+  position: relative;
+}
+.date-input-control .form-control {
+  padding-right: 43px;
+}
+.date-picker-button {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: #52627a;
+  background: transparent;
+  pointer-events: none;
+}
+.date-input-control:hover .date-picker-button,
+.date-input-control:focus-within .date-picker-button {
+  background: #edf2fa;
+  color: #315fcb;
+}
+.date-picker-native {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  transform: translateY(-50%);
+  opacity: 0;
+  cursor: pointer;
+}
 .filter-actions {
   display: flex;
   gap: 8px;

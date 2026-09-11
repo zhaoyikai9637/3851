@@ -214,39 +214,84 @@ export function parseUsDate(value) {
     return null;
   return `${year}-${month}-${day}`;
 }
+function formatUsDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
+  const [year, month, day] = value.split("-");
+  return `${month}/${day}/${year}`;
+}
+function CalendarDateField({ label, name, values, setValues, min }) {
+  const pickerValue = parseUsDate(values[name]) || "";
+  return (
+    <Field label={label}>
+      {(id) => (
+        <div className="date-input-control">
+          <input
+            id={id}
+            type="text"
+            className="form-control"
+            placeholder="MM/DD/YYYY"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={10}
+            value={values[name]}
+            onChange={(e) =>
+              setValues((current) => ({
+                ...current,
+                [name]: e.target.value,
+              }))
+            }
+          />
+          <span className="date-picker-button" aria-hidden="true">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="5" width="18" height="16" rx="2" />
+              <path d="M8 3v4M16 3v4M3 10h18" />
+            </svg>
+          </span>
+          <input
+            type="date"
+            className="date-picker-native"
+            aria-label={`Choose ${label} from calendar`}
+            value={pickerValue}
+            min={min || undefined}
+            onChange={(e) =>
+              setValues((current) => ({
+                ...current,
+                [name]: formatUsDate(e.target.value),
+              }))
+            }
+          />
+        </div>
+      )}
+    </Field>
+  );
+}
 export function DateFields({ values, setValues }) {
+  const minimumToDate = parseUsDate(values.from) || "";
   return (
     <>
-      <Field label="From date">
-        {(id) => (
-          <input
-            id={id}
-            type="text"
-            className="form-control"
-            placeholder="MM/DD/YYYY"
-            inputMode="numeric"
-            autoComplete="off"
-            maxLength={10}
-            value={values.from}
-            onChange={(e) => setValues((v) => ({ ...v, from: e.target.value }))}
-          />
-        )}
-      </Field>
-      <Field label="To date">
-        {(id) => (
-          <input
-            id={id}
-            type="text"
-            className="form-control"
-            placeholder="MM/DD/YYYY"
-            inputMode="numeric"
-            autoComplete="off"
-            maxLength={10}
-            value={values.to}
-            onChange={(e) => setValues((v) => ({ ...v, to: e.target.value }))}
-          />
-        )}
-      </Field>
+      <CalendarDateField
+        label="From date"
+        name="from"
+        values={values}
+        setValues={setValues}
+      />
+      <CalendarDateField
+        label="To date"
+        name="to"
+        values={values}
+        setValues={setValues}
+        min={minimumToDate}
+      />
     </>
   );
 }
