@@ -197,6 +197,23 @@ describe("authentication and navigation", () => {
     );
     expect(account).toHaveAttribute("aria-expanded", "false");
   });
+  it("keeps profile access in the avatar menu and omits direct edit access", async () => {
+    const ui = mount();
+    const account = await screen.findByRole("button", {
+      name: /Riley Morgan HR Manager/,
+    });
+    expect(screen.queryByRole("link", { name: "My Profile" })).not.toBeInTheDocument();
+    const navigation = screen.getByRole("navigation", { name: "Main navigation" });
+    expect(within(navigation).getByText("Dashboard")).toBeVisible();
+    expect(within(navigation).getByText("Applications")).toBeVisible();
+    expect(within(navigation).getByText("Candidates")).toBeVisible();
+    expect(within(navigation).getByText("Job Postings")).toBeVisible();
+    expect(within(navigation).getByText("Interviews")).toBeVisible();
+    expect(within(navigation).getByRole("link", { name: "Notifications" })).toBeVisible();
+    await ui.click(account);
+    expect(screen.getByRole("link", { name: "My Profile" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Edit Profile" })).not.toBeInTheDocument();
+  });
   it("retains the session when logout fails, then clears it only on success", async () => {
     overrides["POST /api/auth/logout"] = () =>
       json({ error: { message: "Please retry logout." } }, 500);
@@ -310,10 +327,10 @@ describe("notification workflow", () => {
       "STATUS_UPDATED",
     );
     fireEvent.change(screen.getByLabelText("From date"), {
-      target: { value: "2026-09-01" },
+      target: { value: "09/01/2026" },
     });
     fireEvent.change(screen.getByLabelText("To date"), {
-      target: { value: "2026-09-09" },
+      target: { value: "09/09/2026" },
     });
     await ui.click(screen.getByRole("button", { name: "Apply filters" }));
     await waitFor(() =>
@@ -326,6 +343,17 @@ describe("notification workflow", () => {
     await ui.click(screen.getByRole("button", { name: "Clear" }));
     expect(screen.getByLabelText("From date")).toHaveValue("");
     expect(screen.getByLabelText("Notification type")).toHaveValue("");
+  });
+  it("uses an English MM/DD/YYYY date format and rejects invalid dates", async () => {
+    const ui = mount();
+    await screen.findByText("New application received");
+    expect(screen.getByLabelText("From date")).toHaveAttribute("placeholder", "MM/DD/YYYY");
+    expect(screen.getByLabelText("To date")).toHaveAttribute("placeholder", "MM/DD/YYYY");
+    fireEvent.change(screen.getByLabelText("From date"), {
+      target: { value: "13/40/2026" },
+    });
+    await ui.click(screen.getByRole("button", { name: "Apply filters" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("MM/DD/YYYY");
   });
   it("shows only a clearly labeled read-only application summary", async () => {
     const ui = mount();

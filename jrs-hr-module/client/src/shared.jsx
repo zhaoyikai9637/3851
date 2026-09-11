@@ -199,6 +199,21 @@ export function Avatar({ user, large = false }) {
     </span>
   );
 }
+export function parseUsDate(value) {
+  const text = value.trim();
+  if (!text) return "";
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text);
+  if (!match) return null;
+  const [, month, day, year] = match;
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (
+    date.getUTCFullYear() !== Number(year) ||
+    date.getUTCMonth() + 1 !== Number(month) ||
+    date.getUTCDate() !== Number(day)
+  )
+    return null;
+  return `${year}-${month}-${day}`;
+}
 export function DateFields({ values, setValues }) {
   return (
     <>
@@ -206,8 +221,12 @@ export function DateFields({ values, setValues }) {
         {(id) => (
           <input
             id={id}
-            type="date"
+            type="text"
             className="form-control"
+            placeholder="MM/DD/YYYY"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={10}
             value={values.from}
             onChange={(e) => setValues((v) => ({ ...v, from: e.target.value }))}
           />
@@ -217,10 +236,13 @@ export function DateFields({ values, setValues }) {
         {(id) => (
           <input
             id={id}
-            type="date"
+            type="text"
             className="form-control"
+            placeholder="MM/DD/YYYY"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={10}
             value={values.to}
-            min={values.from || undefined}
             onChange={(e) => setValues((v) => ({ ...v, to: e.target.value }))}
           />
         )}

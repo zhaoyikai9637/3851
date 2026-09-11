@@ -10,6 +10,7 @@ import {
   Modal,
   PageHeading,
   Pagination,
+  parseUsDate,
   useLoad,
 } from "../shared";
 
@@ -62,13 +63,17 @@ export function Notifications() {
   function apply(e) {
     e.preventDefault();
     setError(null);
-    if (draft.from && draft.to && draft.from > draft.to)
+    const from = parseUsDate(draft.from);
+    const to = parseUsDate(draft.to);
+    if (from === null || to === null)
+      return setError(new Error("Enter dates as MM/DD/YYYY."));
+    if (from && to && from > to)
       return setError(new Error("From date must not be after To date."));
     setFilters((v) => ({
       ...v,
       type: draft.type,
-      from: draft.from,
-      to: draft.to,
+      from,
+      to,
       page: 1,
     }));
   }

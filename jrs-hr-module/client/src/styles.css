@@ -164,7 +164,9 @@ button:disabled {
   margin: 46px 14px 13px;
 }
 .sidebar nav a,
-.mobile-navigation nav a {
+.sidebar nav .sidebar-nav-placeholder,
+.mobile-navigation nav a,
+.mobile-navigation nav .sidebar-nav-placeholder {
   display: flex;
   align-items: center;
   gap: 13px;
@@ -174,6 +176,10 @@ button:disabled {
   padding: 14px 13px;
   margin-bottom: 5px;
   border-radius: 8px;
+}
+.sidebar-nav-placeholder {
+  cursor: default;
+  opacity: 0.84;
 }
 .sidebar nav a:hover {
   background: #1b3053;

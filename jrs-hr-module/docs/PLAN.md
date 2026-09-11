@@ -1,3 +1,10 @@
+## 2026-09-11 Figma 导航与日期规范修正（已完成）
+
+- [x] 按 Figma `Final project` 的 WORKSPACE 侧栏顺序显示 Dashboard、Applications、Candidates、Job Postings、Interviews、Notifications；仅 Notifications 进入本模块，其余项目保持团队模块占位，不实现越界功能。
+- [x] 从侧栏移除 My Profile；头像菜单只保留 My Profile 与 Logout，Edit Profile 仅从 My Profile 页面进入。
+- [x] 通知和日志日期筛选改为固定 `MM/DD/YYYY` 文本格式，避免系统区域设置渲染中文“日”；提交 API 前仍转换为 `YYYY-MM-DD`，并验证非法日期和起止顺序。
+- [x] 前端测试 3 文件 / 43 项通过，生产 build 通过；本地浏览器核对了移动侧栏、头像菜单、日期占位符和 My Profile 跳转。本次未重跑后端或真实 MySQL 测试。
+
 ## 2026-09-10 最新优先事项：用户可访问的前端演示（已完成）
 
 - [x] 在原工程复用现有五个页面，提供明确标记虚构数据的本地演示入口，用户无需等待组员登录即可查看和操作。

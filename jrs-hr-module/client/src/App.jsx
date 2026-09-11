@@ -21,6 +21,32 @@ const tabs = [
   ["/logs", "Notification Log"],
 ];
 const icons = {
+  dashboard: (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </>
+  ),
+  applications: (
+    <>
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <path d="M9 8h6M9 12h6M9 16h3" />
+    </>
+  ),
+  jobs: (
+    <>
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18" />
+    </>
+  ),
+  calendar: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M8 3v4M16 3v4M3 10h18" />
+    </>
+  ),
   bell: (
     <>
       <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
@@ -165,26 +191,34 @@ function Layout() {
       </div>
       <p className="sidebar-label">WORKSPACE</p>
       <nav aria-label="Main navigation">
-        {tabs.map(([path, name], i) => (
-          <NavLink key={path} to={path} onClick={() => setSidebar(false)}>
-            <Icon name={["bell", "mail", "log"][i]} />
+        {[
+          ["dashboard", "Dashboard"],
+          ["applications", "Applications"],
+          ["person", "Candidates"],
+          ["jobs", "Job Postings"],
+          ["calendar", "Interviews"],
+        ].map(([icon, name]) => (
+          <span
+            className="sidebar-nav-placeholder"
+            aria-disabled="true"
+            title="Managed by the recruitment team"
+            key={name}
+          >
+            <Icon name={icon} />
             {name}
-          </NavLink>
+          </span>
         ))}
-        <NavLink to="/profile" onClick={() => setSidebar(false)}>
-          <Icon name="person" />
-          My Profile
+        <NavLink
+          to="/notifications"
+          onClick={() => setSidebar(false)}
+          className={() =>
+            tabs.some(([path]) => location.pathname === path) ? "active" : ""
+          }
+        >
+          <Icon name="bell" />
+          Notifications
         </NavLink>
       </nav>
-      <div className="sidebar-context">
-        <p className="sidebar-label">HIRING TEAM</p>
-        <p>
-          Positions · Applications
-          <br />
-          Interviews · Offers
-        </p>
-        <small>Managed by the recruitment team</small>
-      </div>
       <div className="sidebar-foot">
         <span className="online-dot" />{" "}
         {mode === "demo" ? "Local fictional demo" : mode === "standalone" ? "Standalone demo workspace" : "HR workspace"}
@@ -241,7 +275,6 @@ function Layout() {
                   <small>{user.email}</small>
                 </div>
                 <Link to="/profile">My Profile</Link>
-                <Link to="/profile/edit">Edit Profile</Link>
                 <button
                   onClick={() => {
                     setMenu(false);
