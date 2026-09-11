@@ -243,11 +243,28 @@ function formatUsDate(value) {
 function CalendarDateField({ label, name, values, setValues, min, max }) {
   const parsedValue = parseUsDate(values[name]) || "";
   const pickerValue = parsedValue && parsedValue <= max ? parsedValue : "";
+  const textInputRef = useRef(null);
+  const pickerInputRef = useRef(null);
+  useEffect(() => {
+    const stopWheelSelection = (event) => {
+      event.preventDefault();
+      event.currentTarget.blur();
+    };
+    const inputs = [textInputRef.current, pickerInputRef.current].filter(Boolean);
+    inputs.forEach((input) =>
+      input.addEventListener("wheel", stopWheelSelection, { passive: false }),
+    );
+    return () =>
+      inputs.forEach((input) =>
+        input.removeEventListener("wheel", stopWheelSelection),
+      );
+  }, []);
   return (
     <Field label={label} help="Today or earlier">
       {(id) => (
         <div className="date-input-control">
           <input
+            ref={textInputRef}
             id={id}
             type="text"
             className="form-control"
@@ -280,6 +297,7 @@ function CalendarDateField({ label, name, values, setValues, min, max }) {
             </svg>
           </span>
           <input
+            ref={pickerInputRef}
             type="date"
             className="date-picker-native"
             aria-label={`Choose ${label} from calendar`}

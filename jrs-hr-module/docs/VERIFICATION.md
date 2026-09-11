@@ -237,3 +237,10 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 新增覆盖包括：日历动态 max、手动未来日期不发请求、通知/日志 API 在服务调用前返回
 422、UTC+08 午夜边界。现有 browser-check.mjs 另行运行时因本地未安装可选 Playwright
 包而退出 1；未为本次变更擅自增加依赖，改用现有浏览器完成上述定向真实界面核对。
+
+## 2026-09-11 日期筛选对齐与滚轮保护回归
+
+- `npm.cmd test`：后端 161/161、前端 46/46 通过；前端用例确认日期控件的滚轮默认动作被取消且控件失焦。
+- `npm.cmd run test:mysql`：专用测试库 12/12 通过；`npm.cmd run docs:check`：22 个操作、316 个 JSON 示例通过。
+- `npm.cmd run build`：Vite 50 modules，退出 0。
+- 本机浏览器 1264×712 实际检查：Notification type、From date、To date 与操作按钮输入区域恢复同一水平线；帮助文字保留且不再影响网格行高。

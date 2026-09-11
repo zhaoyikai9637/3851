@@ -439,6 +439,12 @@ button:disabled {
 }
 .filter-form .field {
   margin: 0;
+  position: relative;
+}
+.filter-form .field > small {
+  position: absolute;
+  top: 100%;
+  left: 0;
 }
 .form-label {
   font-size: 11px;

@@ -388,6 +388,10 @@ describe("notification workflow", () => {
     expect(toCalendar).toHaveAttribute("type", "date");
     expect(fromCalendar.getAttribute("max")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(toCalendar).toHaveAttribute("max", fromCalendar.getAttribute("max"));
+    fromCalendar.focus();
+    expect(fromCalendar).toHaveFocus();
+    expect(fireEvent.wheel(fromCalendar)).toBe(false);
+    expect(fromCalendar).not.toHaveFocus();
     fireEvent.change(fromCalendar, {
       target: { value: "2026-09-01" },
     });
