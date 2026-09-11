@@ -1,3 +1,10 @@
+## 2026-09-11 侧栏可点击路由修正（已完成）
+
+- [x] Dashboard、Applications、Candidates、Job Postings、Interviews 均改为真实可点击链接，并各自拥有独立占位路由。
+- [x] 点击任一栏目后，高亮状态随当前路由移动，不再强制固定在 Notifications；Notifications 的三个子页面仍共同高亮 Notifications。
+- [x] 占位页只说明该区域等待招聘团队模块接入，不实现、不模拟队友业务或数据。
+- [x] 更新目的：让整站侧栏具备符合 Figma 的完整导航反馈，同时保持当前学生仅负责 Notifications 模块的职责边界。
+
 ## 2026-09-11 Figma 导航与日期规范修正（已完成）
 
 - [x] 按 Figma `Final project` 的 WORKSPACE 侧栏顺序显示 Dashboard、Applications、Candidates、Job Postings、Interviews、Notifications；仅 Notifications 进入本模块，其余项目保持团队模块占位，不实现越界功能。

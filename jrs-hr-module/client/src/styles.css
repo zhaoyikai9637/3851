@@ -164,9 +164,7 @@ button:disabled {
   margin: 46px 14px 13px;
 }
 .sidebar nav a,
-.sidebar nav .sidebar-nav-placeholder,
-.mobile-navigation nav a,
-.mobile-navigation nav .sidebar-nav-placeholder {
+.mobile-navigation nav a {
   display: flex;
   align-items: center;
   gap: 13px;
@@ -176,10 +174,6 @@ button:disabled {
   padding: 14px 13px;
   margin-bottom: 5px;
   border-radius: 8px;
-}
-.sidebar-nav-placeholder {
-  cursor: default;
-  opacity: 0.84;
 }
 .sidebar nav a:hover {
   background: #1b3053;
@@ -617,6 +611,18 @@ button:disabled {
   background: #edf3ff;
   color: #5c80cf;
   font-size: 24px;
+}
+.team-workspace-placeholder {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+}
+.team-workspace-placeholder .eyebrow {
+  margin-bottom: 14px;
 }
 .workspace-footer {
   display: flex;

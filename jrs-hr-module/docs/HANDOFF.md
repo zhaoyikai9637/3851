@@ -1,3 +1,5 @@
+> 2026-09-11 侧栏交互补充：用户指出不可点击的团队栏目会让蓝色高亮永久停留在 Notifications。现已为 Dashboard、Applications、Candidates、Job Postings、Interviews 增加可点击的独立占位路由，高亮随当前地址移动；占位页不读取 API、不模拟数据，也不越界实现队友业务。修改目的为补齐 Figma 导航交互并保留模块职责边界。
+
 > 2026-09-11 导航与日期更新：已按 Figma `Final project` 的 WORKSPACE 结构调整侧栏，顺序为 Dashboard、Applications、Candidates、Job Postings、Interviews、Notifications；只有 Notifications 进入本模块。My Profile 已从侧栏移除，头像菜单不再提供 Edit Profile，编辑入口保留在 My Profile 页面。通知与日志日期字段固定显示 `MM/DD/YYYY`，API 查询前转换为 ISO 日期。前端 3 文件 / 43 项和生产 build 通过；本地浏览器已核对移动侧栏、头像菜单、日期占位符及资料页跳转。本次没有重跑后端和真实 MySQL 测试。
 
 > 2026-09-10 Sol 接续更新：本地虚构数据前端演示入口已实现并实测。可直接打开 `http://localhost:5173/notifications?demo=1`；五个 React 业务页面复用原组件，演示请求只进入浏览器端适配，不调用 HR API、数据库或邮件服务。普通团队入口和后端授权保持不变。下方 2026-09-09 全套结果仍是历史证据，本次只执行了与前端演示相关的测试、构建、浏览器检查及未登录 401 回归。

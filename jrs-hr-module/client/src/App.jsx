@@ -20,6 +20,13 @@ const tabs = [
   ["/templates", "Email Templates"],
   ["/logs", "Notification Log"],
 ];
+const workspaceLinks = [
+  ["/dashboard", "Dashboard", "dashboard"],
+  ["/applications", "Applications", "applications"],
+  ["/candidates", "Candidates", "person"],
+  ["/job-postings", "Job Postings", "jobs"],
+  ["/interviews", "Interviews", "calendar"],
+];
 const icons = {
   dashboard: (
     <>
@@ -116,6 +123,13 @@ export function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Navigate to="/notifications" replace />} />
+          {workspaceLinks.map(([path, name]) => (
+            <Route
+              key={path}
+              path={path.slice(1)}
+              element={<TeamWorkspacePlaceholder title={name} />}
+            />
+          ))}
           <Route path="notifications" element={<Notifications />} />
           <Route path="templates" element={<Templates />} />
           <Route path="logs" element={<Logs />} />
@@ -135,6 +149,17 @@ export function App() {
     </AuthProvider>
   );
 }
+function TeamWorkspacePlaceholder({ title }) {
+  return (
+    <section className="surface team-workspace-placeholder">
+      <p className="eyebrow">JRS WORKSPACE</p>
+      <h1>{title}</h1>
+      <p className="subtle mb-0">
+        This area is ready for the recruitment team module.
+      </p>
+    </section>
+  );
+}
 function Layout() {
   const { user, mode, logout, resetDemo } = useAuth();
   const [sidebar, setSidebar] = useState(false),
@@ -148,7 +173,11 @@ function Layout() {
   useEffect(() => {
     setMenu(false);
     setSidebar(false);
-    document.title = `${tabs.find(([path]) => path === location.pathname)?.[1] || "My Profile"} · JRS`;
+    const pageTitle =
+      tabs.find(([path]) => path === location.pathname)?.[1] ||
+      workspaceLinks.find(([path]) => path === location.pathname)?.[1] ||
+      "My Profile";
+    document.title = `${pageTitle} · JRS`;
   }, [location.pathname]);
   useEffect(() => {
     if (!menu) return;
@@ -191,22 +220,16 @@ function Layout() {
       </div>
       <p className="sidebar-label">WORKSPACE</p>
       <nav aria-label="Main navigation">
-        {[
-          ["dashboard", "Dashboard"],
-          ["applications", "Applications"],
-          ["person", "Candidates"],
-          ["jobs", "Job Postings"],
-          ["calendar", "Interviews"],
-        ].map(([icon, name]) => (
-          <span
-            className="sidebar-nav-placeholder"
-            aria-disabled="true"
-            title="Managed by the recruitment team"
-            key={name}
+        {workspaceLinks.map(([path, name, icon]) => (
+          <NavLink
+            key={path}
+            to={path}
+            end
+            onClick={() => setSidebar(false)}
           >
             <Icon name={icon} />
             {name}
-          </span>
+          </NavLink>
         ))}
         <NavLink
           to="/notifications"

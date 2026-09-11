@@ -197,22 +197,44 @@ describe("authentication and navigation", () => {
     );
     expect(account).toHaveAttribute("aria-expanded", "false");
   });
-  it("keeps profile access in the avatar menu and omits direct edit access", async () => {
+  it("keeps profile access in the avatar menu and makes every workspace item navigable", async () => {
     const ui = mount();
     const account = await screen.findByRole("button", {
       name: /Riley Morgan HR Manager/,
     });
     expect(screen.queryByRole("link", { name: "My Profile" })).not.toBeInTheDocument();
     const navigation = screen.getByRole("navigation", { name: "Main navigation" });
-    expect(within(navigation).getByText("Dashboard")).toBeVisible();
-    expect(within(navigation).getByText("Applications")).toBeVisible();
-    expect(within(navigation).getByText("Candidates")).toBeVisible();
-    expect(within(navigation).getByText("Job Postings")).toBeVisible();
-    expect(within(navigation).getByText("Interviews")).toBeVisible();
+    for (const name of [
+      "Dashboard",
+      "Applications",
+      "Candidates",
+      "Job Postings",
+      "Interviews",
+    ]) {
+      expect(within(navigation).getByRole("link", { name })).toBeVisible();
+    }
     expect(within(navigation).getByRole("link", { name: "Notifications" })).toBeVisible();
     await ui.click(account);
     expect(screen.getByRole("link", { name: "My Profile" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Edit Profile" })).not.toBeInTheDocument();
+  });
+  it("moves the sidebar highlight away from Notifications on team placeholder routes", async () => {
+    const ui = mount();
+    const navigation = await screen.findByRole("navigation", {
+      name: "Main navigation",
+    });
+    const notifications = within(navigation).getByRole("link", {
+      name: "Notifications",
+    });
+    expect(notifications).toHaveClass("active");
+    const dashboard = within(navigation).getByRole("link", {
+      name: "Dashboard",
+    });
+    await ui.click(dashboard);
+    expect(await screen.findByRole("heading", { name: "Dashboard" })).toBeVisible();
+    expect(dashboard).toHaveClass("active");
+    expect(notifications).not.toHaveClass("active");
+    expect(screen.getByText("This area is ready for the recruitment team module.")).toBeVisible();
   });
   it("retains the session when logout fails, then clears it only on success", async () => {
     overrides["POST /api/auth/logout"] = () =>
