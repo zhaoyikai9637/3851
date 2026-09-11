@@ -4619,13 +4619,13 @@
                   "key": "from",
                   "value": "2026-09-09",
                   "disabled": true,
-                  "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                  "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                 },
                 {
                   "key": "to",
                   "value": "2026-09-09",
                   "disabled": true,
-                  "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                  "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                 }
               ]
             },
@@ -4676,13 +4676,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -4744,13 +4744,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -4812,13 +4812,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -4880,13 +4880,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -4948,13 +4948,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5016,13 +5016,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5084,13 +5084,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5152,13 +5152,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5220,13 +5220,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5288,13 +5288,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5356,13 +5356,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5424,13 +5424,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5492,13 +5492,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5560,13 +5560,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5628,13 +5628,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -5696,13 +5696,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -9921,13 +9921,13 @@
                   "key": "from",
                   "value": "2026-09-09",
                   "disabled": true,
-                  "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                  "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                 },
                 {
                   "key": "to",
                   "value": "2026-09-09",
                   "disabled": true,
-                  "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                  "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                 }
               ]
             },
@@ -9984,13 +9984,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10058,13 +10058,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10132,13 +10132,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10206,13 +10206,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10280,13 +10280,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10354,13 +10354,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10428,13 +10428,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10502,13 +10502,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10576,13 +10576,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10650,13 +10650,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10724,13 +10724,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10798,13 +10798,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10872,13 +10872,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -10946,13 +10946,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -11020,13 +11020,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },
@@ -11094,13 +11094,13 @@
                       "key": "from",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     },
                     {
                       "key": "to",
                       "value": "2026-09-09",
                       "disabled": true,
-                      "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to."
+                      "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to."
                     }
                   ]
                 },

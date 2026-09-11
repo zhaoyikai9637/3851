@@ -222,3 +222,18 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 与本地真实凭据值比较为 0 匹配（不打印凭据）。额外开发页截图保存在原 work/browser-check。
 一次 PowerShell 操作计数因集合 .Count 结果未展开而报错，改用显式数组计数后确认 22；
 未把该错误输出的 14 当作接口数量。npm docs:check 与实时服务现在一致。
+
+## 2026-09-11 历史日期上限回归
+
+| 检查 | 实际结果 |
+|---|---|
+| npm.cmd test | 后端 10 文件/161 项、前端 3 文件/46 项通过 |
+| npm.cmd run test:mysql | 专用测试库 12/12 通过；未改数据库结构 |
+| npm.cmd run docs:check | 22 operations、316 JSON examples，退出 0 |
+| npm.cmd run docs:export | OpenAPI/Postman/空白环境重新导出，退出 0 |
+| npm.cmd run build | Vite 50 modules，退出 0 |
+| 本机浏览器（本地虚构 demo） | 日期控件 max=2026-09-11；手输 12/31/9999 后显示 Future dates are not available for activity history. |
+
+新增覆盖包括：日历动态 max、手动未来日期不发请求、通知/日志 API 在服务调用前返回
+422、UTC+08 午夜边界。现有 browser-check.mjs 另行运行时因本地未安装可选 Playwright
+包而退出 1；未为本次变更擅自增加依赖，改用现有浏览器完成上述定向真实界面核对。

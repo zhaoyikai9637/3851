@@ -21,7 +21,7 @@ const writeAuth = [{ sessionCookie: [], csrfToken: [] }];
 const query = (name, schema, description) => ({ name, in: 'query', required: false, schema, description });
 const idParam = { name: 'id', in: 'path', required: true, schema: id };
 const pagination = [query('page', { type:'integer',minimum:1,maximum:100000,default:1 }), query('pageSize',{ type:'integer',minimum:1,maximum:50,default:10 })];
-const dates = ['from','to'].map(name => query(name,{type:'string',format:'date'},'Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to.'));
+const dates = ['from','to'].map(name => query(name,{type:'string',format:'date'},'Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to.'));
 const notificationTypes = ['NEW_APPLICATION','STATUS_UPDATED'];
 const usageTypes = ['INTERVIEW_INVITE','OFFER_LETTER','ACCEPTED','REJECTED','IN_PROGRESS'];
 const profile = object({ userId:id,employeeId:text(30),fullName:text(100),email:text(150,{format:'email'}),phone:text(20),role:text(50),department:text(100),officeLocation:text(100),photoUrl:{type:'string',nullable:true},accountStatus:text(20),lastLoginAt:time });

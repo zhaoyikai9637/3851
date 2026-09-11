@@ -386,6 +386,8 @@ describe("notification workflow", () => {
     const toCalendar = screen.getByLabelText("Choose To date from calendar");
     expect(fromCalendar).toHaveAttribute("type", "date");
     expect(toCalendar).toHaveAttribute("type", "date");
+    expect(fromCalendar.getAttribute("max")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(toCalendar).toHaveAttribute("max", fromCalendar.getAttribute("max"));
     fireEvent.change(fromCalendar, {
       target: { value: "2026-09-01" },
     });
@@ -402,6 +404,24 @@ describe("notification workflow", () => {
         ),
       ).toBe(true),
     );
+  });
+  it("limits the calendar and rejects future manual dates", async () => {
+    const ui = mount();
+    await screen.findByText("New application received");
+    const fromCalendar = screen.getByLabelText(
+      "Choose From date from calendar",
+    );
+    expect(fromCalendar.getAttribute("max")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    fireEvent.change(screen.getByLabelText("To date"), {
+      target: { value: "12/31/9999" },
+    });
+    await ui.click(screen.getByRole("button", { name: "Apply filters" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Future dates are not available for activity history.",
+    );
+    expect(
+      fetcher.mock.calls.some(([url]) => url.includes("to=9999-12-31")),
+    ).toBe(false);
   });
   it("shows only a clearly labeled read-only application summary", async () => {
     const ui = mount();

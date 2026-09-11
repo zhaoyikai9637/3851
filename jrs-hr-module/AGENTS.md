@@ -42,8 +42,11 @@ on any status summary. Update the handoff and plan when progress changes.
   never grant HR rights. Do not expand the personal module into a candidate UI.
 - Ask for required network/command permission through the actual host workflow.
   Do not bypass a denial, change registries to evade it, or disable safeguards.
-- Do not publish to GitHub, deploy, or upload private reports without explicit
-  instruction. `reference/` is intentionally Git-ignored in this handoff copy.
+- The user explicitly authorized a standing workflow on 2026-09-11: after a
+  completed project change, sync the changed project files to the `3851`
+  GitHub repository and include a clear update purpose/summary, unless the user
+  says to keep that change local. This never includes credentials, ignored
+  `reference/` evidence, private reports, unrelated files, or deployment.
 
 ## Verification and commands
 

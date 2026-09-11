@@ -10,7 +10,7 @@ import {
   Modal,
   PageHeading,
   Pagination,
-  parseUsDate,
+  historicalDateRange,
   useLoad,
 } from "../shared";
 
@@ -63,12 +63,11 @@ export function Notifications() {
   function apply(e) {
     e.preventDefault();
     setError(null);
-    const from = parseUsDate(draft.from);
-    const to = parseUsDate(draft.to);
-    if (from === null || to === null)
-      return setError(new Error("Enter dates as MM/DD/YYYY."));
-    if (from && to && from > to)
-      return setError(new Error("From date must not be after To date."));
+    const { from, to, error: dateError } = historicalDateRange(
+      draft.from,
+      draft.to,
+    );
+    if (dateError) return setError(new Error(dateError));
     setFilters((v) => ({
       ...v,
       type: draft.type,

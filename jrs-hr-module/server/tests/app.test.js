@@ -102,6 +102,13 @@ describe('Express API with mock services and an isolated MemoryStore', () => {
     expect(services.notifications).toHaveBeenCalledWith(1,expect.objectContaining({read:'unread',page:2,pageSize:10}));
     await agent.get('/api/hr/notifications?recipientUserId=2').expect(422);
   });
+  it('rejects future dates before notification or log services are called', async () => {
+    await enter();
+    await agent.get('/api/hr/notifications?from=9999-12-31').expect(422);
+    await agent.get('/api/hr/logs?to=9999-12-31').expect(422);
+    expect(services.notifications).not.toHaveBeenCalled();
+    expect(services.logs).not.toHaveBeenCalled();
+  });
   it('rejects profile mass assignment, then saves allowed fields', async () => {
     await enter(); const allowed={fullName:'Riley',phone:'',officeLocation:'Office'};
     await agent.patch('/api/hr/profile').set('x-csrf-token',csrf).send({...allowed,email:'other@example.test'}).expect(422);

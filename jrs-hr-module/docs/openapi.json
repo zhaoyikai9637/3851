@@ -2833,7 +2833,7 @@
               "type": "string",
               "format": "date"
             },
-            "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to.",
+            "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to.",
             "example": "2026-09-09"
           },
           {
@@ -2844,7 +2844,7 @@
               "type": "string",
               "format": "date"
             },
-            "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to.",
+            "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to.",
             "example": "2026-09-09"
           }
         ]
@@ -4880,7 +4880,7 @@
               "type": "string",
               "format": "date"
             },
-            "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to.",
+            "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to.",
             "example": "2026-09-09"
           },
           {
@@ -4891,7 +4891,7 @@
               "type": "string",
               "format": "date"
             },
-            "description": "Inclusive calendar date in Asia/Singapore (UTC+08:00); from must not exceed to.",
+            "description": "Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to.",
             "example": "2026-09-09"
           }
         ]

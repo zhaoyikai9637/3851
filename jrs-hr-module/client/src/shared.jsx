@@ -214,15 +214,37 @@ export function parseUsDate(value) {
     return null;
   return `${year}-${month}-${day}`;
 }
+export function businessToday(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Singapore",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+export function historicalDateRange(fromValue, toValue, today = businessToday()) {
+  const from = parseUsDate(fromValue);
+  const to = parseUsDate(toValue);
+  if (from === null || to === null)
+    return { error: "Enter dates as MM/DD/YYYY." };
+  if ((from && from > today) || (to && to > today))
+    return { error: "Future dates are not available for activity history." };
+  if (from && to && from > to)
+    return { error: "From date must not be after To date." };
+  return { from, to, error: null };
+}
 function formatUsDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
   const [year, month, day] = value.split("-");
   return `${month}/${day}/${year}`;
 }
-function CalendarDateField({ label, name, values, setValues, min }) {
-  const pickerValue = parseUsDate(values[name]) || "";
+function CalendarDateField({ label, name, values, setValues, min, max }) {
+  const parsedValue = parseUsDate(values[name]) || "";
+  const pickerValue = parsedValue && parsedValue <= max ? parsedValue : "";
   return (
-    <Field label={label}>
+    <Field label={label} help="Today or earlier">
       {(id) => (
         <div className="date-input-control">
           <input
@@ -263,12 +285,14 @@ function CalendarDateField({ label, name, values, setValues, min }) {
             aria-label={`Choose ${label} from calendar`}
             value={pickerValue}
             min={min || undefined}
-            onChange={(e) =>
+            max={max}
+            onChange={(e) => {
+              if (e.target.value && e.target.value > max) return;
               setValues((current) => ({
                 ...current,
                 [name]: formatUsDate(e.target.value),
-              }))
-            }
+              }));
+            }}
           />
         </div>
       )}
@@ -276,7 +300,9 @@ function CalendarDateField({ label, name, values, setValues, min }) {
   );
 }
 export function DateFields({ values, setValues }) {
-  const minimumToDate = parseUsDate(values.from) || "";
+  const maximumDate = businessToday();
+  const parsedFromDate = parseUsDate(values.from) || "";
+  const minimumToDate = parsedFromDate <= maximumDate ? parsedFromDate : "";
   return (
     <>
       <CalendarDateField
@@ -284,6 +310,7 @@ export function DateFields({ values, setValues }) {
         name="from"
         values={values}
         setValues={setValues}
+        max={maximumDate}
       />
       <CalendarDateField
         label="To date"
@@ -291,6 +318,7 @@ export function DateFields({ values, setValues }) {
         values={values}
         setValues={setValues}
         min={minimumToDate}
+        max={maximumDate}
       />
     </>
   );
