@@ -1,0 +1,11 @@
+请接手当前打开的 JRS HR 模块工程。这是从 ChatGPT 迁移过来的未完成项目，不是从零创建另一个项目，也不是已通过测试的成品。
+
+请依次完整阅读 AGENTS.md、docs/HANDOFF.md、docs/PLAN.md、docs/SOURCES.md，再检查当前源码和 reference 中与本阶段相关的原始材料。不要假设你拥有旧聊天历史或 Figma 连接权限。
+
+我的职责仅限 Notification Center、Email Templates、Notification Log、头像菜单、HR My Profile、Edit Profile 和 Logout。前端使用 JavaScript + React + Vite + Bootstrap，后端使用 Node.js + Express + Sequelize + MySQL，REST API + JSON。需要 Vitest、React Testing Library、Supertest、Swagger/OpenAPI 和 Postman。PC 为主，同时适配手机。不要换成 Java、ASP.NET、TypeScript 或 SQLite，不要重做其他组员负责的职位、申请、面试和 Offer 流程。
+
+先用中文简要确认你读到的职责、实际完成情况和当前阻塞，然后按 docs/PLAN.md 的 P0 → P1 开始直接编写和验证代码：先检查 Node/npm 与依赖版本、已知 CSRF 问题、缺失的 OpenAPI 文件及日志语义，补测试，再逐步补齐前端、种子数据和数据库验证。不要只重复输出开发建议。
+
+这条消息授权你在当前工程内继续实现和测试，下载依赖仍须遵守实际权限提示。数据库写操作先核对并向我确认是新的专用开发/测试数据库；不要改动团队已有数据库，不要执行旧 SQL、sync force/alter、发真实邮件、发布网站或推送 GitHub。凭据只保存在本地环境配置，不要输出到聊天。
+
+保留原有源码并基于实际检查修正。遇到不影响本地演示的团队接口差异，记录为待对齐的适配契约；不要擅自假定已经与组员集成。每完成一个阶段，更新 docs/HANDOFF.md 和 docs/PLAN.md，列出测试命令及真实结果，并用中文说明本阶段实现了什么和下一步是什么。

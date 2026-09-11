@@ -1,0 +1,37 @@
+{
+  "name": "@jrs/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "db:migrate": "node src/migrate.js",
+    "db:seed": "node src/seed.js",
+    "test": "vitest run",
+    "test:mysql": "vitest run --config vitest.mysql.config.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
+    "mysql2": "^3.14.5",
+    "nodemailer": "10.0.1",
+    "sequelize": "6.37.8",
+    "sharp": "0.35.4",
+    "swagger-ui-express": "^5.0.1",
+    "umzug": "^3.8.2",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "13.0.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "supertest": "^7.1.4",
+    "vitest": "4.1.11"
+  }
+}

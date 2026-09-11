@@ -1,0 +1,14 @@
+node_modules/
+client/dist/
+.env
+.env.*
+!.env.example
+!.env.test.example
+coverage/
+server/uploads/
+server/uploads-test/
+*.log
+.DS_Store
+# Private source reports/screenshots included for local Codex handoff only.
+reference/
+work/
