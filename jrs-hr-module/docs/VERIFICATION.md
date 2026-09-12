@@ -244,3 +244,12 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 - `npm.cmd run test:mysql`：专用测试库 12/12 通过；`npm.cmd run docs:check`：22 个操作、316 个 JSON 示例通过。
 - `npm.cmd run build`：Vite 50 modules，退出 0。
 - 本机浏览器 1264×712 实际检查：Notification type、From date、To date 与操作按钮输入区域恢复同一水平线；帮助文字保留且不再影响网格行高。
+
+## 2026-09-12 整体视觉优化回归
+
+- `npm.cmd test`：后端 10 文件/161 项、前端 3 文件/46 项通过。
+- `npm.cmd run test:mysql`：专用测试库 12/12 通过，无结构变更。
+- `npm.cmd run build`：Vite 50 modules，退出 0。
+- `npm.cmd run docs:check`：22 operations、316 JSON examples，退出 0。
+- 本地虚构 demo 浏览器检查：桌面 Notification Center、Email Templates、Notification Log、My Profile；390px 手机端同样检查四页。手机日期帮助文字与 Apply filters 按钮已分离。
+- 此轮只改样式和文档；没有声称真实团队登录或真实邮件已验证。
