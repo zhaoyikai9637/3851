@@ -23,13 +23,16 @@ API 在 http://127.0.0.1:3001，Swagger 建议打开 http://localhost:5173/api/d
 
 ```powershell
 npm.cmd test
+npm.cmd run test:jest
 npm.cmd run test:mysql
 npm.cmd run build
 npm.cmd run docs:check
 npm.cmd run docs:export
 ```
 
-后端 157 项 + 前端 38 项；MySQL 独立套件 12 项。真实 Edge 浏览器使用测试进程提供的
+原有 Vitest：后端 161 项 + 前端 46 项；新增 Jest：2 文件/46 项，运行后自动更新
+`docs/UNIT_TEST_REPORT.md`；MySQL 独立套件 12 项。Jest 只测指定后端单元，不能代替
+现有 Vitest、API 或 MySQL 测试。真实 Edge 浏览器使用测试进程提供的
 可信上游身份夹具（不代表团队已联调），覆盖入口/退出跳转、通知持久化、模板增删改、日志快照、资料/头像保存、服务重启会话和退出。
 检查 390/768/1024/1440px，截图及测试日志在 work/browser-check。
 完整真实结果、失败记录和未测部分见 docs/VERIFICATION.md。

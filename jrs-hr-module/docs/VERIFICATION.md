@@ -253,3 +253,10 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 - `npm.cmd run docs:check`：22 operations、316 JSON examples，退出 0。
 - 本地虚构 demo 浏览器检查：桌面 Notification Center、Email Templates、Notification Log、My Profile；390px 手机端同样检查四页。手机日期帮助文字与 Apply filters 按钮已分离。
 - 此轮只改样式和文档；没有声称真实团队登录或真实邮件已验证。
+
+## 2026-09-13 Jest 单元测试与兼容性回归
+
+- `npm.cmd run test:jest`：2 文件/46 用例通过；指定三个后端源文件覆盖率：语句/行 92.39%、分支 86.15%、函数 90.9%。逐项结果见 `docs/UNIT_TEST_REPORT.md`。
+- `npm.cmd test`：原有 Vitest 后端 10 文件/161 项、前端 3 文件/46 项通过。
+- `npm.cmd run test:mysql`：专用测试库 12/12 通过；`npm.cmd run build`：Vite 50 modules；`npm.cmd run docs:check`：22 operations、316 JSON examples，均退出 0。
+- 本次没有修改 UI 或运行浏览器流程；Jest 的数据库替身不代替真实 MySQL 测试，邮件测试没有对外发送。
