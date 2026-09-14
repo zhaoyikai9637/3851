@@ -25,50 +25,50 @@ const passed = run.status === 0 && results?.success === true;
 const coverage = passed && existsSync(coveragePath)
   ? JSON.parse(readFileSync(coveragePath, 'utf8')).total : null;
 const version = JSON.parse(readFileSync(join(root, 'node_modules', 'jest', 'package.json'), 'utf8')).version;
-const date = new Intl.DateTimeFormat('zh-CN', {
+const date = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Asia/Hong_Kong', dateStyle: 'full', timeStyle: 'medium'
 }).format(new Date());
 const testRows = (results?.testResults || []).flatMap(suite =>
   suite.assertionResults.map(test => {
     const name = test.fullName.replaceAll('|', '\\|').replaceAll('\n', ' ');
-    return `| ${relative(root, suite.name).replaceAll('\\', '/')} | ${name} | ${test.status === 'passed' ? '通过' : '失败'} |`;
+    return `| ${relative(root, suite.name).replaceAll('\\', '/')} | ${name} | ${test.status === 'passed' ? 'Pass' : 'Fail'} |`;
   })
 );
-const pct = metric => coverage?.[metric]?.pct == null ? '未生成' : `${coverage[metric].pct}%`;
+const pct = metric => coverage?.[metric]?.pct == null ? 'Not available' : `${coverage[metric].pct}%`;
 const lines = [
-  '# Jest 单元测试报告',
+  '# Jest Unit Test Report',
   '',
-  `- 执行时间：${date}（Asia/Hong_Kong）`,
-  `- 运行环境：Node ${process.version}；Jest ${version}`,
-  '- 命令：`npm.cmd run test:jest`（在项目根目录运行）',
-  `- 结果：${passed ? '通过' : '失败'}；测试文件 ${results?.numTotalTestSuites ?? '未知'} 个，测试用例 ${results?.numTotalTests ?? '未知'} 项；通过 ${results?.numPassedTests ?? '未知'}，失败 ${results?.numFailedTests ?? '未知'}。`,
+  `- Executed: ${date} (Asia/Hong_Kong)`,
+  `- Environment: Node ${process.version}; Jest ${version}`,
+  '- Command: `npm.cmd run test:jest` (from the project root)',
+  `- Result: ${passed ? 'PASS' : 'FAIL'}; suites: ${results?.numTotalTestSuites ?? 'unknown'}; tests: ${results?.numTotalTests ?? 'unknown'}; passed: ${results?.numPassedTests ?? 'unknown'}; failed: ${results?.numFailedTests ?? 'unknown'}.`,
   '',
-  '## 测试范围',
+  '## Scope',
   '',
-  '- `server/src/validation.js`：邮件模板变量、资料字段、ID、历史日期和筛选参数。',
-  '- `server/src/database-safety.js`：专用库写入限制、迁移目标预检；数据库对象为内存替身。',
-  '- `server/src/mailer.js`：默认离线预览和 SMTP 显式许可限制；未连接 SMTP。',
+  '- `server/src/validation.js`: email-template variables, profile fields, IDs, historical dates, and query filters.',
+  '- `server/src/database-safety.js`: dedicated-database write restrictions and migration-target inspection, using an in-memory database double.',
+  '- `server/src/mailer.js`: offline-preview default and explicit SMTP authorization; no SMTP connection is made.',
   '',
-  '## 覆盖率（仅上述三个源文件）',
+  '## Coverage (the three source files above only)',
   '',
-  '| 指标 | 覆盖率 |',
+  '| Metric | Coverage |',
   '|---|---:|',
-  `| 语句 | ${pct('statements')} |`,
-  `| 分支 | ${pct('branches')} |`,
-  `| 函数 | ${pct('functions')} |`,
-  `| 行 | ${pct('lines')} |`,
+  `| Statements | ${pct('statements')} |`,
+  `| Branches | ${pct('branches')} |`,
+  `| Functions | ${pct('functions')} |`,
+  `| Lines | ${pct('lines')} |`,
   '',
-  '## 用例明细',
+  '## Test Cases',
   '',
-  '| 测试文件 | 用例 | 结果 |',
+  '| Test file | Test case | Result |',
   '|---|---|---|',
   ...testRows,
   '',
-  '## 解释与边界',
+  '## Limitations',
   '',
-  '- 这是 Jest 单元测试，不等于整个项目的覆盖率，也不验证真实 MySQL SQL、团队登录、浏览器交互或邮件送达。',
-  '- 原有 Vitest 前后端测试与专用 MySQL 集成测试保留；需分别运行 `npm.cmd test` 和 `npm.cmd run test:mysql`。',
-  '- 测试只使用虚构输入；没有写入数据库或向候选人发送邮件。',
+  '- These Jest unit tests do not measure whole-project coverage or verify real MySQL queries, team sign-in, browser interactions, or email delivery.',
+  '- The existing Vitest frontend/backend suites and dedicated MySQL integration suite remain separate. Run `npm.cmd test` and `npm.cmd run test:mysql` for those checks.',
+  '- Tests use fictional inputs only; they do not write to a database or send email to candidates.',
   ''
 ];
 writeFileSync(reportPath, lines.join('\n'), 'utf8');

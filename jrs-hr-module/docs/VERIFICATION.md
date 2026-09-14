@@ -260,3 +260,9 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 - `npm.cmd test`：原有 Vitest 后端 10 文件/161 项、前端 3 文件/46 项通过。
 - `npm.cmd run test:mysql`：专用测试库 12/12 通过；`npm.cmd run build`：Vite 50 modules；`npm.cmd run docs:check`：22 operations、316 JSON examples，均退出 0。
 - 本次没有修改 UI 或运行浏览器流程；Jest 的数据库替身不代替真实 MySQL 测试，邮件测试没有对外发送。
+
+## 2026-09-14 English-only Jest report rerun
+
+- `npm.cmd run test:jest`: 2 suites, 46 tests passed; statements/lines 92.39%, branches 86.15%, functions 90.9% for the three selected source files.
+- `rg -n '[\p{Han}]'` found no Chinese characters in the two Jest test files, Jest configuration, report generator, or regenerated `docs/UNIT_TEST_REPORT.md`.
+- No application behavior changed. The existing Vitest, MySQL, and build results above were not rerun for this report-language correction.

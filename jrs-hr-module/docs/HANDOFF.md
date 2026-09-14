@@ -373,3 +373,8 @@ token；前端应保留 cookie 并更新 token。计划由 Vite 代理 /api 到�
 - Jest 覆盖邮件模板/资料/日期输入校验、专用数据库写入和迁移预检、邮件默认离线保护。数据库以伪对象测试，邮件不连接 SMTP。
 - 每次运行自动生成 `docs/UNIT_TEST_REPORT.md`，记录环境、46 个用例结果、三个指定源文件的覆盖率与未验证边界。
 - 依赖 Jest 30.5.1；本次 Jest 46/46、Vitest 后端 161/161、前端 46/46、专用 MySQL 12/12 通过，build/docs:check 通过。未实现组员登录或真实邮件联调。
+
+## 17. 2026-09-14 English-only Jest deliverables
+
+- Switched the generated unit-test report to English, including headings, status labels, coverage metrics, and limitations. The Jest test source and generator are also English-only.
+- Reran `npm.cmd run test:jest`: 2 suites and 46 tests passed. A Han-character scan found no matches in the Jest tests, configuration, generator, or report.

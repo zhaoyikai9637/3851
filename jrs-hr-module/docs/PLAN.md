@@ -141,6 +141,7 @@ INTEGRATION_MODE 改成 team。未获授权不向真实候选人发送。
 ## P7 — 文档、全面测试与交付
 
 - [x] 按用户指定补充独立 Jest 单元测试和自动生成的 `docs/UNIT_TEST_REPORT.md`；保留 Vitest 与 MySQL 套件。
+- [x] Regenerate the Jest report in English only and verify the test deliverables contain no Chinese characters (2026-09-14, 46/46 passed).
 
 - [x] 当前模块 OpenAPI/Swagger 补齐 cookie/CSRF、请求/响应/错误示例与必填字段；未知团队认证仍属 P6。
 - [x] docs:check 验证结构/316 处 JSON 示例；真实 MySQL HTTP 响应也按契约校验。
