@@ -671,27 +671,6 @@ button:disabled {
 .notification-content {
   padding: 0 16px 10px;
 }
-.notification-toast {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin: 12px 0 2px;
-  padding: 9px 11px;
-  border: 1px solid #b9dfcf;
-  border-radius: 8px;
-  background: #f1faf6;
-  color: #28604c;
-  font-size: 12px;
-}
-.notification-toast button {
-  border: 0;
-  background: transparent;
-  color: #1f5d47;
-  font-weight: 750;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
 .notification-groups {
   padding-top: 2px;
 }
@@ -800,24 +779,59 @@ button.notification-card-main:hover {
   font-weight: 700;
   white-space: nowrap;
 }
-.notification-read-action {
-  margin: 0 8px;
-  padding: 6px 3px;
+.notification-more {
+  position: relative;
+  margin-right: 6px;
+}
+.notification-more-trigger {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: 0;
+  border-radius: 7px;
   background: transparent;
   color: #63748b;
-  font-size: 10px;
-  font-weight: 650;
-  white-space: nowrap;
+  font-size: 20px;
+  line-height: 1;
 }
-.notification-read-action:hover {
+.notification-more-trigger:hover,
+.notification-more-trigger[aria-expanded="true"] {
+  background: #edf2f8;
   color: #204cae;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
-.notification-read-action:focus-visible {
-  border-radius: 4px;
+.notification-more-trigger:focus-visible {
   outline: 3px solid #315fd233;
+}
+.notification-more-menu {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + 5px);
+  right: 0;
+  width: 154px;
+  padding: 5px;
+  border: 1px solid #d7e0ed;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 12px 30px #1b335821;
+}
+.notification-more-menu button {
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #344b6a;
+  font-size: 11px;
+  font-weight: 650;
+  text-align: left;
+}
+.notification-more-menu button:hover,
+.notification-more-menu button:focus-visible {
+  background: #edf3ff;
+  color: #204cae;
+  outline: none;
 }
 .notification-skeleton {
   padding-top: 14px;
@@ -1562,9 +1576,17 @@ button.notification-card-main:hover {
     grid-column: 3;
     padding: 3px 0 0;
   }
-  .notification-read-action {
-    justify-self: start;
-    margin: -5px 0 7px 48px;
+  .notification-more {
+    position: absolute;
+    right: 20px;
+    margin-top: 8px;
+    margin-right: 0;
+  }
+  .notification-card {
+    position: relative;
+  }
+  .notification-card-main {
+    padding-right: 42px;
   }
   .pagination-row {
     font-size: 11px;

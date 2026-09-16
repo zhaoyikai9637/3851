@@ -332,8 +332,11 @@ describe("notification workflow", () => {
     ).not.toBeInTheDocument();
     await ui.click(
       screen.getByRole("button", {
-        name: /Mark New application received as read/,
+        name: "More actions for New application received",
       }),
+    );
+    await ui.click(
+      screen.getByRole("menuitem", { name: "Mark as read" }),
     );
     expect(await screen.findByText("You're all caught up")).toBeVisible();
     expect(writes("/api/hr/notifications/1/read")).toHaveLength(1);
@@ -346,31 +349,45 @@ describe("notification workflow", () => {
     await screen.findByText("New application received");
     await ui.click(
       screen.getByRole("button", {
-        name: /Mark New application received as read/,
+        name: "More actions for New application received",
       }),
+    );
+    await ui.click(
+      screen.getByRole("menuitem", { name: "Mark as read" }),
     );
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Could not save",
     );
     expect(screen.getByRole("button", { name: /Unread 1/ })).toBeVisible();
   });
-  it("marks all read, hides the action at zero unread and restores state with Undo", async () => {
+  it("marks all read without adding a confirmation panel", async () => {
     const ui = mount();
     await screen.findByText("New application received");
     await ui.click(screen.getByRole("button", { name: /Mark all as read/ }));
-    expect(await screen.findByText("All notifications marked as read.")).toBeVisible();
     await waitFor(() =>
       expect(
         screen.queryByRole("button", { name: /Mark all as read/ }),
       ).not.toBeInTheDocument(),
     );
     expect(writes("/api/hr/notifications/read-all")).toHaveLength(1);
-    await ui.click(screen.getByRole("button", { name: "Undo" }));
-    expect(await screen.findByText("Unread notifications restored.")).toBeVisible();
-    expect(writes("/api/hr/notifications/restore-unread")).toHaveLength(1);
-    expect(
-      await screen.findByRole("button", { name: /Mark all as read/ }),
-    ).toBeVisible();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Undo" })).not.toBeInTheDocument();
+  });
+  it("moves read-state changes into an accessible row actions menu", async () => {
+    const ui = mount();
+    await screen.findByText("Candidate status updated");
+    expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
+    await ui.click(
+      screen.getByRole("button", {
+        name: "More actions for Candidate status updated",
+      }),
+    );
+    await ui.click(screen.getByRole("menuitem", { name: "Mark as unread" }));
+    await waitFor(() =>
+      expect(writes("/api/hr/notifications/restore-unread")).toHaveLength(1),
+    );
+    expect(await screen.findByText("2 unread notifications")).toBeVisible();
+    expect(screen.queryByText("Unread notifications restored.")).not.toBeInTheDocument();
   });
   it("automatically applies search, date and type filters, exposes chips and clears them", async () => {
     const ui = mount();

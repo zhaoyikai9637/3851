@@ -389,5 +389,12 @@ token；前端应保留 cookie 并更新 token。计划由 Vite 代理 /api 到�
 
 - Reworked the Notification Center into a compact activity inbox while preserving the JRS sidebar, top navigation, routes, brand tokens, and the other HR pages.
 - Added real All/Unread totals, automatic search/type/date filtering, removable filter chips, Asia/Singapore Today/Yesterday/Earlier groups, semantic event actions, simplified unread styling, row skeletons, distinct empty states, and conditional pagination.
-- Bulk read now returns the exact changed notification IDs. A protected restore endpoint powers the eight-second Undo action without weakening HR ownership, CSRF, origin, or team-identity checks.
+- Bulk read returns the exact changed notification IDs. The protected restore endpoint supports per-row `Mark as unread` without weakening HR ownership, CSRF, origin, or team-identity checks.
 - The backend still produces only NEW_APPLICATION and STATUS_UPDATED events. No teammate-owned interview, offer, candidate, or messaging workflow was invented. See \`docs/NOTIFICATION_CENTER_REDESIGN.md\`.
+
+## 20. 2026-09-16 Notification row action refinement
+
+- Removed both bulk-read success banners and the Undo panel. Bulk `Mark all as read` now refreshes the inbox without adding a confirmation strip.
+- Replaced the always-visible per-row read control with an accessible overflow menu. Unread rows offer `Mark as read`; read rows offer `Mark as unread`.
+- Removed decorative arrow suffixes from row action labels while preserving each primary recruitment action, bulk `Mark all as read`, unread counters, filtering, and backend authorization behavior.
+- The menu supports outside-click and Escape dismissal, reports its expanded state, and remains visible without horizontal overflow at the 390 px mobile viewport.

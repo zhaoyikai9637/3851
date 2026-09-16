@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api, query } from "../api";
 import { Icon } from "../icons";
 import {
@@ -107,9 +107,26 @@ function NotificationSkeleton() {
   );
 }
 
-function NotificationRow({ item, group, busy, onOpen, onMark }) {
+function NotificationRow({ item, group, busy, onOpen, onToggleRead }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const presentation =
     notificationPresentation[item.notificationType] || notificationPresentation.SYSTEM;
+  useEffect(() => {
+    if (!menuOpen) return;
+    const closeOutside = (event) => {
+      if (!menuRef.current?.contains(event.target)) setMenuOpen(false);
+    };
+    const closeWithEscape = (event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeWithEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeWithEscape);
+    };
+  }, [menuOpen]);
   const details = (
     <>
       <span className="notification-state" aria-hidden="true" />
@@ -126,7 +143,7 @@ function NotificationRow({ item, group, busy, onOpen, onMark }) {
       </span>
       {item.applicationId && (
         <span className="notification-cta" aria-hidden="true">
-          {presentation.action} <span>→</span>
+          {presentation.action}
         </span>
       )}
     </>
@@ -145,17 +162,34 @@ function NotificationRow({ item, group, busy, onOpen, onMark }) {
       ) : (
         <div className="notification-card-main">{details}</div>
       )}
-      {!item.isRead && (
+      <div className="notification-more" ref={menuRef}>
         <button
           type="button"
-          className="notification-read-action"
+          className="notification-more-trigger"
           disabled={busy}
-          onClick={() => onMark(item.notificationId)}
-          aria-label={`Mark ${item.title} as read`}
+          aria-label={`More actions for ${item.title}`}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((value) => !value)}
         >
-          Mark as read
+          <span aria-hidden="true">⋯</span>
         </button>
-      )}
+        {menuOpen && (
+          <div className="notification-more-menu" role="menu">
+            <button
+              type="button"
+              role="menuitem"
+              disabled={busy}
+              onClick={() => {
+                setMenuOpen(false);
+                onToggleRead(item);
+              }}
+            >
+              {item.isRead ? "Mark as unread" : "Mark as read"}
+            </button>
+          </div>
+        )}
+      </div>
     </li>
   );
 }
@@ -167,7 +201,6 @@ export function Notifications() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [filterError, setFilterError] = useState(null);
-  const [notice, setNotice] = useState(null);
   const [application, setApplication] = useState(null);
   const load = useLoad(`/api/hr/notifications?${query(filters)}`);
 
@@ -206,31 +239,13 @@ export function Notifications() {
     setFilters((value) => ({ ...value, from, to, page: 1 }));
   }, [draft.from, draft.to]);
 
-  useEffect(() => {
-    if (!notice?.undoIds?.length) return;
-    const timer = setTimeout(() => setNotice(null), 8000);
-    return () => clearTimeout(timer);
-  }, [notice]);
-
-  async function mark(id) {
+  async function markAll() {
     setBusy(true);
     setError(null);
-    setNotice(null);
     try {
-      const result = await api.request(
-        id
-          ? `/api/hr/notifications/${id}/read`
-          : "/api/hr/notifications/read-all",
-        { method: "PATCH" },
-      );
-      setNotice(
-        id
-          ? { text: "Notification marked as read." }
-          : {
-              text: "All notifications marked as read.",
-              undoIds: result?.notificationIds || [],
-            },
-      );
+      await api.request("/api/hr/notifications/read-all", {
+        method: "PATCH",
+      });
       load.reload();
     } catch (requestError) {
       setError(requestError);
@@ -239,16 +254,20 @@ export function Notifications() {
     }
   }
 
-  async function undoMarkAll() {
-    if (!notice?.undoIds?.length) return;
+  async function toggleRead(item) {
     setBusy(true);
     setError(null);
     try {
-      await api.request("/api/hr/notifications/restore-unread", {
-        method: "PATCH",
-        body: { notificationIds: notice.undoIds },
-      });
-      setNotice({ text: "Unread notifications restored." });
+      if (item.isRead) {
+        await api.request("/api/hr/notifications/restore-unread", {
+          method: "PATCH",
+          body: { notificationIds: [item.notificationId] },
+        });
+      } else {
+        await api.request(`/api/hr/notifications/${item.notificationId}/read`, {
+          method: "PATCH",
+        });
+      }
       load.reload();
     } catch (requestError) {
       setError(requestError);
@@ -360,7 +379,7 @@ export function Notifications() {
                 type="button"
                 className="btn btn-outline-primary btn-sm mark-all-button"
                 disabled={busy || load.busy}
-                onClick={() => mark()}
+                onClick={markAll}
               >
                 Mark all as read
               </button>
@@ -392,16 +411,6 @@ export function Notifications() {
         )}
         <div className="surface-content notification-content">
           <ErrorBox error={filterError || error} />
-          {notice && (
-            <div className="notification-toast" role="status">
-              <span>{notice.text}</span>
-              {notice.undoIds?.length > 0 && (
-                <button type="button" onClick={undoMarkAll} disabled={busy}>
-                  Undo
-                </button>
-              )}
-            </div>
-          )}
           {load.busy ? (
             <NotificationSkeleton />
           ) : load.error ? (
@@ -422,7 +431,7 @@ export function Notifications() {
                               group={group.label}
                               busy={busy}
                               onOpen={setApplication}
-                              onMark={mark}
+                              onToggleRead={toggleRead}
                             />
                           ))}
                         </ul>
