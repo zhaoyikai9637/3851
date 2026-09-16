@@ -16,9 +16,9 @@ import { Logs } from "./pages/Logs";
 import { Profile, EditProfile } from "./pages/Profile";
 
 const tabs = [
-  ["/notifications", "Notification Center"],
-  ["/templates", "Email Templates"],
-  ["/logs", "Notification Log"],
+  ["/notifications", "Notification Center", "bell"],
+  ["/templates", "Email Templates", "mail"],
+  ["/logs", "Notification Log", "log"],
 ];
 const workspaceLinks = [
   ["/dashboard", "Dashboard", "dashboard"],
@@ -170,15 +170,18 @@ function Layout() {
   const menuRef = useRef(null),
     trigger = useRef(null),
     location = useLocation();
+  const currentTitle =
+    tabs.find(([path]) => path === location.pathname)?.[1] ||
+    workspaceLinks.find(([path]) => path === location.pathname)?.[1] ||
+    (location.pathname === "/profile/edit" ? "Edit Profile" : "My Profile");
+  const isCommunicationPage = tabs.some(
+    ([path]) => path === location.pathname,
+  );
   useEffect(() => {
     setMenu(false);
     setSidebar(false);
-    const pageTitle =
-      tabs.find(([path]) => path === location.pathname)?.[1] ||
-      workspaceLinks.find(([path]) => path === location.pathname)?.[1] ||
-      "My Profile";
-    document.title = `${pageTitle} · JRS`;
-  }, [location.pathname]);
+    document.title = `${currentTitle} · JRS`;
+  }, [currentTitle, location.pathname]);
   useEffect(() => {
     if (!menu) return;
     const outside = (e) => {
@@ -269,12 +272,10 @@ function Layout() {
           >
             ☰
           </button>
-          <nav className="top-tabs" aria-label="Communication pages">
-            {tabs.map(([path, name]) => (
-              <NavLink key={path} to={path}>
-                {name}
-              </NavLink>
-            ))}
+          <nav className="workspace-crumbs" aria-label="Breadcrumb">
+            <span>Workspace</span>
+            <span aria-hidden="true">/</span>
+            <strong>{currentTitle}</strong>
           </nav>
           <div className="account-control" ref={menuRef}>
             <button
@@ -317,11 +318,32 @@ function Layout() {
             <button className="btn btn-sm btn-light" onClick={resetDemo}>Reset demo</button>
           </div>
         )}
-        <main id="main-content" className="main-content" tabIndex={-1}>
-          <PageBoundary key={location.pathname}>
-            <Outlet />
-          </PageBoundary>
-        </main>
+        <div className={`content-frame${isCommunicationPage ? " with-module-navigation" : ""}`}>
+          {isCommunicationPage && (
+            <aside className="module-navigation" aria-label="Notification module">
+              <div className="module-navigation-heading">
+                <p>NOTIFICATIONS</p>
+                <h2>Communication</h2>
+              </div>
+              <nav aria-label="Communication pages">
+                {tabs.map(([path, name, icon]) => (
+                  <NavLink key={path} to={path}>
+                    <Icon name={icon} />
+                    <span>{name}</span>
+                  </NavLink>
+                ))}
+              </nav>
+              <p className="module-navigation-note">
+                Manage activity, reusable messages, and delivery history.
+              </p>
+            </aside>
+          )}
+          <main id="main-content" className="main-content" tabIndex={-1}>
+            <PageBoundary key={location.pathname}>
+              <Outlet />
+            </PageBoundary>
+          </main>
+        </div>
         <footer className="workspace-footer">
           <span>JRS · Human Resources</span>
           <span>Dates shown in UTC+08:00</span>

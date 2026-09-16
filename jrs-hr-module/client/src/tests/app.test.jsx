@@ -214,6 +214,18 @@ describe("authentication and navigation", () => {
       expect(within(navigation).getByRole("link", { name })).toBeVisible();
     }
     expect(within(navigation).getByRole("link", { name: "Notifications" })).toBeVisible();
+    const breadcrumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(breadcrumb).toHaveTextContent("Workspace/Notification Center");
+    const communication = screen.getByRole("navigation", {
+      name: "Communication pages",
+    });
+    for (const name of [
+      "Notification Center",
+      "Email Templates",
+      "Notification Log",
+    ]) {
+      expect(within(communication).getByRole("link", { name })).toBeVisible();
+    }
     await ui.click(account);
     expect(screen.getByRole("link", { name: "My Profile" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Edit Profile" })).not.toBeInTheDocument();

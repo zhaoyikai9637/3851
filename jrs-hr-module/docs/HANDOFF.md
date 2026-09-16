@@ -378,3 +378,11 @@ token；前端应保留 cookie 并更新 token。计划由 Vite 代理 /api 到�
 
 - Switched the generated unit-test report to English, including headings, status labels, coverage metrics, and limitations. The Jest test source and generator are also English-only.
 - Reran `npm.cmd run test:jest`: 2 suites and 46 tests passed. A Han-character scan found no matches in the Jest tests, configuration, generator, or report.
+
+## 18. 2026-09-16 Tellent-informed workspace hierarchy
+
+- Reviewed the authenticated Tellent HR Analytics, Notifications, and profile layouts in read-only mode. No external records, credentials, screenshots, or account identifiers were added to the repository.
+- Preserved the Figma-derived JRS primary sidebar and separated Communication module navigation from the global top bar. The top bar now presents a breadcrumb and account control.
+- Added a desktop module panel for Notification Center, Email Templates, and Notification Log. Below 650px it becomes a horizontally scrollable navigation strip.
+- Kept routes, labels, profile access, date behavior, API contracts, team-auth boundary, and business logic unchanged. See `docs/TELLENT_STRUCTURE_REVIEW.md`.
+- Regression results: Vitest server 161/161 and client 46/46, Jest 46/46, dedicated MySQL 12/12, production build, and documentation contract check all passed.

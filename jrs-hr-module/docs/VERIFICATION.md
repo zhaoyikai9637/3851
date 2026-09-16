@@ -266,3 +266,12 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 - `npm.cmd run test:jest`: 2 suites, 46 tests passed; statements/lines 92.39%, branches 86.15%, functions 90.9% for the three selected source files.
 - `rg -n '[\p{Han}]'` found no Chinese characters in the two Jest test files, Jest configuration, report generator, or regenerated `docs/UNIT_TEST_REPORT.md`.
 - No application behavior changed. The existing Vitest, MySQL, and build results above were not rerun for this report-language correction.
+
+## 2026-09-16 Tellent-informed structure regression
+
+- `npm.cmd test`: server 10 files/161 tests and client 3 files/46 tests passed.
+- `npm.cmd run test:jest`: 2 suites/46 tests passed; the English report was regenerated.
+- `npm.cmd run test:mysql`: dedicated test database 12/12 passed.
+- `npm.cmd run build`: Vite built 50 modules successfully; `npm.cmd run docs:check`: 22 operations and 316 JSON examples passed.
+- Browser review used fictional local demo data. Desktop review covered Notification Center and Email Templates with the global sidebar, breadcrumb, and Communication module panel. A 390px review confirmed the horizontal module strip and unchanged date-filter alignment.
+- The external Tellent session was read-only. No Tellent data or credentials were written into project files, and no external actions were performed.
