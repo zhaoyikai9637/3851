@@ -23,7 +23,7 @@ Vitest 升至 4.1.11，审计剩 Sequelize/UUID 2 moderate、0 high/critical。
 
 - `client/src/demo-api.js` 提供浏览器端虚构数据适配；通知、模板、日志、关联申请和资料操作不经过 `fetch`，不触碰 MySQL，也不发送或下载真实内容。
 - 未登录页新增 `Open fictional demo`；也可用带 `?demo=1` 的直达链接。模式标记保存在当前标签页的 `sessionStorage`，页面导航及刷新后仍保持，退出后清除。
-- 页面顶部持续显示 `LOCAL DEMO · Fictional data · No API, database, or email activity`。`Reset demo` 恢复初始数据；头像菜单 `Logout` 返回团队登录等待页。
+- The fictional demo remains available from the unauthenticated access page. As of 2026-09-16, the persistent in-workspace demo status banner and its `Reset demo` action are intentionally removed; the avatar-menu `Logout` action still returns to the team sign-in waiting page.
 - 复用现有五个页面和响应式布局，没有恢复账号密码登录、没有引入测试身份夹具、没有修改服务器授权。
 - 本次实测：`npm.cmd run test -w client` 为 3 文件 / 41 项通过；`npm.cmd run build` 通过（Vite 7.3.6，50 模块）。真实浏览器验证通知已读、关联申请摘要、模板保存、日志详情、资料修改、重置、退出、刷新保持模式，以及 1440×900 和 390×844 布局。未登录 `GET /api/hr/notifications` 与 `GET /api/auth/me` 均返回 401。
 - 本次没有重跑后端 157 项、真实 MySQL 12 项或 docs 全套；不得把 2026-09-09 的结果写成本次新验证。
@@ -379,10 +379,8 @@ token；前端应保留 cookie 并更新 token。计划由 Vite 代理 /api 到�
 - Switched the generated unit-test report to English, including headings, status labels, coverage metrics, and limitations. The Jest test source and generator are also English-only.
 - Reran `npm.cmd run test:jest`: 2 suites and 46 tests passed. A Han-character scan found no matches in the Jest tests, configuration, generator, or report.
 
-## 18. 2026-09-16 Tellent-informed workspace hierarchy
+## 18. 2026-09-16 Restore the previous workspace layout
 
-- Reviewed the authenticated Tellent HR Analytics, Notifications, and profile layouts in read-only mode. No external records, credentials, screenshots, or account identifiers were added to the repository.
-- Preserved the Figma-derived JRS primary sidebar and separated Communication module navigation from the global top bar. The top bar now presents a breadcrumb and account control.
-- Added a desktop module panel for Notification Center, Email Templates, and Notification Log. Below 650px it becomes a horizontally scrollable navigation strip.
-- Kept routes, labels, profile access, date behavior, API contracts, team-auth boundary, and business logic unchanged. See `docs/TELLENT_STRUCTURE_REVIEW.md`.
-- Regression results: Vitest server 161/161 and client 46/46, Jest 46/46, dedicated MySQL 12/12, production build, and documentation contract check all passed.
+- Reverted the Tellent-informed three-layer navigation change at the user's request and restored the previous Figma-derived sidebar with the top Communication tabs.
+- Removed the persistent local-demo status banner and the visible `Reset demo` action shown inside the workspace. Fictional demo access, data isolation, logout behavior, routes, API contracts, database behavior, and email safeguards remain unchanged.
+- The rollback was implemented as a new forward commit so the repository history and earlier teammate commits remain intact.

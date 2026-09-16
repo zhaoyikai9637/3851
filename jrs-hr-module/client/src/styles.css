@@ -256,85 +256,26 @@ button:disabled {
   padding: 0 34px;
   gap: 20px;
 }
-.workspace-crumbs {
+.top-tabs {
   display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-  color: #7a879a;
-  font-size: 13px;
-}
-.workspace-crumbs strong {
-  color: #273a57;
-  font-weight: 680;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.content-frame {
-  display: flex;
-  align-items: stretch;
-  flex: 1;
+  height: 100%;
+  gap: 29px;
   min-width: 0;
 }
-.module-navigation {
-  width: 224px;
-  flex: 0 0 224px;
-  padding: 31px 18px 24px;
-  border-right: 1px solid var(--line);
-  background: var(--surface);
-  min-height: calc(100vh - 74px);
-  display: flex;
-  flex-direction: column;
-}
-.module-navigation-heading {
-  padding: 0 10px 17px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 10px;
-}
-.module-navigation-heading p {
-  margin: 0 0 6px;
-  color: #677a95;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 1.1px;
-}
-.module-navigation-heading h2 {
-  font-size: 18px;
-  color: #223653;
-}
-.module-navigation nav {
-  display: grid;
-  gap: 4px;
-}
-.module-navigation nav a {
+.top-tabs a {
   display: flex;
   align-items: center;
-  gap: 11px;
-  min-height: 43px;
-  padding: 10px;
-  border-radius: 9px;
-  color: #53647c;
   font-size: 13px;
   font-weight: 620;
+  color: #52647e;
   text-decoration: none;
+  border-bottom: 2px solid transparent;
+  padding-top: 3px;
+  white-space: nowrap;
 }
-.module-navigation nav a:hover {
-  color: #284f9f;
-  background: #f2f5fb;
-}
-.module-navigation nav a.active {
-  color: #244fae;
-  background: var(--blue-soft);
-  box-shadow: inset 3px 0 0 var(--blue);
-}
-.module-navigation-note {
-  margin: auto 10px 0;
-  padding-top: 22px;
-  border-top: 1px solid var(--line);
-  color: #708096;
-  font-size: 11px;
-  line-height: 1.65;
+.top-tabs a.active {
+  border-bottom-color: var(--blue);
+  color: var(--blue);
 }
 .account-control {
   position: relative;
@@ -451,9 +392,6 @@ button:disabled {
   width: 100%;
   max-width: 1440px;
   margin: auto;
-}
-.with-module-navigation .main-content {
-  max-width: 1216px;
 }
 .page-heading {
   display: flex;
@@ -1195,11 +1133,11 @@ button:disabled {
   .topbar {
     padding: 0 24px;
   }
-  .module-navigation {
-    width: 196px;
-    flex-basis: 196px;
-    padding-left: 12px;
-    padding-right: 12px;
+  .top-tabs {
+    gap: 18px;
+  }
+  .top-tabs a {
+    font-size: 12px;
   }
   .account-name {
     display: none;
@@ -1253,8 +1191,10 @@ button:disabled {
     height: 76px;
     gap: 18px;
   }
-  .workspace-crumbs {
+  .top-tabs {
     flex: 1;
+    justify-content: center;
+    gap: 24px;
   }
   .main-content {
     padding: 25px;
@@ -1273,9 +1213,11 @@ button:disabled {
     font-size: 25px;
   }
   .topbar {
-    height: 68px;
-    padding: 0 16px;
-    gap: 12px;
+    height: 110px;
+    padding: 12px 20px 0;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 8px 15px;
     position: relative;
   }
   .account-control {
@@ -1289,41 +1231,16 @@ button:disabled {
   .account-name small {
     font-size: 10px;
   }
-  .workspace-crumbs > span:first-child,
-  .workspace-crumbs > span:nth-child(2) {
-    display: none;
-  }
-  .content-frame {
-    flex-direction: column;
-  }
-  .module-navigation {
+  .top-tabs {
+    order: 3;
     width: 100%;
-    min-height: 0;
-    flex: none;
-    padding: 0;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
+    flex-basis: 100%;
+    height: 45px;
+    justify-content: space-between;
+    gap: 16px;
   }
-  .module-navigation-heading,
-  .module-navigation-note {
-    display: none;
-  }
-  .module-navigation nav {
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    padding: 8px 14px;
-    scrollbar-width: thin;
-  }
-  .module-navigation nav a {
-    min-height: 40px;
-    flex: 0 0 auto;
-    padding: 9px 11px;
+  .top-tabs a {
     font-size: 11px;
-    white-space: nowrap;
-  }
-  .module-navigation nav a.active {
-    box-shadow: inset 0 -2px 0 var(--blue);
   }
   .main-content {
     padding: 26px 16px;
@@ -1546,9 +1463,3 @@ button:disabled {
 .demo-entry h2 { margin: 6px 0 8px; font-size: 19px; }
 .demo-entry p { margin-bottom: 16px; color: #44546a; font-size: 13px; }
 .demo-kicker { color: #2856be; font-size: 11px; font-weight: 800; letter-spacing: .1em; }
-.demo-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 9px clamp(18px, 3vw, 38px); border-bottom: 1px solid #bfd0ee; background: #e8effb; color: #26466f; font-size: 12px; }
-.demo-banner strong { letter-spacing: .08em; }
-@media (max-width: 650px) {
-  .demo-banner { align-items: flex-start; padding: 10px 14px; }
-  .demo-banner span { max-width: 240px; }
-}

@@ -129,10 +129,11 @@ describe("authentication and navigation", () => {
     state.signedIn = false;
     const ui = mount("/templates");
     await ui.click(await screen.findByRole("button", { name: "Open fictional demo" }));
-    expect(await screen.findByText(/No API, database, or email activity/)).toBeVisible();
     expect(await screen.findByLabelText("Email subject")).toHaveValue(
       "Interview invitation for [JobTitle]",
     );
+    expect(screen.queryByRole("button", { name: "Reset demo" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/No API, database, or email activity/)).not.toBeInTheDocument();
     expect(fetcher.mock.calls.some(([url]) => url.startsWith("/api/hr/"))).toBe(false);
     await ui.click(screen.getByRole("button", { name: /Riley Morgan HR Manager/ }));
     await ui.click(screen.getByRole("button", { name: "Logout" }));
@@ -214,18 +215,6 @@ describe("authentication and navigation", () => {
       expect(within(navigation).getByRole("link", { name })).toBeVisible();
     }
     expect(within(navigation).getByRole("link", { name: "Notifications" })).toBeVisible();
-    const breadcrumb = screen.getByRole("navigation", { name: "Breadcrumb" });
-    expect(breadcrumb).toHaveTextContent("Workspace/Notification Center");
-    const communication = screen.getByRole("navigation", {
-      name: "Communication pages",
-    });
-    for (const name of [
-      "Notification Center",
-      "Email Templates",
-      "Notification Log",
-    ]) {
-      expect(within(communication).getByRole("link", { name })).toBeVisible();
-    }
     await ui.click(account);
     expect(screen.getByRole("link", { name: "My Profile" })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Edit Profile" })).not.toBeInTheDocument();

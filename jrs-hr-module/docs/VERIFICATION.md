@@ -267,11 +267,12 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 - `rg -n '[\p{Han}]'` found no Chinese characters in the two Jest test files, Jest configuration, report generator, or regenerated `docs/UNIT_TEST_REPORT.md`.
 - No application behavior changed. The existing Vitest, MySQL, and build results above were not rerun for this report-language correction.
 
-## 2026-09-16 Tellent-informed structure regression
+## 2026-09-16 rollback and demo-banner removal
 
-- `npm.cmd test`: server 10 files/161 tests and client 3 files/46 tests passed.
-- `npm.cmd run test:jest`: 2 suites/46 tests passed; the English report was regenerated.
-- `npm.cmd run test:mysql`: dedicated test database 12/12 passed.
-- `npm.cmd run build`: Vite built 50 modules successfully; `npm.cmd run docs:check`: 22 operations and 316 JSON examples passed.
-- Browser review used fictional local demo data. Desktop review covered Notification Center and Email Templates with the global sidebar, breadcrumb, and Communication module panel. A 390px review confirmed the horizontal module strip and unchanged date-filter alignment.
-- The external Tellent session was read-only. No Tellent data or credentials were written into project files, and no external actions were performed.
+- `npm.cmd test`: server Vitest 161/161 and client Vitest 46/46 passed.
+- `npm.cmd run test:jest`: 2 suites and 46/46 tests passed; the English-only report was regenerated.
+- `npm.cmd run test:mysql`: 12/12 tests passed against the dedicated test database; no schema migration was run.
+- `npm.cmd run build`: Vite production build passed with 50 modules.
+- `npm.cmd run docs:check`: 22 operations and 316 JSON examples passed contract validation.
+- Live `http://localhost:5173/notifications` browser verification confirmed that the previous top Communication tabs are restored and the in-workspace demo status banner and `Reset demo` button are absent.
+- The change does not alter routes, fictional demo isolation, authorization, API contracts, database behavior, or email safeguards.
