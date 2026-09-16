@@ -4576,7 +4576,7 @@
       "name": "Notifications",
       "item": [
         {
-          "name": "List own internal notifications and total unread count",
+          "name": "List own internal notifications and total counts",
           "request": {
             "method": "GET",
             "header": [],
@@ -4608,6 +4608,12 @@
                   "value": "all",
                   "disabled": true,
                   "description": "read"
+                },
+                {
+                  "key": "search",
+                  "value": "Casey",
+                  "disabled": true,
+                  "description": "search"
                 },
                 {
                   "key": "type",
@@ -4667,6 +4673,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -4697,7 +4709,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"items\": [\n    {\n      \"notificationId\": 1,\n      \"recipientUserId\": 1,\n      \"applicationId\": 1,\n      \"notificationType\": \"NEW_APPLICATION\",\n      \"title\": \"New application received\",\n      \"message\": \"Casey Taylor applied for Software Developer (Demo).\",\n      \"sourceModule\": \"Applications (Demo)\",\n      \"isRead\": false,\n      \"readAt\": null,\n      \"createdAt\": \"2026-09-09T02:30:00.000Z\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"pageSize\": 10,\n  \"unread\": 1\n}",
+              "body": "{\n  \"items\": [\n    {\n      \"notificationId\": 1,\n      \"recipientUserId\": 1,\n      \"applicationId\": 1,\n      \"notificationType\": \"NEW_APPLICATION\",\n      \"title\": \"New application received\",\n      \"message\": \"Casey Taylor applied for Software Developer (Demo).\",\n      \"sourceModule\": \"Applications (Demo)\",\n      \"isRead\": false,\n      \"readAt\": null,\n      \"createdAt\": \"2026-09-09T02:30:00.000Z\"\n    }\n  ],\n  \"total\": 1,\n  \"page\": 1,\n  \"pageSize\": 10,\n  \"unread\": 1,\n  \"all\": 1\n}",
               "_postman_previewlanguage": "json"
             },
             {
@@ -4735,6 +4747,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -4765,7 +4783,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"items\": [],\n  \"total\": 0,\n  \"page\": 1,\n  \"pageSize\": 10,\n  \"unread\": 0\n}",
+              "body": "{\n  \"items\": [],\n  \"total\": 0,\n  \"page\": 1,\n  \"pageSize\": 10,\n  \"unread\": 0,\n  \"all\": 0\n}",
               "_postman_previewlanguage": "json"
             },
             {
@@ -4801,6 +4819,12 @@
                       "value": "all",
                       "disabled": true,
                       "description": "read"
+                    },
+                    {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
                     },
                     {
                       "key": "type",
@@ -4871,6 +4895,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -4937,6 +4967,12 @@
                       "value": "all",
                       "disabled": true,
                       "description": "read"
+                    },
+                    {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
                     },
                     {
                       "key": "type",
@@ -5007,6 +5043,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -5073,6 +5115,12 @@
                       "value": "all",
                       "disabled": true,
                       "description": "read"
+                    },
+                    {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
                     },
                     {
                       "key": "type",
@@ -5143,6 +5191,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -5209,6 +5263,12 @@
                       "value": "all",
                       "disabled": true,
                       "description": "read"
+                    },
+                    {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
                     },
                     {
                       "key": "type",
@@ -5279,6 +5339,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -5345,6 +5411,12 @@
                       "value": "all",
                       "disabled": true,
                       "description": "read"
+                    },
+                    {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
                     },
                     {
                       "key": "type",
@@ -5415,6 +5487,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -5481,6 +5559,12 @@
                       "value": "all",
                       "disabled": true,
                       "description": "read"
+                    },
+                    {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
                     },
                     {
                       "key": "type",
@@ -5551,6 +5635,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -5617,6 +5707,12 @@
                       "value": "all",
                       "disabled": true,
                       "description": "read"
+                    },
+                    {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
                     },
                     {
                       "key": "type",
@@ -5687,6 +5783,12 @@
                       "description": "read"
                     },
                     {
+                      "key": "search",
+                      "value": "Casey",
+                      "disabled": true,
+                      "description": "search"
+                    },
+                    {
                       "key": "type",
                       "value": "NEW_APPLICATION",
                       "disabled": true,
@@ -5734,7 +5836,7 @@
           ]
         },
         {
-          "name": "Mark all own unread notifications as read",
+          "name": "Mark all own unread notifications as read and return the changed IDs for undo",
           "request": {
             "method": "PATCH",
             "header": [
@@ -5799,7 +5901,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"updated\": 1\n}",
+              "body": "{\n  \"updated\": 1,\n  \"notificationIds\": [\n    1\n  ]\n}",
               "_postman_previewlanguage": "json"
             },
             {
@@ -6349,6 +6451,856 @@
                   ]
                 },
                 "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me."
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Something went wrong. Please try again.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Expected HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Restore only the owned notifications changed by a previous read-all action",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-csrf-token",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hr",
+                "notifications",
+                "restore-unread"
+              ]
+            },
+            "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 — restored (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"updated\": 1\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "400 — malformedJson (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Malformed JSON body.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "401 — teamSignIn (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Continue through the team sign-in page.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "403 — csrf (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"CSRF token missing or expired. Refresh and retry.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "403 — origin (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Untrusted request origin.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "403 — inactiveHr (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"HR profile is no longer authorized.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "403 — changedSession (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"The team session changed. Refresh before retrying.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 — inaccessible (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Record not found or not accessible.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 — missingFile (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"File no longer available.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "409 — reservedName (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"A record with that name already exists (including archived templates).\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "413 — largeBody (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Payload Too Large",
+              "code": 413,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Request body is too large.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "422 — invalidFields (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Please check the entered values.\",\n    \"fields\": [\n      {\n        \"field\": \"body\",\n        \"message\": \"Unsupported template variable\"\n      }\n    ]\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "422 — upload (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Upload one image, no larger than 2 MB.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "500 — failed (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"error\": {\n    \"message\": \"Something went wrong. Please try again.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "503 — upstream (fictional example)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-csrf-token",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Origin",
+                    "value": "{{appOrigin}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/hr/notifications/restore-unread",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "hr",
+                    "notifications",
+                    "restore-unread"
+                  ]
+                },
+                "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notificationIds\": [\n    1\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
               },
               "status": "Service Unavailable",
               "code": 503,

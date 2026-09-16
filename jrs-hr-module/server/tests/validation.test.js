@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { businessToday, filtersSchema, profileSchema, templateSchema, renderTemplate, idSchema } from '../src/validation.js';
+import { businessToday, filtersSchema, notificationRestoreSchema, profileSchema, templateSchema, renderTemplate, idSchema } from '../src/validation.js';
 import { profileDto } from '../src/services.js';
 
 const fields = { templateName:'Interview Invite', subject:'Hello [CandidateName]', body:'Apply to [CompanyName] for [JobTitle]. Regards, [HRName]',usageType:'INTERVIEW_INVITE' };
@@ -21,6 +21,12 @@ describe('validation and safe DTOs', () => {
   });
   it.each(['0','-1','1.5','2147483648','text'])('rejects invalid ID %s',value => expect(idSchema.safeParse(value).success).toBe(false));
   it('sets bounded pagination defaults', () => expect(filtersSchema.parse({})).toMatchObject({page:1,pageSize:10}));
+  it('accepts bounded notification search and strictly validates undo IDs', () => {
+    expect(filtersSchema.parse({search:' Casey '})).toMatchObject({search:'Casey'});
+    expect(notificationRestoreSchema.parse({notificationIds:[1,2]})).toEqual({notificationIds:[1,2]});
+    expect(notificationRestoreSchema.safeParse({notificationIds:[]}).success).toBe(false);
+    expect(notificationRestoreSchema.safeParse({notificationIds:[1],extra:true}).success).toBe(false);
+  });
   it('uses the UTC+08 calendar boundary for today', () => {
     expect(businessToday(new Date('2026-09-10T15:59:59Z'))).toBe('2026-09-10');
     expect(businessToday(new Date('2026-09-10T16:00:00Z'))).toBe('2026-09-11');

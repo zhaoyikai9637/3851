@@ -2496,7 +2496,7 @@
         "tags": [
           "Notifications"
         ],
-        "summary": "List own internal notifications and total unread count",
+        "summary": "List own internal notifications and total counts",
         "security": [],
         "x-team-identity-required": true,
         "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
@@ -2529,7 +2529,8 @@
                       "total": 1,
                       "page": 1,
                       "pageSize": 10,
-                      "unread": 1
+                      "unread": 1,
+                      "all": 1
                     }
                   },
                   "empty": {
@@ -2539,7 +2540,8 @@
                       "total": 0,
                       "page": 1,
                       "pageSize": 10,
-                      "unread": 0
+                      "unread": 0,
+                      "all": 0
                     }
                   }
                 }
@@ -2813,6 +2815,16 @@
             "example": "all"
           },
           {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 150
+            },
+            "example": "Casey"
+          },
+          {
             "name": "type",
             "in": "query",
             "required": false,
@@ -2856,7 +2868,7 @@
         "tags": [
           "Notifications"
         ],
-        "summary": "Mark all own unread notifications as read",
+        "summary": "Mark all own unread notifications as read and return the changed IDs for undo",
         "security": [
           {
             "sessionCookie": [],
@@ -2874,7 +2886,16 @@
                   "type": "object",
                   "properties": {
                     "updated": {
-                      "type": "integer"
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "notificationIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2147483647
+                      }
                     }
                   },
                   "required": [
@@ -2883,7 +2904,282 @@
                 },
                 "examples": {
                   "updated": {
-                    "summary": "Number of previously unread notifications updated",
+                    "summary": "Previously unread notifications updated and available for undo",
+                    "value": {
+                      "updated": 1,
+                      "notificationIds": [
+                        1
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "malformedJson": {
+                    "summary": "Example malformed request",
+                    "value": {
+                      "error": {
+                        "message": "Malformed JSON body."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Verified team sign-in required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "teamSignIn": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "Continue through the team sign-in page."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF, origin or HR authorization rejected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "csrf": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "CSRF token missing or expired. Refresh and retry."
+                      }
+                    }
+                  },
+                  "origin": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "Untrusted request origin."
+                      }
+                    }
+                  },
+                  "inactiveHr": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "HR profile is no longer authorized."
+                      }
+                    }
+                  },
+                  "changedSession": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "The team session changed. Refresh before retrying."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Missing or inaccessible record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "inaccessible": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "Record not found or not accessible."
+                      }
+                    }
+                  },
+                  "missingFile": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "File no longer available."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Unique name conflict, including archived templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "reservedName": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "A record with that name already exists (including archived templates)."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON body exceeds 100 KB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "largeBody": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "Request body is too large."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid fields or upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "invalidFields": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "Please check the entered values.",
+                        "fields": [
+                          {
+                            "field": "body",
+                            "message": "Unsupported template variable"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "upload": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "Upload one image, no larger than 2 MB."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "failed": {
+                    "summary": "Fictional example; IDs are illustrative",
+                    "value": {
+                      "error": {
+                        "message": "Something went wrong. Please try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Team identity service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "upstream": {
+                    "summary": "Upstream adapter unavailable; no identity fallback",
+                    "value": {
+                      "error": {
+                        "message": "Something went wrong. Please try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/hr/notifications/restore-unread": {
+      "patch": {
+        "operationId": "restoreUnread",
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Restore only the owned notifications changed by a previous read-all action",
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "x-team-identity-required": true,
+        "description": "Requires a verified upstream HR identity on every request. The team authentication transport is pending alignment; an empty read security array does not make this endpoint public. See docs/TEAM_AUTH.md. Module writes also require the cookie and CSRF token obtained from GET /api/auth/me.",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "updated"
+                  ]
+                },
+                "examples": {
+                  "restored": {
+                    "summary": "Owned notifications restored to unread",
                     "value": {
                       "updated": 1
                     }
@@ -3113,6 +3409,42 @@
                         "message": "Something went wrong. Please try again."
                       }
                     }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notificationIds": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 5000,
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2147483647
+                    }
+                  }
+                },
+                "required": [
+                  "notificationIds"
+                ],
+                "additionalProperties": false
+              },
+              "examples": {
+                "changedNotifications": {
+                  "summary": "Fictional example; IDs are illustrative",
+                  "value": {
+                    "notificationIds": [
+                      1
+                    ]
                   }
                 }
               }
@@ -6388,6 +6720,11 @@
             "type": "integer",
             "minimum": 0,
             "description": "All unread notifications for current HR, independent of list filters."
+          },
+          "all": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "All notifications for current HR, independent of list filters."
           }
         },
         "required": [
@@ -6395,7 +6732,8 @@
           "total",
           "page",
           "pageSize",
-          "unread"
+          "unread",
+          "all"
         ]
       },
       "Log": {

@@ -29,6 +29,8 @@ const editable = { fullName:text(100,{minLength:1}),phone:text(20,{pattern:'^[+0
 const templateInput = input({ templateName:text(150,{minLength:1}),subject:text(255,{minLength:1,description:'Single line. Supports [CandidateName], [JobTitle], [CompanyName], [HRName].'}),body:text(20000,{minLength:1,description:'Plain text, never HTML. Supports the same four square-bracket variables.'}),usageType:{type:'string',enum:usageTypes} },['templateName','subject','body','usageType']);
 const template = object({ ...templateInput.properties,templateId:id,isActive:{type:'boolean'},createdBy:id,updatedBy:{...id,nullable:true},createdAt:time,updatedAt:time });
 const notification = object({notificationId:id,recipientUserId:id,applicationId:{...id,nullable:true},notificationType:{type:'string',enum:notificationTypes},title:text(180),message:text(),sourceModule:text(100),isRead:{type:'boolean'},readAt:time,createdAt:time});
+const notificationIds = {type:'array',minItems:1,maxItems:5000,items:id};
+const readUpdate = object({updated:{type:'integer',minimum:0},notificationIds:{type:'array',items:id}},['updated']);
 const log = object({logId:id,applicationId:id,templateId:id,senderUserId:id,triggerEvent:text(100),sourceModule:text(100),recipientEmail:text(150,{format:'email'}),candidateName:text(100),positionTitle:text(150),templateName:text(150),emailSubject:text(255),deliveryStatus:{type:'string',enum:['SENT'],description:'Accepted by the mail provider for submission, not verified delivery to an inbox.'},sentAt:{type:'string',format:'date-time'},createdAt:time,isDemo:{type:'boolean',description:'True means a simulated historical record, never evidence of an actual email.'}});
 const paged = item => object({items:{type:'array',items:ref(item)},total:{type:'integer',minimum:0},page:{type:'integer',minimum:1},pageSize:{type:'integer',minimum:1,maximum:50}});
 const op = (operationId, tag, summary, schema, options = {}) => ({ operationId,tags:[tag],summary,security:options.write ? writeAuth : auth,
@@ -49,8 +51,9 @@ const paths = {
     get:op('photo','Profile','Read own profile image',null,{responses:{200:{description:'JPEG image',content:{'image/jpeg':{schema:{type:'string',format:'binary'}}}},...errorResponses}}),
     post:op('uploadPhoto','Profile','Upload one JPEG or PNG (2 MB, 16 megapixels maximum)',ref('Profile'),{write:true,requestBody:{required:true,content:{'multipart/form-data':{schema:input({photo:{type:'string',format:'binary'}},['photo'])}}}})
   },
-  '/api/hr/notifications': {get:op('notifications','Notifications','List own internal notifications and total unread count',ref('Notifications'),{parameters:[...pagination,query('read',{type:'string',enum:['all','unread'],default:'all'}),query('type',{type:'string',enum:notificationTypes}),...dates]})},
-  '/api/hr/notifications/read-all': {patch:op('readAll','Notifications','Mark all own unread notifications as read',object({updated:{type:'integer'}}),{write:true})},
+  '/api/hr/notifications': {get:op('notifications','Notifications','List own internal notifications and total counts',ref('Notifications'),{parameters:[...pagination,query('read',{type:'string',enum:['all','unread'],default:'all'}),query('search',{type:'string',maxLength:150}),query('type',{type:'string',enum:notificationTypes}),...dates]})},
+  '/api/hr/notifications/read-all': {patch:op('readAll','Notifications','Mark all own unread notifications as read and return the changed IDs for undo',readUpdate,{write:true})},
+  '/api/hr/notifications/restore-unread': {patch:op('restoreUnread','Notifications','Restore only the owned notifications changed by a previous read-all action',object({updated:{type:'integer',minimum:0}}),{write:true,requestBody:body(input({notificationIds},['notificationIds']))})},
   '/api/hr/notifications/{id}/read': {patch:op('readOne','Notifications','Mark an owned notification as read (idempotent)',null,{write:true,code:204,parameters:[idParam]})},
   '/api/hr/templates': {
     get:op('templates','Templates','List company-shared active templates',object({items:{type:'array',items:ref('Template')}})),
@@ -75,7 +78,7 @@ export const openapi = {
   components:{ securitySchemes:{sessionCookie:{type:'apiKey',in:'cookie',name:'jrs.hr.sid',description:'Module CSRF session only. A separately verified upstream identity is also mandatory; its cookie or token transport remains to be agreed.'},csrfToken:{type:'apiKey',in:'header',name:'x-csrf-token',description:'64 lowercase hex characters bound to the current session.'}},
     schemas:{ Error:object({error:object({message:text(),fields:{type:'array',items:object({field:text(),message:text()})}},['message'])},['error']),Profile:profile,
       Auth:object({user:ref('Profile'),csrfToken:text(64,{pattern:'^[a-f0-9]{64}$'}),mode:{type:'string',enum:['standalone','team']}}),TemplateInput:templateInput,Template:template,Notification:notification,
-      Notifications:{...paged('Notification'),required:[...paged('Notification').required,'unread'],properties:{...paged('Notification').properties,unread:{type:'integer',minimum:0,description:'All unread notifications for current HR, independent of list filters.'}}},
+      Notifications:{...paged('Notification'),required:[...paged('Notification').required,'unread','all'],properties:{...paged('Notification').properties,unread:{type:'integer',minimum:0,description:'All unread notifications for current HR, independent of list filters.'},all:{type:'integer',minimum:0,description:'All notifications for current HR, independent of list filters.'}}},
       Log:log,Logs:paged('Log'),LogDetail:object({...log.properties,emailBody:text(),attachments:{type:'array',items:object({attachmentId:id,fileName:text(255),fileType:text(80)})}})
     }
   }

@@ -53,10 +53,11 @@ export const successExamples = {
   updateProfile: { saved: sample(exampleProfile) },
   uploadPhoto: { saved: sample({ ...exampleProfile, photoUrl: '/api/hr/profile/photo' }) },
   notifications: {
-    unread: sample({ ...page(exampleNotification), unread: 1 }),
-    empty: sample({ items: [], total: 0, page: 1, pageSize: 10, unread: 0 }, 'No notifications match the filters'),
+    unread: sample({ ...page(exampleNotification), unread: 1, all: 1 }),
+    empty: sample({ items: [], total: 0, page: 1, pageSize: 10, unread: 0, all: 0 }, 'No notifications match the filters'),
   },
-  readAll: { updated: sample({ updated: 1 }, 'Number of previously unread notifications updated') },
+  readAll: { updated: sample({ updated: 1, notificationIds: [1] }, 'Previously unread notifications updated and available for undo') },
+  restoreUnread: { restored: sample({ updated: 1 }, 'Owned notifications restored to unread') },
   templates: { available: sample({ items: [exampleTemplate] }), empty: sample({ items: [] }, 'No active templates') },
   createTemplate: { created: sample(exampleTemplate) },
   updateTemplate: { saved: sample({ ...exampleTemplate, updatedBy: 1 }) },
@@ -66,6 +67,7 @@ export const successExamples = {
 };
 export const requestExamples = {
   updateProfile: { allowedFields: sample({ fullName: 'Riley Morgan', phone: '', officeLocation: 'Demo Office' }) },
+  restoreUnread: { changedNotifications: sample({ notificationIds: [1] }) },
   createTemplate: { acknowledgement: sample(exampleTemplateInput) },
   updateTemplate: { futureContent: sample({ ...exampleTemplateInput, subject: 'Application update for [CandidateName]' }) },
 };

@@ -384,3 +384,10 @@ token；前端应保留 cookie 并更新 token。计划由 Vite 代理 /api 到�
 - Reverted the Tellent-informed three-layer navigation change at the user's request and restored the previous Figma-derived sidebar with the top Communication tabs.
 - Removed the persistent local-demo status banner and the visible `Reset demo` action shown inside the workspace. Fictional demo access, data isolation, logout behavior, routes, API contracts, database behavior, and email safeguards remain unchanged.
 - The rollback was implemented as a new forward commit so the repository history and earlier teammate commits remain intact.
+
+## 19. 2026-09-16 Notification Center workflow redesign
+
+- Reworked the Notification Center into a compact activity inbox while preserving the JRS sidebar, top navigation, routes, brand tokens, and the other HR pages.
+- Added real All/Unread totals, automatic search/type/date filtering, removable filter chips, Asia/Singapore Today/Yesterday/Earlier groups, semantic event actions, simplified unread styling, row skeletons, distinct empty states, and conditional pagination.
+- Bulk read now returns the exact changed notification IDs. A protected restore endpoint powers the eight-second Undo action without weakening HR ownership, CSRF, origin, or team-identity checks.
+- The backend still produces only NEW_APPLICATION and STATUS_UPDATED events. No teammate-owned interview, offer, candidate, or messaging workflow was invented. See \`docs/NOTIFICATION_CENTER_REDESIGN.md\`.

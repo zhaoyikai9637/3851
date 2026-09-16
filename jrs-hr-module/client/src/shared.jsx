@@ -82,11 +82,12 @@ export function PageHeading({
   title,
   description,
   action,
+  className = "",
 }) {
   return (
-    <div className="page-heading">
+    <div className={`page-heading ${className}`.trim()}>
       <div>
-        <p className="eyebrow">{eyebrow}</p>
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
         <h1>{title}</h1>
         <p className="subtle mb-0">{description}</p>
       </div>
@@ -240,7 +241,15 @@ function formatUsDate(value) {
   const [year, month, day] = value.split("-");
   return `${month}/${day}/${year}`;
 }
-function CalendarDateField({ label, name, values, setValues, min, max }) {
+function CalendarDateField({
+  label,
+  name,
+  values,
+  setValues,
+  min,
+  max,
+  showHelpWhenEmpty,
+}) {
   const parsedValue = parseUsDate(values[name]) || "";
   const pickerValue = parsedValue && parsedValue <= max ? parsedValue : "";
   const textInputRef = useRef(null);
@@ -260,7 +269,10 @@ function CalendarDateField({ label, name, values, setValues, min, max }) {
       );
   }, []);
   return (
-    <Field label={label} help="Today or earlier">
+    <Field
+      label={label}
+      help={showHelpWhenEmpty || values[name] ? "Today or earlier" : null}
+    >
       {(id) => (
         <div className="date-input-control">
           <input
@@ -317,7 +329,7 @@ function CalendarDateField({ label, name, values, setValues, min, max }) {
     </Field>
   );
 }
-export function DateFields({ values, setValues }) {
+export function DateFields({ values, setValues, showHelpWhenEmpty = true }) {
   const maximumDate = businessToday();
   const parsedFromDate = parseUsDate(values.from) || "";
   const minimumToDate = parsedFromDate <= maximumDate ? parsedFromDate : "";
@@ -329,6 +341,7 @@ export function DateFields({ values, setValues }) {
         values={values}
         setValues={setValues}
         max={maximumDate}
+        showHelpWhenEmpty={showHelpWhenEmpty}
       />
       <CalendarDateField
         label="To date"
@@ -337,6 +350,7 @@ export function DateFields({ values, setValues }) {
         setValues={setValues}
         min={minimumToDate}
         max={maximumDate}
+        showHelpWhenEmpty={showHelpWhenEmpty}
       />
     </>
   );

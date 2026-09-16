@@ -59,12 +59,14 @@ export function createServices(m, { companyName = 'JRS' } = {}) {
       const where = { recipientUserId: userId };
       if (f.read === 'unread') where.isRead = false;
       if (f.type) where.notificationType = f.type;
+      if (f.search) where[Op.or] = ['title','message','sourceModule'].map(key => ({ [key]: { [Op.substring]: f.search } }));
       const dates = dateWhere(f.from, f.to); if (dates) where.createdAt = dates;
-      const [{ rows, count }, unread] = await Promise.all([
+      const [{ rows, count }, unread, all] = await Promise.all([
         m.Notification.findAndCountAll({ where, attributes: { exclude: ['eventKey'] }, order: [['createdAt','DESC'],['notificationId','DESC']], limit: f.pageSize, offset: (f.page-1)*f.pageSize }),
-        m.Notification.count({ where: { recipientUserId: userId, isRead: false } })
+        m.Notification.count({ where: { recipientUserId: userId, isRead: false } }),
+        m.Notification.count({ where: { recipientUserId: userId } })
       ]);
-      return page(rows, count, f, { unread });
+      return page(rows, count, f, { unread, all });
     },
     async markRead(userId, notificationId) {
       const n = await m.Notification.findOne({ where: { notificationId, recipientUserId: userId } });
@@ -72,7 +74,20 @@ export function createServices(m, { companyName = 'JRS' } = {}) {
       if (!n.isRead) await n.update({ isRead: true, readAt: new Date() });
     },
     async markAllRead(userId) {
-      const [count] = await m.Notification.update({ isRead: true, readAt: new Date() }, { where: { recipientUserId: userId, isRead: false } });
+      const rows = await m.Notification.findAll({ where: { recipientUserId: userId, isRead: false }, attributes: ['notificationId'] });
+      const notificationIds = rows.map(row => plain(row).notificationId);
+      if (!notificationIds.length) return { updated: 0, notificationIds: [] };
+      const [count] = await m.Notification.update(
+        { isRead: true, readAt: new Date() },
+        { where: { recipientUserId: userId, notificationId: { [Op.in]: notificationIds }, isRead: false } },
+      );
+      return { updated: count, notificationIds };
+    },
+    async restoreUnread(userId, notificationIds) {
+      const [count] = await m.Notification.update(
+        { isRead: false, readAt: null },
+        { where: { recipientUserId: userId, notificationId: { [Op.in]: notificationIds }, isRead: true } },
+      );
       return { updated: count };
     },
     async templates() { return m.Template.findAll({ where: { isActive: true }, order: [['templateId','ASC']] }); },

@@ -34,11 +34,14 @@ describe('HR service boundaries (mock ORM; not SQL integration)', () => {
     const svc=createServices({Log:{findOne:vi.fn().mockResolvedValue({logId:2,emailBody:'Original final text',isDemo:true,attachments:[{attachmentId:3,fileName:'Offer.pdf',fileType:'application/pdf',fileUrl:'private.pdf'}]})}});
     expect(await svc.log(1,2)).toMatchObject({emailBody:'Original final text',isDemo:true,attachments:[{attachmentId:3,fileName:'Offer.pdf',fileType:'application/pdf'}]});
   });
-  it('scopes notification list and unread count to the current HR', async () => {
+  it('scopes notification list, search and counts to the current HR', async () => {
     const findAndCountAll=vi.fn().mockResolvedValue({rows:[{notificationId:1}],count:1}),count=vi.fn().mockResolvedValue(3);
-    const value=await createServices({Notification:{findAndCountAll,count}}).notifications(9,{...filters,read:'unread',type:'NEW_APPLICATION'});
+    const value=await createServices({Notification:{findAndCountAll,count}}).notifications(9,{...filters,read:'unread',type:'NEW_APPLICATION',search:'Casey'});
     expect(findAndCountAll.mock.calls[0][0].where).toMatchObject({recipientUserId:9,isRead:false,notificationType:'NEW_APPLICATION'});
-    expect(count).toHaveBeenCalledWith({where:{recipientUserId:9,isRead:false}}); expect(value.unread).toBe(3);
+    expect(findAndCountAll.mock.calls[0][0].where[Op.or]).toHaveLength(3);
+    expect(count).toHaveBeenCalledWith({where:{recipientUserId:9,isRead:false}});
+    expect(count).toHaveBeenCalledWith({where:{recipientUserId:9}});
+    expect(value).toMatchObject({unread:3,all:3});
   });
   it('does not mark another HR notification and preserves already-read timestamps', async () => {
     const existing = row({isRead:true,readAt:new Date('2026-01-01')});
@@ -48,9 +51,16 @@ describe('HR service boundaries (mock ORM; not SQL integration)', () => {
     await svc.markRead(1,5); expect(existing.update).not.toHaveBeenCalled();
   });
   it('marks only own unread records when marking all', async () => {
+    const update=vi.fn().mockResolvedValue([2]),findAll=vi.fn().mockResolvedValue([{notificationId:7},{notificationId:8}]);
+    expect(await createServices({Notification:{update,findAll}}).markAllRead(4)).toEqual({updated:2,notificationIds:[7,8]});
+    expect(findAll).toHaveBeenCalledWith({where:{recipientUserId:4,isRead:false},attributes:['notificationId']});
+    expect(update.mock.calls[0][1].where).toMatchObject({recipientUserId:4,isRead:false});
+  });
+  it('restores only selected owned read notifications for read-all undo', async () => {
     const update=vi.fn().mockResolvedValue([2]);
-    expect(await createServices({Notification:{update}}).markAllRead(4)).toEqual({updated:2});
-    expect(update.mock.calls[0][1]).toEqual({where:{recipientUserId:4,isRead:false}});
+    expect(await createServices({Notification:{update}}).restoreUnread(4,[7,8])).toEqual({updated:2});
+    expect(update.mock.calls[0][0]).toEqual({isRead:false,readAt:null});
+    expect(update.mock.calls[0][1].where).toMatchObject({recipientUserId:4,isRead:true});
   });
   it('allows only profile fields even for an internal service caller', async () => {
     const hr=row({userId:1,role:'HR Manager',email:'hr@example.test'});

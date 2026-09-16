@@ -128,18 +128,35 @@ export function createDemoApi() {
       }
       if (path === "/api/hr/notifications" && method === "GET") {
         const unread = state.notifications.filter((item) => !item.isRead).length;
+        const search = (url.searchParams.get("search") || "").toLowerCase();
         let items = state.notifications.filter((item) =>
           (url.searchParams.get("read") !== "unread" || !item.isRead) &&
+          (!search || `${item.title} ${item.message} ${item.sourceModule}`.toLowerCase().includes(search)) &&
           (!url.searchParams.get("type") || item.notificationType === url.searchParams.get("type")) &&
           (!url.searchParams.get("from") || dateOnly(item.createdAt) >= url.searchParams.get("from")) &&
           (!url.searchParams.get("to") || dateOnly(item.createdAt) <= url.searchParams.get("to"))
         );
-        return { ...listPage(items, url.searchParams, 8), unread };
+        return { ...listPage(items, url.searchParams, 20), unread, all: state.notifications.length };
       }
       if (path === "/api/hr/notifications/read-all" && method === "PATCH") {
+        const notificationIds = state.notifications
+          .filter((item) => !item.isRead)
+          .map((item) => item.notificationId);
         state.notifications.forEach((item) => { item.isRead = true; });
         save();
-        return { updated: state.notifications.length };
+        return { updated: notificationIds.length, notificationIds };
+      }
+      if (path === "/api/hr/notifications/restore-unread" && method === "PATCH") {
+        const ids = new Set(parseBody(options.body).notificationIds);
+        let updated = 0;
+        state.notifications.forEach((item) => {
+          if (ids.has(item.notificationId) && item.isRead) {
+            item.isRead = false;
+            updated += 1;
+          }
+        });
+        save();
+        return { updated };
       }
       const notificationMatch = path.match(/^\/api\/hr\/notifications\/(\d+)\/read$/);
       if (notificationMatch && method === "PATCH") {

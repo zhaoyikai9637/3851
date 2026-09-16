@@ -55,10 +55,20 @@ beforeEach(() => {
       return json(state.user);
     }
     if (path === "/api/hr/notifications/read-all") {
+      const notificationIds = state.notifications
+        .filter((notification) => !notification.isRead)
+        .map((notification) => notification.notificationId);
       state.notifications.forEach((n) => {
         n.isRead = true;
       });
-      return json({ updated: 1 });
+      return json({ updated: notificationIds.length, notificationIds });
+    }
+    if (path === "/api/hr/notifications/restore-unread") {
+      const ids = new Set(JSON.parse(options.body).notificationIds);
+      state.notifications.forEach((notification) => {
+        if (ids.has(notification.notificationId)) notification.isRead = false;
+      });
+      return json({ updated: ids.size });
     }
     if (path.match(/\/notifications\/\d+\/read$/)) {
       state.notifications.find(
@@ -68,15 +78,25 @@ beforeEach(() => {
     }
     if (path === "/api/hr/notifications") {
       const f = new URL(url, "http://localhost").searchParams;
+      const search = (f.get("search") || "").toLowerCase();
       const items = state.notifications.filter(
-        (n) => f.get("read") !== "unread" || !n.isRead,
+        (n) =>
+          (f.get("read") !== "unread" || !n.isRead) &&
+          (!search ||
+            `${n.title} ${n.message} ${n.sourceModule}`
+              .toLowerCase()
+              .includes(search)) &&
+          (!f.get("type") || n.notificationType === f.get("type")) &&
+          (!f.get("from") || n.createdAt.slice(0, 10) >= f.get("from")) &&
+          (!f.get("to") || n.createdAt.slice(0, 10) <= f.get("to")),
       );
       return json({
         items,
         total: items.length,
         page: Number(f.get("page")),
-        pageSize: 8,
+        pageSize: Number(f.get("pageSize")),
         unread: state.notifications.filter((n) => !n.isRead).length,
+        all: state.notifications.length,
       });
     }
     if (path === "/api/hr/applications/10")
@@ -283,9 +303,13 @@ describe("notification workflow", () => {
       });
     mount();
     await screen.findByRole("heading", { name: "Notification Center" });
-    expect(screen.getByText("Loading…")).toBeVisible();
-    resolve(json({ items: [], total: 0, page: 1, pageSize: 8, unread: 0 }));
-    expect(await screen.findByText("No notifications found")).toBeVisible();
+    expect(
+      screen.getByRole("status", { name: "Loading notifications" }),
+    ).toBeVisible();
+    resolve(
+      json({ items: [], total: 0, page: 1, pageSize: 20, unread: 0, all: 0 }),
+    );
+    expect(await screen.findByText("No notifications yet")).toBeVisible();
   });
   it("shows a fetch error and reloads on retry", async () => {
     overrides["GET /api/hr/notifications"] = () =>
@@ -330,57 +354,70 @@ describe("notification workflow", () => {
     );
     expect(screen.getByRole("button", { name: /Unread 1/ })).toBeVisible();
   });
-  it("marks all read and disables the action at zero unread", async () => {
+  it("marks all read, hides the action at zero unread and restores state with Undo", async () => {
     const ui = mount();
     await screen.findByText("New application received");
     await ui.click(screen.getByRole("button", { name: /Mark all as read/ }));
-    await screen.findByText("All notifications marked as read.");
+    expect(await screen.findByText("All notifications marked as read.")).toBeVisible();
     await waitFor(() =>
       expect(
-        screen.getByRole("button", { name: /Mark all as read/ }),
-      ).toBeDisabled(),
+        screen.queryByRole("button", { name: /Mark all as read/ }),
+      ).not.toBeInTheDocument(),
     );
     expect(writes("/api/hr/notifications/read-all")).toHaveLength(1);
+    await ui.click(screen.getByRole("button", { name: "Undo" }));
+    expect(await screen.findByText("Unread notifications restored.")).toBeVisible();
+    expect(writes("/api/hr/notifications/restore-unread")).toHaveLength(1);
+    expect(
+      await screen.findByRole("button", { name: /Mark all as read/ }),
+    ).toBeVisible();
   });
-  it("applies date and type filters and clears them", async () => {
+  it("automatically applies search, date and type filters, exposes chips and clears them", async () => {
     const ui = mount();
     await screen.findByText("New application received");
+    await ui.type(screen.getByLabelText("Search notifications"), "Casey");
     await ui.selectOptions(
       screen.getByLabelText("Notification type"),
       "STATUS_UPDATED",
     );
+    await ui.click(screen.getByRole("button", { name: "Date" }));
     fireEvent.change(screen.getByLabelText("From date"), {
       target: { value: "09/01/2026" },
     });
     fireEvent.change(screen.getByLabelText("To date"), {
       target: { value: "09/09/2026" },
     });
-    await ui.click(screen.getByRole("button", { name: "Apply filters" }));
     await waitFor(() =>
       expect(
         fetcher.mock.calls.some(([url]) =>
-          url.includes("type=STATUS_UPDATED&from=2026-09-01&to=2026-09-09"),
+          url.includes("search=Casey&type=STATUS_UPDATED&from=2026-09-01&to=2026-09-09"),
         ),
       ).toBe(true),
     );
+    expect(screen.getByRole("button", { name: /Remove Search: Casey filter/ })).toBeVisible();
+    expect(screen.getByRole("button", { name: /Remove Status updated filter/ })).toBeVisible();
     await ui.click(screen.getByRole("button", { name: "Clear" }));
-    expect(screen.getByLabelText("From date")).toHaveValue("");
     expect(screen.getByLabelText("Notification type")).toHaveValue("");
+    expect(screen.getByLabelText("Search notifications")).toHaveValue("");
+    expect(screen.queryByLabelText("From date")).not.toBeInTheDocument();
+    await ui.click(screen.getByRole("button", { name: "Date" }));
+    expect(screen.getByLabelText("From date")).toHaveValue("");
   });
   it("uses an English MM/DD/YYYY date format and rejects invalid dates", async () => {
     const ui = mount();
     await screen.findByText("New application received");
+    await ui.click(screen.getByRole("button", { name: "Date" }));
     expect(screen.getByLabelText("From date")).toHaveAttribute("placeholder", "MM/DD/YYYY");
     expect(screen.getByLabelText("To date")).toHaveAttribute("placeholder", "MM/DD/YYYY");
     fireEvent.change(screen.getByLabelText("From date"), {
       target: { value: "13/40/2026" },
     });
-    await ui.click(screen.getByRole("button", { name: "Apply filters" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("MM/DD/YYYY");
   });
   it("restores calendar selection while keeping the English display format", async () => {
     const ui = mount();
     await screen.findByText("New application received");
+    await ui.click(screen.getByRole("button", { name: "Date" }));
     const fromCalendar = screen.getByLabelText(
       "Choose From date from calendar",
     );
@@ -401,7 +438,6 @@ describe("notification workflow", () => {
     });
     expect(screen.getByLabelText("From date")).toHaveValue("09/01/2026");
     expect(screen.getByLabelText("To date")).toHaveValue("09/09/2026");
-    await ui.click(screen.getByRole("button", { name: "Apply filters" }));
     await waitFor(() =>
       expect(
         fetcher.mock.calls.some(([url]) =>
@@ -413,6 +449,7 @@ describe("notification workflow", () => {
   it("limits the calendar and rejects future manual dates", async () => {
     const ui = mount();
     await screen.findByText("New application received");
+    await ui.click(screen.getByRole("button", { name: "Date" }));
     const fromCalendar = screen.getByLabelText(
       "Choose From date from calendar",
     );
@@ -420,7 +457,6 @@ describe("notification workflow", () => {
     fireEvent.change(screen.getByLabelText("To date"), {
       target: { value: "12/31/9999" },
     });
-    await ui.click(screen.getByRole("button", { name: "Apply filters" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Future dates are not available for activity history.",
     );
@@ -432,13 +468,37 @@ describe("notification workflow", () => {
     const ui = mount();
     await ui.click(
       await screen.findByRole("button", {
-        name: "View application for New application received",
+        name: "Review application: New application received",
       }),
     );
     const dialog = screen.getByRole("dialog");
     expect(await within(dialog).findByText("Casey Taylor")).toBeVisible();
     expect(dialog).toHaveTextContent("Read-only summary");
     expect(within(dialog).getAllByRole("button")).toHaveLength(2);
+  });
+  it("groups notifications by business date, uses semantic actions and hides small-result pagination", async () => {
+    const now = new Date();
+    const today = now.toISOString();
+    const yesterday = new Date(now.getTime() - 86400000).toISOString();
+    state.notifications[0].createdAt = today;
+    state.notifications[1].createdAt = yesterday;
+    mount();
+    expect(await screen.findByRole("heading", { name: "Today" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Yesterday" })).toBeVisible();
+    expect(
+      screen.getByRole("button", {
+        name: "Review application: New application received",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", {
+        name: "View candidate: Candidate status updated",
+      }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("navigation", { name: "Results pages" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Unread", { selector: ".badge-soft" })).not.toBeInTheDocument();
   });
 });
 

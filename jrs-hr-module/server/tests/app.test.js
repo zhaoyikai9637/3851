@@ -14,7 +14,7 @@ describe('Express API with mock services and an isolated MemoryStore', () => {
   const profile={userId:1,employeeId:'DEMO-1',fullName:'Riley',email:'hr@example.test',role:'HR Manager',department:'HR',accountStatus:'ACTIVE',phone:'',officeLocation:''};
   beforeEach(async () => {
     uploadDir=await fs.mkdtemp(path.join(os.tmpdir(),'jrs-api-test-'));
-    services={authorize:vi.fn().mockResolvedValue(profile),profile:vi.fn().mockResolvedValue(profile),updateProfile:vi.fn().mockResolvedValue(profile),updatePhoto:vi.fn().mockResolvedValue({profile,previousPhoto:null}),photoInUse:vi.fn().mockResolvedValue(false),photo:vi.fn().mockResolvedValue(''),notifications:vi.fn().mockResolvedValue({items:[],total:0,page:1,pageSize:10,unread:0}),markRead:vi.fn(),markAllRead:vi.fn().mockResolvedValue({updated:0}),templates:vi.fn().mockResolvedValue([]),createTemplate:vi.fn(),updateTemplate:vi.fn(),deleteTemplate:vi.fn(),logs:vi.fn().mockResolvedValue({items:[],total:0,page:1,pageSize:10}),log:vi.fn(),attachment:vi.fn(),application:vi.fn()};
+    services={authorize:vi.fn().mockResolvedValue(profile),profile:vi.fn().mockResolvedValue(profile),updateProfile:vi.fn().mockResolvedValue(profile),updatePhoto:vi.fn().mockResolvedValue({profile,previousPhoto:null}),photoInUse:vi.fn().mockResolvedValue(false),photo:vi.fn().mockResolvedValue(''),notifications:vi.fn().mockResolvedValue({items:[],total:0,page:1,pageSize:10,unread:0,all:0}),markRead:vi.fn(),markAllRead:vi.fn().mockResolvedValue({updated:0,notificationIds:[]}),restoreUnread:vi.fn().mockResolvedValue({updated:0}),templates:vi.fn().mockResolvedValue([]),createTemplate:vi.fn(),updateTemplate:vi.fn(),deleteTemplate:vi.fn(),logs:vi.fn().mockResolvedValue({items:[],total:0,page:1,pageSize:10}),log:vi.fn(),attachment:vi.fn(),application:vi.fn()};
     store=new session.MemoryStore();
     team=teamIdentityFixture();
     app=createApp({identity:team.adapter,services,sessionStore:store,config:{secret:'test-only-session-secret-never-used-outside-tests',origin:'http://localhost:5173',production:false,mode:'standalone',uploadDir}});
@@ -98,9 +98,15 @@ describe('Express API with mock services and an isolated MemoryStore', () => {
     await request(app).get('/api/hr/profile').set('Cookie',cookie).expect(401);
   });
   it('forwards the authenticated HR ID and bounded filters', async () => {
-    await enter(); await agent.get('/api/hr/notifications?read=unread&page=2').expect(200);
-    expect(services.notifications).toHaveBeenCalledWith(1,expect.objectContaining({read:'unread',page:2,pageSize:10}));
+    await enter(); await agent.get('/api/hr/notifications?read=unread&page=2&search=Casey').expect(200);
+    expect(services.notifications).toHaveBeenCalledWith(1,expect.objectContaining({read:'unread',page:2,pageSize:10,search:'Casey'}));
     await agent.get('/api/hr/notifications?recipientUserId=2').expect(422);
+  });
+  it('validates and restores only explicitly supplied notification IDs', async () => {
+    await enter();
+    await agent.patch('/api/hr/notifications/restore-unread').set('x-csrf-token',csrf).send({notificationIds:[]}).expect(422);
+    await agent.patch('/api/hr/notifications/restore-unread').set('x-csrf-token',csrf).send({notificationIds:[7,8]}).expect(200);
+    expect(services.restoreUnread).toHaveBeenCalledWith(1,[7,8]);
   });
   it('rejects future dates before notification or log services are called', async () => {
     await enter();

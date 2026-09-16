@@ -276,3 +276,14 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 - `npm.cmd run docs:check`: 22 operations and 316 JSON examples passed contract validation.
 - Live `http://localhost:5173/notifications` browser verification confirmed that the previous top Communication tabs are restored and the in-workspace demo status banner and `Reset demo` button are absent.
 - The change does not alter routes, fictional demo isolation, authorization, API contracts, database behavior, or email safeguards.
+
+## 2026-09-16 Notification Center redesign
+
+- \`npm.cmd test\`: server Vitest 10 files and 164/164 tests passed; client Vitest 3 files and 47/47 tests passed.
+- \`npm.cmd run test:jest\`: 2 suites and 46/46 tests passed. Selected-source coverage: statements/lines 92.78%, branches 86.15%, functions 90.9%. The English-only report was regenerated.
+- \`npm.cmd run test:mysql\`: 12/12 tests passed against the dedicated test database. Search/count changes and persistent read behavior used the existing schema; no migration was run.
+- \`npm.cmd run build\`: Vite production build passed with 51 modules.
+- \`npm.cmd run docs:check\`: 23 operations and 332 JSON request/response examples passed contract validation.
+- \`npm.cmd run docs:export\`: OpenAPI, Postman collection, and the blank example environment were regenerated without credentials.
+- Live local-demo browser verification at the default desktop viewport showed all three notifications above the fold, real All 3 / Unread 2 counts, semantic actions, and no pagination. At 390×844, two notifications were visible without horizontal overflow.
+- The live bulk-read flow changed the summary to 0 unread, exposed Undo, and restored the original 2 unread notifications. Automated tests also cover automatic search/type/date filtering, chips, dynamic date groups, semantic actions, hidden small-result pagination, and invalid date handling.

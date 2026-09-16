@@ -8,7 +8,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import { ZodError } from 'zod';
 import swaggerUi from 'swagger-ui-express';
-import { HttpError, profileSchema, templateSchema, notificationFiltersSchema, logFiltersSchema, idSchema } from './validation.js';
+import { HttpError, profileSchema, templateSchema, notificationFiltersSchema, notificationRestoreSchema, logFiltersSchema, idSchema } from './validation.js';
 import { openapi } from './openapi.js';
 import { verifiedHrIdentity, assertIdentityAdapter } from './team-auth.js';
 const saveSession = req => new Promise((resolve,reject) => req.session.save(e => e ? reject(e) : resolve()));
@@ -101,6 +101,7 @@ export function createApp({ services, config, sessionStore, staticDir, identity 
   });
   app.get('/api/hr/notifications',async (req,res) => res.json(await services.notifications(req.hrUserId,notificationFiltersSchema.parse(req.query))));
   app.patch('/api/hr/notifications/read-all',async (req,res) => res.json(await services.markAllRead(req.hrUserId)));
+  app.patch('/api/hr/notifications/restore-unread',async (req,res) => res.json(await services.restoreUnread(req.hrUserId,notificationRestoreSchema.parse(req.body).notificationIds)));
   app.patch('/api/hr/notifications/:id/read',async (req,res) => { await services.markRead(req.hrUserId,idSchema.parse(req.params.id)); res.status(204).end(); });
   app.get('/api/hr/templates',async (req,res) => res.json({ items:await services.templates() }));
   app.post('/api/hr/templates',async (req,res) => res.status(201).json(await services.createTemplate(req.hrUserId,templateSchema.parse(req.body))));
