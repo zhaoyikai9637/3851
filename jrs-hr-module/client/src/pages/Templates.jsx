@@ -95,10 +95,10 @@ export function Templates() {
           <div className="templates-grid">
             <section className="surface template-list-panel">
               <div className="section-heading">
-                <h2>
-                  Templates{" "}
-                  <span className="count-pill">{load.data.items.length}</span>
-                </h2>
+                <h2>Templates</h2>
+                <span className="section-count">
+                  {load.data.items.length} saved
+                </span>
               </div>
               <div className="template-list">
                 {load.data.items.length ? (

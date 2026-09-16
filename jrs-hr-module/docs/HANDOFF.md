@@ -398,3 +398,10 @@ token；前端应保留 cookie 并更新 token。计划由 Vite 代理 /api 到�
 - Replaced the always-visible per-row read control with an accessible overflow menu. Unread rows offer `Mark as read`; read rows offer `Mark as unread`.
 - Removed decorative arrow suffixes from row action labels while preserving each primary recruitment action, bulk `Mark all as read`, unread counters, filtering, and backend authorization behavior.
 - The menu supports outside-click and Escape dismissal, reports its expanded state, and remains visible without horizontal overflow at the 390 px mobile viewport.
+
+## 21. 2026-09-16 Notification, template, and profile fixes
+
+- Opening an unread notification through its primary action now records the item as read before reloading the authoritative list. Closing the application summary returns to a row without the unread marker.
+- The final notification row opens its overflow menu upward so the complete menu stays inside the notification surface on desktop and mobile.
+- Template inventory is now shown as neutral text such as `5 saved`, not as a blue count badge that resembles an unread indicator.
+- Profile and profile-edit routes no longer show the Notification Center, Email Templates, or Notification Log tabs. My Profile provides an explicit `Back` action to Notification Center alongside `Edit profile`.

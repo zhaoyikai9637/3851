@@ -297,3 +297,15 @@ work/browser-check/team-pending-development-1440.png，不计入上表脚本的 
 - `npm.cmd run docs:check`: 23 operations and 332 JSON request/response examples passed contract validation.
 - Live desktop verification confirmed that row action labels have no arrow suffix, per-row read changes are available through the accessible overflow menu, and bulk read changes the unread count to zero without rendering a success panel or Undo action.
 - Live 390×844 verification confirmed that the overflow menu remains within the notification card and no horizontal overflow is introduced.
+
+## 2026-09-16 notification, template, and profile regression
+
+- `npm.cmd test`: server Vitest 10 files and 164/164 tests passed; client Vitest 3 files and 49/49 tests passed.
+- `npm.cmd run test:jest`: 2 suites and 46/46 tests passed. The English-only unit-test report was regenerated.
+- `npm.cmd run test:mysql`: 12/12 tests passed against the dedicated test database; no migration was run.
+- `npm.cmd run build`: Vite production build passed with 51 modules.
+- `npm.cmd run docs:check`: 23 operations and 332 JSON request/response examples passed contract validation.
+- Live desktop verification confirmed that opening the unread application notification changed the summary from 2 unread to 1 unread, and closing the summary returned to a row without the unread marker.
+- Desktop and 390×844 checks confirmed that the final row's overflow menu opens upward and remains fully visible.
+- Live Email Templates verification showed neutral `5 saved` inventory text with no unread-style badge.
+- Live desktop and 390×844 profile checks confirmed that communication tabs are absent and the `Back` and `Edit profile` actions remain available.

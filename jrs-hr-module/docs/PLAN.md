@@ -145,6 +145,7 @@ INTEGRATION_MODE 改成 team。未获授权不向真实候选人发送。
 - [x] Restore the pre-Tellent Figma-derived workspace layout and remove the persistent in-workspace demo banner at the user's request (2026-09-16).
 - [x] Redesign Notification Center as a compact, count-aware activity inbox with automatic filters, time groups, semantic actions, conditional pagination, and bulk-read support (2026-09-16).
 - [x] Move per-notification read/unread changes into accessible overflow menus; remove row-action arrows and bulk-read confirmation panels (2026-09-16).
+- [x] Mark opened notifications as read, prevent last-row menu clipping, neutralize the template inventory count, and separate profile navigation from communication tabs (2026-09-16).
 
 - [x] 当前模块 OpenAPI/Swagger 补齐 cookie/CSRF、请求/响应/错误示例与必填字段；未知团队认证仍属 P6。
 - [x] docs:check 验证结构/316 处 JSON 示例；真实 MySQL HTTP 响应也按契约校验。

@@ -20,9 +20,14 @@ export function Profile() {
         title="My Profile"
         description="Your personal details and HR workspace information."
         action={
-          <Link className="btn btn-primary" to="/profile/edit">
-            Edit profile
-          </Link>
+          <div className="page-heading-actions">
+            <Link className="btn btn-outline-secondary" to="/notifications">
+              Back
+            </Link>
+            <Link className="btn btn-primary" to="/profile/edit">
+              Edit profile
+            </Link>
+          </div>
         }
       />
       {load.busy ? (

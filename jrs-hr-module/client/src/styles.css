@@ -256,6 +256,12 @@ button:disabled {
   padding: 0 34px;
   gap: 20px;
 }
+.profile-topbar {
+  justify-content: flex-end;
+}
+.profile-topbar .mobile-toggle {
+  margin-right: auto;
+}
 .top-tabs {
   display: flex;
   height: 100%;
@@ -457,17 +463,11 @@ button:disabled {
   color: inherit;
   font-variant-numeric: tabular-nums;
 }
-.count-pill {
-  display: inline-block;
+.section-count {
+  color: #6c7c92;
   font-size: 11px;
-  line-height: 1.6;
-  border-radius: 5px;
-  padding: 1px 6px;
-  background: #e9f0ff;
-  color: #2856be;
-  margin-left: 5px;
-  min-width: 22px;
-  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .filter-form {
   display: grid;
@@ -815,6 +815,12 @@ button.notification-card-main:hover {
   border-radius: 9px;
   background: #fff;
   box-shadow: 0 12px 30px #1b335821;
+}
+.notification-group:last-child
+  .notification-card:last-child
+  .notification-more-menu {
+  top: auto;
+  bottom: calc(100% + 5px);
 }
 .notification-more-menu button {
   width: 100%;
@@ -1238,6 +1244,11 @@ button.notification-card-main:hover {
   gap: 24px;
   align-items: start;
 }
+.page-heading-actions {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
 .profile-card {
   text-align: center;
   padding: 38px 22px;
@@ -1440,6 +1451,12 @@ button.notification-card-main:hover {
     align-content: flex-start;
     gap: 8px 15px;
     position: relative;
+  }
+  .topbar.profile-topbar {
+    height: 76px;
+    padding-bottom: 12px;
+    align-content: center;
+    flex-wrap: nowrap;
   }
   .account-control {
     margin-left: auto;

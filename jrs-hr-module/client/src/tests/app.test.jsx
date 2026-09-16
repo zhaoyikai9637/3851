@@ -492,6 +492,19 @@ describe("notification workflow", () => {
     expect(await within(dialog).findByText("Casey Taylor")).toBeVisible();
     expect(dialog).toHaveTextContent("Read-only summary");
     expect(within(dialog).getAllByRole("button")).toHaveLength(2);
+    await ui.click(
+      within(dialog).getByRole("button", { name: "Close", exact: true }),
+    );
+    expect(writes("/api/hr/notifications/1/read")).toHaveLength(1);
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole("button", {
+            name: "Review application: New application received",
+          })
+          .closest("li"),
+      ).not.toHaveClass("unread"),
+    );
   });
   it("groups notifications by business date, uses semantic actions and hides small-result pagination", async () => {
     const now = new Date();
@@ -520,6 +533,12 @@ describe("notification workflow", () => {
 });
 
 describe("email templates", () => {
+  it("presents the template total as inventory metadata, not an unread badge", async () => {
+    mount("/templates");
+    expect(await screen.findByText(`${templates.length} saved`)).toBeVisible();
+    expect(document.querySelector(".template-list-panel .count-pill")).toBeNull();
+  });
+
   it("updates only template fields and supports cancelling local edits", async () => {
     const ui = mount("/templates");
     const subject = await screen.findByLabelText("Email subject");
@@ -686,6 +705,13 @@ describe("logs and HR profile", () => {
     expect(await screen.findByText("DEMO-HR-001")).toBeVisible();
     expect(screen.getByText("+65 1234 5678")).toBeVisible();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "Communication pages" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute(
+      "href",
+      "/notifications",
+    );
   });
   it("submits only the allowed fields and updates the avatar account name", async () => {
     const ui = mount("/profile/edit");

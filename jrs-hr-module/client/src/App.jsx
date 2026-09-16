@@ -102,6 +102,7 @@ function Layout() {
   const menuRef = useRef(null),
     trigger = useRef(null),
     location = useLocation();
+  const isProfilePage = location.pathname.startsWith("/profile");
   useEffect(() => {
     setMenu(false);
     setSidebar(false);
@@ -193,7 +194,7 @@ function Layout() {
         </Modal>
       )}
       <div className="workspace-body">
-        <header className="topbar">
+        <header className={`topbar${isProfilePage ? " profile-topbar" : ""}`}>
           <button
             className="icon-button mobile-toggle"
             aria-label="Open navigation"
@@ -201,13 +202,15 @@ function Layout() {
           >
             ☰
           </button>
-          <nav className="top-tabs" aria-label="Communication pages">
-            {tabs.map(([path, name]) => (
-              <NavLink key={path} to={path}>
-                {name}
-              </NavLink>
-            ))}
-          </nav>
+          {!isProfilePage && (
+            <nav className="top-tabs" aria-label="Communication pages">
+              {tabs.map(([path, name]) => (
+                <NavLink key={path} to={path}>
+                  {name}
+                </NavLink>
+              ))}
+            </nav>
+          )}
           <div className="account-control" ref={menuRef}>
             <button
               ref={trigger}

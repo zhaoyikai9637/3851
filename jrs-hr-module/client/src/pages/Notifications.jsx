@@ -154,7 +154,7 @@ function NotificationRow({ item, group, busy, onOpen, onToggleRead }) {
         <button
           type="button"
           className="notification-card-main"
-          onClick={() => onOpen(item.applicationId)}
+          onClick={() => onOpen(item)}
           aria-label={`${presentation.action}: ${item.title}`}
         >
           {details}
@@ -274,6 +274,11 @@ export function Notifications() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function openNotification(item) {
+    setApplication(item.applicationId);
+    if (!item.isRead) void toggleRead(item);
   }
 
   function clearFilters() {
@@ -430,7 +435,7 @@ export function Notifications() {
                               item={item}
                               group={group.label}
                               busy={busy}
-                              onOpen={setApplication}
+                              onOpen={openNotification}
                               onToggleRead={toggleRead}
                             />
                           ))}
