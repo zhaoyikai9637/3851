@@ -1,0 +1,20 @@
+'use strict';
+// Run an installed mysqldump without exposing the password in command-line arguments.
+const {spawn}=require('node:child_process');
+const fs=require('node:fs');
+const path=require('node:path');
+const {randomBytes}=require('node:crypto');
+const {config}=require('../server/config.cjs');
+const cfg=config(),dir=path.resolve(__dirname,'../backups');fs.mkdirSync(dir,{recursive:true});
+const stamp=new Date().toISOString().replace(/[:.]/g,'-'),target=path.join(dir,`JRS-HR-${stamp}.sql`),tmp=path.join(dir,'.mysql-'+randomBytes(8).toString('hex')+'.cnf');
+const quote=s=>'"'+String(s).replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r')+'"';
+fs.writeFileSync(tmp,'[client]\npassword='+quote(cfg.db.password)+'\n',{mode:0o600});
+const output=fs.createWriteStream(target,{mode:0o600});
+let outputFinished=false,commandSucceeded=false;
+const report=()=>{if(outputFinished&&commandSucceeded)console.log('Backup saved:',target);};
+output.on('finish',()=>{outputFinished=true;report();});
+const child=spawn(process.env.MYSQLDUMP_PATH||'mysqldump',[`--defaults-extra-file=${tmp}`,`--host=${cfg.db.host}`,`--port=${cfg.db.port}`,`--user=${cfg.db.user}`,'--single-transaction','--no-tablespaces','--set-gtid-purged=OFF',cfg.db.database],{shell:false,stdio:['ignore','pipe','pipe']});
+child.stdout.pipe(output);let errors='';child.stderr.on('data',chunk=>errors+=chunk.toString());
+const cleanup=()=>{try{fs.unlinkSync(tmp);}catch{}};
+child.on('error',()=>{cleanup();output.destroy();fs.rmSync(target,{force:true});console.error('mysqldump was not found. Set MYSQLDUMP_PATH to MySQL Server 8.0/bin/mysqldump.exe.');process.exitCode=1;});
+child.on('close',code=>{cleanup();if(code!==0){output.destroy();fs.rmSync(target,{force:true});console.error('Backup failed:',errors||'Check MySQL tools and permissions.');process.exitCode=1;}else{commandSucceeded=true;report();}});
