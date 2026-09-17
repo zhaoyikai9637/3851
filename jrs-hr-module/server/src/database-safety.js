@@ -1,13 +1,16 @@
 export function assertDatabaseWriteAllowed(env = process.env, purpose) {
-  if (env.NODE_ENV === 'production' || (env.INTEGRATION_MODE || 'standalone') !== 'standalone') {
-    throw new Error('Database writes are enabled only for a dedicated standalone development or test database. Team integration is pending.');
-  }
+  if (env.NODE_ENV === 'production') throw new Error('Automatic database writes are disabled in production.');
+  const mode = env.INTEGRATION_MODE || 'standalone';
+  if (!['standalone','team'].includes(mode)) throw new Error('Invalid integration mode.');
   const name = env.DB_NAME || '';
   const match = /^jrs_hr_module_(dev|test)_[a-z0-9_]+$/.exec(name);
   if (!match || env.DB_WRITE_CONFIRMED !== name) {
     throw new Error('Confirm a new dedicated database first; DB_NAME must use jrs_hr_module_dev_* or jrs_hr_module_test_* and DB_WRITE_CONFIRMED must equal that exact name.');
   }
-  if (purpose && match[1] !== purpose) throw new Error(`This command requires a dedicated ${purpose} database.`);
+  if (['dev','test'].includes(purpose) && match[1] !== purpose) throw new Error(`This command requires a dedicated ${purpose} database.`);
+  if (mode === 'team' && (purpose !== 'migration' || env.DB_SHARED_INTEGRATION_CONFIRMED !== name)) {
+    throw new Error('Team mode allows only migrations against the explicitly confirmed shared integration database.');
+  }
   if (!env.DB_USER || env.DB_USER.toLowerCase() === 'root') throw new Error('Configure a dedicated development database user, not root.');
   if (!env.DB_PASSWORD || env.DB_PASSWORD.startsWith('replace_')) throw new Error('Configure the database password in the local environment file.');
 }

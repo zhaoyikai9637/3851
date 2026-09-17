@@ -6,6 +6,15 @@ import { seedDevelopment } from '../src/seed.js';
 const safe={NODE_ENV:'test',INTEGRATION_MODE:'standalone',DB_NAME:'jrs_hr_module_test_fixture',DB_WRITE_CONFIRMED:'jrs_hr_module_test_fixture',DB_USER:'test-user',DB_PASSWORD:'test-fixture-only'};
 describe('database write guards (no database connection)', () => {
   it('permits an explicitly confirmed, dedicated test target', () => expect(() => assertDatabaseWriteAllowed(safe,'test')).not.toThrow());
+  it('permits migrations against an explicitly confirmed shared integration target', () => {
+    const shared={...safe,NODE_ENV:'development',INTEGRATION_MODE:'team',DB_NAME:'jrs_hr_module_dev_team',DB_WRITE_CONFIRMED:'jrs_hr_module_dev_team',DB_SHARED_INTEGRATION_CONFIRMED:'jrs_hr_module_dev_team'};
+    expect(() => assertDatabaseWriteAllowed(shared,'migration')).not.toThrow();
+  });
+  it('blocks seed data and incomplete confirmation in team mode', () => {
+    const shared={...safe,NODE_ENV:'development',INTEGRATION_MODE:'team',DB_NAME:'jrs_hr_module_dev_team',DB_WRITE_CONFIRMED:'jrs_hr_module_dev_team',DB_SHARED_INTEGRATION_CONFIRMED:'jrs_hr_module_dev_team'};
+    expect(() => assertDatabaseWriteAllowed(shared,'seed')).toThrow();
+    expect(() => assertDatabaseWriteAllowed({...shared,DB_SHARED_INTEGRATION_CONFIRMED:''},'migration')).toThrow();
+  });
   it.each([{DB_NAME:'jrs_db'},{DB_WRITE_CONFIRMED:''},{DB_WRITE_CONFIRMED:'another-db'},{DB_USER:'root'},{DB_PASSWORD:'replace_password'},{INTEGRATION_MODE:'team'},{NODE_ENV:'production'}])('blocks unsafe targets %j', patch => expect(() => assertDatabaseWriteAllowed({...safe,...patch})).toThrow());
   it('prevents the MySQL suite from using the dev database', () => expect(() => assertDatabaseWriteAllowed({...safe,DB_NAME:'jrs_hr_module_dev_fixture',DB_WRITE_CONFIRMED:'jrs_hr_module_dev_fixture'},'test')).toThrow());
   it('preflights unrelated tables without issuing write queries', async () => {

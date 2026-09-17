@@ -11,7 +11,7 @@ export function migrator(db) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   let db;
   try {
-    assertDatabaseWriteAllowed();
+    assertDatabaseWriteAllowed(process.env,'migration');
     db = createDatabase();
     await db.authenticate();
     await inspectMigrationTarget(db);

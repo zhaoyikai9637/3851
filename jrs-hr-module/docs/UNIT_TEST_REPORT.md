@@ -1,6 +1,6 @@
 # Jest Unit Test Report
 
-- Executed: Thursday, 17 September 2026 at 15:59:12 (Asia/Hong_Kong)
+- Executed: Thursday, 17 September 2026 at 17:44:21 (Asia/Hong_Kong)
 - Environment: Node v24.16.0; Jest 30.5.1
 - Command: `npm.cmd run test:jest` (from the project root)
 - Result: PASS; suites: 2; tests: 46; passed: 46; failed: 0.
@@ -15,10 +15,10 @@
 
 | Metric | Coverage |
 |---|---:|
-| Statements | 92.78% |
-| Branches | 86.15% |
+| Statements | 93% |
+| Branches | 84.28% |
 | Functions | 90.9% |
-| Lines | 92.78% |
+| Lines | 93% |
 
 ## Test Cases
 

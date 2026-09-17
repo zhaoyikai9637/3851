@@ -78,6 +78,10 @@ http://127.0.0.1:3001 作为网页地址，须在本地将 APP_ORIGIN 设为同�
 无 Git 仓库或远端；不提交 reference、环境文件、上传文件、work、node_modules。
 本轮没有发送真实邮件、发布网站或推送 GitHub。
 
-团队共享后端、数据库表所有权、现有 API 与尚未完成事项见
-`docs/TEAM_BACKEND_BASELINE.md`。共享迁移和接口契约，不共享 `.env`、密码、密钥、
-本机上传文件或 MySQL 数据目录。
+See `docs/TEAM_BACKEND_BASELINE.md` for the shared backend inventory, database
+ownership, existing APIs and remaining work. Share migrations and contracts, not
+`.env` files, credentials, secrets, local uploads or MySQL data directories.
+
+See `docs/TEAM_DEVELOPMENT.md` for managed MySQL, individual accounts, TLS,
+initial migration and contributor workflow. Each contributor creates a local
+environment file from `server/.env.team.example`.

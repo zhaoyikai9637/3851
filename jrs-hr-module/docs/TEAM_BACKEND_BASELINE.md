@@ -178,6 +178,8 @@ This snapshot proves that the schema and persistence layer are operational. It i
 8. Review OpenAPI changes together before changing request or response fields.
 9. Run `npm.cmd test`, `npm.cmd run test:mysql`, `npm.cmd run build` and `npm.cmd run docs:check` before merging.
 
+Detailed managed-database setup, individual account rules, initial migration steps and the contributor workflow are documented in `docs/TEAM_DEVELOPMENT.md`.
+
 ## Recommended team decision
 
 Adopt this repository as the HR backend baseline, not as a finished full-system backend. Freeze the table and API ownership described above, appoint one migration owner, and require all teammates to integrate through reviewed migrations and service/API contracts. This preserves the current working notification module while allowing the remaining recruitment modules to be added without later database reconstruction.

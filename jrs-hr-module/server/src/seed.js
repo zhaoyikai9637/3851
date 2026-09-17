@@ -22,7 +22,7 @@ export async function seedDevelopment(db, models) {
 if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
   let db;
   try {
-    assertDatabaseWriteAllowed(); db=createDatabase(); await db.authenticate();
+    assertDatabaseWriteAllowed(process.env,'seed'); db=createDatabase(); await db.authenticate();
     if(!(await inspectMigrationTarget(db)).initialized) throw new Error('Run the reviewed migration on the confirmed database before seeding.');
     const result=await seedDevelopment(db,defineModels(db));
     console.log(`Development baseline ready for HR user ${result.hrUserId} with ${result.templates} templates.`);
