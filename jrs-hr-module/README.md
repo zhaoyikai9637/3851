@@ -77,3 +77,7 @@ http://127.0.0.1:3001 作为网页地址，须在本地将 APP_ORIGIN 设为同�
 仍有 Sequelize/UUID 2 项 moderate 审计项，详见 docs/DEPENDENCIES.md。
 无 Git 仓库或远端；不提交 reference、环境文件、上传文件、work、node_modules。
 本轮没有发送真实邮件、发布网站或推送 GitHub。
+
+团队共享后端、数据库表所有权、现有 API 与尚未完成事项见
+`docs/TEAM_BACKEND_BASELINE.md`。共享迁移和接口契约，不共享 `.env`、密码、密钥、
+本机上传文件或 MySQL 数据目录。

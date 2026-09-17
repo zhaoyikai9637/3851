@@ -288,6 +288,11 @@ describe("authentication and navigation", () => {
 });
 
 describe("notification workflow", () => {
+  it("shows authoritative all and unread counts", async () => {
+    mount();
+    expect(await screen.findByRole("button", { name: "All 2" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Unread 1" })).toBeVisible();
+  });
   it("shows loading until the API resolves", async () => {
     let resolve;
     overrides["GET /api/hr/notifications"] = () =>
@@ -353,7 +358,7 @@ describe("notification workflow", () => {
     );
     expect(screen.getByRole("button", { name: /Unread 1/ })).toBeVisible();
   });
-  it("marks all read without adding a confirmation panel", async () => {
+  it("marks all read and restores the affected notifications from Undo", async () => {
     const ui = mount();
     await screen.findByText("New application received");
     await ui.click(screen.getByRole("button", { name: /Mark all as read/ }));
@@ -363,8 +368,11 @@ describe("notification workflow", () => {
       ).not.toBeInTheDocument(),
     );
     expect(writes("/api/hr/notifications/read-all")).toHaveLength(1);
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Undo" })).not.toBeInTheDocument();
+    await ui.click(await screen.findByRole("button", { name: "Undo" }));
+    await waitFor(() =>
+      expect(writes("/api/hr/notifications/restore-unread")).toHaveLength(1),
+    );
+    expect(await screen.findByRole("button", { name: "Unread 1" })).toBeVisible();
   });
   it("moves read-state changes into an accessible row actions menu", async () => {
     const ui = mount();
@@ -412,6 +420,17 @@ describe("notification workflow", () => {
     expect(screen.queryByLabelText("From date")).not.toBeInTheDocument();
     await ui.click(screen.getByRole("button", { name: "Date" }));
     expect(screen.getByLabelText("From date")).toHaveValue("");
+  });
+  it("distinguishes an empty filtered result from an empty inbox", async () => {
+    const ui = mount();
+    await screen.findByText("New application received");
+    await ui.type(screen.getByLabelText("Search notifications"), "No matching record");
+    expect(
+      await screen.findByRole("heading", {
+        name: "No notifications match these filters",
+      }),
+    ).toBeVisible();
+    expect(screen.queryByText("No notifications yet")).not.toBeInTheDocument();
   });
   it("uses an English MM/DD/YYYY date format and rejects invalid dates", async () => {
     const ui = mount();
@@ -503,11 +522,19 @@ describe("notification workflow", () => {
     const now = new Date();
     const today = now.toISOString();
     const yesterday = new Date(now.getTime() - 86400000).toISOString();
+    const earlier = new Date(now.getTime() - 7 * 86400000).toISOString();
     state.notifications[0].createdAt = today;
     state.notifications[1].createdAt = yesterday;
+    state.notifications.push({
+      ...structuredClone(state.notifications[1]),
+      notificationId: 3,
+      title: "Earlier recruitment activity",
+      createdAt: earlier,
+    });
     mount();
     expect(await screen.findByRole("heading", { name: "Today" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "Yesterday" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Earlier" })).toBeVisible();
     expect(
       screen.getByRole("button", {
         name: "Review application: New application received",
@@ -522,6 +549,17 @@ describe("notification workflow", () => {
       screen.queryByRole("navigation", { name: "Results pages" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText("Unread", { selector: ".badge-soft" })).not.toBeInTheDocument();
+  });
+  it("opens row actions from the keyboard", async () => {
+    const ui = mount();
+    await screen.findByText("New application received");
+    const trigger = screen.getByRole("button", {
+      name: "More actions for New application received",
+    });
+    trigger.focus();
+    await ui.keyboard("{Enter}");
+    expect(screen.getByRole("menuitem", { name: "Mark as read" })).toBeVisible();
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
   });
 });
 

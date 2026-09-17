@@ -1,5 +1,7 @@
 # Team integration contract
 
+The complete shared-backend inventory, table ownership and adoption checklist are in `docs/TEAM_BACKEND_BASELINE.md`.
+
 ## Identity
 
 The server loads a trusted adapter configured by `TEAM_AUTH_ADAPTER`. Browser headers, query strings and local storage never establish identity. The adapter must return a verified HR user ID, subject and upstream session ID.

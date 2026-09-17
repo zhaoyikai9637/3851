@@ -1,7 +1,14 @@
 {
-  "name": "jrs-hr-module", "version": "1.0.0", "private": true,
-  "workspaces": ["client", "server"],
-  "engines": {"node": ">=24 <25"},
+  "name": "jrs-hr-module",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "dev": "concurrently -k -n API,WEB \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w client",
@@ -11,8 +18,13 @@
     "test": "npm run test -w server && npm run test -w client",
     "test:jest": "node scripts/run-jest-report.mjs",
     "test:mysql": "npm run test:mysql -w server",
+    "lint": "biome lint client/src/features/notifications client/src/pages/Notifications.jsx client/src/tests/app.test.jsx",
+    "format:check": "biome format client/src/features/notifications client/src/pages/Notifications.jsx biome.json package.json",
     "docs:export": "node scripts/export-docs.mjs",
     "docs:check": "node scripts/check-docs.mjs"
   },
-  "devDependencies": {"concurrently": "^9.2.1"}
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "concurrently": "^9.2.1"
+  }
 }
