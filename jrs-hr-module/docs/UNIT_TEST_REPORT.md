@@ -1,6 +1,6 @@
 # Jest Unit Test Report
 
-- Executed: Wednesday, 16 September 2026 at 19:48:54 (Asia/Hong_Kong)
+- Executed: Thursday, 17 September 2026 at 09:26:26 (Asia/Hong_Kong)
 - Environment: Node v24.16.0; Jest 30.5.1
 - Command: `npm.cmd run test:jest` (from the project root)
 - Result: PASS; suites: 2; tests: 46; passed: 46; failed: 0.
@@ -75,4 +75,4 @@
 
 - These Jest unit tests do not measure whole-project coverage or verify real MySQL queries, team sign-in, browser interactions, or email delivery.
 - The existing Vitest frontend/backend suites and dedicated MySQL integration suite remain separate. Run `npm.cmd test` and `npm.cmd run test:mysql` for those checks.
-- Tests use fictional inputs only; they do not write to a database or send email to candidates.
+- Unit tests use isolated inputs; they do not write to a database or send email to candidates.

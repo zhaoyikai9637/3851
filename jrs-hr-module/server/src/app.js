@@ -26,7 +26,7 @@ export function createApp({ services, config, sessionStore, staticDir, identity 
   app.use(session({ name:'jrs.hr.sid', secret:config.secret, resave:false, saveUninitialized:false,
     store:sessionStore, cookie:{ httpOnly:true, secure:config.production, sameSite:'lax', maxAge:8*3600000, path:'/' } }));
   app.get('/api/health', (req,res) => res.json({ status:'ok', module:'hr-notifications' }));
-  app.get('/api/auth/config', (req,res) => res.json({ loginUrl:config.teamLoginUrl || null, adapterConfigured:Boolean(identity) }));
+  app.get('/api/auth/config', (req,res) => res.json({ loginUrl:config.teamLoginUrl || null, adapterConfigured:Boolean(identity), developmentLogin:Boolean(identity?.login) }));
   app.get('/api/auth/csrf', async (req,res) => {
     req.session.csrf ||= crypto.randomBytes(32).toString('hex'); await saveSession(req); res.json({ csrfToken:req.session.csrf });
   });
@@ -39,6 +39,13 @@ export function createApp({ services, config, sessionStore, staticDir, identity 
     const isToken = value => typeof value === 'string' && value.length === 64 && /^[a-f0-9]{64}$/.test(value);
     if (!isToken(token) || !isToken(req.session.csrf) || !crypto.timingSafeEqual(Buffer.from(token,'hex'),Buffer.from(req.session.csrf,'hex'))) return next(new HttpError(403,'CSRF token missing or expired. Refresh and retry.'));
     next();
+  });
+  app.post('/api/auth/development-login', async (req,res) => {
+    if (!identity?.login || config.production || config.mode !== 'standalone') throw new HttpError(404, 'API route not found.');
+    const auth = verifiedHrIdentity(await identity.login(req));
+    await services.authorize(auth);
+    await saveSession(req);
+    res.status(204).end();
   });
   const requireHr = async (req,res,next) => {
     const auth = verifiedHrIdentity(await identity?.resolve(req));
@@ -53,7 +60,9 @@ export function createApp({ services, config, sessionStore, staticDir, identity 
   };
   app.get('/api/auth/me',requireHr,async (req,res) => {
     if (req.session.identityKey !== req.identityKey) {
+      const developmentIdentity = req.session.developmentIdentity;
       await renewSession(req);
+      if (developmentIdentity) req.session.developmentIdentity = developmentIdentity;
       req.session.identityKey = req.identityKey;
       req.session.csrf = crypto.randomBytes(32).toString('hex');
       await saveSession(req);

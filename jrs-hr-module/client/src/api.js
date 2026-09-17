@@ -1,5 +1,3 @@
-import { createDemoApi } from "./demo-api";
-
 export class ApiError extends Error {
   constructor(status, message, fields = []) {
     super(message);
@@ -109,41 +107,7 @@ export function createApi(fetcher = (...args) => fetch(...args)) {
   };
   return api;
 }
-const liveApi = createApi();
-const demoApi = createDemoApi();
-const DEMO_MODE_KEY = "jrs.hr.local-demo.enabled";
-const demoRequested = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("demo") === "1";
-if (demoRequested) sessionStorage.setItem(DEMO_MODE_KEY, "1");
-let demo = demoRequested || (typeof sessionStorage !== "undefined" && sessionStorage.getItem(DEMO_MODE_KEY) === "1");
-export const api = {
-  get isDemo() { return demo; },
-  enterDemo() {
-    demo = true;
-    sessionStorage.setItem(DEMO_MODE_KEY, "1");
-  },
-  leaveDemo() {
-    demo = false;
-    sessionStorage.removeItem(DEMO_MODE_KEY);
-  },
-  resetDemo() {
-    demoApi.reset();
-  },
-  setToken(value) { return liveApi.setToken(value); },
-  onUnauthorized(listener) { return liveApi.onUnauthorized(listener); },
-  request(...args) { return (demo ? demoApi : liveApi).request(...args); },
-  csrf(...args) { return (demo ? demoApi : liveApi).csrf?.(...args); },
-  me(...args) { return (demo ? demoApi : liveApi).me(...args); },
-  download(...args) { return (demo ? demoApi : liveApi).download(...args); },
-  async logout(...args) {
-    if (demo) {
-      await demoApi.logout(...args);
-      demo = false;
-      sessionStorage.removeItem(DEMO_MODE_KEY);
-      return;
-    }
-    return liveApi.logout(...args);
-  },
-};
+export const api = createApi();
 export function query(values) {
   return new URLSearchParams(
     Object.entries(values).filter(

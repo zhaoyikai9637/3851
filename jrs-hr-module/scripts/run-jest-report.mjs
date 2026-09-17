@@ -68,7 +68,7 @@ const lines = [
   '',
   '- These Jest unit tests do not measure whole-project coverage or verify real MySQL queries, team sign-in, browser interactions, or email delivery.',
   '- The existing Vitest frontend/backend suites and dedicated MySQL integration suite remain separate. Run `npm.cmd test` and `npm.cmd run test:mysql` for those checks.',
-  '- Tests use fictional inputs only; they do not write to a database or send email to candidates.',
+  '- Unit tests use isolated inputs; they do not write to a database or send email to candidates.',
   ''
 ];
 writeFileSync(reportPath, lines.join('\n'), 'utf8');

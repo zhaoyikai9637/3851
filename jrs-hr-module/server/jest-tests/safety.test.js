@@ -5,7 +5,7 @@ import { createMailer } from '../src/mailer.js';
 const approved = {
   NODE_ENV: 'test', INTEGRATION_MODE: 'standalone',
   DB_NAME: 'jrs_hr_module_test_unit', DB_WRITE_CONFIRMED: 'jrs_hr_module_test_unit',
-  DB_USER: 'jrs_test', DB_PASSWORD: 'fictional-test-only'
+  DB_USER: 'jrs_test', DB_PASSWORD: 'isolated-test-only'
 };
 
 describe('database write safeguards', () => {
@@ -53,7 +53,7 @@ describe('database write safeguards', () => {
 
 describe('mailer safety defaults', () => {
   test('uses offline preview with no mail credentials', async () => {
-    await expect(createMailer({}).send({ to: 'fictional@example.test', subject: 'Hello', text: 'Preview' }))
+    await expect(createMailer({}).send({ to: 'isolated@example.test', subject: 'Hello', text: 'Preview' }))
       .resolves.toEqual({ preview: true });
   });
 

@@ -14,7 +14,7 @@ const errorResponses = Object.fromEntries([400,401,403,404,409,413,422,500,503].
   ...response(ref('Error'), ({400:'Malformed JSON',401:'Verified team sign-in required',403:'CSRF, origin or HR authorization rejected',404:'Missing or inaccessible record',409:'Unique name conflict, including archived templates',413:'JSON body exceeds 100 KB',422:'Invalid fields or upload',500:'Internal error',503:'Team identity service unavailable'})[code]),
   content: { 'application/json': { schema:ref('Error'), examples:errorExamples[code] } }
 }]));
-// No fictional upstream cookie/header is declared before the teammate provides it.
+// No illustrative upstream cookie or header is declared before the teammate provides it.
 // The separate module cookie is needed for writes, not initial authenticated reads.
 const auth = [];
 const writeAuth = [{ sessionCookie: [], csrfToken: [] }];
@@ -31,7 +31,7 @@ const template = object({ ...templateInput.properties,templateId:id,isActive:{ty
 const notification = object({notificationId:id,recipientUserId:id,applicationId:{...id,nullable:true},notificationType:{type:'string',enum:notificationTypes},title:text(180),message:text(),sourceModule:text(100),isRead:{type:'boolean'},readAt:time,createdAt:time});
 const notificationIds = {type:'array',minItems:1,maxItems:5000,items:id};
 const readUpdate = object({updated:{type:'integer',minimum:0},notificationIds:{type:'array',items:id}},['updated']);
-const log = object({logId:id,applicationId:id,templateId:id,senderUserId:id,triggerEvent:text(100),sourceModule:text(100),recipientEmail:text(150,{format:'email'}),candidateName:text(100),positionTitle:text(150),templateName:text(150),emailSubject:text(255),deliveryStatus:{type:'string',enum:['SENT'],description:'Accepted by the mail provider for submission, not verified delivery to an inbox.'},sentAt:{type:'string',format:'date-time'},createdAt:time,isDemo:{type:'boolean',description:'True means a simulated historical record, never evidence of an actual email.'}});
+const log = object({logId:id,applicationId:id,templateId:id,senderUserId:id,triggerEvent:text(100),sourceModule:text(100),recipientEmail:text(150,{format:'email'}),candidateName:text(100),positionTitle:text(150),templateName:text(150),emailSubject:text(255),deliveryStatus:{type:'string',enum:['SENT'],description:'Accepted by the mail provider for submission, not verified delivery to an inbox.'},sentAt:{type:'string',format:'date-time'},createdAt:time});
 const paged = item => object({items:{type:'array',items:ref(item)},total:{type:'integer',minimum:0},page:{type:'integer',minimum:1},pageSize:{type:'integer',minimum:1,maximum:50}});
 const op = (operationId, tag, summary, schema, options = {}) => ({ operationId,tags:[tag],summary,security:options.write ? writeAuth : auth,
   'x-team-identity-required': !options.security,
@@ -40,7 +40,8 @@ const op = (operationId, tag, summary, schema, options = {}) => ({ operationId,t
 const paths = {
   '/api/health': {get:op('health','Session','Process health (does not check database)',object({status:text(),module:text()}),{security:[]})},
   '/api/auth/csrf': {get:op('csrf','Session','Create or retrieve anonymous/session CSRF token',object({csrfToken:text(64,{pattern:'^[a-f0-9]{64}$'})}),{security:[]})},
-  '/api/auth/config': {get:op('authConfig','Session','Read team entry URL and adapter registration status',object({loginUrl:{type:'string',format:'uri',nullable:true},adapterConfigured:{type:'boolean'}}),{security:[]})},
+  '/api/auth/config': {get:op('authConfig','Session','Read available sign-in entry points',object({loginUrl:{type:'string',format:'uri',nullable:true},adapterConfigured:{type:'boolean'},developmentLogin:{type:'boolean',description:'True only for an explicitly configured local standalone environment.'}}),{security:[]})},
+  '/api/auth/development-login': {post:op('developmentLogin','Session','Create a temporary local development session',null,{security:[],write:true,code:204})},
   '/api/auth/me': {get:op('me','Session','Read the current authorized HR session',ref('Auth'))},
   '/api/auth/logout': {post:op('logout','Session','Revoke the upstream session, then clear the HR module session',null,{write:true,code:204})},
   '/api/hr/profile': {
@@ -72,6 +73,9 @@ const paths = {
 };
 // Options used by the generator are not OpenAPI fields.
 for (const item of Object.values(paths)) for (const operation of Object.values(item)) { delete operation.write; delete operation.code; }
+paths['/api/auth/development-login'].post.security = writeAuth;
+paths['/api/auth/development-login'].post['x-team-identity-required'] = false;
+paths['/api/auth/development-login'].post.description = 'Available only for an explicitly configured local standalone environment. Requires the module session cookie and CSRF token, but no team identity.';
 export const openapi = {
   openapi:'3.0.3',info:{title:'JRS HR Notification and Profile API',version:'0.1.0',description:'The team owns sign-in; there is no password login endpoint in this module. The upstream authentication transport is pending agreement and is not specified by this document. An installed server adapter must verify it. GET /api/auth/me checks that identity and returns a token bound to its subject/session/HR mapping. Retain the separate jrs.hr.sid CSRF-session cookie and send x-csrf-token for mutations. A changed upstream identity requires refreshing /api/auth/me. The module cookie alone never authenticates a user. POST/PATCH/PUT/DELETE with a supplied Origin must match APP_ORIGIN. Log success means provider acceptance, not confirmed inbox delivery. PREVIEW/PENDING/FAILED are not successful history. No public workflow-send endpoint.'},
   servers:[{url:'/',description:'Same-origin API (including Vite proxy)'}],paths,
@@ -104,10 +108,10 @@ paths['/api/auth/me'].get.responses[200].headers = {
 paths['/api/auth/logout'].post.responses[204].headers = {
   'Set-Cookie': { description:'Expires the HR module cookie after the adapter successfully revokes the upstream session.', schema:{type:'string'} },
 };
-paths['/api/hr/attachments/{id}/download'].get.responses[200].description = 'Raw file bytes. Content-Type follows the stored filename; the example metadata is fictional. Missing or inaccessible files return a JSON error.';
+paths['/api/hr/attachments/{id}/download'].get.responses[200].description = 'Raw file bytes. Content-Type follows the stored filename; the example metadata is illustrative. Missing or inaccessible files return a JSON error.';
 paths['/api/hr/attachments/{id}/download'].get.responses[200].content = { '*/*': {schema:{type:'string',format:'binary'}} };
 paths['/api/hr/attachments/{id}/download'].get.responses[200].headers = {
-  'Content-Disposition': { description:'Attachment filename supplied by the authorized metadata; use the download response, not a public file URL.', schema:{type:'string'}, example:'attachment; filename="Demo note.txt"' },
+  'Content-Disposition': { description:'Attachment filename supplied by the authorized metadata; use the download response, not a public file URL.', schema:{type:'string'}, example:'attachment; filename="Interview note.txt"' },
 };
 // Persistent timestamps are present; only last-login/read-at explicitly allow null.
 for (const schema of [profile, template, notification, log]) for (const field of ['createdAt','updatedAt']) {

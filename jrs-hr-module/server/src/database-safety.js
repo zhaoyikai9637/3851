@@ -1,6 +1,6 @@
 export function assertDatabaseWriteAllowed(env = process.env, purpose) {
   if (env.NODE_ENV === 'production' || (env.INTEGRATION_MODE || 'standalone') !== 'standalone') {
-    throw new Error('Database writes are currently enabled only for a dedicated standalone development/test database. Team integration is pending.');
+    throw new Error('Database writes are enabled only for a dedicated standalone development or test database. Team integration is pending.');
   }
   const name = env.DB_NAME || '';
   const match = /^jrs_hr_module_(dev|test)_[a-z0-9_]+$/.exec(name);

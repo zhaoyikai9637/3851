@@ -31,8 +31,8 @@ describe('HR service boundaries (mock ORM; not SQL integration)', () => {
     expect(findByPk.mock.calls[0][1].include[0].where).toMatchObject({senderUserId:2,deliveryStatus:'SENT'});
   });
   it('returns stored email snapshots and only public attachment metadata', async () => {
-    const svc=createServices({Log:{findOne:vi.fn().mockResolvedValue({logId:2,emailBody:'Original final text',isDemo:true,attachments:[{attachmentId:3,fileName:'Offer.pdf',fileType:'application/pdf',fileUrl:'private.pdf'}]})}});
-    expect(await svc.log(1,2)).toMatchObject({emailBody:'Original final text',isDemo:true,attachments:[{attachmentId:3,fileName:'Offer.pdf',fileType:'application/pdf'}]});
+    const svc=createServices({Log:{findOne:vi.fn().mockResolvedValue({logId:2,emailBody:'Original final text',attachments:[{attachmentId:3,fileName:'Offer.pdf',fileType:'application/pdf',fileUrl:'private.pdf'}]})}});
+    expect(await svc.log(1,2)).toMatchObject({emailBody:'Original final text',attachments:[{attachmentId:3,fileName:'Offer.pdf',fileType:'application/pdf'}]});
   });
   it('scopes notification list, search and counts to the current HR', async () => {
     const findAndCountAll=vi.fn().mockResolvedValue({rows:[{notificationId:1}],count:1}),count=vi.fn().mockResolvedValue(3);

@@ -48,7 +48,7 @@ describe('API documentation contract', () => {
     expect(openapi.paths['/api/health'].get['x-team-identity-required']).toBe(false);
     expect(openapi.paths['/api/hr/profile'].patch['x-team-identity-required']).toBe(true);
   });
-  it('exports fictional response examples, leaves fixture IDs blank and runs logout last', () => {
+  it('exports illustrative response examples, leaves fixture IDs blank and runs logout last', () => {
     const collection=postmanCollection(openapi), environment=postmanEnvironment();
     expect(collection.item.at(-1).name).toBe('Logout (run last)');
     expect(collection.variable.map(x=>x.key)).toEqual(['baseUrl','appOrigin']);

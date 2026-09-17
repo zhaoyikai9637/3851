@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { assertDatabaseWriteAllowed, inspectMigrationTarget, moduleTables } from '../src/database-safety.js';
 import { up, down } from '../src/migrations/001-module.js';
-import { seedDemo } from '../src/seed.js';
+import { seedDevelopment } from '../src/seed.js';
 
 const safe={NODE_ENV:'test',INTEGRATION_MODE:'standalone',DB_NAME:'jrs_hr_module_test_fixture',DB_WRITE_CONFIRMED:'jrs_hr_module_test_fixture',DB_USER:'test-user',DB_PASSWORD:'test-fixture-only'};
 describe('database write guards (no database connection)', () => {
@@ -28,10 +28,10 @@ describe('database write guards (no database connection)', () => {
   it('keeps destructive rollback disabled', async () => await expect(down()).rejects.toThrow('disabled'));
 });
 
-describe('seed content and sequential idempotency (mock model only)', () => {
-  it('creates two HRs, five templates and visibly simulated histories; preserves edits', async () => {
+describe('development baseline and sequential idempotency (mock model only)', () => {
+  it('creates one local HR profile and five templates while preserving edits', async () => {
     const rows={},models={};
-    for(const [key,idField] of Object.entries({HrUser:'userId',Account:'accountId',Candidate:'candidateId',Job:'positionId',Application:'applicationId',Template:'templateId',Notification:'notificationId',Log:'logId'})) {
+    for(const [key,idField] of Object.entries({HrUser:'userId',Template:'templateId'})) {
       rows[key]=[];
       models[key]={findOrCreate:async ({where,defaults}) => {
         const existing=rows[key].find(row=>Object.entries(where).every(([k,v])=>row[k]===v));
@@ -40,19 +40,12 @@ describe('seed content and sequential idempotency (mock model only)', () => {
       }};
     }
     const db={transaction:async callback=>callback({})};
-    await seedDemo(db,models,{password:'test-fixture-only-password'});
+    await seedDevelopment(db,models);
     const counts=Object.fromEntries(Object.entries(rows).map(([key,value])=>[key,value.length]));
-    expect(counts).toMatchObject({HrUser:2,Account:2,Template:5,Notification:4,Log:8});
-    expect(rows.Log.every(row=>row.isDemo && row.emailBody.includes('SIMULATED'))).toBe(true);
-    expect(rows.Log.filter(row=>row.deliveryStatus!=='SENT').every(row=>row.sentAt===null)).toBe(true);
-    expect(rows.Account.every(row=>row.passwordHash.startsWith('$2'))).toBe(true);
+    expect(counts).toMatchObject({HrUser:1,Template:5});
     rows.Template[0].body='Locally edited'; rows.Template[1].isActive=false;
-    const originalHash=rows.Account[0].passwordHash;
-    await seedDemo(db,models,{password:'different-test-only-password'});
+    await seedDevelopment(db,models);
     expect(Object.fromEntries(Object.entries(rows).map(([key,value])=>[key,value.length]))).toEqual(counts);
-    expect(rows.Template[0].body).toBe('Locally edited');expect(rows.Template[1].isActive).toBe(false);expect(rows.Account[0].passwordHash).toBe(originalHash);
-  });
-  it('rejects missing seed secrets before starting a transaction', async () => {
-    const transaction=vi.fn();await expect(seedDemo({transaction},{},{password:'replace_example'})).rejects.toThrow('SEED_PASSWORD');expect(transaction).not.toHaveBeenCalled();
+    expect(rows.Template[0].body).toBe('Locally edited');expect(rows.Template[1].isActive).toBe(false);
   });
 });

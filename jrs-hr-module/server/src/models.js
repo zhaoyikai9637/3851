@@ -39,8 +39,7 @@ export function defineModels(db) {
     candidateName: str(100), positionTitle: str(150), templateName: str(150),
     emailSubject: str(255), emailBody: { type: D.TEXT, allowNull: false },
     deliveryStatus: { ...str(20), defaultValue: 'PENDING' }, sentAt: D.DATE,
-    eventKey: { ...str(150, false), unique: true }, errorMessage: str(255, false),
-    isDemo: { type: D.BOOLEAN, allowNull: false, defaultValue: false }
+    eventKey: { ...str(150, false), unique: true }, errorMessage: str(255, false)
   }, { tableName: 'NOTIFICATION_LOG', updatedAt: false });
   const Attachment = db.define('NotificationAttachment', {
     attachmentId: pk(), logId: fk(), fileName: str(255), fileUrl: str(255), fileType: str(80)

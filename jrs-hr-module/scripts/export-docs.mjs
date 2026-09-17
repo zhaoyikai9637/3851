@@ -49,7 +49,7 @@ export function postmanCollection(spec) {
     const responses = [];
     for (const [status, response] of Object.entries(operation.responses)) {
       for (const [name, example] of Object.entries(response.content?.['application/json']?.examples || {})) responses.push({
-        name:status + ' — ' + name + ' (fictional example)', originalRequest:structuredClone(request),
+        name:status + ' - ' + name + ' (illustrative example)', originalRequest:structuredClone(request),
         status:STATUS_CODES[status] || response.description,code:Number(status),
         header:[{key:'Content-Type',value:'application/json'}],cookie:[],
         body:jsonText(example.value),_postman_previewlanguage:'json',
@@ -60,7 +60,7 @@ export function postmanCollection(spec) {
   }
   const ordered = [...groups].sort(([a],[b]) => Number(a.startsWith('Logout')) - Number(b.startsWith('Logout')));
   return {
-    info:{name:'JRS HR Module — Local Development',schema:'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',description:'Import the blank local environment first. Team sign-in has not been implemented; protected requests require its verified adapter. Start with Session /me after upstream sign-in and retain cookies. jrs.hr.sid alone never authenticates. No module login or mail-send endpoint. Examples are fictional, not captured traffic. Select local fixture IDs explicitly and run only intended requests; Logout is last. Keep credentials and tokens in unshared local environment values, never in the collection.'},
+    info:{name:'JRS HR Module - Local Development',schema:'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',description:'Import the blank local environment first. Team sign-in has not been implemented; protected requests require its verified adapter. Start with Session /me after upstream sign-in and retain cookies. jrs.hr.sid alone never authenticates. No mail-send endpoint is public. Examples are illustrative, not captured traffic. Select local fixture IDs explicitly and run only intended requests; Logout is last. Keep credentials and tokens in unshared local environment values, never in the collection.'},
     variable:[{key:'baseUrl',value:'http://localhost:5173',type:'string'},{key:'appOrigin',value:'http://localhost:5173',type:'string'}],
     item:ordered.map(([name,item]) => ({name,item})),
   };
@@ -73,5 +73,5 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   await fs.writeFile(path.join(out,'openapi.json'),jsonText(openapi) + '\n');
   await fs.writeFile(path.join(out,'JRS-HR.postman_collection.json'),jsonText(postmanCollection(openapi)) + '\n');
   await fs.writeFile(path.join(out,'JRS-HR.postman_environment.example.json'),jsonText(postmanEnvironment()) + '\n');
-  console.log('Exported OpenAPI, Postman collection and blank environment (fictional examples, no credentials).');
+  console.log('Exported OpenAPI, Postman collection and blank environment (illustrative examples, no credentials).');
 }

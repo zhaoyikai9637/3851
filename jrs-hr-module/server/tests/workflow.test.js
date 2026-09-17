@@ -7,12 +7,12 @@ describe('trusted workflow adapter and immutable sending history', () => {
     payload={userId:1,applicationId:2,templateId:3,eventKey:'test:event:1',triggerEvent:'Accepted'};
     log={...payload,senderUserId:1,deliveryStatus:'PENDING',update:vi.fn(async patch => Object.assign(log,patch))};
     models={Application:{findOne:vi.fn().mockResolvedValue({candidate:{fullName:'Casey',email:'casey@example.test'},position:{title:'Engineer'}})},Template:{findOne:vi.fn().mockResolvedValue({templateName:'Accepted',subject:'[CompanyName]: [JobTitle]',body:'Dear [CandidateName],\nRegards [HRName]'})},HrUser:{findByPk:vi.fn().mockResolvedValue({fullName:'Riley'})},Log:{findOrCreate:vi.fn().mockResolvedValue([log,true])}};
-    svc=createServices(models,{companyName:'Demo Company'}); mailer={send:vi.fn().mockResolvedValue({preview:true})};
+    svc=createServices(models,{companyName:'Example Company'}); mailer={send:vi.fn().mockResolvedValue({preview:true})};
   });
   it('writes a final plain-text snapshot and keeps PREVIEW sentAt null', async () => {
     await svc.sendWorkflowEmail(payload,mailer);
     expect(log.update).toHaveBeenCalledWith({deliveryStatus:'PREVIEW',sentAt:null});
-    expect(models.Log.findOrCreate.mock.calls[0][0].defaults).toMatchObject({deliveryStatus:'PENDING',candidateName:'Casey',positionTitle:'Engineer',templateName:'Accepted',emailSubject:'Demo Company: Engineer',emailBody:'Dear Casey,\nRegards Riley'});
+    expect(models.Log.findOrCreate.mock.calls[0][0].defaults).toMatchObject({deliveryStatus:'PENDING',candidateName:'Casey',positionTitle:'Engineer',templateName:'Accepted',emailSubject:'Example Company: Engineer',emailBody:'Dear Casey,\nRegards Riley'});
   });
   it('records provider acceptance as SENT, never DELIVERED', async () => {
     mailer.send.mockResolvedValue({preview:false}); await svc.sendWorkflowEmail(payload,mailer);
@@ -57,4 +57,3 @@ describe('trusted workflow adapter and immutable sending history', () => {
     expect(Notification.findOrCreate.mock.calls[0][0]).toMatchObject({transaction,defaults:{recipientUserId:6,applicationId:2,notificationType:'NEW_APPLICATION'}});
   });
 });
-

@@ -2,9 +2,10 @@ import { Umzug, SequelizeStorage } from 'umzug';
 import { pathToFileURL } from 'node:url';
 import { createDatabase } from './db.js';
 import * as initial from './migrations/001-module.js';
+import * as realDataBaseline from './migrations/002-real-data-baseline.js';
 import { assertDatabaseWriteAllowed, inspectMigrationTarget } from './database-safety.js';
 export function migrator(db) {
-  return new Umzug({ migrations: [{ name: '001-module', up: initial.up, down: initial.down }],
+  return new Umzug({ migrations: [{ name: '001-module', up: initial.up, down: initial.down }, { name: '002-real-data-baseline', up: realDataBaseline.up, down: realDataBaseline.down }],
     context: db.getQueryInterface(), storage: new SequelizeStorage({ sequelize: db }), logger: console });
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

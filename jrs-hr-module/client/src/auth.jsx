@@ -36,20 +36,17 @@ export function AuthProvider({ children }) {
     setSession(null);
     setError(new Error("Your session has expired. Continue through team sign-in."));
   }), []);
-  async function enterDemo() {
+  const loginUrl = teamLoginLink(entry?.loginUrl);
+  async function developmentLogin() {
     setChecking(true);
     setError(null);
     try {
-      api.enterDemo();
+      await api.request("/api/auth/development-login", { method: "POST" });
       setSession(await api.me());
-    } catch (e) {
-      api.leaveDemo();
-      setError(e);
-    } finally {
-      setChecking(false);
-    }
+    } catch (nextError) {
+      setError(nextError);
+    } finally { setChecking(false); }
   }
-  const loginUrl = teamLoginLink(entry?.loginUrl);
   const value = {
     ...session,
     setUser: (user) => setSession((s) => ({ ...s, user })),
@@ -58,10 +55,6 @@ export function AuthProvider({ children }) {
       setSession(null);
       setError(null);
       if (loginUrl) window.location.assign(loginUrl);
-    },
-    resetDemo() {
-      api.resetDemo();
-      window.location.reload();
     },
   };
   if (checking) return <main className="startup"><Loading /></main>;
@@ -73,16 +66,11 @@ export function AuthProvider({ children }) {
         <p className="subtle">Use the JRS sign-in page to access your notifications and HR profile.</p>
         <ErrorBox error={error} />
         {entry?.adapterConfigured === false && <p>Team sign-in is not connected yet.</p>}
-        {!loginUrl && <p>The team sign-in address has not been configured.</p>}
+        {!loginUrl && !entry?.developmentLogin && <p>The team sign-in address has not been configured.</p>}
         <div className="access-actions">
           {loginUrl && <a className="btn btn-primary" href={loginUrl}>Go to team sign-in</a>}
+          {entry?.developmentLogin && <button className="btn btn-primary" onClick={developmentLogin}>Continue locally</button>}
           <button className="btn btn-outline-secondary" onClick={() => setAttempt((n) => n + 1)}>Check sign-in status</button>
-        </div>
-        <div className="demo-entry">
-          <span className="demo-kicker">LOCAL DEMO · FICTIONAL DATA</span>
-          <h2>Preview the HR workspace now</h2>
-          <p>Explore all five pages without signing in. Demo changes stay in this browser tab and never use the HR API, database, or email service.</p>
-          <button className="btn btn-primary" onClick={enterDemo}>Open fictional demo</button>
         </div>
       </section>
     </main>

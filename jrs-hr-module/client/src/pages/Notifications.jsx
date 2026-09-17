@@ -480,10 +480,7 @@ function ApplicationSummary({ id, onClose }) {
   const { data, busy, error, reload } = useLoad(`/api/hr/applications/${id}`);
   return (
     <Modal title="Application summary" onClose={onClose}>
-      <p className="notice">
-        Local fictional demo · Read-only summary. Recruitment actions are managed by
-        the Applications team.
-      </p>
+      <p className="notice">Read-only summary. Recruitment actions are managed by the Applications team.</p>
       {busy ? (
         <div className="loading-state" role="status">Loading…</div>
       ) : error ? (

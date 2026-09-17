@@ -1,93 +1,17 @@
-# Integration contracts pending team alignment
+# Team integration contract
 
-Status: the module-owned password login was removed on 2026-09-09 at the user’s request.
-The teammate has not implemented sign-in yet. The HR module fails closed until a trusted
-server identity adapter is supplied; see TEAM_AUTH.md. No shared authentication connection is assumed. Reference Word text and available screenshots
-are local requirements evidence, not permission to change team systems.
+## Identity
 
-## Identity and visibility
+The server loads a trusted adapter configured by `TEAM_AUTH_ADAPTER`. Browser headers, query strings and local storage never establish identity. The adapter must return a verified HR user ID, subject and upstream session ID.
 
-- No public password-login route or frontend login form remains. A trusted server adapter
-  must implement resolve(req) and logout(req,res). Every protected request verifies the
-  upstream subject/session/HR mapping, HR role and current ACTIVE HR status.
-  HR_USER.role is a display job title, not the authorization role.
-- MODULE_SESSION now stores separate jrs.hr.sid CSRF sessions; that cookie alone never
-  authenticates. The legacy MODULE_ACCOUNT table/data remain untouched and are no longer
-  used for runtime authentication. Test identity fixtures are not production adapters.
-- Notifications are private by recipientUserId. Logs are private by senderUserId.
-- Templates are shared by all authorized HR accounts in a single company.
-- These visibility assumptions require team confirmation; team mode is not proof
-  of identity integration. Confirm the common user primary key, role mapping,
-  company boundary and HR assignments before configuring the team adapter. The present frontend sends same-origin cookies;
-  JWT acquisition/refresh or cross-origin transport has not been implemented.
+## Recruitment data
 
-## Application adapter
+`CANDIDATE`, `JOB_POSITION` and `APPLICATION` are the boundary with the recruitment module. Application events are recorded server-to-server with unique event keys.
 
-Only GET /api/hr/applications/:id is exposed. It returns an assigned HR's read-only
-applicationId, candidateName, positionTitle, currentStatus and appliedAt. A missing
-or inaccessible reference returns the same 404. No application/status/interview/
-offer mutation is implemented. The team's frontend route for View is still unknown.
+## Email history
 
-The draft Sequelize mapping expects INTEGER identifiers and these fields:
+Only records with `delivery_status = SENT` and a non-null `sent_at` appear in Logs. Sent means accepted by the provider, not confirmed inbox delivery. The original subject, body, recipient, template name and attachments remain an immutable snapshot.
 
-- CANDIDATE: candidate_id, full_name, email, created_at, updated_at.
-- JOB_POSITION: position_id, title, created_at, updated_at.
-- APPLICATION: application_id, candidate_id, position_id, assigned_hr_user_id,
-  current_status, applied_at, created_at, updated_at.
+## Production gate
 
-Confirm exact table case, type/signedness, nullability, foreign keys, ownership,
-timestamps and naming. Adapt locally rather than altering team tables to match.
-
-## Workflow events and mail
-
-recordApplicationEvent and sendWorkflowEmail are trusted backend/in-process
-adapters. There is no browser route for arbitrarily emitting events or sending mail.
-
-Notifications accept NEW_APPLICATION and STATUS_UPDATED. Template categories are
-INTERVIEW_INVITE, OFFER_LETTER, ACCEPTED, REJECTED, IN_PROGRESS. Log triggerEvent
-is an upstream label (maximum 100 characters); exact team vocabulary is pending.
-The company name comes from COMPANY_NAME (default JRS). Supported placeholders
-remain [CandidateName], [JobTitle], [CompanyName], [HRName]. Render as plain text.
-
-Each email attempt has a unique eventKey. Repeating the same key does not resend
-SENT/PREVIEW/FAILED/PENDING messages. Reusing a key for a different sender,
-application, template or trigger returns 409. There is no SMTP/SQL distributed
-transaction: if a provider accepts and the final database update fails, the row
-stays PENDING. Reconciliation must be manual against provider evidence; do not
-automatically retry that attempt. Four simultaneous local calls now have real-MySQL tests for one notification and one
-preview attempt. Actual upstream integration and distributed failure recovery remain pending.
-
-## Successful history semantics
-
-The public log list, detail and attachment authorization require deliveryStatus=SENT
-and non-null sentAt. Date filters and list sorting use sentAt, with Asia/Singapore
-UTC+08 calendar boundaries (end-exclusive next midnight). Notifications use createdAt.
-PREVIEW, PENDING and FAILED are excluded; requesting those statuses returns 422.
-There is currently no diagnostic history UI/API for those states.
-
-SENT means the provider accepted submission; it does not mean inbox delivery.
-The original use-case detail says delivered time, but there is no delivery receipt
-integration. Use “Sent time” / “Submitted to mail provider” in the implementation.
-isDemo=true denotes simulated history and must always be visibly marked in the UI.
-Template edits and soft deletion never rewrite stored email body/subject/name snapshots.
-Archived template names remain reserved; same-name creation returns 409.
-
-## Storage
-
-Avatar content is decoded and normalized by Sharp (JPEG/PNG <=2 MB and 16 megapixels).
-The storage basename is generated by the server. Attachment metadata currently
-references a private UUID basename in the configured upload directory; there is no
-upstream attachment ingestion API yet. Do not expose private paths or invent downloads.
-Missing files and inaccessible ownership return 404. Normal avatar replacements reclaim
-unreferenced generated files after persistence; crash/locked-file orphan cleanup remains pending.
-
-## ER and legacy SQL comparison
-
-Legacy SQL is never executed as setup. Its jrs_db name is not an authorized target.
-The current model adds standalone auth/session tables, explicit HR assignment,
-sourceModule/eventKey, sender ownership, candidate/position/template snapshots,
-PENDING/PREVIEW and isDemo. Legacy QUEUED/DELIVERED/BOUNCED are not supported by
-the adapter. Several cascade policies and check/index definitions differ; these
-must be recorded in migration verification rather than silently treated as identical.
-The supplied report ER PNG failed decoding as truncated; the original file was
-preserved. Relationship descriptions in the report and the legacy SQL were read.
+Production rejects standalone mode. Configure the team adapter, team sign-in URL, HTTPS origin, persistent session store and approved mail settings before deployment.

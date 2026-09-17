@@ -19,7 +19,6 @@ const json = (body, status = 200) => ({
 });
 let state, fetcher, overrides;
 beforeEach(() => {
-  api.leaveDemo();
   sessionStorage.clear();
   api.setToken("");
   state = {
@@ -145,20 +144,14 @@ const writes = (path) =>
   );
 
 describe("authentication and navigation", () => {
-  it("opens the isolated fictional demo and exits without calling protected APIs", async () => {
+  it("enters through the local development endpoint when it is enabled", async () => {
     state.signedIn = false;
+    overrides['GET /api/auth/config'] = () => json({loginUrl:null,adapterConfigured:true,developmentLogin:true});
+    overrides['POST /api/auth/development-login'] = () => { state.signedIn = true; return json(null, 204); };
     const ui = mount("/templates");
-    await ui.click(await screen.findByRole("button", { name: "Open fictional demo" }));
-    expect(await screen.findByLabelText("Email subject")).toHaveValue(
-      "Interview invitation for [JobTitle]",
-    );
-    expect(screen.queryByRole("button", { name: "Reset demo" })).not.toBeInTheDocument();
-    expect(screen.queryByText(/No API, database, or email activity/)).not.toBeInTheDocument();
-    expect(fetcher.mock.calls.some(([url]) => url.startsWith("/api/hr/"))).toBe(false);
-    await ui.click(screen.getByRole("button", { name: /Riley Morgan HR Manager/ }));
-    await ui.click(screen.getByRole("button", { name: "Logout" }));
-    await ui.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Logout" }));
-    expect(await screen.findByRole("heading", { name: "Continue through team sign-in" })).toBeVisible();
+    await ui.click(await screen.findByRole("button", { name: "Continue locally" }));
+    expect(await screen.findByLabelText("Email subject")).toBeVisible();
+    expect(writes('/api/auth/development-login')).toHaveLength(1);
   });
   it("shows the configured team entry without a password form and resumes the same page after upstream sign-in", async () => {
     state.signedIn = false;
@@ -170,7 +163,7 @@ describe("authentication and navigation", () => {
     expect(fetcher.mock.calls.some(([url]) => url.startsWith('/api/hr/'))).toBe(false);
     state.signedIn = true;
     await ui.click(screen.getByRole('button', {name:'Check sign-in status'}));
-    expect(await screen.findByText('DEMO-HR-001')).toBeVisible();
+    expect(await screen.findByText('LOCAL-HR-001')).toBeVisible();
     expect(fetcher.mock.calls.some(([url]) => url === '/api/auth/login')).toBe(false);
   });
   it("reports the missing team integration without inventing a login URL", async () => {
@@ -658,9 +651,9 @@ describe("email templates", () => {
 });
 
 describe("logs and HR profile", () => {
-  it("shows simulated sent history and the immutable detail snapshot", async () => {
+  it("shows sent history and the immutable detail snapshot", async () => {
     const ui = mount("/logs");
-    expect(await screen.findByText("Simulated · No email sent")).toBeVisible();
+    expect(await screen.findByText("Sent")).toBeVisible();
     await ui.click(
       screen.getByRole("button", { name: "View email to Casey Taylor" }),
     );
@@ -689,9 +682,9 @@ describe("logs and HR profile", () => {
   it("sends exact trigger and search filters", async () => {
     const ui = mount("/logs");
     await screen.findByText("Casey Taylor");
-    await ui.type(screen.getByLabelText("Candidate or position"), "Casey");
-    await ui.type(screen.getByLabelText("Trigger event"), "Moved to Interview");
-    await ui.click(screen.getByRole("button", { name: "Apply filters" }));
+    await ui.type(screen.getByLabelText("Search"), "Casey");
+    await ui.selectOptions(screen.getByLabelText("Event"), "Moved to Interview");
+    await ui.click(screen.getByRole("button", { name: "Apply" }));
     await waitFor(() =>
       expect(
         fetcher.mock.calls.some(([url]) =>
@@ -702,7 +695,7 @@ describe("logs and HR profile", () => {
   });
   it("renders employment details as read-only text", async () => {
     mount("/profile");
-    expect(await screen.findByText("DEMO-HR-001")).toBeVisible();
+    expect(await screen.findByText("LOCAL-HR-001")).toBeVisible();
     expect(screen.getByText("+65 1234 5678")).toBeVisible();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(

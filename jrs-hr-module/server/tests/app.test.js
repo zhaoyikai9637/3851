@@ -8,10 +8,11 @@ import sharp from 'sharp';
 import { createApp } from '../src/app.js';
 import { teamIdentityFixture } from './helpers/team-identity.js';
 import { HttpError } from '../src/validation.js';
+import { createDevelopmentIdentityAdapter } from '../src/team-auth.js';
 
 describe('Express API with mock services and an isolated MemoryStore', () => {
   let app, services, store, uploadDir, agent, csrf, team, teamCookie;
-  const profile={userId:1,employeeId:'DEMO-1',fullName:'Riley',email:'hr@example.test',role:'HR Manager',department:'HR',accountStatus:'ACTIVE',phone:'',officeLocation:''};
+  const profile={userId:1,employeeId:'LOCAL-1',fullName:'Riley',email:'hr@example.test',role:'HR Manager',department:'HR',accountStatus:'ACTIVE',phone:'',officeLocation:''};
   beforeEach(async () => {
     uploadDir=await fs.mkdtemp(path.join(os.tmpdir(),'jrs-api-test-'));
     services={authorize:vi.fn().mockResolvedValue(profile),profile:vi.fn().mockResolvedValue(profile),updateProfile:vi.fn().mockResolvedValue(profile),updatePhoto:vi.fn().mockResolvedValue({profile,previousPhoto:null}),photoInUse:vi.fn().mockResolvedValue(false),photo:vi.fn().mockResolvedValue(''),notifications:vi.fn().mockResolvedValue({items:[],total:0,page:1,pageSize:10,unread:0,all:0}),markRead:vi.fn(),markAllRead:vi.fn().mockResolvedValue({updated:0,notificationIds:[]}),restoreUnread:vi.fn().mockResolvedValue({updated:0}),templates:vi.fn().mockResolvedValue([]),createTemplate:vi.fn(),updateTemplate:vi.fn(),deleteTemplate:vi.fn(),logs:vi.fn().mockResolvedValue({items:[],total:0,page:1,pageSize:10}),log:vi.fn(),attachment:vi.fn(),application:vi.fn()};
@@ -76,8 +77,20 @@ describe('Express API with mock services and an isolated MemoryStore', () => {
   it('does not trust a browser-provided HR ID or bearer string when no adapter is connected', async () => {
     const closed=createApp({services,sessionStore:store,config:{secret:'test-only-session-secret-never-used-outside-tests',origin:'http://localhost:5173',uploadDir}});
     await request(closed).get('/api/hr/profile?hrUserId=1').set('x-user-id','1').set('x-role','HR').set('Authorization','Bearer unverified').expect(401);
-    expect((await request(closed).get('/api/auth/config')).body).toEqual({loginUrl:null,adapterConfigured:false});
+    expect((await request(closed).get('/api/auth/config')).body).toEqual({loginUrl:null,adapterConfigured:false,developmentLogin:false});
     expect(services.profile).not.toHaveBeenCalled();
+  });
+  it('keeps the local development identity after session rotation', async () => {
+    const identity=createDevelopmentIdentityAdapter(
+      {production:false,mode:'standalone',developmentUserId:1},
+      {HrUser:{findOne:vi.fn().mockResolvedValue({userId:1})}},
+    );
+    const local=createApp({identity,services,sessionStore:store,config:{secret:'test-only-session-secret-never-used-outside-tests',origin:'http://localhost:5173',production:false,mode:'standalone',uploadDir}});
+    const localAgent=request.agent(local);
+    const token=(await localAgent.get('/api/auth/csrf').expect(200)).body.csrfToken;
+    await localAgent.post('/api/auth/development-login').set('Origin','http://localhost:5173').set('x-csrf-token',token).expect(204);
+    await localAgent.get('/api/auth/me').expect(200);
+    await localAgent.get('/api/hr/profile').expect(200);
   });
   it('rejects old CSRF after changing upstream accounts until me is refreshed', async () => {
     await enter(); const previous=csrf, other=team.issue(2); agent.set('Cookie',other.name+'='+other.value);
@@ -162,11 +175,11 @@ describe('Express API with mock services and an isolated MemoryStore', () => {
   it('downloads an authorized real stored file with its original filename', async () => {
     await enter();
     const name='33333333-3333-4333-8333-333333333333.txt';
-    const contents='Fictional attachment fixture. No real offer is issued.';
+    const contents='Isolated attachment fixture. No offer is issued.';
     await fs.writeFile(path.join(uploadDir,name),contents);
-    services.attachment.mockResolvedValue({fileUrl:name,fileName:'Demo note.txt'});
+    services.attachment.mockResolvedValue({fileUrl:name,fileName:'Interview note.txt'});
     const response=await agent.get('/api/hr/attachments/1/download').expect(200);
-    expect(response.headers['content-disposition']).toContain('Demo note.txt');
+    expect(response.headers['content-disposition']).toContain('Interview note.txt');
     expect(response.text).toBe(contents);
   });
   it('rejects invalid calendar dates and malformed JSON', async () => {

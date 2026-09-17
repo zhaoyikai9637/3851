@@ -58,7 +58,7 @@ export async function up({ context: q, mode = 'standalone' }) {
     log_id: id, application_id: ref('APPLICATION','application_id'), template_id: ref('EMAIL_TEMPLATE','template_id'), sender_user_id: ref('HR_USER','user_id'),
     trigger_event: s(100), source_module: s(100), recipient_email: s(150), candidate_name: s(100), position_title: s(150), template_name: s(150),
     email_subject: s(255), email_body: { type: D.TEXT, allowNull: false }, delivery_status: { ...s(20), defaultValue: 'PENDING' }, sent_at: { type: D.DATE, allowNull: true },
-    event_key: { ...s(150,true), unique: true }, error_message: s(255,true), is_demo: { type: D.BOOLEAN, allowNull: false, defaultValue: false }, created_at: time()
+    event_key: { ...s(150,true), unique: true }, error_message: s(255,true), created_at: time()
   });
   await addIndex('NOTIFICATION_LOG',['sender_user_id','delivery_status','sent_at']);
   await addIndex('NOTIFICATION_LOG',['trigger_event','sent_at']);

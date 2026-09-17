@@ -1,10 +1,10 @@
-// Fictional documentation examples only. This token cannot establish a session.
+// Documentation examples only. This token cannot establish a session.
 const at = '2026-09-09T02:30:00.000Z';
 export const exampleCsrf = '0'.repeat(64);
 export const exampleProfile = {
-  userId: 1, employeeId: 'DEMO-HR-001', fullName: 'Riley Morgan',
+  userId: 1, employeeId: 'LOCAL-HR-001', fullName: 'Riley Morgan',
   email: 'hr1@example.test', phone: '', role: 'HR Manager',
-  department: 'Human Resources', officeLocation: 'Demo Office',
+  department: 'Human Resources', officeLocation: 'Main Office',
   photoUrl: null, accountStatus: 'ACTIVE', lastLoginAt: null,
 };
 export const exampleTemplateInput = {
@@ -19,34 +19,34 @@ export const exampleTemplate = {
 export const exampleNotification = {
   notificationId: 1, recipientUserId: 1, applicationId: 1,
   notificationType: 'NEW_APPLICATION', title: 'New application received',
-  message: 'Casey Taylor applied for Software Developer (Demo).',
-  sourceModule: 'Applications (Demo)', isRead: false, readAt: null, createdAt: at,
+  message: 'Casey Taylor applied for Software Developer.',
+  sourceModule: 'Applications', isRead: false, readAt: null, createdAt: at,
 };
 export const exampleLog = {
   logId: 1, applicationId: 1, templateId: 1, senderUserId: 1,
-  triggerEvent: 'Moved to Interview', sourceModule: 'Applications (Demo)',
+  triggerEvent: 'Moved to Interview', sourceModule: 'Applications',
   recipientEmail: 'candidate1@example.test', candidateName: 'Casey Taylor',
-  positionTitle: 'Software Developer (Demo)', templateName: 'Historical invitation',
-  emailSubject: 'SIMULATED interview invitation', deliveryStatus: 'SENT',
-  sentAt: at, createdAt: at, isDemo: true,
+  positionTitle: 'Software Developer', templateName: 'Historical invitation',
+  emailSubject: 'Interview invitation', deliveryStatus: 'SENT',
+  sentAt: at, createdAt: at,
 };
 export const exampleLogDetail = {
   ...exampleLog,
-  emailBody: 'SIMULATED HISTORY: no email was sent. Dear Casey, this is the original saved content.',
-  attachments: [{ attachmentId: 1, fileName: 'Demo note.txt', fileType: 'text/plain' }],
+  emailBody: 'Dear Casey, this is the original saved content.',
+  attachments: [{ attachmentId: 1, fileName: 'Interview note.txt', fileType: 'text/plain' }],
 };
 export const exampleApplication = {
   applicationId: 1, candidateName: 'Casey Taylor',
-  positionTitle: 'Software Developer (Demo)', currentStatus: 'In Progress', appliedAt: at,
+  positionTitle: 'Software Developer', currentStatus: 'In Progress', appliedAt: at,
 };
-const sample = (value, summary = 'Fictional example; IDs are illustrative') => ({ summary, value });
+const sample = (value, summary = 'Illustrative example; IDs are not live values') => ({ summary, value });
 const page = item => ({ items: [item], total: 1, page: 1, pageSize: 10 });
 export const successExamples = {
   health: { healthy: sample({ status: 'ok', module: 'hr-notifications' }, 'Process is running') },
   csrf: { token: sample({ csrfToken: exampleCsrf }, 'Illustrative token; use the live session token') },
   authConfig: {
-    pending: sample({ loginUrl: null, adapterConfigured: false }, 'Current state: teammate sign-in is not implemented'),
-    registered: sample({ loginUrl: 'https://team.example.test/sign-in', adapterConfigured: true }, 'Illustrative adapter registration; not evidence of integration'),
+    pending: sample({ loginUrl: null, adapterConfigured: false, developmentLogin: false }, 'No sign-in adapter is available'),
+    registered: sample({ loginUrl: 'https://team.example.test/sign-in', adapterConfigured: true, developmentLogin: false }, 'Illustrative team adapter registration'),
   },
   me: { hr: sample({ user: exampleProfile, csrfToken: exampleCsrf, mode: 'standalone' }) },
   profile: { profile: sample(exampleProfile) },
@@ -66,7 +66,7 @@ export const successExamples = {
   application: { assigned: sample(exampleApplication) },
 };
 export const requestExamples = {
-  updateProfile: { allowedFields: sample({ fullName: 'Riley Morgan', phone: '', officeLocation: 'Demo Office' }) },
+  updateProfile: { allowedFields: sample({ fullName: 'Riley Morgan', phone: '', officeLocation: 'Main Office' }) },
   restoreUnread: { changedNotifications: sample({ notificationIds: [1] }) },
   createTemplate: { acknowledgement: sample(exampleTemplateInput) },
   updateTemplate: { futureContent: sample({ ...exampleTemplateInput, subject: 'Application update for [CandidateName]' }) },

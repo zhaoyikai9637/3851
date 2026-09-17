@@ -10,7 +10,7 @@ export function loadConfig(env = process.env) {
   if (production && !origin.startsWith('https://')) throw new Error('Production APP_ORIGIN must use HTTPS.');
   const mode = env.INTEGRATION_MODE || 'standalone';
   if (!['standalone', 'team'].includes(mode)) throw new Error('Invalid INTEGRATION_MODE.');
-  if (production && mode === 'standalone') throw new Error('Standalone demo is for development. Integrate team authentication before production.');
+  if (production && mode === 'standalone') throw new Error('Standalone mode is limited to development. Integrate team authentication before production.');
   let teamLoginUrl = null;
   if (env.TEAM_LOGIN_URL?.trim()) {
     const value = new URL(env.TEAM_LOGIN_URL);
@@ -19,7 +19,12 @@ export function loadConfig(env = process.env) {
     teamLoginUrl = value.href;
   }
   const teamAuthAdapter = env.TEAM_AUTH_ADAPTER?.trim() ? path.resolve(serverRoot, env.TEAM_AUTH_ADAPTER.trim()) : null;
-  return { production, secret, origin: new URL(origin).origin, mode, teamLoginUrl, teamAuthAdapter, companyName: env.COMPANY_NAME || 'JRS',
+  const developmentUserId = env.DEV_HR_USER_ID ? Number(env.DEV_HR_USER_ID) : null;
+  if (developmentUserId !== null && (!Number.isInteger(developmentUserId) || developmentUserId < 1)) throw new Error('DEV_HR_USER_ID must be a positive integer.');
+  if (developmentUserId !== null && (production || mode !== 'standalone' || !['127.0.0.1','localhost'].includes(env.HOST || '127.0.0.1'))) {
+    throw new Error('DEV_HR_USER_ID is allowed only for local standalone development.');
+  }
+  return { production, secret, origin: new URL(origin).origin, mode, teamLoginUrl, teamAuthAdapter, developmentUserId, companyName: env.COMPANY_NAME || 'JRS',
     port: Number(env.PORT || 3001), host: env.HOST || '127.0.0.1',
     uploadDir: path.resolve(serverRoot, env.UPLOAD_DIR || 'uploads') };
 }

@@ -10,7 +10,7 @@ import { createDatabase } from '../src/db.js';
 import { assertDatabaseWriteAllowed, inspectMigrationTarget, moduleTables, tableNames } from '../src/database-safety.js';
 import { migrator } from '../src/migrate.js';
 import { defineModels } from '../src/models.js';
-import { seedDemo } from '../src/seed.js';
+import { seedDevelopment } from '../src/seed.js';
 import { createServices } from '../src/services.js';
 import { DatabaseSessionStore } from '../src/session-store.js';
 import { teamIdentityFixture } from './helpers/team-identity.js';
@@ -27,15 +27,22 @@ describe('dedicated real MySQL integration', () => {
     assertDatabaseWriteAllowed(env,'test');
     db=createDatabase(env);await db.authenticate();await inspectMigrationTarget(db);
     await migrator(db).up();models=defineModels(db);
-    await seedDemo(db,models,{password:env.SEED_PASSWORD});services=createServices(models);
-    hr1=await models.HrUser.findOne({where:{employeeId:'DEMO-HR-001'}});
-    hr2=await models.HrUser.findOne({where:{employeeId:'DEMO-HR-002'}});
+    await seedDevelopment(db,models);services=createServices(models);
+    hr1=await models.HrUser.findOne({where:{employeeId:'LOCAL-HR-001'}});
+    [hr2]=await models.HrUser.findOrCreate({where:{employeeId:'TEST-HR-002'},defaults:{fullName:'Second HR',email:'hr2@example.test',role:'HR Manager',department:'Human Resources',accountStatus:'ACTIVE'}});
+    const [candidate]=await models.Candidate.findOrCreate({where:{email:'candidate1@example.test'},defaults:{fullName:'Casey Taylor'}});
+    const [job]=await models.Job.findOrCreate({where:{title:'Software Developer'},defaults:{}});
+    const [application]=await models.Application.findOrCreate({where:{candidateId:candidate.candidateId,positionId:job.positionId,assignedHrUserId:hr1.userId},defaults:{currentStatus:'In Progress'}});
+    const template=await models.Template.findOne({where:{templateName:'Interview Invite'}});
+    await models.Log.findOrCreate({where:{eventKey:'test:baseline:sent'},defaults:{applicationId:application.applicationId,templateId:template.templateId,senderUserId:hr1.userId,triggerEvent:'Moved to Interview',sourceModule:'Applications',recipientEmail:candidate.email,candidateName:candidate.fullName,positionTitle:job.title,templateName:template.templateName,emailSubject:'Interview invitation',emailBody:'Original email body',deliveryStatus:'SENT',sentAt:new Date()}});
+    await models.Log.findOrCreate({where:{eventKey:'test:baseline:preview'},defaults:{applicationId:application.applicationId,templateId:template.templateId,senderUserId:hr1.userId,triggerEvent:'Preview',sourceModule:'Applications',recipientEmail:candidate.email,candidateName:candidate.fullName,positionTitle:job.title,templateName:template.templateName,emailSubject:'Preview',emailBody:'Preview body',deliveryStatus:'PREVIEW',sentAt:null}});
+    await models.Log.findOrCreate({where:{eventKey:'test:other:sent'},defaults:{applicationId:application.applicationId,templateId:template.templateId,senderUserId:hr2.userId,triggerEvent:'Moved to Interview',sourceModule:'Applications',recipientEmail:candidate.email,candidateName:candidate.fullName,positionTitle:job.title,templateName:template.templateName,emailSubject:'Interview invitation',emailBody:'Other HR email body',deliveryStatus:'SENT',sentAt:new Date()}});
   });
   afterAll(async()=>{if(db) await db.close();});
   it('creates the full schema and makes rerunning the migration a no-op', async () => {
     expect(tableNames(await db.getQueryInterface().showAllTables())).toEqual(expect.arrayContaining(moduleTables));
     expect(await migrator(db).up()).toEqual([]);
-    expect((await migrator(db).executed()).map(row=>row.name)).toEqual(['001-module']);
+    expect((await migrator(db).executed()).map(row=>row.name)).toEqual(['001-module','002-real-data-baseline']);
     for(const model of Object.values(models)) {
       const columns=await db.getQueryInterface().describeTable(model.getTableName());
       for(const attr of Object.values(model.rawAttributes)) expect(columns).toHaveProperty(attr.field);
@@ -74,10 +81,10 @@ describe('dedicated real MySQL integration', () => {
       }
     }
   });
-  it('keeps seed reruns stable and excludes all non-success histories', async () => {
-    const before=await models.Log.count();await seedDemo(db,models,{password:env.SEED_PASSWORD});expect(await models.Log.count()).toBe(before);
+  it('keeps baseline reruns stable and excludes all non-success histories', async () => {
+    const before=await models.Log.count();await seedDevelopment(db,models);expect(await models.Log.count()).toBe(before);
     const result=await services.logs(hr1.userId,{page:1,pageSize:50});expect(result.items.length).toBeGreaterThan(0);
-    expect(result.items.every(row=>row.senderUserId===hr1.userId && row.deliveryStatus==='SENT' && row.sentAt && row.isDemo)).toBe(true);
+    expect(result.items.every(row=>row.senderUserId===hr1.userId && row.deliveryStatus==='SENT' && row.sentAt)).toBe(true);
     const other=await models.Log.findOne({where:{senderUserId:hr2.userId,deliveryStatus:'SENT'}});
     await expect(services.log(hr1.userId,other.logId)).rejects.toMatchObject({status:404});
     const preview=await models.Log.findOne({where:{senderUserId:hr1.userId,deliveryStatus:'PREVIEW'}});
@@ -94,7 +101,7 @@ describe('dedicated real MySQL integration', () => {
   it('retains original sent snapshots after template update and soft deletion', async () => {
     const template=await services.createTemplate(hr1.userId,{templateName:`Integration ${crypto.randomUUID()}`,subject:'Original subject',body:'Original body',usageType:'IN_PROGRESS'});
     const application=await models.Application.findOne({where:{assignedHrUserId:hr1.userId}});
-    const history=await models.Log.create({applicationId:application.applicationId,templateId:template.templateId,senderUserId:hr1.userId,triggerEvent:'Test fixture',sourceModule:'Integration test',recipientEmail:'candidate1@example.test',candidateName:'Fictional snapshot test',positionTitle:'Test position',templateName:template.templateName,emailSubject:'Original subject',emailBody:'Original body',deliveryStatus:'SENT',sentAt:new Date(),isDemo:true});
+    const history=await models.Log.create({applicationId:application.applicationId,templateId:template.templateId,senderUserId:hr1.userId,triggerEvent:'Test fixture',sourceModule:'Integration test',recipientEmail:'candidate1@example.test',candidateName:'Snapshot test',positionTitle:'Test position',templateName:template.templateName,emailSubject:'Original subject',emailBody:'Original body',deliveryStatus:'SENT',sentAt:new Date()});
     await services.updateTemplate(hr1.userId,template.templateId,{templateName:template.templateName,subject:'New subject',body:'New body',usageType:'IN_PROGRESS'});
     await services.deleteTemplate(hr1.userId,template.templateId);
     const saved=await services.log(hr1.userId,history.logId);
@@ -108,7 +115,7 @@ describe('dedicated real MySQL integration', () => {
     const marker=`Boundary ${crypto.randomUUID()}`;
     for(const [index,sentAt] of ['2026-09-08T15:59:59Z','2026-09-08T16:00:00Z','2026-09-09T15:59:59Z','2026-09-09T16:00:00Z'].entries()) {
       const row=sample.get({plain:true});delete row.logId;delete row.createdAt;
-      await models.Log.create({...row,eventKey:`test:date:${crypto.randomUUID()}`,candidateName:marker,sentAt,triggerEvent:`Boundary ${index}`,isDemo:true});
+      await models.Log.create({...row,eventKey:`test:date:${crypto.randomUUID()}`,candidateName:marker,sentAt,triggerEvent:`Boundary ${index}`});
     }
     const result=await services.logs(hr1.userId,{page:1,pageSize:50,search:marker,from:'2026-09-09',to:'2026-09-09'});
     expect(result.items.map(row=>row.triggerEvent).sort()).toEqual(['Boundary 1','Boundary 2']);
@@ -183,7 +190,7 @@ describe('dedicated real MySQL integration', () => {
     const target='/api/hr/templates/'+created.body.templateId;
     await verify('/api/hr/templates/{id}','put',agent.put(target).set('x-csrf-token',token).send({...fields,subject:'Updated subject'}).expect(200));
     await verify('/api/hr/templates/{id}','delete',agent.delete(target).set('x-csrf-token',token).expect(204));
-    const notice=await models.Notification.create({recipientUserId:hr1.userId,title:'Contract fixture',message:'Fictional local test',notificationType:'NEW_APPLICATION'});
+    const notice=await models.Notification.create({recipientUserId:hr1.userId,title:'Contract fixture',message:'Local test',notificationType:'NEW_APPLICATION'});
     await verify('/api/hr/notifications/{id}/read','patch',agent.patch('/api/hr/notifications/'+notice.notificationId+'/read').set('x-csrf-token',token).expect(204));
     await verify('/api/hr/notifications/read-all','patch',agent.patch('/api/hr/notifications/read-all').set('x-csrf-token',token).expect(200));
     await verify('/api/auth/logout','post',agent.post('/api/auth/logout').set('x-csrf-token',token).expect(204));

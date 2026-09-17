@@ -1,4 +1,5 @@
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { HttpError } from './validation.js';
 
@@ -19,8 +20,25 @@ export function assertIdentityAdapter(adapter) {
   }
   return adapter;
 }
+export function createDevelopmentIdentityAdapter(config, models) {
+  if (config.production || config.mode !== 'standalone' || !config.developmentUserId) return null;
+  return assertIdentityAdapter({
+    async resolve(req) {
+      const identity = req.session?.developmentIdentity;
+      return identity?.hrUserId === config.developmentUserId ? identity : null;
+    },
+    async login(req) {
+      const user = await models.HrUser.findOne({ where: { userId: config.developmentUserId, accountStatus: 'ACTIVE' } });
+      if (!user) throw new HttpError(403, 'The configured local HR profile is not active.');
+      const identity = { subject: `local-hr:${user.userId}`, sessionId: crypto.randomUUID(), role: 'HR', hrUserId: user.userId };
+      req.session.developmentIdentity = identity;
+      return identity;
+    },
+    async logout(req) { delete req.session.developmentIdentity; },
+  });
+}
 export async function loadIdentityAdapter(config, models) {
-  if (!config.teamAuthAdapter) return null;
+  if (!config.teamAuthAdapter) return createDevelopmentIdentityAdapter(config, models);
   // This is a local, explicitly configured server file, never a browser-supplied URL.
   const module = await import(pathToFileURL(path.resolve(config.teamAuthAdapter)).href);
   if (typeof module.createIdentityAdapter !== 'function') throw new Error('Team adapter must export createIdentityAdapter({ config, models }).');
