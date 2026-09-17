@@ -10,6 +10,10 @@ describe('database write guards (no database connection)', () => {
     const shared={...safe,NODE_ENV:'development',INTEGRATION_MODE:'team',DB_NAME:'jrs_hr_module_dev_team',DB_WRITE_CONFIRMED:'jrs_hr_module_dev_team',DB_SHARED_INTEGRATION_CONFIRMED:'jrs_hr_module_dev_team'};
     expect(() => assertDatabaseWriteAllowed(shared,'migration')).not.toThrow();
   });
+  it('permits team runtime access without enabling migration writes', () => {
+    const runtime={...safe,NODE_ENV:'development',INTEGRATION_MODE:'team',DB_NAME:'jrs_hr_module_dev_team',DB_WRITE_CONFIRMED:'',DB_SHARED_INTEGRATION_CONFIRMED:'',DB_USER:'dev_zhaoyikai'};
+    expect(() => assertDatabaseWriteAllowed(runtime,'runtime')).not.toThrow();
+  });
   it('blocks seed data and incomplete confirmation in team mode', () => {
     const shared={...safe,NODE_ENV:'development',INTEGRATION_MODE:'team',DB_NAME:'jrs_hr_module_dev_team',DB_WRITE_CONFIRMED:'jrs_hr_module_dev_team',DB_SHARED_INTEGRATION_CONFIRMED:'jrs_hr_module_dev_team'};
     expect(() => assertDatabaseWriteAllowed(shared,'seed')).toThrow();

@@ -13,6 +13,19 @@ describe('database write safeguards', () => {
     expect(() => assertDatabaseWriteAllowed(approved, 'test')).not.toThrow();
   });
 
+  test('accepts team runtime access without migration confirmation flags', () => {
+    const runtime = {
+      ...approved,
+      NODE_ENV: 'development',
+      INTEGRATION_MODE: 'team',
+      DB_NAME: 'jrs_hr_module_dev_team',
+      DB_WRITE_CONFIRMED: '',
+      DB_SHARED_INTEGRATION_CONFIRMED: '',
+      DB_USER: 'dev_zhaoyikai'
+    };
+    expect(() => assertDatabaseWriteAllowed(runtime, 'runtime')).not.toThrow();
+  });
+
   test.each([
     [{ NODE_ENV: 'production' }, 'test'],
     [{ INTEGRATION_MODE: 'team' }, 'test'],

@@ -1,9 +1,9 @@
 # Jest Unit Test Report
 
-- Executed: Thursday, 17 September 2026 at 17:44:21 (Asia/Hong_Kong)
+- Executed: Thursday, 17 September 2026 at 18:21:39 (Asia/Hong_Kong)
 - Environment: Node v24.16.0; Jest 30.5.1
 - Command: `npm.cmd run test:jest` (from the project root)
-- Result: PASS; suites: 2; tests: 46; passed: 46; failed: 0.
+- Result: PASS; suites: 2; tests: 47; passed: 47; failed: 0.
 
 ## Scope
 
@@ -15,10 +15,10 @@
 
 | Metric | Coverage |
 |---|---:|
-| Statements | 93% |
-| Branches | 84.28% |
+| Statements | 93.06% |
+| Branches | 84.93% |
 | Functions | 90.9% |
-| Lines | 93% |
+| Lines | 93.06% |
 
 ## Test Cases
 
@@ -57,6 +57,7 @@
 | server/jest-tests/validation.test.js | historical date filters accepts only SENT as a log status filter | Pass |
 | server/jest-tests/validation.test.js | historical date filters rejects future dates on the log path too | Pass |
 | server/jest-tests/safety.test.js | database write safeguards accepts an explicitly confirmed dedicated test database | Pass |
+| server/jest-tests/safety.test.js | database write safeguards accepts team runtime access without migration confirmation flags | Pass |
 | server/jest-tests/safety.test.js | database write safeguards rejects unsafe database configuration 0 | Pass |
 | server/jest-tests/safety.test.js | database write safeguards rejects unsafe database configuration 1 | Pass |
 | server/jest-tests/safety.test.js | database write safeguards rejects unsafe database configuration 2 | Pass |

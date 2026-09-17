@@ -8,7 +8,7 @@ import { createApp } from './app.js';
 import { loadIdentityAdapter } from './team-auth.js';
 import { assertDatabaseWriteAllowed } from './database-safety.js';
 // Module CSRF session persistence writes only to the approved dedicated database.
-assertDatabaseWriteAllowed();
+assertDatabaseWriteAllowed(process.env,'runtime');
 const config=loadConfig();
 const db=createDatabase(); const models=defineModels(db);
 try {

@@ -4,11 +4,12 @@ export function assertDatabaseWriteAllowed(env = process.env, purpose) {
   if (!['standalone','team'].includes(mode)) throw new Error('Invalid integration mode.');
   const name = env.DB_NAME || '';
   const match = /^jrs_hr_module_(dev|test)_[a-z0-9_]+$/.exec(name);
-  if (!match || env.DB_WRITE_CONFIRMED !== name) {
+  const runtime = purpose === 'runtime';
+  if (!match || (!runtime && env.DB_WRITE_CONFIRMED !== name)) {
     throw new Error('Confirm a new dedicated database first; DB_NAME must use jrs_hr_module_dev_* or jrs_hr_module_test_* and DB_WRITE_CONFIRMED must equal that exact name.');
   }
   if (['dev','test'].includes(purpose) && match[1] !== purpose) throw new Error(`This command requires a dedicated ${purpose} database.`);
-  if (mode === 'team' && (purpose !== 'migration' || env.DB_SHARED_INTEGRATION_CONFIRMED !== name)) {
+  if (mode === 'team' && !runtime && (purpose !== 'migration' || env.DB_SHARED_INTEGRATION_CONFIRMED !== name)) {
     throw new Error('Team mode allows only migrations against the explicitly confirmed shared integration database.');
   }
   if (!env.DB_USER || env.DB_USER.toLowerCase() === 'root') throw new Error('Configure a dedicated development database user, not root.');
