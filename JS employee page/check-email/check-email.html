@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JRS - Check Your Email</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="top-header">
+        <div class="logo-container">
+            <div class="logo-circles">
+                <span class="circle circle-dark"></span>
+                <span class="circle circle-blue"></span>
+            </div>
+            <div class="logo-text">
+                <span class="logo-title">JRS</span>
+                <span class="logo-subtitle">JOB RECRUITMENT SYSTEM</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="page-container">
+        <div class="auth-card">
+            <h1 class="auth-title">Check your email</h1>
+            <p class="auth-subtitle">
+                We've sent a 4-digit verification code to<br>
+                <strong id="displayEmail">xxx@example.com</strong>
+            </p>
+
+            <!-- 验证通过后跳转至 set-new-password 文件夹下的 set-new-password.html -->
+            <form id="otpForm" action="../set-new-password/set-new-password.html" method="GET" novalidate>
+                <!-- 4-Digit OTP Container -->
+                <div class="otp-container">
+                    <input type="text" maxlength="1" class="otp-box" pattern="\d*" required placeholder="-">
+                    <input type="text" maxlength="1" class="otp-box" pattern="\d*" required placeholder="-">
+                    <input type="text" maxlength="1" class="otp-box" pattern="\d*" required placeholder="-">
+                    <input type="text" maxlength="1" class="otp-box" pattern="\d*" required placeholder="-">
+                </div>
+                <div class="error-message text-center" id="otpError"></div>
+
+                <!-- Action Button -->
+                <button type="submit" id="verifyBtn" class="btn-primary">Verify code</button>
+
+                <!-- Resend Footer -->
+                <div class="resend-container">
+                    <span>Didn't receive the code?</span>
+                    <button type="button" id="resendBtn" class="resend-link" disabled>
+                        Resent (<span id="countdown">59</span>s)
+                    </button>
+                </div>
+
+                <!-- 返回 Login Page 目录下的 Login.html -->
+                <div class="resend-container" style="margin-top: 16px;">
+                    <a href="../Login Page/Login.html" class="resend-link"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- 匹配 check-email 目录下的工具类文件与逻辑文件 -->
+    <script src="check_utils.js"></script>
+    <script src="check-email.js"></script>
+</body>
+</html>
