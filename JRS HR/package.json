@@ -1,0 +1,29 @@
+{
+  "name": "jrs-hr-fullstack",
+  "version": "2.1.0",
+  "private": true,
+  "description": "JRS HR module: JavaScript frontend, Node.js API and MySQL 8",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --env-file=.env server/index.cjs",
+    "dev": "node --env-file=.env --watch server/index.cjs",
+    "db:init": "node --env-file=.env scripts/database.cjs init",
+    "db:seed": "node --env-file=.env scripts/database.cjs seed",
+    "db:backup": "node --env-file=.env scripts/backup.cjs",
+    "test": "node --test tests/backend.test.cjs tests/config.test.cjs tests/frontend.test.cjs tests/http.test.cjs tests/mail.test.cjs tests/retention.test.cjs tests/workflow.test.cjs",
+    "test:integration": "node --env-file=.env --test tests/mysql.integration.cjs tests/retention.integration.cjs",
+    "test:jest": "jest --runInBand",
+    "db:check": "node --env-file=.env scripts/check-database.cjs",
+    "db:migrate": "node --env-file=.env scripts/database.cjs migrate"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "mysql2": "3.24.4",
+    "nodemailer": "10.0.2"
+  },
+  "devDependencies": {
+    "jest": "30.5.1"
+  }
+}

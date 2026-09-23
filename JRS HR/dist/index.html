@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="JRS HR workspace for applications, interviews and candidate communication.">
+  <title>JRS | HR Workspace</title><link rel="stylesheet" href="styles.css">
+  <script src="state.js" defer></script><script src="icons.js" defer></script><script src="resume.js" defer></script>
+  <script src="views.js" defer></script><script src="api.js" defer></script><script src="hr-extra.js" defer></script><script src="app.js" defer></script>
+</head>
+<body>
+  <div id="login-screen" class="login-screen" hidden></div>
+  <div id="app-shell" hidden>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <aside class="sidebar" aria-label="Workspace">
+      <a class="brand" href="#/dashboard" aria-label="JRS Dashboard"><span class="brand-main"><span class="brand-mark"></span><strong>JRS</strong></span><span class="brand-caption">JOB RECRUITMENT SYSTEM</span></a>
+      <p class="nav-label">WORKSPACE</p><nav id="navigation"></nav>
+      <div class="workspace-note">Singapore · UTC+08:00<button data-action="workspace-refresh">Refresh workspace</button><button data-action="data-settings">Workspace data</button></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar"><h1 id="page-label">Dashboard</h1><details class="account-menu"><summary class="user-profile"><span class="profile-avatar" data-icon="user"></span><span><strong id="user-name">HR User</strong><small id="user-role">HR</small></span></summary><div class="account-options"><a href="#/hr-profile">My Profile</a><button data-action="logout">Sign Out</button><button data-action="sign-in-again">Sign In Again</button></div></details></header>
+      <div id="storage-warning" class="warning-banner" role="status" hidden></div><main id="content" tabindex="-1"></main>
+    </div>
+    <dialog id="modal" aria-labelledby="modal-title"><header class="modal-heading"><div class="modal-heading-text"><span id="modal-icon"></span><div><h2 id="modal-title"></h2><p id="modal-subtitle"></p></div></div><button type="button" class="icon-button" data-action="close" aria-label="Close dialog">×</button></header><div id="modal-body"></div></dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </div>
+  <noscript>This HR workspace requires JavaScript.</noscript>
+</body></html>
