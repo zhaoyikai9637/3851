@@ -3,10 +3,10 @@ import { Link, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth";
 import { WorkspaceLayout } from "./layout/WorkspaceLayout";
 import { workspaceLinks } from "./layout/navigation";
-import { Logs } from "./pages/Logs";
-import { Notifications } from "./pages/Notifications";
-import { EditProfile, Profile } from "./pages/Profile";
-import { Templates } from "./pages/Templates";
+import { Logs } from "../pages/logs/Logs";
+import { Notifications } from "../pages/notifications/Notifications";
+import { EditProfile, Profile } from "../pages/profile/Profile";
+import { Templates } from "../pages/templates/Templates";
 
 class PageBoundary extends Component {
   state = { failed: false };

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { api } from "../api";
-import { useAuth } from "../auth";
+import { api } from "../../src/api";
+import { useAuth } from "../../src/auth";
 import {
   Avatar,
   dateTime,
@@ -10,7 +10,7 @@ import {
   Loading,
   PageHeading,
   useLoad,
-} from "../shared";
+} from "../../src/shared";
 
 export function Profile() {
   const load = useLoad("/api/hr/profile");

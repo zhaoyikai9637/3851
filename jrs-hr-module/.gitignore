@@ -8,6 +8,8 @@ client/dist/
 coverage/
 server/uploads/
 server/uploads-test/
+uploads/*
+!uploads/README.md
 *.log
 .DS_Store
 # Private source reports/screenshots included for local Codex handoff only.

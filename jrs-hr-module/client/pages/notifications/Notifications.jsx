@@ -1,14 +1,14 @@
-import { ApplicationSummary } from "../features/notifications/ApplicationSummary";
+import { ApplicationSummary } from "../../src/features/notifications/ApplicationSummary";
 import {
   NotificationGroup,
   NotificationSkeleton,
-} from "../features/notifications/NotificationList";
-import { NotificationToolbar } from "../features/notifications/NotificationToolbar";
-import { MarkAllReadToast } from "../features/notifications/MarkAllReadToast";
-import { groupNotifications } from "../features/notifications/notificationUtils";
-import { useNotificationCenter } from "../features/notifications/useNotificationCenter";
-import "../features/notifications/notifications.css";
-import { Empty, ErrorBox, PageHeading, Pagination } from "../shared";
+} from "../../src/features/notifications/NotificationList";
+import { NotificationToolbar } from "../../src/features/notifications/NotificationToolbar";
+import { MarkAllReadToast } from "../../src/features/notifications/MarkAllReadToast";
+import { groupNotifications } from "../../src/features/notifications/notificationUtils";
+import { useNotificationCenter } from "../../src/features/notifications/useNotificationCenter";
+import "../../src/features/notifications/notifications.css";
+import { Empty, ErrorBox, PageHeading, Pagination } from "../../src/shared";
 
 export { groupNotifications };
 

@@ -6,6 +6,11 @@
 
 ## 现在启动
 
+2026-10-07 更新：按团队约定整理为 `client/pages/<功能>`、`client/assets`、
+`server/config`、`server/routes` 和 `server/server.js`，保留 React 与各成员独立模块。
+云库只读核对、原创内容和运行命令见 [云库同步与原创内容](docs/CLOUD_SYNC_AND_CONTENT.md)。
+云库目前没有可导入的业务记录；新增 5 套原创邮件模板仅安装到本地开发库，不覆盖原模板。
+
 本机两个专用数据库已获准新建、迁移和写入虚构种子，环境文件已经配置。
 无需重新解压、重新建库或导入旧 SQL。Node 24.16.0 / npm 11.13.0 / MySQL 26.7.0。
 
@@ -75,8 +80,8 @@ http://127.0.0.1:3001 作为网页地址，须在本地将 APP_ORIGIN 设为同�
 附件写入契约见 docs/INTEGRATION.md，尚未声称与组员集成。
 
 仍有 Sequelize/UUID 2 项 moderate 审计项，详见 docs/DEPENDENCIES.md。
-无 Git 仓库或远端；不提交 reference、环境文件、上传文件、work、node_modules。
-本轮没有发送真实邮件、发布网站或推送 GitHub。
+本地开发源与 GitHub `3851/jrs-hr-module` 分开维护，仅同步本模块的明确改动。
+不提交 reference、环境文件、上传文件、work、node_modules；不发送真实邮件或发布网站。
 
 See `docs/TEAM_BACKEND_BASELINE.md` for the shared backend inventory, database
 ownership, existing APIs and remaining work. Share migrations and contracts, not

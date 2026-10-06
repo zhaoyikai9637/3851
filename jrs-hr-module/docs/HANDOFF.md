@@ -2,8 +2,8 @@
 
 ## Runtime architecture
 
-- React and Bootstrap client under `client/src`.
-- Express API under `server/src`.
+- React and Bootstrap pages under `client/pages`; shared features under `client/src` and assets under `client/assets`.
+- Express entry at `server/server.js`, configuration under `server/config`, HR routes under `server/routes`; services remain under `server/src`.
 - MySQL through Sequelize with explicit Umzug migrations.
 - Private uploads stored under the configured `UPLOAD_DIR`; database rows retain the private filename.
 - The browser receives files only through authorized API routes.
@@ -20,7 +20,7 @@ Local standalone development may set `DEV_HR_USER_ID`. This exposes `POST /api/a
 - `client/src/layout`: primary navigation and workspace shell.
 - `client/src/features/logs`: log filters, grouping and activity rows.
 - `client/src/features/notifications`: notification state/actions, filtering and grouping utilities, composed UI sections and feature-local styles.
-- `client/src/pages`: page-level data orchestration.
+- `client/pages/<feature>`: page-level data orchestration.
 - `client/src/shared.jsx`: shared fields, dates, loading, errors and dialogs.
 
 `Notifications.jsx` is now a route-level composition boundary. The feature hook owns API-backed state and mutations, while toolbar, list, row actions, undo feedback and application summary components remain presentation-focused.
@@ -34,3 +34,14 @@ Local standalone development may set `DEV_HR_USER_ID`. This exposes `POST /api/a
 ## Data persistence
 
 Templates, notification read state, profile changes, profile photos and email history are persisted by the API. Refreshing the page reloads authoritative values from MySQL.
+
+## 2026-10-07 cloud and original content
+
+The team cloud database was inspected over verified TLS in a read-only transaction.
+All eight allowed business tables were empty; no records were imported and no cloud writes occurred.
+Account credentials and sessions are excluded from export. Private snapshots stay under ignored `work/`.
+
+Five AI-assisted original templates were installed into the existing local standalone database.
+Installation requires an active HR ID, retains existing templates and is repeatable.
+Fictional profile/notification examples remain documentation data, not fabricated live activity.
+See `CLOUD_SYNC_AND_CONTENT.md`. Team login integration and the other HR modules remain separate.

@@ -1,5 +1,20 @@
 # Verification
 
+## 2026-10-07 cloud inspection and directory alignment
+
+- Cloud inspection: verified TLS, read-only transaction, eight business tables empty; zero imports and zero cloud writes. Accounts/sessions excluded from export.
+- Original installer: local development database only, first run created 5 templates, second run retained all 5. Existing 5 templates preserved; no mail sent.
+- New cloud inspection tests: 3 passed, including rollback and account exclusion.
+- New original content tests: 3 passed, including validation, repeatability and missing HR rejection. TDD failures recorded before implementation.
+- `npm test`: server 175 passed; client 50 passed (includes Supertest API coverage).
+- `npm run test:mysql`: 12 passed on the dedicated local test database.
+- `npm run build`: passed, 62 modules transformed.
+- `npm run lint` and `npm run format:check`: passed (scoped notification checks).
+- `npm run docs:check`: passed, 24 operations and 346 examples.
+- This change relocates page/CSS files without changing rendered UI; no new browser visual verification was performed. Team authentication and full team integration remain unverified.
+- GitHub checkout verification: server 176, client 50 and real MySQL 12 passed; build, docs, lint and formatting passed. The checkout retains one additional pre-existing server test absent from the local development source.
+- First checkout client run reported a timeout after an abnormally long elapsed run and a following input assertion failure; a fresh full run passed. Initial formatting failed on checkout CRLF line endings; scoped formatting normalized them without logic changes.
+
 ## 2026-09-17 real-data and structure update
 
 - MySQL service detected and running.

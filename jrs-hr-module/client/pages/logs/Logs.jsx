@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { api, query } from "../api";
-import { LogActivity } from "../features/logs/LogActivity";
-import { LogFilters } from "../features/logs/LogFilters";
-import { initialLogFilters } from "../features/logs/logUtils";
-import { dateTime, ErrorBox, Loading, Modal, PageHeading, historicalDateRange, useLoad } from "../shared";
+import { api, query } from "../../src/api";
+import { LogActivity } from "../../src/features/logs/LogActivity";
+import { LogFilters } from "../../src/features/logs/LogFilters";
+import { initialLogFilters } from "../../src/features/logs/logUtils";
+import { dateTime, ErrorBox, Loading, Modal, PageHeading, historicalDateRange, useLoad } from "../../src/shared";
 
 export function Logs() {
   const [filters, setFilters] = useState(initialLogFilters), [draft, setDraft] = useState(initialLogFilters), [datesOpen, setDatesOpen] = useState(false), [error, setError] = useState(null), [selected, setSelected] = useState(null);

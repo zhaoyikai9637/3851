@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { api } from "../api";
-import { useAuth } from "../auth";
+import { api } from "../../src/api";
+import { useAuth } from "../../src/auth";
 import {
   Empty,
   ErrorBox,
@@ -10,7 +10,7 @@ import {
   PageHeading,
   usageTypes,
   useLoad,
-} from "../shared";
+} from "../../src/shared";
 
 const blank = {
   templateName: "",

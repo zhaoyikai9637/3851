@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/index.js",
-    "start": "node src/index.js",
+    "dev": "node --watch server.js",
+    "start": "node server.js",
     "db:migrate": "node src/migrate.js",
     "db:seed": "node src/seed.js",
     "test": "vitest run",

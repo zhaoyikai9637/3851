@@ -2,6 +2,10 @@
 
 ## Completed
 
+- Aligned page, asset, configuration, route and entry directories with the team's convention without merging member modules.
+- Inspected the cloud database read-only; no useful business rows were present to import.
+- Added five original templates and an idempotent local-only installer with regression tests.
+
 - Standardized navigation labels as nouns.
 - Removed the browser-only data adapter and its access path.
 - Added a local-only development entry backed by the real MySQL HR profile.

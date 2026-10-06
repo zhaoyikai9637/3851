@@ -1,0 +1,54 @@
+{
+  "provenance": {
+    "createdFor": "Zhao Yikai — HR notification and profile module",
+    "date": "2026-10-07",
+    "type": "Original project content prepared with AI assistance",
+    "fictionalExamples": true
+  },
+  "templates": [
+    {
+      "templateName": "JRS — Interview invitation",
+      "usageType": "INTERVIEW_INVITE",
+      "subject": "Next step for your [JobTitle] application",
+      "body": "Dear [CandidateName],\n\nThank you for sharing your experience with [CompanyName]. We would like to invite you to an interview for [JobTitle].\n\nOur recruitment team will send the proposed time, meeting format and joining details separately. Please wait for those details before making travel arrangements. If you need an adjustment to take part comfortably, you may let the team know when confirming your availability.\n\nWe look forward to learning more about your work and answering your questions.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Offer review",
+      "usageType": "OFFER_LETTER",
+      "subject": "Your [JobTitle] offer from [CompanyName]",
+      "body": "Dear [CandidateName],\n\nWe are pleased to share the next step in your application for [JobTitle] at [CompanyName].\n\nThe hiring team will provide the formal offer with the role details, remuneration, proposed start date and response deadline. Please review that document carefully and contact the team if any information needs clarification. This notification does not replace the formal offer or confirm your acceptance.\n\nThank you for the time and care you have put into the recruitment process.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Acceptance recorded",
+      "usageType": "ACCEPTED",
+      "subject": "Confirmation for your [JobTitle] application",
+      "body": "Dear [CandidateName],\n\nThe recruitment team has recorded an accepted outcome for your application for [JobTitle] at [CompanyName].\n\nYour designated contact will confirm any remaining documents and the next arrangements. Please follow the details in the formal offer and the team's subsequent instructions; this automated update does not introduce new employment terms.\n\nThank you for staying in touch throughout the process.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Application outcome",
+      "usageType": "REJECTED",
+      "subject": "An update on [JobTitle] at [CompanyName]",
+      "body": "Dear [CandidateName],\n\nThank you for your interest in [JobTitle] at [CompanyName] and for the time you spent preparing your application.\n\nAfter reviewing this recruitment round, we will not be progressing your application for this position. This decision relates to the requirements of the current vacancy and is not a judgement of your potential.\n\nWe appreciate the opportunity to learn about your experience and wish you well with your next application.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Review in progress",
+      "usageType": "IN_PROGRESS",
+      "subject": "We are reviewing your [JobTitle] application",
+      "body": "Dear [CandidateName],\n\nYour application for [JobTitle] at [CompanyName] is currently under review. The recruitment team is considering the information you submitted against the role requirements.\n\nThere is no additional action for you to take at this stage unless the team contacts you. We will share the next update when a decision is available; this message does not guarantee an interview or offer.\n\nThank you for your patience and your interest in joining us.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    }
+  ],
+  "notificationExamples": [
+    { "notificationType": "NEW_APPLICATION", "title": "A new application is ready for review", "message": "Avery Chen submitted an application for Junior Web Developer. Open the application summary to check the current status.", "sourceModule": "Applications", "fictional": true },
+    { "notificationType": "STATUS_UPDATED", "title": "Application moved to interview", "message": "Morgan Lee's application for QA Analyst has moved to the interview stage. Scheduling is managed by the recruitment team.", "sourceModule": "Applications", "fictional": true }
+  ],
+  "profileExample": {
+    "fullName": "Jordan Lin",
+    "employeeId": "EXAMPLE-HR-001",
+    "email": "jordan.lin@example.test",
+    "role": "HR Manager",
+    "department": "People and Recruitment",
+    "officeLocation": "Demonstration office",
+    "accountStatus": "ACTIVE",
+    "fictional": true
+  }
+}
