@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Replaced Templates/Logs explanatory subtitles with data-backed counts, including pluralization, filtered totals, creation/deletion refresh and load-failure regression coverage.
+
 - Added 18 Jest regressions: 64 local tests and 65 in GitHub, with the existing extra runtime test preserved. Refreshed the generated report with the current five-file coverage scope.
 
 - Aligned Templates and Logs headings with Notification Center, retaining per-page content and responsive actions.

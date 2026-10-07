@@ -577,10 +577,38 @@ describe("email templates", () => {
     const heading = await screen.findByRole("heading", { level: 1, name: title });
     const header = heading.parentElement.parentElement;
     expect(within(header).queryByText("HR WORKSPACE")).not.toBeInTheDocument();
-    expect(within(header).getByText(route === "/templates"
-      ? "Give every recruitment message a thoughtful starting point."
-      : "Sent recruitment email history, stored exactly as it was submitted.")).toBeVisible();
+    expect(await within(header).findByText(route === "/templates"
+      ? "2 saved templates"
+      : "1 sent email")).toBeVisible();
     if (route === "/templates") expect(within(header).getByRole("button", { name: /Create template/ })).toBeVisible();
+  });
+  it.each([0, 1, 3])("shows the saved template count for %i items", async (count) => {
+    state.templates = Array.from({ length: count }, (_, index) => ({ ...templates[0], templateId: index + 1 }));
+    mount("/templates");
+    expect(await screen.findByText(`${count} saved template${count === 1 ? "" : "s"}`)).toBeVisible();
+  });
+  it.each([0, 1, 37])("uses the API total rather than the current log page length for %i emails", async (total) => {
+    overrides["GET /api/hr/logs"] = () => json({ items: total ? [state.log] : [], total, page: 1, pageSize: 10 });
+    mount("/logs");
+    expect(await screen.findByText(`${total} sent email${total === 1 ? "" : "s"}`)).toBeVisible();
+  });
+  it("labels the log count as matching filters after applying a search", async () => {
+    overrides["GET /api/hr/logs"] = (url) => {
+      const filtered = new URL(url, "http://localhost").searchParams.get("search");
+      return json({ items: filtered ? [] : [state.log], total: filtered ? 0 : 1, page: 1, pageSize: 10 });
+    };
+    const ui = mount("/logs");
+    await screen.findByText("1 sent email");
+    await ui.type(screen.getByLabelText("Search"), "No match");
+    await ui.click(screen.getByRole("button", { name: "Apply" }));
+    expect(await screen.findByText("0 sent emails matching filters")).toBeVisible();
+  });
+  it.each(["/templates", "/logs"])("does not invent a zero count when %s fails to load", async (route) => {
+    overrides[`GET /api/hr${route}`] = () => json({ error: { message: "Service unavailable." } }, 503);
+    mount(route);
+    await screen.findByRole("alert");
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading.parentElement.querySelector("p")).toBeEmptyDOMElement();
   });
   it("selects, saves and reopens a type added only to shared configuration", async () => {
     const ui = mount("/templates");
@@ -650,6 +678,7 @@ describe("email templates", () => {
     expect(JSON.parse(writes("/api/hr/templates")[0][1].body).usageType).toBe(
       "IN_PROGRESS",
     );
+    expect(await screen.findByText("3 saved templates")).toBeVisible();
   });
   it("rejects unsupported variables before submitting", async () => {
     const ui = mount("/templates");
@@ -731,6 +760,7 @@ describe("email templates", () => {
     await ui.click(screen.getByRole("button", { name: "Delete template" }));
     expect(await screen.findByText(/Template deleted/)).toBeVisible();
     expect(writes("/api/hr/templates/1")[0][1].method).toBe("DELETE");
+    expect(await screen.findByText("1 saved template")).toBeVisible();
   });
 });
 

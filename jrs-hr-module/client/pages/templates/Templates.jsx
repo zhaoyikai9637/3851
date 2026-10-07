@@ -67,7 +67,7 @@ export function Templates() {
         eyebrow={null}
         className="workspace-page-heading"
         title="Email Templates"
-        description="Give every recruitment message a thoughtful starting point."
+        description={load.data ? `${load.data.items.length} saved template${load.data.items.length === 1 ? "" : "s"}` : null}
         action={
           <button className="btn btn-primary" disabled={load.busy} onClick={() => choose(null)}>
             + Create template
