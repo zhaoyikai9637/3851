@@ -1,9 +1,9 @@
 # Jest Unit Test Report
 
-- Executed: Wednesday, 7 October 2026 at 10:07:17 (Asia/Hong_Kong)
+- Executed: Wednesday, 7 October 2026 at 19:43:03 (Asia/Hong_Kong)
 - Environment: Node v24.16.0; Jest 30.5.1
 - Command: `npm.cmd run test:jest` (from the project root)
-- Result: PASS; suites: 5; tests: 65; passed: 65; failed: 0.
+- Result: PASS; suites: 5; tests: 73; passed: 73; failed: 0.
 
 ## Scope
 
@@ -59,6 +59,28 @@
 | server/jest-tests/validation.test.js | historical date filters rejects malformed notification filters 6 | Pass |
 | server/jest-tests/validation.test.js | historical date filters accepts only SENT as a log status filter | Pass |
 | server/jest-tests/validation.test.js | historical date filters rejects future dates on the log path too | Pass |
+| server/jest-tests/template-types.test.js | shared template types accepts stage-specific APPLICATION_REJECTION in validation and the API contract | Pass |
+| server/jest-tests/template-types.test.js | shared template types accepts stage-specific INTERVIEW_REJECTION in validation and the API contract | Pass |
+| server/jest-tests/template-types.test.js | shared template types accepts stage-specific OFFER_WITHDRAWAL in validation and the API contract | Pass |
+| server/jest-tests/template-types.test.js | shared template types accepts stage-specific OFFER_DECLINED_ACKNOWLEDGEMENT in validation and the API contract | Pass |
+| server/jest-tests/template-types.test.js | shared template types accepts a type added only to the shared registry | Pass |
+| server/jest-tests/template-types.test.js | shared template types accepts the added type in the API request schema | Pass |
+| server/jest-tests/template-types.test.js | shared template types rejects unsupported type FUTURE_WORKFLOW | Pass |
+| server/jest-tests/template-types.test.js | shared template types rejects unsupported type toString | Pass |
+| server/jest-tests/template-types.test.js | shared template types rejects unsupported type  | Pass |
+| server/jest-tests/template-types.test.js | shared template types allows reading an unknown stored code without allowing it on writes | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Application Rejection using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Interview Rejection using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Offer Withdrawal using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Offer Declined Acknowledgement using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Interview invitation using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Offer review using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Acceptance recorded using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Application outcome using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Review in progress using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation retains owner edits and avoids duplicate rows on repeated installation | Pass |
+| server/jest-tests/original-content.test.js | original content installation rejects a missing or inactive HR profile: null | Pass |
+| server/jest-tests/original-content.test.js | original content installation rejects a missing or inactive HR profile: {"accountStatus":"DISABLED"} | Pass |
 | server/jest-tests/safety.test.js | database write safeguards accepts an explicitly confirmed dedicated test database | Pass |
 | server/jest-tests/safety.test.js | database write safeguards accepts team runtime access without migration confirmation flags | Pass |
 | server/jest-tests/safety.test.js | database write safeguards rejects unsafe database configuration 0 | Pass |
@@ -78,20 +100,6 @@
 | server/jest-tests/cloud-sync.test.js | read-only cloud inspection captures allowed business content without modifying rows | Pass |
 | server/jest-tests/cloud-sync.test.js | read-only cloud inspection rolls back when the driver fails | Pass |
 | server/jest-tests/cloud-sync.test.js | read-only cloud inspection refuses oversized snapshots before exporting records | Pass |
-| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Interview invitation using the supported variables | Pass |
-| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Offer review using the supported variables | Pass |
-| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Acceptance recorded using the supported variables | Pass |
-| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Application outcome using the supported variables | Pass |
-| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Review in progress using the supported variables | Pass |
-| server/jest-tests/original-content.test.js | original content installation retains owner edits and avoids duplicate rows on repeated installation | Pass |
-| server/jest-tests/original-content.test.js | original content installation rejects a missing or inactive HR profile: null | Pass |
-| server/jest-tests/original-content.test.js | original content installation rejects a missing or inactive HR profile: {"accountStatus":"DISABLED"} | Pass |
-| server/jest-tests/template-types.test.js | shared template types accepts a type added only to the shared registry | Pass |
-| server/jest-tests/template-types.test.js | shared template types accepts the added type in the API request schema | Pass |
-| server/jest-tests/template-types.test.js | shared template types rejects unsupported type FUTURE_WORKFLOW | Pass |
-| server/jest-tests/template-types.test.js | shared template types rejects unsupported type toString | Pass |
-| server/jest-tests/template-types.test.js | shared template types rejects unsupported type  | Pass |
-| server/jest-tests/template-types.test.js | shared template types allows reading an unknown stored code without allowing it on writes | Pass |
 
 ## Limitations
 

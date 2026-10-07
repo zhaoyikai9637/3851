@@ -22,8 +22,8 @@ describe('original HR content', () => {
       } },
     };
     const db = { transaction: async callback => callback({}) };
-    expect(await installOriginalTemplates(db, models, 1)).toEqual({ created: 4, retained: 1 });
-    expect(await installOriginalTemplates(db, models, 1)).toEqual({ created: 0, retained: 5 });
+    expect(await installOriginalTemplates(db, models, 1)).toEqual({ created: 8, retained: 1 });
+    expect(await installOriginalTemplates(db, models, 1)).toEqual({ created: 0, retained: 9 });
     expect(rows[0].body).toBe('Owner edited this content.');
     expect(rows[1].createdBy).toBe(1);
   });

@@ -570,6 +570,22 @@ describe("notification workflow", () => {
 
 describe("email templates", () => {
   it.each([
+    ["APPLICATION_REJECTION", "Application Rejection"],
+    ["INTERVIEW_REJECTION", "Interview Rejection"],
+    ["OFFER_WITHDRAWAL", "Offer Withdrawal"],
+    ["OFFER_DECLINED_ACKNOWLEDGEMENT", "Offer Declined Acknowledgement"],
+  ])("saves and reopens the stage-specific type %s", async (code, label) => {
+    const ui = mount("/templates");
+    const usage = await screen.findByLabelText("Usage type");
+    expect(within(usage).getByRole("option", { name: label, exact: true })).toHaveValue(code);
+    await ui.selectOptions(usage, code);
+    await ui.click(screen.getByRole("button", { name: "Save template" }));
+    await screen.findByText("Template saved.");
+    await ui.click(screen.getByRole("button", { name: /Offer Letter Offer letter/ }));
+    await ui.click(screen.getByRole("button", { name: `Interview Invite ${label}`, exact: true }));
+    expect(screen.getByLabelText("Usage type")).toHaveValue(code);
+  });
+  it.each([
     ["/templates", "Email Templates"],
     ["/logs", "Logs"],
   ])("matches the notification heading hierarchy on %s", async (route, title) => {

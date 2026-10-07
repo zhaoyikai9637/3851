@@ -1,5 +1,13 @@
 # Verification
 
+## 2026-10-07 stage-specific outcome templates
+
+- TDD: all four new types initially failed backend validation and were absent from the UI; after extending the shared registry, backend/API-contract checks and selection/save/reopen tests passed.
+- Local installer added nine missing preset templates (four new stage templates and five existing originals) without overwriting the eleven pre-existing rows. Second run: created 0, retained 9. No cloud writes or email sends. One existing inactive template remains excluded from the API list.
+- Restarted the owned local API to load the registry. Live development login and logout returned 204; templates returned 200 with all four new types. No browser visual recheck performed.
+- GitHub checkout: `npm.cmd test` passed 183 backend and 68 frontend tests; `npm.cmd run test:jest` passed 73 tests (local source: 72), preserving the checkout's additional test. `npm.cmd run test:mysql` passed 12 tests; build, docs:check (24 operations/346 examples) and scoped lint passed. Jest retains its known Node experimental VM Modules warning.
+- Automatic stage/decision-owner event routing remains a teammate integration task, not part of this template update.
+
 ## 2026-10-07 Jest regression refresh
 
 - Added 18 tests in three new Jest files: type registry extension/API contracts, unknown inputs, read-only cloud export/rollback/size limit, original-template validation, repeatability and active HR requirement.

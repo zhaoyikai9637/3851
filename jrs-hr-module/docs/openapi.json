@@ -6801,7 +6801,11 @@
               "OFFER_LETTER",
               "ACCEPTED",
               "REJECTED",
-              "IN_PROGRESS"
+              "IN_PROGRESS",
+              "APPLICATION_REJECTION",
+              "INTERVIEW_REJECTION",
+              "OFFER_WITHDRAWAL",
+              "OFFER_DECLINED_ACKNOWLEDGEMENT"
             ]
           }
         },

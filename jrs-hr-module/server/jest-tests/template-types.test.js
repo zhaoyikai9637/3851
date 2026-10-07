@@ -11,6 +11,11 @@ const { openapi } = await import('../src/openapi.js');
 const input = { templateName: 'Reminder', subject: 'Interview reminder', body: 'Please review your invitation.', usageType: 'INTERVIEW_REMINDER' };
 
 describe('shared template types', () => {
+  test.each(['APPLICATION_REJECTION', 'INTERVIEW_REJECTION', 'OFFER_WITHDRAWAL', 'OFFER_DECLINED_ACKNOWLEDGEMENT'])('accepts stage-specific %s in validation and the API contract', usageType => {
+    const value = { ...input, usageType };
+    expect(templateSchema.safeParse(value).success).toBe(true);
+    expect(new Ajv({ strict: false }).compile(openapi.components.schemas.TemplateInput)(value)).toBe(true);
+  });
   test('accepts a type added only to the shared registry', () => {
     expect(templateSchema.parse(input).usageType).toBe('INTERVIEW_REMINDER');
   });

@@ -29,11 +29,13 @@ If Vite is running alone, `/api/auth/config` fails and the local entry cannot ap
 
 ## Code quality
 
+- Added four stage-specific rejection/offer-closure types and original English templates. Legacy types/content remain intact; no automatic event routing or teammate workflow changes. See `TEMPLATE_TYPES.md` for stage/decision-owner integration boundaries.
+
 - Removed the persistent Logs provider disclaimer and Templates editor explanatory copy. The editor still shows `Unsaved changes` only when dirty. Email-history persistence and provider-acceptance semantics remain unchanged.
 
 - Templates heading shows the API-backed saved count, refreshed after creation/deletion and blank during loading/errors. Logs has no heading subtitle or total; its activity-panel count, filters, pagination and email history remain unchanged.
 
-- Jest now covers five suites/64 local tests (65 in GitHub, retaining its existing team-runtime test), including shared template types, cloud read-only safeguards and original-content installation. `npm run test:jest` regenerates `docs/UNIT_TEST_REPORT.md`; its five-file coverage is not whole-project coverage.
+- Jest now covers five suites/72 local tests (73 in GitHub, retaining its existing team-runtime test), including shared template types, cloud read-only safeguards and original-content installation. `npm run test:jest` regenerates `docs/UNIT_TEST_REPORT.md`; its five-file coverage is not whole-project coverage.
 
 - Notifications, Templates and Logs share the same compact page-heading style; profile headings remain unchanged. Titles, descriptions and page actions are preserved.
 

@@ -24,9 +24,9 @@ describe('original content installation', () => {
         const row = { ...defaults }; rows.push(row); return [row, true];
       } }
     };
-    expect(await installOriginalTemplates(db, models, 1)).toEqual({ created: 4, retained: 1 });
-    expect(await installOriginalTemplates(db, models, 1)).toEqual({ created: 0, retained: 5 });
-    expect(rows).toHaveLength(5);
+    expect(await installOriginalTemplates(db, models, 1)).toEqual({ created: 8, retained: 1 });
+    expect(await installOriginalTemplates(db, models, 1)).toEqual({ created: 0, retained: 9 });
+    expect(rows).toHaveLength(9);
     expect(rows[0].body).toBe('Owner edited content.');
     expect(rows[1]).toMatchObject({ createdBy: 1, updatedBy: 1, isActive: true });
   });

@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Added Application Rejection, Interview Rejection, Offer Withdrawal and Offer Declined Acknowledgement to the shared registry, original content and validation/UI regression coverage. Preserve legacy data; event wiring remains a team integration task.
+
 - Removed two redundant UI explanations while preserving conditional unsaved-edit feedback and existing sent-email history.
 
 - Templates shows its saved count with creation/deletion refresh and load-failure regression coverage. Removed the Logs heading total at the user's request; activity-panel totals, filtering, pagination and history remain available.

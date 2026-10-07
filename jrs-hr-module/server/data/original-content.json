@@ -7,6 +7,30 @@
   },
   "templates": [
     {
+      "templateName": "JRS — Application Rejection",
+      "usageType": "APPLICATION_REJECTION",
+      "subject": "Application Update – [JobTitle]",
+      "body": "Dear [CandidateName],\n\nThank you for applying for [JobTitle] at [CompanyName]. After reviewing your application, we will not be progressing it to the interview stage for this vacancy.\n\nWe appreciate your interest and wish you well in your job search.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Interview Rejection",
+      "usageType": "INTERVIEW_REJECTION",
+      "subject": "Interview Outcome – [JobTitle]",
+      "body": "Dear [CandidateName],\n\nThank you for taking the time to interview for [JobTitle] at [CompanyName]. We appreciated the opportunity to hear about your experience and discuss the role with you.\n\nFollowing the interview review, we will not be moving forward with your application for this position. We recognise the preparation and time you invested in the process and appreciate your participation.\n\nThank you again, and we wish you success in your next opportunity.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Offer Withdrawal",
+      "usageType": "OFFER_WITHDRAWAL",
+      "subject": "Offer Withdrawal – [JobTitle]",
+      "body": "Dear [CandidateName],\n\nWe are writing to inform you that [CompanyName] is withdrawing its offer for [JobTitle]. We understand that this update may affect your plans and apologise for the disruption.\n\nPlease contact your HR representative to discuss the specific circumstances and any arrangements that need clarification.\n\nThank you for the time you have invested in the recruitment process.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Offer Declined Acknowledgement",
+      "usageType": "OFFER_DECLINED_ACKNOWLEDGEMENT",
+      "subject": "Your Offer Decision – [JobTitle]",
+      "body": "Dear [CandidateName],\n\nThank you for letting us know that you have decided not to accept the offer for [JobTitle] at [CompanyName]. We acknowledge your decision and will close this offer in our recruitment records.\n\nWe appreciate the time you spent speaking with our team and considering the opportunity. Thank you for keeping us informed, and we wish you well in your next steps.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
       "templateName": "JRS — Interview invitation",
       "usageType": "INTERVIEW_INVITE",
       "subject": "Next step for your [JobTitle] application",

@@ -3,5 +3,9 @@
   "OFFER_LETTER": "Offer letter",
   "ACCEPTED": "Accepted",
   "REJECTED": "Rejected",
-  "IN_PROGRESS": "In progress"
+  "IN_PROGRESS": "In progress",
+  "APPLICATION_REJECTION": "Application Rejection",
+  "INTERVIEW_REJECTION": "Interview Rejection",
+  "OFFER_WITHDRAWAL": "Offer Withdrawal",
+  "OFFER_DECLINED_ACKNOWLEDGEMENT": "Offer Declined Acknowledgement"
 }

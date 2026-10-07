@@ -8,6 +8,12 @@ import { contractValidator } from './helpers/api-contract.js';
 
 describe('template type extension', () => {
   const input = { templateName: 'Reminder', subject: 'Your interview', body: 'Please review your invitation.', usageType: 'INTERVIEW_REMINDER' };
+  it.each(['APPLICATION_REJECTION', 'INTERVIEW_REJECTION', 'OFFER_WITHDRAWAL', 'OFFER_DECLINED_ACKNOWLEDGEMENT'])('accepts stage-specific %s in validation and the API contract', async usageType => {
+    const value = { ...input, usageType };
+    expect(templateSchema.safeParse(value).success).toBe(true);
+    const contract = await contractValidator();
+    expect(new Ajv({ strict: false }).compile(contract.spec.components.schemas.TemplateInput)(value)).toBe(true);
+  });
   it('accepts a shared-config extension in backend validation', () => {
     expect(templateSchema.parse(input).usageType).toBe('INTERVIEW_REMINDER');
   });
