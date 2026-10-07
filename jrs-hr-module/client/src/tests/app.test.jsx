@@ -662,6 +662,16 @@ describe("email templates", () => {
       usageType: "INTERVIEW_INVITE",
     });
   });
+  it("shows an editor status only while changes are unsaved", async () => {
+    const ui = mount("/templates");
+    const subject = await screen.findByLabelText("Email subject");
+    const editorHeading = screen.getByRole("heading", { name: "Edit template" }).parentElement;
+    await ui.type(subject, " changed");
+    expect(within(editorHeading).getByText("Unsaved changes")).toBeVisible();
+    await ui.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(subject).toHaveValue("Hello [CandidateName]");
+    expect(editorHeading.querySelector("p")).toBeNull();
+  });
   it("creates a new template with a selected usage", async () => {
     const ui = mount("/templates");
     await screen.findByLabelText("Email subject");

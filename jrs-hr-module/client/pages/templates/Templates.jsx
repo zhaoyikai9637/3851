@@ -251,9 +251,7 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
       <div className="section-heading">
         <div>
           <h2>{template ? "Edit template" : "Create template"}</h2>
-          <p className="subtle small mb-0">
-            {dirty ? "Unsaved changes" : "Personalize messages with reusable variables."}
-          </p>
+          {dirty && <p className="subtle small mb-0">Unsaved changes</p>}
         </div>
         <span className="badge-soft">Plain text</span>
       </div>

@@ -29,6 +29,8 @@ If Vite is running alone, `/api/auth/config` fails and the local entry cannot ap
 
 ## Code quality
 
+- Removed the persistent Logs provider disclaimer and Templates editor explanatory copy. The editor still shows `Unsaved changes` only when dirty. Email-history persistence and provider-acceptance semantics remain unchanged.
+
 - Templates and Logs heading subtitles show API-backed counts rather than explanatory copy. Template counts refresh after creation/deletion; log counts use the full result total and label filtered results. Counts remain blank during loading/errors, never a fabricated zero.
 
 - Jest now covers five suites/64 local tests (65 in GitHub, retaining its existing team-runtime test), including shared template types, cloud read-only safeguards and original-content installation. `npm run test:jest` regenerates `docs/UNIT_TEST_REPORT.md`; its five-file coverage is not whole-project coverage.

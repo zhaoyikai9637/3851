@@ -20,7 +20,7 @@ export function Logs() {
   return <>
     <PageHeading eyebrow={null} className="workspace-page-heading" title="Logs" description={load.data ? `${load.data.total} sent email${load.data.total === 1 ? "" : "s"}${hasFilters ? " matching filters" : ""}` : null} />
     <section className="surface log-surface">
-      <div className="log-summary"><div><h2>Email activity</h2><p>Provider acceptance is recorded as sent. Delivery to an inbox is not guaranteed.</p></div><strong>{load.data ? `${load.data.total} sent` : "Sent history"}</strong></div>
+      <div className="log-summary"><div><h2>Email activity</h2></div><strong>{load.data ? `${load.data.total} sent` : "Sent history"}</strong></div>
       <LogFilters draft={draft} setDraft={setDraft} open={datesOpen} setOpen={setDatesOpen} onApply={apply} onClear={clear} hasFilters={hasFilters} />
       <div className="log-content">
         <ErrorBox error={error} />

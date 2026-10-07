@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Removed two redundant UI explanations while preserving conditional unsaved-edit feedback and existing sent-email history.
+
 - Replaced Templates/Logs explanatory subtitles with data-backed counts, including pluralization, filtered totals, creation/deletion refresh and load-failure regression coverage.
 
 - Added 18 Jest regressions: 64 local tests and 65 in GitHub, with the existing extra runtime test preserved. Refreshed the generated report with the current five-file coverage scope.
