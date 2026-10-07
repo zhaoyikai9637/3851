@@ -1,5 +1,12 @@
 # Verification
 
+## 2026-10-07 template-list scrolling
+
+- Browser red/green check: before the change, the 19-item list had overflow-y visible and equal client/content heights (1548px), so it could not scroll independently. After the CSS change, overflow-y auto and a bounded 432px client height allowed scrolling through 1623px of content.
+- Scrolled to the final template and selected it: the editor updated correctly; list scrolling kept the document at scrollY 0 and the editor top unchanged. At 390px, the vertical list was 280px tall with no horizontal document overflow. Reset the viewport afterward; browser errors/warnings: none.
+- Private screenshot: `work/template-scroll.png`. No template, database or API behavior changes.
+- `npm.cmd test`: 183 backend and 68 frontend tests passed; `npm.cmd run test:mysql`: 12 passed; `npm.cmd run build`: passed.
+
 ## 2026-10-07 stage-specific outcome templates
 
 - TDD: all four new types initially failed backend validation and were absent from the UI; after extending the shared registry, backend/API-contract checks and selection/save/reopen tests passed.

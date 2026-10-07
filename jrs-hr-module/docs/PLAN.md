@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Added independent native vertical scrolling to the template list on desktop and mobile, preserving template selection and the editor layout.
+
 - Added Application Rejection, Interview Rejection, Offer Withdrawal and Offer Declined Acknowledgement to the shared registry, original content and validation/UI regression coverage. Preserve legacy data; event wiring remains a team integration task.
 
 - Removed two redundant UI explanations while preserving conditional unsaved-edit feedback and existing sent-email history.

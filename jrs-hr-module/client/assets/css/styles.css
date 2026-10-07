@@ -730,6 +730,11 @@ button:disabled {
 }
 .template-list {
   padding: 10px;
+  max-height: clamp(240px, 60dvh, 640px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  overscroll-behavior-y: contain;
 }
 .template-option {
   border: 1px solid transparent;
@@ -1180,15 +1185,12 @@ button:disabled {
     grid-template-columns: 1fr;
   }
   .template-list {
-    display: flex;
-    overflow-x: auto;
-    gap: 6px;
+    max-height: 280px;
   }
   .template-option {
-    width: 180px;
-    flex-shrink: 0;
+    width: 100%;
     padding: 12px 10px;
-    margin: 0;
+    margin-bottom: 4px;
   }
   .template-option strong {
     font-size: 12px;

@@ -29,6 +29,8 @@ If Vite is running alone, `/api/auth/config` fails and the local entry cannot ap
 
 ## Code quality
 
+- Templates uses a bounded native vertical scrollbar inside its list, leaving the panel heading/count and editor outside the scrolling area. Narrow screens use a 280px vertical list instead of horizontal cards; no plugin, data or API changes.
+
 - Added four stage-specific rejection/offer-closure types and original English templates. Legacy types/content remain intact; no automatic event routing or teammate workflow changes. See `TEMPLATE_TYPES.md` for stage/decision-owner integration boundaries.
 
 - Removed the persistent Logs provider disclaimer and Templates editor explanatory copy. The editor still shows `Unsaved changes` only when dirty. Email-history persistence and provider-acceptance semantics remain unchanged.
