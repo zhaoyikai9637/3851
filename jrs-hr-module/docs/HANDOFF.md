@@ -14,6 +14,8 @@ Production requires a trusted team adapter implementing `resolve(req)` and `logo
 
 Local standalone development may set `DEV_HR_USER_ID`. This exposes `POST /api/auth/development-login`, binds the session to that active HR profile and remains unavailable in production or team mode.
 
+If Vite is running alone, `/api/auth/config` fails and the local entry cannot appear. Run `npm.cmd run dev` for both services, or use `start-api.cmd` when the frontend is already running. Keep the launcher window open.
+
 ## Frontend structure
 
 - `client/src/App.jsx`: route definitions and page boundary.

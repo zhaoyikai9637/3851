@@ -3,7 +3,10 @@
 原始交接日期：2026-09-08；最新状态：2026-09-09 已移除本模块登录，保留业务功能并通过回归。
 当前原工程在 E:\textProject\jrs-hr-module，专用数据库已经建好。
 现在直接在这个目录运行 npm.cmd run dev，访问 http://localhost:5173。
-当前会提示团队登录未接入；对方尚未实现。无需输入演示账号密码。
+本机已配置临时开发身份，前后端均启动后点击 Continue locally，无需账号密码。
+如果网页显示 unexpected response，先检查后端；仅启动 Vite 不会提供登录接口。
+前端已经运行时，可双击根目录 start-api.cmd 单独启动后端，并保持窗口打开。
+不要同时重复启动后端；新机器需本地配置 DEV_HR_USER_ID 为已有的活跃 HR 资料 ID。
 后续使用组员的登录页面；具体身份/退出适配说明见 docs/TEAM_AUTH.md。
 无需再次解压、新建另一个工程或重跑数据库初始化。最新说明见 README、docs/HANDOFF。
 
