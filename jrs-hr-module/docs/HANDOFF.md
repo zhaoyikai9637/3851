@@ -27,6 +27,8 @@ Local standalone development may set `DEV_HR_USER_ID`. This exposes `POST /api/a
 
 ## Code quality
 
+- Notifications, Templates and Logs share the same compact page-heading style; profile headings remain unchanged. Titles, descriptions and page actions are preserved.
+
 - Template usage types have one definition in `shared/template-types.json`. Unknown stored types remain visible but cannot be saved until explicitly changed to a supported type. See `TEMPLATE_TYPES.md`.
 
 - Biome 2.5.14 provides the single lint and formatting toolchain.

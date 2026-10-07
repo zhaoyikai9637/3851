@@ -31,14 +31,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.notification-page-heading {
-  margin-bottom: 16px;
-}
-
-.notification-page-heading h1 {
-  margin-bottom: 5px;
-}
-
 .notification-surface {
   overflow: hidden;
 }

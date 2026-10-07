@@ -569,6 +569,19 @@ describe("notification workflow", () => {
 });
 
 describe("email templates", () => {
+  it.each([
+    ["/templates", "Email Templates"],
+    ["/logs", "Logs"],
+  ])("matches the notification heading hierarchy on %s", async (route, title) => {
+    mount(route);
+    const heading = await screen.findByRole("heading", { level: 1, name: title });
+    const header = heading.parentElement.parentElement;
+    expect(within(header).queryByText("HR WORKSPACE")).not.toBeInTheDocument();
+    expect(within(header).getByText(route === "/templates"
+      ? "Give every recruitment message a thoughtful starting point."
+      : "Sent recruitment email history, stored exactly as it was submitted.")).toBeVisible();
+    if (route === "/templates") expect(within(header).getByRole("button", { name: /Create template/ })).toBeVisible();
+  });
   it("selects, saves and reopens a type added only to shared configuration", async () => {
     const ui = mount("/templates");
     const usage = await screen.findByLabelText("Usage type");

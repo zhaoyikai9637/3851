@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Aligned Templates and Logs headings with Notification Center, retaining per-page content and responsive actions.
+
 - Unified template usage configuration across client, validation and OpenAPI; added unknown-type preservation and extension regression tests.
 
 - Aligned page, asset, configuration, route and entry directories with the team's convention without merging member modules.

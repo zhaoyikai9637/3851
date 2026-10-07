@@ -64,6 +64,8 @@ export function Templates() {
   return (
     <>
       <PageHeading
+        eyebrow={null}
+        className="workspace-page-heading"
         title="Email Templates"
         description="Give every recruitment message a thoughtful starting point."
         action={

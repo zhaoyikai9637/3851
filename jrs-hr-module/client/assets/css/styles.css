@@ -410,6 +410,12 @@ button:disabled {
   font-size: 14px;
   line-height: 1.55;
 }
+.workspace-page-heading {
+  margin-bottom: 16px;
+}
+.workspace-page-heading h1 {
+  margin-bottom: 5px;
+}
 .surface {
   background: var(--surface);
   border: 1px solid var(--line);

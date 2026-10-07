@@ -1,5 +1,13 @@
 # Verification
 
+## 2026-10-07 communication heading alignment
+
+- TDD: two route tests failed on the extra HR WORKSPACE eyebrow before implementation; both pass with page titles, descriptions and template creation action retained.
+- Notifications, Templates and Logs reuse global compact heading rules; profile pages are unchanged. No business logic or data changes.
+- Real local browser: all three desktop headings measured top 110px, font 28.16px, heading bottom margin 5px and section bottom margin 16px at the default viewport.
+- Templates and Logs also inspected at 390px; title/description and action wrap without page-level horizontal overflow. Viewport reset afterward. Private screenshots: `work/title-alignment/`.
+- GitHub checkout: backend/Supertest 179, frontend 54, isolated real MySQL 12 passed; build, scoped lint and formatting passed.
+
 ## 2026-10-07 template type extensibility
 
 - TDD: extension tests first failed because frontend options, validation and request enums were hardcoded; the unknown-type test exposed the dropdown incorrectly showing the first known option.

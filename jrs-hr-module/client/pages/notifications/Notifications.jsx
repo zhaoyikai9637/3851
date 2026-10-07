@@ -38,7 +38,7 @@ export function Notifications() {
         eyebrow={null}
         title="Notification Center"
         description={summary}
-        className="notification-page-heading"
+        className="workspace-page-heading"
       />
       <section className="surface notification-surface">
         <NotificationToolbar
