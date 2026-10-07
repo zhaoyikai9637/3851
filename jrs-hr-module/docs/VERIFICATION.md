@@ -1,5 +1,14 @@
 # Verification
 
+## 2026-10-07 Jest regression refresh
+
+- Added 18 tests in three new Jest files: type registry extension/API contracts, unknown inputs, read-only cloud export/rollback/size limit, original-template validation, repeatability and active HR requirement.
+- Development source: `npm run test:jest` passed 5 suites/64 tests. Five-file statement/line coverage 95.03%, branch 87.5%, function 92.3%.
+- GitHub checkout: Jest passed 5 suites/65 tests, preserving the pre-existing team-runtime safeguard test; statement/line 95.07%, branch 87.91%, function 92.3%.
+- Generated report lists the actual timestamp, scope, individual cases and limitations. Raw results and coverage remain under ignored `work/`.
+- Checkout regression: backend/Supertest 179, frontend 54, isolated real MySQL 12 passed; build and documentation consistency passed.
+- No production behavior changed. New tests characterize existing implementations using isolated configuration and database doubles; they do not contact cloud services or send email. Node reports the expected experimental VM Modules warning required by the existing Jest ESM runner.
+
 ## 2026-10-07 communication heading alignment
 
 - TDD: two route tests failed on the extra HR WORKSPACE eyebrow before implementation; both pass with page titles, descriptions and template creation action retained.

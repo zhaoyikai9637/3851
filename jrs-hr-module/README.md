@@ -35,8 +35,9 @@ npm.cmd run docs:check
 npm.cmd run docs:export
 ```
 
-原有 Vitest：后端 161 项 + 前端 46 项；新增 Jest：2 文件/46 项，运行后自动更新
-`docs/UNIT_TEST_REPORT.md`；MySQL 独立套件 12 项。Jest 只测指定后端单元，不能代替
+当前 Vitest：本地开发源后端 178 项（GitHub 副本保留额外一项，共 179 项）+ 前端 54 项；
+Jest：5 文件/本地 64 项（GitHub 65 项），运行后自动更新 `docs/UNIT_TEST_REPORT.md`；MySQL 独立套件 12 项。
+Jest 覆盖率仅针对 5 个指定后端文件，不能代替
 现有 Vitest、API 或 MySQL 测试。真实 Edge 浏览器使用测试进程提供的
 可信上游身份夹具（不代表团队已联调），覆盖入口/退出跳转、通知持久化、模板增删改、日志快照、资料/头像保存、服务重启会话和退出。
 检查 390/768/1024/1440px，截图及测试日志在 work/browser-check。

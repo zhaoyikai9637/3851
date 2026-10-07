@@ -27,6 +27,8 @@ Local standalone development may set `DEV_HR_USER_ID`. This exposes `POST /api/a
 
 ## Code quality
 
+- Jest now covers five suites/64 local tests (65 in GitHub, retaining its existing team-runtime test), including shared template types, cloud read-only safeguards and original-content installation. `npm run test:jest` regenerates `docs/UNIT_TEST_REPORT.md`; its five-file coverage is not whole-project coverage.
+
 - Notifications, Templates and Logs share the same compact page-heading style; profile headings remain unchanged. Titles, descriptions and page actions are preserved.
 
 - Template usage types have one definition in `shared/template-types.json`. Unknown stored types remain visible but cannot be saved until explicitly changed to a supported type. See `TEMPLATE_TYPES.md`.

@@ -1,24 +1,27 @@
 # Jest Unit Test Report
 
-- Executed: Thursday, 17 September 2026 at 18:21:39 (Asia/Hong_Kong)
+- Executed: Wednesday, 7 October 2026 at 10:07:17 (Asia/Hong_Kong)
 - Environment: Node v24.16.0; Jest 30.5.1
 - Command: `npm.cmd run test:jest` (from the project root)
-- Result: PASS; suites: 2; tests: 47; passed: 47; failed: 0.
+- Result: PASS; suites: 5; tests: 65; passed: 65; failed: 0.
 
 ## Scope
 
 - `server/src/validation.js`: email-template variables, profile fields, IDs, historical dates, and query filters.
 - `server/src/database-safety.js`: dedicated-database write restrictions and migration-target inspection, using an in-memory database double.
 - `server/src/mailer.js`: offline-preview default and explicit SMTP authorization; no SMTP connection is made.
+- `server/src/cloud-sync.js`: read-only transaction, authentication-record exclusion, rollback and export size limit, with a strict driver double.
+- `server/src/original-content.js`: valid original templates, repeatable installation and active HR requirement, with in-memory model doubles.
+- Shared type extension and unknown-type API contracts are checked separately; they are not frontend/browser tests.
 
-## Coverage (the three source files above only)
+## Coverage (the five source files above only)
 
 | Metric | Coverage |
 |---|---:|
-| Statements | 93.06% |
-| Branches | 84.93% |
-| Functions | 90.9% |
-| Lines | 93.06% |
+| Statements | 95.07% |
+| Branches | 87.91% |
+| Functions | 92.3% |
+| Lines | 95.07% |
 
 ## Test Cases
 
@@ -71,6 +74,24 @@
 | server/jest-tests/safety.test.js | database write safeguards accepts a complete recognized migration state | Pass |
 | server/jest-tests/safety.test.js | mailer safety defaults uses offline preview with no mail credentials | Pass |
 | server/jest-tests/safety.test.js | mailer safety defaults requires an explicit SMTP allow flag | Pass |
+| server/jest-tests/cloud-sync.test.js | read-only cloud inspection excludes account records from an empty business snapshot | Pass |
+| server/jest-tests/cloud-sync.test.js | read-only cloud inspection captures allowed business content without modifying rows | Pass |
+| server/jest-tests/cloud-sync.test.js | read-only cloud inspection rolls back when the driver fails | Pass |
+| server/jest-tests/cloud-sync.test.js | read-only cloud inspection refuses oversized snapshots before exporting records | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Interview invitation using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Offer review using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Acceptance recorded using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Application outcome using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation validates and renders JRS — Review in progress using the supported variables | Pass |
+| server/jest-tests/original-content.test.js | original content installation retains owner edits and avoids duplicate rows on repeated installation | Pass |
+| server/jest-tests/original-content.test.js | original content installation rejects a missing or inactive HR profile: null | Pass |
+| server/jest-tests/original-content.test.js | original content installation rejects a missing or inactive HR profile: {"accountStatus":"DISABLED"} | Pass |
+| server/jest-tests/template-types.test.js | shared template types accepts a type added only to the shared registry | Pass |
+| server/jest-tests/template-types.test.js | shared template types accepts the added type in the API request schema | Pass |
+| server/jest-tests/template-types.test.js | shared template types rejects unsupported type FUTURE_WORKFLOW | Pass |
+| server/jest-tests/template-types.test.js | shared template types rejects unsupported type toString | Pass |
+| server/jest-tests/template-types.test.js | shared template types rejects unsupported type  | Pass |
+| server/jest-tests/template-types.test.js | shared template types allows reading an unknown stored code without allowing it on writes | Pass |
 
 ## Limitations
 

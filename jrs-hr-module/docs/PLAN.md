@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Added 18 Jest regressions: 64 local tests and 65 in GitHub, with the existing extra runtime test preserved. Refreshed the generated report with the current five-file coverage scope.
+
 - Aligned Templates and Logs headings with Notification Center, retaining per-page content and responsive actions.
 
 - Unified template usage configuration across client, validation and OpenAPI; added unknown-type preservation and extension regression tests.
