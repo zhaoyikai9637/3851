@@ -29,13 +29,7 @@ export const dateTime = (value) =>
         timeZone: "Asia/Singapore",
       }).format(new Date(value))
     : "—";
-export const usageTypes = {
-  INTERVIEW_INVITE: "Interview invite",
-  OFFER_LETTER: "Offer letter",
-  ACCEPTED: "Accepted",
-  REJECTED: "Rejected",
-  IN_PROGRESS: "In progress",
-};
+export { default as usageTypes } from "../../shared/template-types.json";
 export function ErrorBox({ error, retry }) {
   if (!error) return null;
   return (

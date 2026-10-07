@@ -6835,13 +6835,8 @@
           },
           "usageType": {
             "type": "string",
-            "enum": [
-              "INTERVIEW_INVITE",
-              "OFFER_LETTER",
-              "ACCEPTED",
-              "REJECTED",
-              "IN_PROGRESS"
-            ]
+            "maxLength": 50,
+            "description": "Stored type code. Unknown codes remain readable; writes require a supported type."
           },
           "templateId": {
             "type": "integer",

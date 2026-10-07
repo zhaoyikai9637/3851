@@ -1,5 +1,6 @@
 // Local module contract. Team identity, workflow events and visibility remain pending alignment.
 import { requestExamples, successExamples, errorExamples } from './openapi-examples.js';
+import templateTypes from '../../shared/template-types.json' with { type: 'json' };
 const ref = name => ({ $ref: `#/components/schemas/${name}` });
 const text = (maxLength, extra = {}) => ({ type: 'string', ...(maxLength ? { maxLength } : {}), ...extra });
 const id = { type: 'integer', minimum: 1, maximum: 2147483647 };
@@ -23,11 +24,11 @@ const idParam = { name: 'id', in: 'path', required: true, schema: id };
 const pagination = [query('page', { type:'integer',minimum:1,maximum:100000,default:1 }), query('pageSize',{ type:'integer',minimum:1,maximum:50,default:10 })];
 const dates = ['from','to'].map(name => query(name,{type:'string',format:'date'},'Inclusive historical calendar date in Asia/Singapore (UTC+08:00). Today is allowed; future dates are rejected; from must not exceed to.'));
 const notificationTypes = ['NEW_APPLICATION','STATUS_UPDATED'];
-const usageTypes = ['INTERVIEW_INVITE','OFFER_LETTER','ACCEPTED','REJECTED','IN_PROGRESS'];
+const usageTypes = Object.keys(templateTypes);
 const profile = object({ userId:id,employeeId:text(30),fullName:text(100),email:text(150,{format:'email'}),phone:text(20),role:text(50),department:text(100),officeLocation:text(100),photoUrl:{type:'string',nullable:true},accountStatus:text(20),lastLoginAt:time });
 const editable = { fullName:text(100,{minLength:1}),phone:text(20,{pattern:'^[+0-9 ()-]*$'}),officeLocation:text(100) };
 const templateInput = input({ templateName:text(150,{minLength:1}),subject:text(255,{minLength:1,description:'Single line. Supports [CandidateName], [JobTitle], [CompanyName], [HRName].'}),body:text(20000,{minLength:1,description:'Plain text, never HTML. Supports the same four square-bracket variables.'}),usageType:{type:'string',enum:usageTypes} },['templateName','subject','body','usageType']);
-const template = object({ ...templateInput.properties,templateId:id,isActive:{type:'boolean'},createdBy:id,updatedBy:{...id,nullable:true},createdAt:time,updatedAt:time });
+const template = object({ ...templateInput.properties,usageType:text(50,{description:'Stored type code. Unknown codes remain readable; writes require a supported type.'}),templateId:id,isActive:{type:'boolean'},createdBy:id,updatedBy:{...id,nullable:true},createdAt:time,updatedAt:time });
 const notification = object({notificationId:id,recipientUserId:id,applicationId:{...id,nullable:true},notificationType:{type:'string',enum:notificationTypes},title:text(180),message:text(),sourceModule:text(100),isRead:{type:'boolean'},readAt:time,createdAt:time});
 const notificationIds = {type:'array',minItems:1,maxItems:5000,items:id};
 const readUpdate = object({updated:{type:'integer',minimum:0},notificationIds:{type:'array',items:id}},['updated']);

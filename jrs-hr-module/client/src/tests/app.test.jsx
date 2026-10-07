@@ -12,6 +12,11 @@ import { App } from "../App";
 import { api } from "../api";
 import { user, notifications, templates, log } from "./fixtures";
 
+// Simulate a future team-approved type without adding it to live configuration.
+vi.mock("../../../shared/template-types.json", async (importOriginal) => ({
+  default: { ...(await importOriginal()).default, INTERVIEW_REMINDER: "Interview reminder" },
+}));
+
 const json = (body, status = 200) => ({
   ok: status < 400,
   status,
@@ -564,6 +569,34 @@ describe("notification workflow", () => {
 });
 
 describe("email templates", () => {
+  it("selects, saves and reopens a type added only to shared configuration", async () => {
+    const ui = mount("/templates");
+    const usage = await screen.findByLabelText("Usage type");
+    await ui.selectOptions(usage, "INTERVIEW_REMINDER");
+    await ui.click(screen.getByRole("button", { name: "Save template" }));
+    expect(await screen.findByText("Template saved.")).toBeVisible();
+    expect(state.templates[0].usageType).toBe("INTERVIEW_REMINDER");
+    await ui.click(screen.getByRole("button", { name: /Offer Letter Offer letter/ }));
+    expect(screen.getByLabelText("Usage type")).toHaveValue("OFFER_LETTER");
+    await ui.click(screen.getByRole("button", { name: /Interview Invite Interview reminder/ }));
+    expect(screen.getByLabelText("Usage type")).toHaveValue("INTERVIEW_REMINDER");
+  });
+  it("preserves unknown types and blocks saving until an explicit supported choice", async () => {
+    state.templates[0].usageType = "FUTURE_WORKFLOW";
+    const ui = mount("/templates");
+    const usage = await screen.findByLabelText("Usage type");
+    expect(usage).toHaveValue("FUTURE_WORKFLOW");
+    expect(screen.getByRole("alert")).toHaveTextContent("Unsupported usage type: FUTURE_WORKFLOW");
+    fireEvent.change(screen.getByLabelText("Email subject"), { target: { value: "Updated subject" } });
+    expect(screen.getByRole("button", { name: "Save template" })).toBeDisabled();
+    fireEvent.submit(screen.getByRole("button", { name: "Save template" }).closest("form"));
+    expect(state.templates[0].usageType).toBe("FUTURE_WORKFLOW");
+    expect(writes("/api/hr/templates/1")).toHaveLength(0);
+    await ui.selectOptions(usage, "IN_PROGRESS");
+    await ui.click(screen.getByRole("button", { name: "Save template" }));
+    expect(await screen.findByText("Template saved.")).toBeVisible();
+    expect(state.templates[0].usageType).toBe("IN_PROGRESS");
+  });
   it("presents the template total as inventory metadata, not an unread badge", async () => {
     mount("/templates");
     expect(await screen.findByText(`${templates.length} saved`)).toBeVisible();

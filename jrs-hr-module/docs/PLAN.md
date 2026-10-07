@@ -2,6 +2,8 @@
 
 ## Completed
 
+- Unified template usage configuration across client, validation and OpenAPI; added unknown-type preservation and extension regression tests.
+
 - Aligned page, asset, configuration, route and entry directories with the team's convention without merging member modules.
 - Inspected the cloud database read-only; no useful business rows were present to import.
 - Added five original templates and an idempotent local-only installer with regression tests.

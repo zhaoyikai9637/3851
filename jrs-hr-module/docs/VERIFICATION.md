@@ -1,5 +1,14 @@
 # Verification
 
+## 2026-10-07 template type extensibility
+
+- TDD: extension tests first failed because frontend options, validation and request enums were hardcoded; the unknown-type test exposed the dropdown incorrectly showing the first known option.
+- One shared JSON registry now drives all three consumers. Tests inject a future type only within test scope; production still has five types.
+- Unknown stored codes are readable, visibly preserved and blocked from saving until explicitly changed to a supported code. Unknown writes remain rejected.
+- Development source: server 178 tests, client 52 tests and isolated real MySQL 12 tests passed; production build, scoped lint and documentation contract check passed (24 operations, 346 examples).
+- No schema migration, cloud write or mail send. Browser screenshots were not rechecked; RTL covers dropdown selection, warning and save/reopen interactions.
+- GitHub checkout: server 179, client 52 and real MySQL 12 passed; build, documentation, scoped lint and formatting passed. Existing extra checkout test preserved. Vite serves the shared registry successfully (HTTP 200).
+
 ## 2026-10-07 cloud inspection and directory alignment
 
 - Cloud inspection: verified TLS, read-only transaction, eight business tables empty; zero imports and zero cloud writes. Accounts/sessions excluded from export.

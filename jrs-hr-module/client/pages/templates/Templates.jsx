@@ -16,13 +16,11 @@ const blank = {
   templateName: "",
   subject: "",
   body: "",
-  usageType: "INTERVIEW_INVITE",
+  usageType: Object.keys(usageTypes)[0],
 };
 const tokens = ["CandidateName", "JobTitle", "CompanyName", "HRName"];
 const fieldsOf = (row) =>
-  row
-    ? Object.fromEntries(Object.keys(blank).map((key) => [key, row[key]]))
-    : { ...blank };
+  row ? Object.fromEntries(Object.keys(blank).map((key) => [key, row[key]])) : { ...blank };
 export function Templates() {
   const load = useLoad("/api/hr/templates");
   const [selected, setSelected] = useState(undefined),
@@ -31,10 +29,7 @@ export function Templates() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(null),
     [message, setMessage] = useState("");
-  const activeId =
-    selected === undefined
-      ? (load.data?.items[0]?.templateId ?? null)
-      : selected;
+  const activeId = selected === undefined ? (load.data?.items[0]?.templateId ?? null) : selected;
   function choose(id) {
     if (id === activeId) return;
     if (dirty) setConfirmation({ kind: "discard", id });
@@ -57,9 +52,7 @@ export function Templates() {
       setSelected(undefined);
       setDirty(false);
       setConfirmation(null);
-      setMessage(
-        "Template deleted. Existing email history has been preserved.",
-      );
+      setMessage("Template deleted. Existing email history has been preserved.");
       load.reload();
     } catch (e) {
       setError(e);
@@ -74,11 +67,7 @@ export function Templates() {
         title="Email Templates"
         description="Give every recruitment message a thoughtful starting point."
         action={
-          <button
-            className="btn btn-primary"
-            disabled={load.busy}
-            onClick={() => choose(null)}
-          >
+          <button className="btn btn-primary" disabled={load.busy} onClick={() => choose(null)}>
             + Create template
           </button>
         }
@@ -96,9 +85,7 @@ export function Templates() {
             <section className="surface template-list-panel">
               <div className="section-heading">
                 <h2>Templates</h2>
-                <span className="section-count">
-                  {load.data.items.length} saved
-                </span>
+                <span className="section-count">{load.data.items.length} saved</span>
               </div>
               <div className="template-list">
                 {load.data.items.length ? (
@@ -120,14 +107,10 @@ export function Templates() {
                     </button>
                   ))
                 ) : (
-                  <Empty title="No templates yet">
-                    Create a template to get started.
-                  </Empty>
+                  <Empty title="No templates yet">Create a template to get started.</Empty>
                 )}
               </div>
-              <p className="template-footnote">
-                Shared templates for your HR team.
-              </p>
+              <p className="template-footnote">Shared templates for your HR team.</p>
             </section>
             <TemplateEditor
               key={activeId ?? "new"}
@@ -150,9 +133,7 @@ export function Templates() {
       {confirmation && (
         <Modal
           title={
-            confirmation.kind === "delete"
-              ? "Delete this template?"
-              : "Discard unsaved changes?"
+            confirmation.kind === "delete" ? "Delete this template?" : "Discard unsaved changes?"
           }
           onClose={() => !busy && setConfirmation(null)}
           footer={
@@ -164,11 +145,7 @@ export function Templates() {
               >
                 Keep editing
               </button>
-              <button
-                className="btn btn-danger"
-                disabled={busy}
-                onClick={confirm}
-              >
+              <button className="btn btn-danger" disabled={busy} onClick={confirm}>
                 {busy
                   ? "Deleting…"
                   : confirmation.kind === "delete"
@@ -199,6 +176,8 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
     bodyRef = useRef(null),
     focused = useRef("body");
   const dirty = JSON.stringify(form) !== JSON.stringify(fieldsOf(template));
+  const supportedUsage = Object.hasOwn(usageTypes, form.usageType);
+  const usageWarning = `Unsupported usage type: ${form.usageType}. Choose a supported type before saving, or ask the team to update the shared configuration.`;
   useEffect(() => onDirty(dirty), [dirty, onDirty]);
   useEffect(() => {
     if (!dirty) return;
@@ -209,8 +188,7 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
-  const change = (key) => (e) =>
-    setForm((v) => ({ ...v, [key]: e.target.value }));
+  const change = (key) => (e) => setForm((v) => ({ ...v, [key]: e.target.value }));
   function insert(token) {
     const key = focused.current,
       el = key === "subject" ? subjectRef.current : bodyRef.current;
@@ -228,10 +206,9 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
   async function save(e) {
     e.preventDefault();
     setError(null);
+    if (!supportedUsage) return;
     const unknown = [
-      ...(form.subject + "\n" + form.body).matchAll(
-        /\[([A-Za-z][A-Za-z0-9_]*)\]/g,
-      ),
+      ...(form.subject + "\n" + form.body).matchAll(/\[([A-Za-z][A-Za-z0-9_]*)\]/g),
     ].filter((m) => !tokens.includes(m[1]));
     if (unknown.length)
       return setError(
@@ -241,16 +218,12 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
       );
     if (form.subject.length > 255 || form.body.length > 20000)
       return setError(
-        new Error(
-          "Subject must be at most 255 characters and body at most 20,000 characters.",
-        ),
+        new Error("Subject must be at most 255 characters and body at most 20,000 characters."),
       );
     setBusy(true);
     try {
       const saved = await api.request(
-        template
-          ? `/api/hr/templates/${template.templateId}`
-          : "/api/hr/templates",
+        template ? `/api/hr/templates/${template.templateId}` : "/api/hr/templates",
         { method: template ? "PUT" : "POST", body: form },
       );
       onSaved(saved.templateId);
@@ -277,15 +250,18 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
         <div>
           <h2>{template ? "Edit template" : "Create template"}</h2>
           <p className="subtle small mb-0">
-            {dirty
-              ? "Unsaved changes"
-              : "Personalize messages with reusable variables."}
+            {dirty ? "Unsaved changes" : "Personalize messages with reusable variables."}
           </p>
         </div>
         <span className="badge-soft">Plain text</span>
       </div>
       <form onSubmit={save} className="editor-form">
         <ErrorBox error={error} />
+        {!supportedUsage && (
+          <p className="alert alert-warning" role="alert">
+            {usageWarning}
+          </p>
+        )}
         <fieldset disabled={busy}>
           <div className="two-fields">
             <Field label="Template name">
@@ -308,6 +284,11 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
                   value={form.usageType}
                   onChange={change("usageType")}
                 >
+                  {!supportedUsage && (
+                    <option value={form.usageType} disabled>
+                      Unsupported: {form.usageType}
+                    </option>
+                  )}
                   {Object.entries(usageTypes).map(([key, value]) => (
                     <option key={key} value={key}>
                       {value}
@@ -352,9 +333,7 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
           </Field>
           <div className="variable-box">
             <strong>Insert a variable</strong>
-            <p className="subtle small">
-              Add to the subject or body at your cursor.
-            </p>
+            <p className="subtle small">Add to the subject or body at your cursor.</p>
             <div className="d-flex gap-2 flex-wrap">
               {tokens.map((token) => (
                 <button
@@ -381,11 +360,7 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
                 Delete
               </button>
             )}
-            <button
-              type="button"
-              className="btn btn-light"
-              onClick={() => setPreview(true)}
-            >
+            <button type="button" className="btn btn-light" onClick={() => setPreview(true)}>
               Preview
             </button>
           </div>
@@ -403,7 +378,7 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
             </button>
             <button
               className="btn btn-primary"
-              disabled={busy || (!dirty && !!template)}
+              disabled={busy || !supportedUsage || (!dirty && !!template)}
             >
               {busy ? "Saving…" : "Save template"}
             </button>

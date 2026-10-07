@@ -27,6 +27,8 @@ Local standalone development may set `DEV_HR_USER_ID`. This exposes `POST /api/a
 
 ## Code quality
 
+- Template usage types have one definition in `shared/template-types.json`. Unknown stored types remain visible but cannot be saved until explicitly changed to a supported type. See `TEMPLATE_TYPES.md`.
+
 - Biome 2.5.14 provides the single lint and formatting toolchain.
 - Checks are intentionally scoped to the notification refactor files to avoid rewriting unrelated historical code.
 - The browser-only data adapter remains removed; notification state continues to use the shared CSRF-aware API client and MySQL-backed endpoints.
