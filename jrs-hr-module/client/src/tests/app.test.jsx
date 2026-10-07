@@ -577,9 +577,11 @@ describe("email templates", () => {
     const heading = await screen.findByRole("heading", { level: 1, name: title });
     const header = heading.parentElement.parentElement;
     expect(within(header).queryByText("HR WORKSPACE")).not.toBeInTheDocument();
-    expect(await within(header).findByText(route === "/templates"
-      ? "2 saved templates"
-      : "1 sent email")).toBeVisible();
+    if (route === "/templates") expect(await within(header).findByText("2 saved templates")).toBeVisible();
+    else {
+      await screen.findByText("Sent");
+      expect(heading.parentElement.querySelector("p")).toBeEmptyDOMElement();
+    }
     if (route === "/templates") expect(within(header).getByRole("button", { name: /Create template/ })).toBeVisible();
   });
   it.each([0, 1, 3])("shows the saved template count for %i items", async (count) => {
@@ -590,18 +592,22 @@ describe("email templates", () => {
   it.each([0, 1, 37])("uses the API total rather than the current log page length for %i emails", async (total) => {
     overrides["GET /api/hr/logs"] = () => json({ items: total ? [state.log] : [], total, page: 1, pageSize: 10 });
     mount("/logs");
-    expect(await screen.findByText(`${total} sent email${total === 1 ? "" : "s"}`)).toBeVisible();
+    expect(await screen.findByText(`${total} sent`)).toBeVisible();
+    const heading = screen.getByRole("heading", { level: 1, name: "Logs" });
+    expect(heading.parentElement.querySelector("p")).toBeEmptyDOMElement();
   });
-  it("labels the log count as matching filters after applying a search", async () => {
+  it("keeps filtered results working without a heading count", async () => {
     overrides["GET /api/hr/logs"] = (url) => {
       const filtered = new URL(url, "http://localhost").searchParams.get("search");
       return json({ items: filtered ? [] : [state.log], total: filtered ? 0 : 1, page: 1, pageSize: 10 });
     };
     const ui = mount("/logs");
-    await screen.findByText("1 sent email");
+    await screen.findByText("1 sent");
     await ui.type(screen.getByLabelText("Search"), "No match");
     await ui.click(screen.getByRole("button", { name: "Apply" }));
-    expect(await screen.findByText("0 sent emails matching filters")).toBeVisible();
+    expect(await screen.findByText("0 sent")).toBeVisible();
+    const heading = screen.getByRole("heading", { level: 1, name: "Logs" });
+    expect(heading.parentElement.querySelector("p")).toBeEmptyDOMElement();
   });
   it.each(["/templates", "/logs"])("does not invent a zero count when %s fails to load", async (route) => {
     overrides[`GET /api/hr${route}`] = () => json({ error: { message: "Service unavailable." } }, 503);
