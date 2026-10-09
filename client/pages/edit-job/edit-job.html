@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Job - JRS</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-logo"></div>
+            <span class="brand-name">JRS</span>
+        </div>
+        <div class="workspace-label">WORKSPACE</div>
+        <ul class="nav-menu">
+            <li class="nav-item">Dashboard</li>
+            <li class="nav-item">Applications</li>
+            <li class="nav-item">Candidates</li>
+            <li class="nav-item active" onclick="window.location.href='../job-management/job-management.html'" style="cursor:pointer;">Job Postings</li>
+            <li class="nav-item" onclick="window.location.href='../interview-schedule/interview-schedule.html'" style="cursor:pointer;">Interviews</li>
+            <li class="nav-item">Notifications</li>
+        </ul>
+    </div>
+    <div class="sidebar">
+        <div class="brand"><div class="brand-logo"></div><span class="brand-name">JRS</span></div>
+        <div class="workspace-label">WORKSPACE</div>
+        <ul class="nav-menu">
+            <li class="nav-item">Dashboard</li>
+            <li class="nav-item">Applications</li>
+            <li class="nav-item">Candidates</li>
+            <li class="nav-item active">Job Postings</li>
+            <li class="nav-item">Interviews</li>
+            <li class="nav-item">Notifications</li>
+        </ul>
+    </div>
+    
+    <div class="main-container">
+        <header class="header">
+            <h1 class="header-title">Edit Job</h1>
+            <div class="user-profile">
+                <div class="avatar"></div>
+                <div class="user-info">
+                    <span class="user-name">Sarah Mitchell</span>
+                    <span class="user-role">HR Manager</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-body">
+            <form id="editJobForm" class="card">
+                <!-- Row 1: Job Title & Department -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">Job Title</label>
+                        <input type="text" id="jobTitle" class="form-control" value="Senior Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select id="department" class="form-control">
+                            <option value="Information Technology" selected>Information Technology</option>
+                            <option value="Design">Design</option>
+                            <option value="HR">HR</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Row 2: Location & Employment Type -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="location" class="form-control" value="Singapore">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Employment Type</label>
+                        <select id="employmentType" class="form-control">
+                            <option value="Full-time" selected>Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Row 3: Salary Range & Dates -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">Salary Range</label>
+                        <input type="text" id="salaryRange" class="form-control" value="SGD 6,000 - 9,000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Closing Date</label>
+                        <input type="text" id="closingDate" class="form-control" value="31 Dec 2026">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Publish Date</label>
+                        <input type="text" id="publishDate" class="form-control" value="31 Nov 2026">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Unpublish Date</label>
+                        <input type="text" id="unpublishDate" class="form-control" value="31 Sep 2026">
+                    </div>
+                </div>
+
+                <!-- Row 4: Job Description -->
+                <div class="form-group">
+                    <label class="form-label">Job Description</label>
+                    <textarea id="jobDescription" class="form-control" rows="4">Responsible for designing, developing and maintaining enterprise web applications.
+Work closely with Product Managers, QA Engineers and UI/UX Designers.
+Participate in Agile sprint planning, code reviews and deployment.</textarea>
+                </div>
+
+                <!-- Row 5: Requirements -->
+                <div class="form-group">
+                    <label class="form-label">Requirements</label>
+                    <textarea id="requirements" class="form-control" rows="4">• Bachelor's Degree in Computer Science
+• 3+ years experience with Java / Spring Boot
+• Strong communication and teamwork skills</textarea>
+                </div>
+
+                <!-- Footer Actions & Status -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f3f4f6;">
+                    <div style="display:flex; gap: 20px; align-items:center;">
+                        <div>
+                            <span style="font-size: 12px; color: #6b7280; display: block;">Job Status</span>
+                            <span class="badge badge-success" id="statusBadge">Active</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 12px; color: #6b7280; display: block;">Last Updated</span>
+                            <strong style="font-size: 14px;">28 Jul 2026 • 10:35 AM</strong>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap: 12px;">
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                        <button type="button" class="btn btn-light-danger" id="deleteBtn">Delete Job</button>
+                        <button type="button" class="btn btn-primary" id="savePublishBtn">Save and Publish</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../../utils/api_utils.js"></script>
+    <script src="editJob.js"></script>
+</body>
+</html>
