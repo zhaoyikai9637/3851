@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1788938119003" clover="3.2.0">
+  <project timestamp="1788938119003" name="All files">
+    <metrics statements="13" coveredstatements="12" conditionals="16" coveredconditionals="14" methods="4" coveredmethods="4" elements="33" coveredelements="30" complexity="0" loc="13" ncloc="13" packages="2" files="2" classes="2"/>
+    <package name="Forgot password">
+      <metrics statements="6" coveredstatements="6" conditionals="8" coveredconditionals="7" methods="2" coveredmethods="2"/>
+      <file name="forgot_utils.js" path="C:\Users\Luoliyiyu\OneDrive\Desktop\COMP3851\Code\Forgot password\forgot_utils.js">
+        <metrics statements="6" coveredstatements="6" conditionals="8" coveredconditionals="7" methods="2" coveredmethods="2"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="6" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="12" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="13" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="Login Page">
+      <metrics statements="7" coveredstatements="6" conditionals="8" coveredconditionals="7" methods="2" coveredmethods="2"/>
+      <file name="login_utils.js" path="C:\Users\Luoliyiyu\OneDrive\Desktop\COMP3851\Code\Login Page\login_utils.js">
+        <metrics statements="7" coveredstatements="6" conditionals="8" coveredconditionals="7" methods="2" coveredmethods="2"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="6" count="2" type="cond" truecount="3" falsecount="1"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="9" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

@@ -1,0 +1,31 @@
+PASS Login Page/login.test.js
+  Aim A - Candidate Login Unit Tests
+    √ UT-01: Valid email format should return true (3 ms)
+    √ UT-02: Invalid email format should return false
+    √ UT-03: Password length < 6 should fail form validation
+    √ UT-04: Valid email and password should pass validation (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        5.694 s
+Ran all test suites.
+Timestamp:   2026-09-09 14:51:20 SST
+
+ PASS  Login Page/login.test.js
+  Aim A - Candidate Login Unit Tests
+    √ UT-01: Valid email format should return true (1 ms)
+    √ UT-02: Invalid email format should return false
+    √ UT-03: Password length < 6 should fail form validation (1 ms)
+    √ UT-04: Valid email and password should pass validation
+
+----------------|-----------|-------------|-----------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------------|-----------|-------------|-----------|---------|-------------------
+All files         |   85.71   |     87.5     |     100     |   85.71 |                   
+ login_utils.js |   85.71   |     87.5     |     100     |   85.71 | 7                 
+----------------|-----------|-------------|-------------|---------|-------------------
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        4.43 s
