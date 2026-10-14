@@ -2,6 +2,8 @@
 
 ## Completed
 
+- 2026-10-14: Applied two active cloud HR test profiles as authoritative local data, overwriting the old local profile at the user's request and removing unreferenced import duplicates. Local/cloud HR profile fields and IDs match; no cloud writes or authentication-record copying. Local development entry uses the manager; verified both profiles through the real-database-backed API. Team login mapping remains pending.
+
 - Added independent native vertical scrolling to the template list on desktop and mobile, preserving template selection and the editor layout.
 
 - Added Application Rejection, Interview Rejection, Offer Withdrawal and Offer Declined Acknowledgement to the shared registry, original content and validation/UI regression coverage. Preserve legacy data; event wiring remains a team integration task.
