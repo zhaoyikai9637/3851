@@ -61,3 +61,11 @@ Five AI-assisted original templates were installed into the existing local stand
 Installation requires an active HR ID, retains existing templates and is repeatable.
 Fictional profile/notification examples remain documentation data, not fabricated live activity.
 See `CLOUD_SYNC_AND_CONTENT.md`. Team login integration and the other HR modules remain separate.
+
+## 2026-10-14 cloud HR profile application
+
+Two active seed HR profiles (manager and staff) were read from the team cloud database over verified TLS in a read-only transaction. At the user's explicit request, the cloud is authoritative: the original local profile was overwritten, and local profile IDs 1 and 2 now match all cloud HR profile fields. The two newly imported duplicate records were removed only after checking that no foreign-key references existed. Existing references to local ID 1 were retained. Cloud writes were zero. No password hashes, account records, sessions or private photos were copied.
+
+The local-only development entry now uses the imported manager profile. The staff profile is also stored locally, but no browser role switch or additional login system was added. These remain test profiles, not verified real staff identities. Team authentication and upstream-to-local ID mapping remain separate integration work. Private runtime configuration and database records are not committed to Git.
+
+Verification: the overwrite transaction checked exact equality of all local/cloud HR profile fields before commit. Actual local-MySQL-backed development login and profile reads were rechecked for both final profile IDs; unauthenticated and logged-out profile reads returned 401. Backend tests: 182 passed; frontend tests: 68 passed; isolated MySQL tests: 12 passed; production build succeeded. No browser layout check was performed because UI code was unchanged.
