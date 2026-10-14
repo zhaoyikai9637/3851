@@ -29,8 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggle.textContent = 'Create a candidate account';
                 error.textContent = 'Account created. You can now log in.';
             } else {
-                await JRS.request('/login', { method: 'POST', body: { email, password } });
-                window.location.href = '../profile/profile.html';
+                const result = await JRS.request('/login', { method: 'POST', body: { email, password } });
+                window.location.href = result.user.role === 'hr' ? '/hr/' : '../profile/profile.html';
             }
         } catch (err) { error.textContent = err.message; }
         finally { button.disabled = false; toggle.disabled = false; button.textContent = registering ? 'Create account' : 'Log in'; }

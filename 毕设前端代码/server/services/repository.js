@@ -24,16 +24,22 @@ class Repository {
     }
     async login(email, password, session, dummyHash) {
         return transaction(this.pool, async db => {
-            const [[account]] = await db.query('SELECT account_id, email, password_hash, role FROM MODULE_ACCOUNT WHERE email = ? FOR UPDATE', [email]);
+            const [[account]] = await db.query('SELECT account_id, email, password_hash, role, hr_user_id FROM MODULE_ACCOUNT WHERE email = ? FOR UPDATE', [email]);
             const hashed = account && /^\$2[aby]\$\d{2}\$/.test(account.password_hash);
             const matches = await bcrypt.compare(password, hashed ? account.password_hash : dummyHash);
-            if (!account || !hashed || !matches || account.role !== 'candidate') return null;
+            if (!account || !hashed || !matches || !['candidate', 'hr'].includes(account.role)) return null;
+            if (account.role === 'hr') {
+                const [[hr]] = await db.query("SELECT user_id FROM HR_USER WHERE user_id = ? AND account_status = 'ACTIVE' AND role IN ('HR_MANAGER', 'HR_STAFF')", [account.hr_user_id]);
+                if (!hr) return null;
+            }
+            if (account.role === 'candidate') {
             const [[candidate]] = await db.query('SELECT candidate_id FROM CANDIDATE WHERE account_id = ?', [account.account_id]);
             if (!candidate) {
                 // Existing accounts with no historical profile can create a new empty profile.
                 const [[legacy]] = await db.query('SELECT candidate_id FROM CANDIDATE WHERE email = ? AND account_id IS NULL LIMIT 1', [account.email]);
                 if (legacy) { const e = new Error('Existing profile requires account linking by the database administrator.'); e.status = 409; throw e; }
                 await db.query('INSERT INTO CANDIDATE (account_id, email, full_name) VALUES (?, ?, ?)', [account.account_id, account.email, '']);
+            }
             }
             await db.query('INSERT INTO MODULE_SESSION (sid, data, expires) VALUES (?, ?, ?)',
                 [session.sid, JSON.stringify({ module: 'jrs-candidate', account_id: account.account_id, csrf: session.csrf }), session.expires]);
@@ -45,10 +51,27 @@ class Repository {
         if (!row) return null;
         let data; try { data = JSON.parse(row.data); } catch { return null; }
         if (data.module !== 'jrs-candidate' || !Number.isSafeInteger(data.account_id)) return null;
-        const [[account]] = await this.pool.query("SELECT account_id, email, role FROM MODULE_ACCOUNT WHERE account_id = ? AND role = 'candidate'", [data.account_id]);
+        const [[account]] = await this.pool.query("SELECT account_id, email, role, hr_user_id FROM MODULE_ACCOUNT WHERE account_id = ? AND role IN ('candidate', 'hr')", [data.account_id]);
+        if (account?.role === 'hr' && !await this.hrIdentity(account.account_id)) return null;
         return account ? { ...account, csrf: data.csrf } : null;
     }
+    async hrIdentity(accountId) {
+        const [[row]] = await this.pool.query(`SELECT h.* FROM HR_USER h JOIN MODULE_ACCOUNT a ON a.hr_user_id = h.user_id
+            WHERE a.account_id = ? AND a.role = 'hr' AND h.account_status = 'ACTIVE' AND h.role IN ('HR_MANAGER', 'HR_STAFF')`, [accountId]);
+        return row;
+    }
     async logout(sid) { await this.pool.query('DELETE FROM MODULE_SESSION WHERE sid = ?', [sid]); }
+    async changePassword(accountId, currentPassword, newPassword) {
+        require('./validation').password(newPassword);
+        if (typeof currentPassword !== 'string' || Buffer.byteLength(currentPassword) > 72) return false;
+        return transaction(this.pool, async db => {
+            const [[account]] = await db.query('SELECT password_hash FROM MODULE_ACCOUNT WHERE account_id = ? FOR UPDATE', [accountId]);
+            if (!account || !await bcrypt.compare(currentPassword, account.password_hash)) return false;
+            await db.query('UPDATE MODULE_ACCOUNT SET password_hash = ?, updated_at = UTC_TIMESTAMP() WHERE account_id = ?', [await bcrypt.hash(newPassword, 12), accountId]);
+            await db.query(`DELETE FROM MODULE_SESSION WHERE sid LIKE 'candidate:%' AND JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(data), data, '{}'), '$.account_id')) = ?`, [String(accountId)]);
+            return true;
+        });
+    }
     async saveReset(accountId, codeHash, expires, sentAt) {
         return transaction(this.pool, async db => {
             // Same lock order as login/reset consumption, including for the first reset request.

@@ -13,7 +13,7 @@ function validateForm(email, password) {
 }
 
 // 必须添加 module.exports 供 Jest 调用
-module.exports = {
+if (typeof module !== 'undefined' && module.exports) module.exports = {
     isValidEmail,
     validateForm
 };
