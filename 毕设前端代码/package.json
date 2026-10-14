@@ -10,7 +10,11 @@
     "test:mysql": "node scripts/test-mysql.js",
     "db:check": "node scripts/migrate.js",
     "db:migrate": "node scripts/migrate.js",
-    "db:cleanup": "node scripts/cleanup.js"
+    "db:cleanup": "node scripts/cleanup.js",
+    "hr:check": "node scripts/migrate-hr.js",
+    "hr:migrate": "node scripts/migrate-hr.js",
+    "hr:seed": "node scripts/seed-hr.js",
+    "test:hr:mysql": "node scripts/test-hr-integration.js"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

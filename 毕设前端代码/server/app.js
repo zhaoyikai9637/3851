@@ -3,8 +3,7 @@ const path = require('node:path');
 const multer = require('multer');
 const v = require('./services/validation');
 const { inspectResume } = require('./services/files');
-const { mountAuthRoutes } = require('./routes/auth');
-const { mountProfileRoutes } = require('./routes/profile');
+const { mountApi } = require('./api');
 const { hash, SESSION_COOKIE } = require('./utils/tokens');
 
 function createApp({ repository: repo, config, mailer, now = () => new Date(), inspectFile = inspectResume }) {
@@ -46,12 +45,12 @@ function createApp({ repository: repo, config, mailer, now = () => new Date(), i
         next();
     }
     async function candidate(req, res, next) {
+        if (req.user.role !== 'candidate') v.fail('Candidate access only.', 403);
         req.candidate = await repo.candidate(req.user.account_id);
         if (!req.candidate) v.fail('Candidate profile is unavailable.', 409);
         next();
     }
-    mountAuthRoutes(app, { repo, config, mailer, now, limit, auth, sessionId, cookieOptions });
-    mountProfileRoutes(app, { repo, config, limit, auth, candidate, inspectFile });
+    mountApi(app, { repo, config, mailer, now, limit, auth, candidate, inspectFile, sessionId, cookieOptions });
     app.use('/api', (req, res) => res.status(404).json({ valid: false, error: 'API not found.' }));
     app.get('/', (req, res) => res.redirect('/pages/login/login.html'));
     // Only frontend assets are exposed; .env, source and uploads are outside this root.
