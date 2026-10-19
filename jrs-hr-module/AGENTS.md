@@ -6,9 +6,8 @@ This started as an INCOMPLETE migration handoff. Current local implementation an
 evidence are in docs/HANDOFF.md; team integration is still incomplete. Do not assume
 that another chat, its uploaded files, its permissions, or its test results are
 available. Read `docs/HANDOFF.md` and `docs/PLAN.md` before substantive work.
-`START_HERE.md` is the user's Windows/VS Code guide. `docs/SOURCES.md` maps the
-original requirements and design evidence. Inspect actual source before relying
-on any status summary. Update the handoff and plan when progress changes.
+`START_HERE.md` is the user's Windows/VS Code guide. Inspect actual source before
+relying on any status summary. Keep all committed filenames, comments and documentation in English. Update the handoff and plan when progress changes.
 
 ## User and scope
 
