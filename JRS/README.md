@@ -11,7 +11,6 @@ After cloning, open JRS/ before running the commands below. Existing standalone 
 | jrs-hr-module | Existing HR shell, notifications, templates, email history and HR profile | Enabled |
 | JRS HR | HR recruitment business embedded inside the existing HR shell | Enabled |
 | JRS Applicant Portal | SiHuanjia's unfinished applicant module | Disabled; retained separately |
-| JRS job-management | Legacy standalone job/interview source | Not started by the integrated runtime |
 
 Candidates sign in to Personal Profile. HR users enter /hr/.
 Jobs, My Resume and Application Status in the login/profile module remain static demonstrations.
@@ -66,8 +65,9 @@ test:experimental explicitly enables the unfinished module for adapter regressio
 MySQL checks require the dedicated local test schema and private local configuration.
 Production SMTP, actual email delivery, final applicant acceptance and deployment remain pending.
 
-The legacy JRS job-management tests have known missing-export failures. That backend is not started by JRS.
-Do not count those failures as passed or use its historical SQLite file as application data.
+The unused legacy SQLite job/interview implementation was removed from main.
+Its source remains on the module branches and in Git history; its known failing tests are not part of the integrated test result.
+Current job publication and interview features use the active HR module and MySQL adapters instead.
 
 ## Repository maintenance
 

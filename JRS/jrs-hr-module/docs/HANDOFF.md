@@ -3,6 +3,8 @@
 ## English-only repository cleanup - 2026-10-19
 
 Current tracked filenames, comments, diagnostics and documentation use English.
+The unused duplicate SQLite job/interview implementation was removed from main after confirming no runtime imports.
+Its source is retained on module branches and in earlier commits; current HR job/interview routes remain active.
 Unused personal attachments, screenshots, chat prompts and superseded handoff/review documents
 were removed from current branch snapshots; earlier commits remain recoverable.
 Run the integrated root check:english command before committing. It scans the whole repository

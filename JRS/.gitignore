@@ -10,3 +10,6 @@ uploads/
 !JRS Login and profile/integrations/hr/dist/**
 work/
 *.log
+*.sqlite
+*.sqlite-*
+*.db
