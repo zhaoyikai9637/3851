@@ -1,9 +1,9 @@
-# 未定稿：独立保留
+# Unfinished Applicant Module
 
-此目录归司寰嘉的求职者模块，当前不是最终版。
-2026-10-19 起，JRS 根项目默认不启动、不构建、不暴露本模块 API 或页面，
-也不把 HR 新职位、申请状态写入本模块数据表。
+This module belongs to SiHuanjia and is not the final version.
+The integrated JRS application excludes it from default builds, routes and database synchronization.
+Existing source and experimental adapters are preserved, not accepted as final functionality.
 
-现有代码及实验适配保留，未删除、不视作最终实现。
-需要联调时使用根项目 README 的显式实验开关；最终版到齐后再核对接口。
-郑晨竣的统一登录与个人资料在相邻 `JRS Login and profile`，不属于本目录。
+See the integrated root README for the explicit experimental switch and regression commands.
+Review the final source and API contract before reconnecting it.
+Shared sign-in and candidate personal information belong to the adjacent JRS Login and profile module.

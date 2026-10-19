@@ -1,90 +1,82 @@
-# JRS 独立整合工作区
+# JRS Recruitment Workspace
 
-本目录为 `E:\textProject\JRS`，不替换原来的 `E:\textProject\jrs-hr-module`。
-仅用于本机开发与联调，不是生产部署版本。
+This is the integrated development project. The repository main branch contains only JRS/.
+After cloning, open JRS/ before running the commands below. Existing standalone local projects are not replaced.
 
-## GitHub 目录与分支
+## Modules
 
-仓库 main 只保留 `JRS/` 整合项目；克隆后先进入 `JRS/` 再执行下方命令。
-`team-files` 保存整理前 main 的所有成员原文件和报告，历史未删除。
-其他分支按用途命名：`hr-login`、`hr-notifications`、`profile-cleanup`、
-`login-profile`、`project-structure`，改名时不改变各自的提交历史。
-私有配置、本机数据库、上传文件、依赖及生成的构建产物不上传。
-
-## 当前模块边界（2026-10-19）
-
-| 目录 | 用途 | 默认运行 |
+| Directory | Responsibility | Default runtime |
 | --- | --- | --- |
-| `JRS Login and profile` | 郑晨竣：统一登录、求职者个人资料 | 是 |
-| `jrs-hr-module` | 赵易凯：HR 外框、通知、邮件模板、发送记录、HR 资料 | 是，保留当前本地 UI |
-| `JRS HR` | 团队 HR 招聘业务，通过适配层嵌入上述 HR 外框 | 是 |
-| `JRS job-management` | 旧职位/面试模块原文件 | 保留，不启动重复 SQLite 后端 |
-| `JRS Applicant Portal` | 司寰嘉：求职、简历、申请模块，**尚未定稿** | **否，独立保留** |
+| JRS Login and profile | Shared candidate/HR sign-in and candidate personal profile | Enabled |
+| jrs-hr-module | Existing HR shell, notifications, templates, email history and HR profile | Enabled |
+| JRS HR | HR recruitment business embedded inside the existing HR shell | Enabled |
+| JRS Applicant Portal | SiHuanjia's unfinished applicant module | Disabled; retained separately |
+| JRS job-management | Legacy standalone job/interview source | Not started by the integrated runtime |
 
-郑晨竣的目录原名为 `毕设前端代码`，已按提交
-`940a7da43139f12384917e3f3f05bed7c988e84d` 更新命名。
-同时采用最新 `profile.html`、`profile.js`；个人资料页不再混放简历上传。
-整合专用的统一会话和 HR 路由适配继续保留。
+Candidates sign in to Personal Profile. HR users enter /hr/.
+Jobs, My Resume and Application Status in the login/profile module remain static demonstrations.
+Do not treat them or the unfinished applicant module as an accepted production application flow.
 
-默认求职者登录进入郑晨竣的 Personal Profile；HR 登录进入 `/hr/`。
-郑晨竣保留的 Jobs、My Resume、Application Status 静态页面仍是原有演示页面，
-不能据此认为真实投递流程已经完成。司寰嘉最终版到齐前，不把该模块作为正式投递入口。
+## Local development
 
-## 本机启动
+Use Node.js 24 and MySQL. Install the root dependency lockfile with npm.cmd ci.
+Copy .env.example to a private .env and configure the dedicated local database and session secrets.
+The existing development setup uses 127.0.0.1:3307 and jrs_integrated_dev_20261019.
+The root runtime refuses other database targets. Tests use a separate test database.
 
-双击根目录 `start-jrs.cmd`，或在此目录执行：
+On the already configured workstation, run:
 
 ```powershell
+npm.cmd run build
 npm.cmd start
 ```
 
-入口：<http://localhost:3100/>。本机登录资料在忽略提交的 `.local/accounts.json`，
-密码是本机新生成的密码，不是云数据库账号密码。不要分享或提交该文件。
+Open http://localhost:3100/. The start-jrs.cmd launcher runs the same startup command.
+Private local accounts are stored in .local/accounts.json; never commit or share this file.
+These are local development credentials, not cloud database account passwords.
 
-已经配置独立 MySQL 实例：`127.0.0.1:3307`；数据位于本目录 `.local/mysql`。
-启动器只启动这一独立实例，不改变原来的 3306 服务。云端资料仅以只读方式获取，未写云库。
-开发库为 `jrs_integrated_dev_20261019`，自动测试使用独立测试库，不向开发库制造测试申请。
+The startup script can restart the previously initialized isolated MySQL instance in .local/mysql.
+It does not initialize a fresh machine or change the original MySQL service on port 3306.
+A new machine needs explicit MySQL initialization and authorized HR profile import.
+Review scripts/setup-database.mjs before running npm.cmd run db:setup. Do not target a shared or production database.
+Cloud profile access is read-only with verified TLS; no cloud credentials, sessions or password hashes are copied.
 
-修改 HR 前端后执行 `npm.cmd run build`。默认只构建 HR，不依赖求职者模块的产物。
-首次在其他电脑部署还需要本机 MySQL 初始化、私有 `.env` 和经授权的 HR 资料导入；
-本工作区不是无需配置即可联网部署的安装包。
+## Experimental applicant module
 
-## 司寰嘉模块：仅供显式实验联调
+JRS Applicant Portal is not final. Its source and experimental adapters are preserved separately.
+The default server does not import or mount its service, /applicant-api or /applicant/*.
+Default HR writes do not update its business tables. Earlier isolated development data is retained.
 
-源码完整保留在自己的目录，适配代码为 `server/applicant-data.mjs`、
-`server/applicant-facts.mjs`，路由接入独立在 `server/experimental/applicant.mjs`，
-由 `server/runtime.mjs` 的实验开关按需加载。
-默认不导入其服务、不挂载 `/applicant-api` 和 `/applicant/*`，HR 写入也不更新它的业务表。
-此前独立开发库中的联调数据保留，不作为真实业务数据迁入云端。
+Experimental routes live in server/experimental/applicant.mjs and use server/applicant-data.mjs.
+Only explicitly setting ENABLE_EXPERIMENTAL_APPLICANT_PORTAL=true and running
+npm.cmd run build:experimental enables the experimental flow. Recheck all interfaces against the final source before acceptance.
 
-只有开发者主动设置 `ENABLE_EXPERIMENTAL_APPLICANT_PORTAL=true` 并执行
-`npm.cmd run build:experimental` 后，才可启动其原有联调入口。
-此开关不是完成验收的标志，最终版仍需重新核对接口和数据。
-
-## 验证命令
+## Checks
 
 ```powershell
 npm.cmd test
+npm.cmd run check:english
 npm.cmd run test:workflow
 npm.cmd run test:experimental
 npm.cmd run build
 ```
 
-`test:workflow` 检查默认隔离、登录/资料/HR 可用和 HR 数据不会写入求职者表。
-`test:experimental` 显式开启实验模块，仅验证已有投递联调适配，不代表司寰嘉最终版验收。
+test:workflow checks the default login/profile/HR boundaries and prevents HR writes from entering applicant tables.
+test:experimental explicitly enables the unfinished module for adapter regression tests; it is not final-module acceptance.
+MySQL checks require the dedicated local test schema and private local configuration.
+Production SMTP, actual email delivery, final applicant acceptance and deployment remain pending.
 
-已知遗留问题：旧 `JRS job-management` 有 11 项测试引用不存在的导出，
-编辑职位脚本混有面试列表逻辑；原文件保留，未将其失败算作通过。
-生产 SMTP、真实邮件送达、完整招聘业务验收和云端部署尚未完成。
+The legacy JRS job-management tests have known missing-export failures. That backend is not started by JRS.
+Do not count those failures as passed or use its historical SQLite file as application data.
 
-## 本次验证结果（2026-10-19）
+## Repository maintenance
 
-- 根项目单元测试：14/14；默认流程隔离：1/1；显式实验联调：2/2。
-- 郑晨竣模块 Jest：12 套件，69/69。
-- HR 前端 Vitest：69/69；HR 后端 Vitest：183/183。
-- HR Jest：5 套件，73/73；独立 MySQL 回归：12/12。
-- 默认 HR 生产构建成功。
-- 原工程源文件 SHA-256 清单与操作前完全相同。
-- 浏览器已打开 HR 通知中心，显示原 HR 外框和当前本机 HR 身份。
+All current branch snapshots use English filenames and text.
+Run check:english before committing. The checker scans tracked and unignored UTF-8 text and filenames;
+it does not rewrite user-entered database data or historical Git commits.
 
-上述结果不覆盖旧职位模块的 11 项遗留失败，也不代表最终求职者模块验收完成。
+team-files retains the source-module layout from before integration.
+Other branches are hr-login, hr-notifications, profile-cleanup, login-profile and project-structure.
+Old personal reports, video, database snapshots, chat prompts and superseded handoff/review documents were removed from current snapshots.
+Their earlier committed versions remain recoverable from Git history.
+Never commit .env, credentials, private uploads, database files, node_modules or generated builds.

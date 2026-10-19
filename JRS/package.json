@@ -11,6 +11,7 @@
     "dev": "node --watch server/index.mjs",
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
+    "check:english": "node scripts/check-english.mjs",
     "db:setup": "node scripts/setup-database.mjs",
     "test:workflow": "node --test tests/default-boundary.mysql.mjs",
     "test:experimental": "node --test tests/workflow.mysql.mjs",

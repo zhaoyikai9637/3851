@@ -31,7 +31,6 @@
                 <strong id="displayEmail">xxx@example.com</strong>
             </p>
 
-            <!-- 验证通过后跳转至 set-new-password 文件夹下的 set-new-password.html -->
             <form id="otpForm" action="../set-new-password/set-new-password.html" method="GET" novalidate>
                 <!-- 4-Digit OTP Container -->
                 <div class="otp-container">
@@ -53,7 +52,6 @@
                     </button>
                 </div>
 
-                <!-- 返回登录模块 -->
                 <div class="resend-container" style="margin-top: 16px;">
                     <a href="../login/login.html" class="resend-link"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
                 </div>
@@ -61,7 +59,6 @@
         </div>
     </main>
 
-    <!-- 匹配 check-email 目录下的工具类文件与逻辑文件 -->
     <script src="../../utils/api.js"></script>
     <script src="../../utils/check_utils.js"></script>
     <script src="check-email.js"></script>

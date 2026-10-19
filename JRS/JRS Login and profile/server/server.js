@@ -22,9 +22,9 @@ async function start({ config = loadConfig() } = {}) {
     } catch (error) {
         await pool.end();
         if (['ER_BAD_FIELD_ERROR', 'ER_NO_SUCH_TABLE'].includes(error.code)) {
-            console.error('启动失败：数据库缺少 JRS 所需字段或表，数据库迁移尚未完成。');
-            console.error('请先运行 npm run db:check。备份并取得共享数据库写入授权后，应用已审阅的迁移，再运行 npm start。');
-            console.error('本次启动未修改数据库。错误代码：', error.code);
+            console.error('Startup stopped: required JRS database tables or columns are missing; migrations are incomplete.');
+            console.error('Run npm run db:check first. Back up the target and obtain shared-database write approval before applying reviewed migrations and restarting.');
+            console.error('Startup did not modify the database. Error code:', error.code);
         } else {
             console.error('Startup failed. Check database TLS/configuration and the reviewed migration. Error code:', error.code || 'CONFIGURATION');
         }

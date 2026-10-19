@@ -1,5 +1,11 @@
 # Delivery plan
 
+## Repository language policy - 2026-10-19
+
+- Keep current branch filenames and project text English-only; run the root check:english command.
+- Preserve unfinished applicant source and branch-specific business behavior during cleanup.
+- Keep credentials and local data outside Git. Removed historical attachments remain in earlier commits.
+
 ## Independent integration copy — 2026-10-19
 
 - Root login/profile integration uses `JRS Login and profile`; HR keeps this module's UI.

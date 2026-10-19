@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     bindForm('languageForm', async () => {
         const map = new Map();
         for (const [input, flag] of [['langReading', 'can_read'], ['langWriting', 'can_write']]) {
-            for (const name of value(input).split(/[,，]/).map(s => s.trim()).filter(Boolean)) {
+            for (const name of value(input).split(/[,\uFF0C]/).map(s => s.trim()).filter(Boolean)) {
                 const key = name.toLowerCase();
                 if (!map.has(key)) map.set(key, { language_name: name, can_read: false, can_write: false });
                 map.get(key)[flag] = true;
