@@ -1,4 +1,3 @@
-// 1. 必须在所有 require 之前置顶（关闭底层 TLS 严格校验）
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 require('dotenv').config();
@@ -11,7 +10,6 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 
-// 2. Aiven 数据库连接池：移除 ca 文件依赖，纯配置放行自签名证书
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -25,7 +23,6 @@ const pool = mysql.createPool({
     connectionLimit: 10
 });
 
-// 3. 检查数据库连通性
 async function initDB() {
     try {
         const connection = await pool.getConnection();
@@ -38,7 +35,6 @@ async function initDB() {
 }
 initDB();
 
-// 4. 发送验证码 API
 app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ valid: false, error: 'Email is required.' });
@@ -48,8 +44,8 @@ app.post('/api/forgot-password', async (req, res) => {
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         await pool.query(
-            `INSERT INTO password_resets (email, code, expires_at) 
-             VALUES (?, ?, ?) 
+            `INSERT INTO password_resets (email, code, expires_at)
+             VALUES (?, ?, ?)
              ON DUPLICATE KEY UPDATE code = ?, expires_at = ?`,
             [email, code, expiresAt, code, expiresAt]
         );
@@ -64,7 +60,6 @@ app.post('/api/forgot-password', async (req, res) => {
     }
 });
 
-// 5. 校验 OTP 码 API
 app.post('/api/check-email', async (req, res) => {
     const { email, code } = req.body;
     if (!email || !code) return res.status(400).json({ valid: false, error: 'Missing parameters.' });
@@ -85,7 +80,6 @@ app.post('/api/check-email', async (req, res) => {
     }
 });
 
-// 6. 设置新密码 API
 app.post('/api/set-new-password', async (req, res) => {
     const { email, newPassword } = req.body;
     if (!email || !newPassword) return res.status(400).json({ valid: false, error: 'Missing parameters.' });
@@ -94,7 +88,7 @@ app.post('/api/set-new-password', async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         await pool.query(
-            `INSERT INTO users (email, password) VALUES (?, ?) 
+            `INSERT INTO users (email, password) VALUES (?, ?)
              ON DUPLICATE KEY UPDATE password = ?`,
             [email, hashedPassword, hashedPassword]
         );

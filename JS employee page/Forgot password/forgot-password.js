@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 如果 forgot_utils.js 中定义了 isValidEmail，进行二次格式校验
             if (typeof isValidEmail === 'function' && !isValidEmail(email)) {
                 showFieldError('Please enter a valid email address.');
                 return;
@@ -30,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setLoadingState(true);
 
             try {
-                // 对接后端 Node.js API 接口
                 const response = await fetch('http://127.0.0.1:3001/api/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -40,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (response.ok && data.valid) {
-                    // 保存邮箱至 localStorage，供下一页 (check-email) 渲染与验证使用
                     localStorage.setItem('reset_email', email);
                     window.location.href = "../check-email/check-email.html";
                 } else {

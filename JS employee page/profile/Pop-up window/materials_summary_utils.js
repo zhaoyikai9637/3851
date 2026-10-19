@@ -2,7 +2,6 @@
  * Utility Functions for Profile Drawers (Personal Details, Summary, Language & Resumé)
  */
 
-// 全球 200+ 国家和地区区号对应的合法手机号位数（纯数字）映射表
 const COUNTRY_PHONE_LENGTHS = {
     '+93': [9],             // Afghanistan
     '+355': [9],            // Albania
@@ -215,13 +214,11 @@ const COUNTRY_PHONE_LENGTHS = {
     '+263': [9]             // Zimbabwe
 };
 
-/**
- * 根据所选国家区号校验输入的手机号长度
- */
+
 function validatePhoneNumberLength(countryCode, phoneNumber) {
-    const cleanNumber = (phoneNumber || '').replace(/\D/g, ''); // 过滤非数字字符
+    const cleanNumber = (phoneNumber || '').replace(/\D/g, '');
     if (!cleanNumber) {
-        return { valid: true }; // 为空时不提示错误（若需要必填可在提交时增强）
+        return { valid: true };
     }
 
     const allowedLengths = COUNTRY_PHONE_LENGTHS[countryCode] || [7, 8, 9, 10, 11, 12, 13, 14, 15];
@@ -246,9 +243,7 @@ function validatePhoneNumberLength(countryCode, phoneNumber) {
     return { valid: true };
 }
 
-/**
- * 校验个人简介输入
- */
+
 function validateSummaryInput(text) {
     if (!text || text.trim() === '') {
         return { valid: false, error: 'Summary content cannot be empty.' };
@@ -256,9 +251,7 @@ function validateSummaryInput(text) {
     return { valid: true };
 }
 
-/**
- * 校验语言输入
- */
+
 function validateLanguageInput(reading, writing) {
     if (!reading && !writing) {
         return { valid: false, error: 'Please enter at least one language for reading or writing.' };
@@ -266,9 +259,7 @@ function validateLanguageInput(reading, writing) {
     return { valid: true };
 }
 
-/**
- * 校验简历上传文件格式与大小
- */
+
 function validateResumeFile(file) {
     if (!file) {
         return { valid: false, error: 'No file selected.' };
@@ -290,7 +281,6 @@ function validateResumeFile(file) {
     return { valid: true };
 }
 
-// 兼容 Node.js / Jest 导出
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         COUNTRY_PHONE_LENGTHS,

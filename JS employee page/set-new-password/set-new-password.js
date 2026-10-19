@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const togglePassword = document.getElementById('togglePassword');
     const confirmBtn = document.getElementById('confirmBtn');
 
-    // 1. 明文/密文眼图标切换
     if (togglePassword && newPassword) {
         togglePassword.addEventListener('click', () => {
             const isPassword = newPassword.type === 'password';
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. 清除输入框错误提示
     if (newPassword) {
         newPassword.addEventListener('input', () => {
             newPassword.classList.remove('input-error');
@@ -32,21 +30,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. 表单提交重置密码
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const pwdVal = newPassword ? newPassword.value.trim() : '';
             const confirmVal = confirmPassword ? confirmPassword.value.trim() : '';
 
-            // 获取前两个页面保存的邮箱
             const email = localStorage.getItem('reset_email');
 
             let isValid = true;
 
-            // 调用 set_password_utils.js 中的 validatePasswordLength 或默认校验
-            const isLengthValid = typeof validatePasswordLength === 'function' 
-                ? validatePasswordLength(pwdVal) 
+            const isLengthValid = typeof validatePasswordLength === 'function'
+                ? validatePasswordLength(pwdVal)
                 : pwdVal.length >= 6;
 
             if (!isLengthValid) {
@@ -55,9 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 isValid = false;
             }
 
-            // 调用 set_password_utils.js 中的 validatePasswordMatch 或默认校验
-            const isMatchValid = typeof validatePasswordMatch === 'function' 
-                ? validatePasswordMatch(pwdVal, confirmVal) 
+            const isMatchValid = typeof validatePasswordMatch === 'function'
+                ? validatePasswordMatch(pwdVal, confirmVal)
                 : (pwdVal === confirmVal && confirmVal !== '');
 
             if (!isMatchValid) {
@@ -74,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                // 发送后端请求更新 Aiven 数据库中的密码
                 const response = await fetch('http://127.0.0.1:3001/api/set-new-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -84,10 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (response.ok && data.valid) {
-                    // 清理本地存储的临时邮箱
                     localStorage.removeItem('reset_email');
                     alert('Password reset successfully! Redirecting to login page...');
-                    // 跳转回 Login Page 目录下的 Login.html
                     window.location.href = '../Login Page/Login.html';
                 } else {
                     if (newPasswordError) {

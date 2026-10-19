@@ -7,39 +7,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const countdownSpan = document.getElementById('countdown');
     const displayEmail = document.getElementById('displayEmail');
 
-    // 1. 优先从 localStorage 获取邮箱，不存在则从 URL 参数读取
     const savedEmail = localStorage.getItem('reset_email') || new URLSearchParams(window.location.search).get('email');
     if (savedEmail && displayEmail) {
         displayEmail.textContent = savedEmail;
     }
 
-    // 2. OTP 输入框自动切焦与退格控制
     otpBoxes.forEach((box, index) => {
         box.addEventListener('input', (e) => {
             const val = e.target.value;
             if (otpError) otpError.textContent = '';
-            
-            // 限制只能输入数字
+
             if (!/^\d$/.test(val)) {
                 e.target.value = '';
                 return;
             }
 
-            // 自动聚焦下一个输入框
             if (val && index < otpBoxes.length - 1) {
                 otpBoxes[index + 1].focus();
             }
         });
 
         box.addEventListener('keydown', (e) => {
-            // 按退格键 (Backspace) 自动切回前一个输入框
             if (e.key === 'Backspace' && !box.value && index > 0) {
                 otpBoxes[index - 1].focus();
             }
         });
     });
 
-    // 3. 59 秒重发倒计时逻辑
     let timer = null;
     function startCountdown() {
         let timeLeft = 59;
@@ -61,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     startCountdown();
 
-    // 4. 点击 Resend 重新向后端请求验证码
     if (resendBtn) {
         resendBtn.addEventListener('click', async () => {
             const email = displayEmail ? displayEmail.textContent : '';
@@ -87,14 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. 表单提交验证并对接后端 API
     if (otpForm) {
         otpForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const otpValues = Array.from(otpBoxes).map(b => b.value.trim());
             const code = otpValues.join('');
-            
-            // 如果 check_utils.js 中定义了 validateOTP，优先调用；否则使用默认长度校验
+
             const isCodeValid = typeof validateOTP === 'function' ? validateOTP(otpValues) : code.length === 4;
 
             if (!isCodeValid) {
@@ -108,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                // 调用后端 Node.js 校验接口
                 const response = await fetch('http://127.0.0.1:3001/api/check-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -118,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (response.ok && data.valid) {
-                    // 校验成功，跳转至 set-new-password 文件夹下的 set-new-password.html
                     window.location.href = '../set-new-password/set-new-password.html';
                 } else {
                     if (otpError) otpError.textContent = data.error || 'Invalid verification code. Please try again.';
