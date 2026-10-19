@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create New Job - JRS</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-logo"></div>
+            <span class="brand-name">JRS</span>
+        </div>
+        <div class="workspace-label">WORKSPACE</div>
+        <ul class="nav-menu">
+            <li class="nav-item">Dashboard</li>
+            <li class="nav-item">Applications</li>
+            <li class="nav-item">Candidates</li>
+            <li class="nav-item active" onclick="window.location.href='../job-management/job-management.html'" style="cursor:pointer;">Job Postings</li>
+            <li class="nav-item" onclick="window.location.href='../interview-schedule/interview-schedule.html'" style="cursor:pointer;">Interviews</li>
+            <li class="nav-item">Notifications</li>
+        </ul>
+    </div>
+    <div class="main-container">
+        <header class="header">
+            <h1 class="header-title">Create New Job</h1>
+            <div>
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-light-primary" id="saveDraftBtn">Save Draft</button>
+                <button class="btn btn-primary" id="publishBtn">Publish Job</button>
+            </div>
+        </header>
+        <div class="content-body">
+            <form id="createJobForm" class="card">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">Job Title</label>
+                        <input type="text" id="jobTitle" class="form-control" placeholder="Senior Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select id="department" class="form-control">
+                            <option value="Information Technology">Information Technology</option>
+                            <option value="Design">Design</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="location" class="form-control" placeholder="Singapore">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Employment Type</label>
+                        <select id="employmentType" class="form-control">
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Salary Range</label>
+                        <input type="text" id="salaryRange" class="form-control" placeholder="SGD 5,000 - 8,000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Closing Date</label>
+                        <input type="text" id="closingDate" class="form-control" placeholder="31 Dec 2026">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Job Description</label>
+                    <textarea id="jobDescription" class="form-control" rows="4" placeholder="Describe the responsibilities..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Requirements</label>
+                    <textarea id="requirements" class="form-control" rows="4" placeholder="Bachelor's Degree..."></textarea>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="../../utils/api_utils.js"></script>
+    <script src="createJob.js"></script>
+</body>
+</html>

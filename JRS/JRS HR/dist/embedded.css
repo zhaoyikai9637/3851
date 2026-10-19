@@ -1,0 +1,8 @@
+:root { --blue:#315fd2; --line:#dfe7f0; --text:#24344e; }
+html, body { margin:0; background:#f2f5fa; font-family:"Segoe UI Variable","Segoe UI",Arial,sans-serif; color:#24344e; }
+#app-shell > .sidebar, #app-shell > .workspace > .topbar, #app-shell > .skip-link { display:none !important; }
+#app-shell > .workspace { margin:0 !important; width:100% !important; min-height:0 !important; }
+#content { padding:0 !important; max-width:none !important; margin:0 !important; }
+.panel,.card { border-color:#dfe7f0; border-radius:14px; }
+.page-heading { margin-top:0; }
+body { overflow-x:hidden; }

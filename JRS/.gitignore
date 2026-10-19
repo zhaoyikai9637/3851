@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+.local/
+uploads/
+**/dist/
+!JRS HR/dist/
+!JRS HR/dist/**
+!JRS Login and profile/integrations/hr/dist/
+!JRS Login and profile/integrations/hr/dist/**
+work/
+*.log
