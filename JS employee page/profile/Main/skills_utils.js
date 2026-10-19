@@ -2,7 +2,6 @@
  * Utility Functions for Skills Drawer
  */
 
-// 添加技能纯函数（防空、防重复、限长）
 function addSkill(existingSkills, newSkill) {
     const trimmed = (newSkill || '').trim();
     if (!trimmed) {
@@ -18,7 +17,6 @@ function addSkill(existingSkills, newSkill) {
     return { success: true, updatedSkills: [...existingSkills, trimmed] };
 }
 
-// 删除指定索引的技能
 function removeSkill(existingSkills, indexToRemove) {
     if (!Array.isArray(existingSkills)) return [];
     return existingSkills.filter((_, idx) => idx !== indexToRemove);

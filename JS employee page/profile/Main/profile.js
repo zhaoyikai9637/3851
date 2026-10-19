@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 模拟从数据库/localStorage 加载的 Profile 数据
     const userProfile = {
         first_name: 'Alex',
         last_name: 'Tan',
@@ -8,14 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
         country_code: '+65'
     };
 
-    // 2. 渲染基础个人信息
     const fullName = `${userProfile.first_name} ${userProfile.last_name}`;
     document.getElementById('userName').textContent = fullName;
     document.getElementById('userEmail').textContent = userProfile.email;
     document.getElementById('userPhone').textContent = formatPhoneNumber(userProfile.country_code, userProfile.contact_number);
     document.getElementById('avatarCircle').textContent = getInitials(fullName);
 
-    // 3. 抽屉弹窗通用控制逻辑 (Open / Close Drawer)
     const backdrop = document.getElementById('drawerBackdrop');
     const drawers = document.querySelectorAll('.drawer');
 
@@ -38,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         backdrop.addEventListener('click', closeAllDrawers);
     }
 
-    // --- 1) Editing Materials Drawer (含区号与手机位数校验) ---
     const materialsForm = document.getElementById('materialsForm');
     const countryCodeSelect = document.getElementById('editCountryCode');
     const phonePrefixText = document.getElementById('phonePrefixText');
@@ -164,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const endMonth = document.getElementById('roleEndMonth').value;
             const endYear = document.getElementById('roleEndYear').value.trim();
 
-            const dateRange = stillInRole 
+            const dateRange = stillInRole
                 ? `${startMonth} ${startYear} - Present`
                 : `${startMonth} ${startYear} - ${endMonth} ${endYear}`;
 
@@ -215,8 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const expMonth = document.getElementById('eduExpectedMonth').value;
             const expYear = document.getElementById('eduExpectedYear').value.trim();
 
-            const statusText = isComplete 
-                ? `Finished ${finishedYear}` 
+            const statusText = isComplete
+                ? `Finished ${finishedYear}`
                 : `Expected finish ${expMonth} ${expYear}`;
 
             const container = document.getElementById('educationList');

@@ -12,7 +12,6 @@ function validateForm(email, password) {
     return true;
 }
 
-// 必须添加 module.exports 供 Jest 调用
 module.exports = {
     isValidEmail,
     validateForm
