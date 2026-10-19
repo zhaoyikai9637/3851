@@ -1,55 +1,53 @@
-# JRS 统一登录与求职者模块
+# JRS Login and Profile
 
-注册、求职者/HR统一登录、退出、求职者资料及私有简历已实现。完整JRS HR工作台在同一服务的 /hr/ 下接入。实际API代码集中在 [server/api.js](server/api.js)，接口说明见 [API.md](API.md)。
+Shared candidate/HR login, registration, logout, candidate profile and private resume APIs.
+Actual routes are implemented in server/api.js; see API.md for their contract.
 
-## 启动
+## Standalone setup
 
-VS Code打开当前目录，在本目录执行：
+Use Node.js 22.12 or newer and MySQL. From this module directory:
 
 ```powershell
 npm ci
 Copy-Item .env.example .env
-# 在本地填写数据库连接、会话密钥和可选SMTP配置
 npm start
 ```
 
-浏览器打开 http://localhost:3001/pages/login/login.html 。使用Node.js 22.12或以上版本（支持file-type依赖）。数据库须为MySQL；将团队提供的CA证书保存为本地jrs-ca.pem，保持TLS验证开启。真实配置、证书、账号密码及上传文件不随代码发布。不要通过Live Server执行业务流程。
+Fill in private database, session-secret and optional SMTP values before starting.
+Open http://localhost:3001/pages/login/login.html. Do not run business flows through Live Server.
+Cloud MySQL connections require the team CA with certificate and hostname validation enabled.
+Keep credentials, account passwords and uploaded files outside Git.
 
-## 角色与数据
+Public registration creates candidate accounts only. HR accounts require an active linked HR_USER.
+The server authorizes roles and enforces CSRF; browser redirects do not grant permissions.
+Candidate accounts enter Profile; HR accounts enter the HR workspace.
+Email password recovery applies to candidates; HR password changes use the shared account.
 
-公开注册始终创建candidate。统一登录按服务器返回的角色跳转：candidate进入Profile，hr进入HR工作台。两类接口由后端鉴权和CSRF保护，HR账号需关联有效HR_USER身份。HR改密码使用统一账号；邮件找回密码目前只处理求职者。
+## Integration boundary
 
-求职者Jobs、My Resume和Application Status仍是静态展示页。HR工作台使用独立的jrs_portal_hr_表，目前不自动同步求职者模块的招聘记录。HR邮件发送保持关闭，不自动运行留存清理。
+Standalone mode includes the HR copy in integrations/hr under /hr/ with jrs_portal_hr_ tables.
+Its jobs and application state do not automatically synchronize with candidate profile records.
+Jobs, My Resume and Application Status demonstration pages are static, not a completed application flow.
+Real email sending and automatic retention cleanup are disabled by the shared-login integration.
 
-## 目录
+In the integrated main project, start the parent JRS application instead.
+It supplies the shared session, original HR UI and a separate recruitment adapter.
+The copied standalone HR mount is disabled there.
 
-- client/：求职者前端与展示页
-- server/api.js：实际统一账号及Profile接口、HR挂载入口
-- server/app.js：中间件、鉴权和应用组装
-- integrations/hr/：HR原工作台及适配代码
-- migrations/：候选人与HR表结构SQL
-- scripts/：迁移、测试数据、备份及验证工具
-- tests/：项目自动化测试
-- docs/：模块接入说明及截图
+## Database maintenance
 
-## 数据库维护
+Run npm run db:check and npm run hr:check before considering schema changes.
+Successful TLS connectivity does not authorize migrations.
+Review SQL, back up data and obtain explicit permission before changing a shared database.
+Use a dedicated runtime account rather than migration-administrator credentials.
+Seed scripts create fictional accounts only for an explicitly confirmed target;
+random passwords stay in the ignored .local-backup directory.
+The Docker demo database is independent of the team's cloud database.
 
-团队现有云库的候选人17步和HR21步迁移已完成。连接该库时先只读检查，不要重复建库或导入旧SQL：
+## Structure and tests
 
-```powershell
-npm run db:check
-npm run hr:check
-```
-
-新环境需要由维护者审阅SQL、备份并确认目标库后执行迁移。普通运行账号不使用迁移管理员。scripts/seed-candidates.js、scripts/seed-hr.js可在显式指定目标库后新增虚构测试账号，遇到现有账号时跳过；生成的随机密码只保存在本机.local-backup中。不要把私有凭据文件发到GitHub。
-
-npm run demo使用独立本机Docker演示库，不能用于查看团队云库的新HR账号。
-
-## 验证
-
-```powershell
-npm test -- --runInBand
-node --test integrations/hr/tests/backend.test.cjs integrations/hr/tests/http.test.cjs integrations/hr/tests/mail.test.cjs integrations/hr/tests/retention.test.cjs integrations/hr/tests/workflow.test.cjs integrations/hr/tests/frontend.test.cjs
-```
-
-最近验证：项目12套69项、HR后端/HTTP/业务47项及HR前端12项通过。真实云库与浏览器验证过经理/职员登录、HR工作台与资料、退出及求职者Profile回归。上述测试不代表所有跨成员模块已经完成联调。
+client/ contains pages and shared browser utilities; server/ contains the API and services.
+migrations/ contains reviewed SQL; scripts/ contains checks, seed tools and backups.
+integrations/hr/ contains the standalone HR adapter; tests/ contains automated coverage.
+Run npm test -- --runInBand using the Node VM-modules option required by the Jest configuration.
+The embedded HR module has separate Node test scripts. Passing module tests is not complete cross-member acceptance.

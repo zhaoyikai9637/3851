@@ -1,70 +1,14 @@
-> v2.4.0 更新：学历、专业及毕业状态改为自动判断，手动 Graduate status 已移除。规则与当前字段见 [AUTO_SCREENING_v2.4.md](AUTO_SCREENING_v2.4.md)，以下旧版说明以该更新为准。
+# HR Testing
 
-# v2.3.2 Job Requirements 完善
+Run npm test for database-independent Node tests in this module.
+Use package.json for the branch's available integration and smoke-test commands.
+Integration tests require an explicitly isolated local MySQL target; never point them at the shared cloud service.
 
-十类演示职位各保存 10 条实质要求，不再用职位资料补数量。编辑器和后台检查 8–12 条。81 项自动测试、2 组数据库测试及本地完整流程通过。实际浏览器已确认显示和录入限制，详见 [REQUIREMENTS_v2.3.2.md](REQUIREMENTS_v2.3.2.md)。以下为历史记录。
+Verify authentication and role denial, CSRF, revisions, idempotency, transaction rollback,
+interview conflicts, feedback timing, manager approval, mail snapshots and retention boundaries.
+Use fictional data and keep real SMTP disabled. Mock provider success is not evidence of inbox delivery.
 
-# v2.3.1 导航更新
-
-左侧 Applications 次级菜单已删除，右侧状态筛选可切换所有分类。35 项前端与流程检查通过，实际浏览器已验证。详见 [NAVIGATION_v2.3.1.md](NAVIGATION_v2.3.1.md)。以下为历史记录。
-
-# v2.3.0 验证记录
-
-2026-10-16：71 项自动测试、2 组本地 MySQL 集成测试及本地 HTTP 完整流程通过。实际浏览器验证列表筛选、头像简历入口、结果页面、毕业身份表单和内部滚动。具体范围及边界见 [DEMO_FEEDBACK_v2.3.md](DEMO_FEEDBACK_v2.3.md)。
-
-以下为历史版本记录。
-
-# v2.2.3 工具栏布局验证
-
-日期：2026-10-07。
-
-- 合并表格内工具栏：搜索和职位筛选居左，Export、Filters、Receive Application 居右；表格外工具栏已移除。
-- 13 项既有前端测试全部通过。
-- 实际浏览器检查职位筛选、姓名搜索、Filters 和 Receive Application 弹窗正常；未提交业务数据。
-- 1092×815 窗口中工具栏同排显示，页面无整页纵向或横向溢出。
-- 本次仅调整模板和样式；下方为之前版本的功能验证记录。
-
-# v2.2.2 标题删除验证
-
-日期：2026-10-07。
-
-- 删除申请表格内重复的分类标题、数量及说明，保留右侧搜索框。
-- 实际 localhost:3000 页面已确认：圈内标题和说明均不存在，顶部路径和左侧导航正常显示。
-- 修正了“修改新版解压目录、服务仍运行旧目录”导致的页面不更新；已同步当前运行目录。
-- Node 自动测试：64 项通过，0 失败；原本依赖已删除标题的检查改为验证当前路径。
-
-# v2.2.1 导航验证
-
-日期：2026-10-07。
-
-- Node 自动测试：64 项通过，0 失败；覆盖左侧展开状态、路由切换、上下文路径及重复标题移除。
-- 浏览器实测：从 Pending Review 进入 Resume Review，点击顶部 Pending Review 返回；左侧菜单仍可展开/收起。
-- 当前桌面预览 1092×815：申请列表和审核页面完整显示；申请页无整页纵向溢出。
-- 本次仅调整前端，未重跑真实 MySQL 集成测试，也未修改业务记录。下方为 2.2 的既有功能验证记录。
-
-# v2.2 验证记录
-
-日期：2026-10-05。
-
-| 检查 | 结果与边界 |
-|---|---|
-| Node 自动测试 | 63 项通过，0 失败；包括新增分页完整性、最新记录排序、通知状态、时区筛选和上传冲突回归 |
-| 真实 MySQL | 两组集成测试通过；事务、回滚、并发、幂等、邮件附件和五年清理 |
-| 完整 HTTP 流程 | 独立本地临时库通过；登录→新职位→收申请→上传/取回 PDF→面试→反馈→Offer→批准→接受；拒绝、草稿、任务、资料、通知已读及刷新持久化 |
-| 浏览器 | 实际登录、审核决定保存、新职位保存、分类和分页、报表切换、通知入口、表单和导航 |
-| 屏幕尺寸 | 1280×720、1366×768、1920×1080；390×844 手机布局。常用桌面页无整页纵向溢出，审核默认整页简历与决定按钮可见 |
-| 浏览器错误 | 检查时未发现控制台错误 |
-| 邮件 | 模拟 SMTP 成功/失败/重复发送测试通过；没有发出真实邮件；本地发信关闭 |
-| 小组数据库 | 9 月 28 日连接已通过；字段和统一登录仍待对接。本次未访问或修改共享业务记录 |
-
-重跑自动检查：
-
-```powershell
-npm test
-npm run test:integration:local
-npm run test:smoke:local
-```
-
-后两条需要 `.env.local` 指向 127.0.0.1 / localhost 的 MySQL，并有创建测试数据库的权限。测试各自建立随机命名的独立临时库，只清理自己创建的测试库。不要把集成测试指向小组服务器。
-
-这些检查覆盖所列路径，不代表不存在任何未知问题。超长文本、缩放后的 PDF、辅助技术或更小的屏幕仍允许必要滚动，避免隐藏内容。
+The integrated main project also tests the shared session and preserves the original HR UI.
+Its default workflow must not expose the unfinished applicant module.
+Record fresh command output before claiming a checkout passes.
+Historical screenshots and counts are not acceptance evidence for a changed branch.
