@@ -44,8 +44,8 @@ app.post('/api/forgot-password', async (req, res) => {
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         await pool.query(
-            `INSERT INTO password_resets (email, code, expires_at)
-             VALUES (?, ?, ?)
+            `INSERT INTO password_resets (email, code, expires_at) 
+             VALUES (?, ?, ?) 
              ON DUPLICATE KEY UPDATE code = ?, expires_at = ?`,
             [email, code, expiresAt, code, expiresAt]
         );
@@ -88,7 +88,7 @@ app.post('/api/set-new-password', async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         await pool.query(
-            `INSERT INTO users (email, password) VALUES (?, ?)
+            `INSERT INTO users (email, password) VALUES (?, ?) 
              ON DUPLICATE KEY UPDATE password = ?`,
             [email, hashedPassword, hashedPassword]
         );
