@@ -14,7 +14,7 @@ describe('Aim A - Set New Password Unit Tests', () => {
         expect(validatePasswordLength('12345')).toBe(false);
         expect(validatePasswordLength('')).toBe(false);
         expect(validatePasswordLength('1234567')).toBe(false);
-        expect(validatePasswordLength('密'.repeat(25))).toBe(false);
+        expect(validatePasswordLength('\u20AC'.repeat(25))).toBe(false);
     });
 
     test('UT-15: Matching passwords should pass validation', () => {

@@ -1,5 +1,5 @@
-# JRS
+# JRS Integration Directory
 
-此目录用于存放团队各模块合并后的完整招聘网站项目。
-
-当前仅预留目录，尚未合并代码。现有成员目录及独立模块保持不变。
+The integrated project is maintained in the main branch under JRS/.
+This branch retains independent source modules for reference and development.
+Use the main branch for the current integrated entry point; do not assume this older branch contains the complete runtime.

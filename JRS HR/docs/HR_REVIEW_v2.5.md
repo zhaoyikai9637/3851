@@ -1,35 +1,11 @@
-# HR 简历审核流程
+# HR Review Rules - Version 2.5
 
-版本 2.5.0 · 2026-10-17
+Education, field of study and acceptance of new graduates are written in Job Requirements.
+HR compares the resume against those requirements and makes the decision.
+The current review flow does not require HR to enter education, field of study or graduation dates,
+and does not automatically block an interview or offer on those criteria.
 
-## 最新规则
-
-学历要求、相关专业、经验及是否接受应届毕业生，作为 Job Requirements 的文字要求维护。HR 查看申请人的简历、岗位描述和要求，再决定进入面试或拒绝。系统不再根据结构化学历、专业、毕业日期自动作出通过判断或阻止招聘操作。
-
-本说明取代 2.3–2.4.2 中自动筛选、补学历资料、学历暂停 Offer 的流程。
-
-## 界面与操作
-
-- Receive Application 只收取基本联系资料、经验和技能，不要求录入学历、专业或毕业日期。
-- Job Postings 只在 Job Requirements 中写学历等条件，不再重复填写最低学历和允许专业。
-- Applications Review 点击头像或姓名看简历。职位为 Active 时，HR 可点 Move to Interview 并确认；资料缺失不会再造成学历拦截。
-- 列表和审核页不再显示 Field of study not accepted、Awaiting applicant info、自动筛选结论或因学历产生的 Offer on hold。
-- 接收申请、编辑联系资料无需补录学历。旧申请人的原始资料保留，仍可查看原有简历。
-- 拒绝由 HR 选择原因并确认。需要时可选 Qualifications do not meet the job requirements，不会自动替 HR 拒绝。
-- Interview Results 保存反馈后可准备 Offer；审批和接受使用正常权限及日期规则，不再另查学历。
-
-## 检查结论
-
-原设计不适合目前的独立 HR 模块：没有完整申请人资料来源或补资料流程，却将缺失学历、专业和毕业日期视为硬性关卡。只删除提示或给旧 Offer 增加暂停文字，并未解决使用障碍。本版移除全部相关界面、API 和邮件层拦截，按人工审核简历工作。
-
-保留的合理限制包括：职位必须启用才能推进与排期；招聘阶段不能跳过；面试不能排在过去、不能冲突；面试结束后才能记录反馈；Offer 必须有合理金额与日期；只有 HR Manager 可以审批；必须确认候选人接受后才记录录用；拒绝仍须原因并保留历史。
-
-没有改写、清空或重置已有申请、候选人资料、职位要求或招聘阶段。旧 SQL 字段及迁移工具为兼容历史数据保留，不参与招聘判断。没有进行真实邮件发送，也未修改小组数据库。
-
-## 验证与限制
-
-107 项自动测试、两组独立临时 MySQL 测试通过。完整 HTTP 招聘流程从不填学历的新申请开始，经过简历上传、进入面试、排期、反馈、Offer 审批和接受到 Hired；同时检查拒绝、任务、权限和记录保存。
-
-实际浏览器核对旧申请的 Move to Interview 可用、简历与岗位要求可见、接收申请及职位表单无学历筛选字段、Offer 不再因旧学历资料暂停。页面检查不替用户移动或拒绝现有申请。
-
-当前本地邮件仍为预览模式，通知只生成草稿，不代表真实邮件已发送。小组统一登录及数据库字段对接仍按 TEAM_SETUP.md 执行。
+Keep genuine operational safeguards: closed jobs, stage order, schedule conflicts,
+completed interview feedback, manager offer approval, valid dates and explicit mail confirmation.
+Preserve existing application facts, stages and audit history.
+Compatibility helpers must not silently decide or rewrite a candidate's qualifications.
