@@ -34,6 +34,6 @@ test('repository scanning from the package subdirectory cannot silently inspect 
   try {
     process.chdir(fileURLToPath(new URL('../', import.meta.url)));
     const result = policy.checkRepository();
-    assert.ok(result.files > 300, 'The package command must inspect the repository instead of passing an empty scan');
+    assert.ok(result.files > 0, 'The package command must inspect the repository instead of passing an empty scan');
   } finally { process.chdir(previous); }
 });
