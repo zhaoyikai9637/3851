@@ -40,7 +40,7 @@
         <div class="profile-toolbar">
             <button type="button" class="navigation-icon" id="openNavigation" aria-controls="applicantNavigation" aria-expanded="false" aria-label="Open navigation">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </button><span>Resume and Profile</span>
+            </button><span>Profile</span>
         </div>
         <div id="profileMessage" class="profile-message" role="status" aria-live="polite" hidden></div>
         <div class="profile-grid">
@@ -109,13 +109,6 @@
                     <button class="btn-secondary-link" id="addLanguageBtn">Add language</button>
                 </section>
 
-                <!-- Resumé -->
-                <section class="profile-section" id="resumeSection">
-                    <h3>Resumé</h3>
-                    <p class="section-desc">Upload a resumé for easy applying and access no matter where you are.</p>
-                    <div id="resumeList" class="section-data"></div>
-                    <button class="btn-secondary-link" id="addResumeBtn">Add resumé</button>
-                </section>
             </div>
 
         </div>
@@ -716,39 +709,6 @@
                 <div class="drawer-footer">
                     <button type="submit" class="btn-primary-small">Save</button>
                     <button type="button" class="btn-text" id="cancelLanguageBtn">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 8. Add Resumé Drawer -->
-    <div class="drawer" id="resumeDrawer">
-        <div class="drawer-header">
-            <button type="button" class="drawer-close" id="closeResumeBtn">&times;</button>
-            <h2>Add resumé</h2>
-        </div>
-        <div class="drawer-body">
-            <p class="drawer-hint">Upload a resumé. Accepted file types: doc, docx, pdf, UTF-8 text and rtf (5MB limit).</p>
-
-            <form id="resumeForm">
-                <div class="upload-dropzone" id="resumeDropzone">
-                    <div class="dropzone-icon">
-                        <i class="fa-regular fa-file-lines"></i>
-                    </div>
-                    <p class="dropzone-text">To add a resumé, drag and drop here or simply browse for a file.</p>
-                    <input type="file" id="resumeFileInput" accept=".doc,.docx,.pdf,.txt,.rtf" style="display: none;">
-                    <button type="button" class="btn-primary-small" id="browseResumeBtn">Browse</button>
-                    <div id="selectedFileInfo" class="selected-file-name" style="display: none;"></div>
-                </div>
-                <div class="error-message" id="resumeError"></div>
-
-                <div class="safety-notice">
-                    Stay safe. Don't include sensitive information in your documents.
-                </div>
-
-                <div class="drawer-footer">
-                    <button type="submit" class="btn-primary-small" id="saveResumeBtn">Save</button>
-                    <button type="button" class="btn-text" id="cancelResumeBtn">Cancel</button>
                 </div>
             </form>
         </div>

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const $ = id => document.getElementById(id);
-    let profile, draftSkills = [], selectedFile = null;
+    let profile, draftSkills = [];
     const editing = { career: null, education: null, certifications: null };
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     function element(tag, text, className) {
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         $('userEmail').textContent = profile.email;
         $('userPhone').textContent = formatPhoneNumber(profile.country_code, profile.contact_number);
         $('avatarCircle').textContent = getInitials(profile.full_name);
-        for (const id of ['summaryContent', 'careerList', 'educationList', 'certList', 'skillTags', 'languageList', 'resumeList']) $(id).replaceChildren();
+        for (const id of ['summaryContent', 'careerList', 'educationList', 'certList', 'skillTags', 'languageList']) $(id).replaceChildren();
         if (profile.personal_summary) card($('summaryContent'), '', [profile.personal_summary], editSummary);
         $('addSummaryBtn').textContent = profile.personal_summary ? 'Edit summary' : 'Add summary';
         for (const row of profile.career) card($('careerList'), row.job_title, [row.company_name,
@@ -83,12 +83,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             `Reading: ${profile.languages.filter(l => l.can_read).map(l => l.language_name).join(', ') || 'None'}`,
             `Writing: ${profile.languages.filter(l => l.can_write).map(l => l.language_name).join(', ') || 'None'}`
         ], editLanguages);
-        for (const file of profile.resumes) {
-            const node = card($('resumeList'), '', [`${(file.file_size / 1024).toFixed(1)} KB`]);
-            const link = element('a', file.file_name);
-            link.href = `/api/profile/resume/${file.file_id}`;
-            node.prepend(link);
-        }
     }
     $('drawerBackdrop').addEventListener('click', close);
     document.querySelectorAll('.drawer-close, .drawer [id^="cancel"]').forEach(button => button.addEventListener('click', close));
@@ -195,27 +189,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         await JRS.request('/profile/languages', { method: 'PUT', body: { languages: [...map.values()] } }); await load(); close(); message('Languages saved.');
-    });
-    function selectFile(file) {
-        const result = validateResumeFile(file); selectedFile = result.valid ? file : null;
-        $('resumeError').textContent = result.valid ? '' : result.error;
-        $('selectedFileInfo').style.display = result.valid ? 'block' : 'none';
-        $('selectedFileInfo').textContent = result.valid ? file.name : '';
-    }
-    $('addResumeBtn').addEventListener('click', () => {
-        selectedFile = null; $('resumeForm').reset(); $('resumeError').textContent = '';
-        $('selectedFileInfo').style.display = 'none'; open('resumeDrawer');
-    });
-    $('browseResumeBtn').addEventListener('click', () => $('resumeFileInput').click());
-    $('resumeFileInput').addEventListener('change', event => selectFile(event.target.files[0]));
-    for (const name of ['dragenter', 'dragover', 'dragleave', 'drop']) $('resumeDropzone').addEventListener(name, event => {
-        event.preventDefault(); $('resumeDropzone').classList.toggle('dragover', name === 'dragenter' || name === 'dragover');
-        if (name === 'drop') selectFile(event.dataTransfer.files[0]);
-    });
-    bindForm('resumeForm', async () => {
-        if (!selectedFile) throw new Error('Select a valid resume file.');
-        const body = new FormData(); body.append('resume', selectedFile);
-        await JRS.request('/profile/resume', { method: 'POST', body }); await load(); close(); message('Resume saved.');
     });
     // Keep controls disabled until identity/profile loading succeeds.
     const initialControls = [...document.querySelectorAll('button')];
