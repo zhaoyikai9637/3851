@@ -2,8 +2,15 @@ import { ArrowRight, BookOpen, Eye, EyeOff, FileText, Languages, Plus, Save, Tra
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
+import { qualifications, languages, languageCode } from "../../../shared/applicantFields";
+import { PhoneField, LocationField } from "../../components/ContactFields";
 
-const emptyEducation = () => ({ institution: "", qualification: "", startYear: "", graduationYear: "" });
+const years = Array.from({ length: new Date().getFullYear() + 10 - 1950 + 1 }, (_, i) => new Date().getFullYear() + 10 - i);
+function YearSelect({ name, value, onChange }) {
+  return <select className="form-select" name={name} value={value} onChange={onChange}><option value="">Select year</option>{years.map((year) => <option key={year} value={year}>{year}</option>)}</select>;
+}
+
+const emptyEducation = () => ({ institution: "", qualification: "", qualificationLevel: "", startYear: "", graduationYear: "" });
 const emptyLanguage = () => ({ language: "", readingLevel: "", writingLevel: "" });
 
 export default function ResumePage() {
@@ -125,14 +132,14 @@ export default function ResumePage() {
           <p>These details will be used for your application and recruiter contact.</p>
         </div>
         <div className="form-grid two-columns">
-          <label className="form-label-group">
+          <div className="form-label-group">
             <span>Phone number</span>
-            <input className="form-control form-control-lg" name="phone" value={profile.phone} onChange={updateProfileField} maxLength={30} />
-          </label>
-          <label className="form-label-group">
+            <PhoneField value={profile.phone} onChange={(value) => setProfile((current) => ({ ...current, phone: value }))} />
+          </div>
+          <div className="form-label-group">
             <span>Current location</span>
-            <input className="form-control form-control-lg" name="location" value={profile.location} onChange={updateProfileField} maxLength={100} />
-          </label>
+            <LocationField value={profile.location} onChange={(value) => setProfile((current) => ({ ...current, location: value }))} />
+          </div>
         </div>
       </section>
 
@@ -151,8 +158,9 @@ export default function ResumePage() {
               <div className="form-grid two-columns">
                 <label className="form-label-group"><span>School or university</span><input className="form-control" name="institution" value={education.institution} onChange={(event) => updateListItem("education", index, event)} maxLength={150} /></label>
                 <label className="form-label-group"><span>Qualification</span><input className="form-control" name="qualification" value={education.qualification} onChange={(event) => updateListItem("education", index, event)} maxLength={150} /></label>
-                <label className="form-label-group"><span>Start year</span><input className="form-control" type="number" name="startYear" min="1950" max="2100" value={education.startYear} onChange={(event) => updateListItem("education", index, event)} /></label>
-                <label className="form-label-group"><span>Graduation year</span><input className="form-control" type="number" name="graduationYear" min="1950" max="2100" value={education.graduationYear} onChange={(event) => updateListItem("education", index, event)} /></label>
+                <label className="form-label-group"><span>Qualification level</span><select className="form-select" name="qualificationLevel" value={education.qualificationLevel || ""} onChange={(event) => updateListItem("education", index, event)}><option value="">Select level</option>{Object.entries(qualifications).map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
+                <label className="form-label-group"><span>Start year</span><YearSelect name="startYear" value={education.startYear} onChange={(event) => updateListItem("education", index, event)} /></label>
+                <label className="form-label-group"><span>Graduation / expected graduation year</span><YearSelect name="graduationYear" value={education.graduationYear} onChange={(event) => updateListItem("education", index, event)} /></label>
               </div>
             </fieldset>
           ))}
@@ -172,7 +180,8 @@ export default function ResumePage() {
                 {profile.languages.length > 1 && <button className="icon-button danger" type="button" onClick={() => removeListItem("languages", index)} aria-label={"Remove language " + (index + 1)}><Trash2 size={20} /></button>}
               </div>
               <div className="form-grid three-columns">
-                <label className="form-label-group"><span>Language</span><input className="form-control" name="language" value={language.language} onChange={(event) => updateListItem("languages", index, event)} maxLength={60} /></label>
+                <label className="form-label-group"><span>Language</span><select className="form-select" name="language" value={languageCode(language.language)} onChange={(event) => updateListItem("languages", index, event)}><option value="">Select language</option>{Object.entries(languages).map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
+                {language.language === "other" && <label className="form-label-group"><span>Other language name</span><input className="form-control" name="otherLanguage" value={language.otherLanguage || ""} onChange={(event) => updateListItem("languages", index, event)} maxLength={60} /></label>}
                 <label className="form-label-group"><span>Reading level</span><select className="form-select" name="readingLevel" value={language.readingLevel} onChange={(event) => updateListItem("languages", index, event)}><option value="">Select</option><option>Basic</option><option>Intermediate</option><option>Advanced</option><option>Native</option></select></label>
                 <label className="form-label-group"><span>Writing level</span><select className="form-select" name="writingLevel" value={language.writingLevel} onChange={(event) => updateListItem("languages", index, event)}><option value="">Select</option><option>Basic</option><option>Intermediate</option><option>Advanced</option><option>Native</option></select></label>
               </div>

@@ -42,10 +42,6 @@ export default function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="public-footer">
-        <strong>JRS Company Careers</strong>
-        <span>Equal opportunity employment</span>
-      </footer>
     </div>
   );
 }

@@ -2,6 +2,9 @@ node_modules/
 .npm-cache/
 dist/
 .env
+.env.*
+!.env.example
+jrs-ca.pem
 uploads/*
 !uploads/.gitkeep
 .DS_Store

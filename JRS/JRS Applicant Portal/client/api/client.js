@@ -1,7 +1,8 @@
 import axios from "axios";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "/api" : "/applicant-api");
 const api = axios.create({
-  baseURL: "/applicant-api",
+  baseURL: apiBaseUrl,
   withCredentials: true,
   headers: {
     Accept: "application/json",
@@ -9,9 +10,9 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  if (!['get', 'head', 'options'].includes((config.method || 'get').toLowerCase())) {
-    const session = await axios.get('/api/me', { withCredentials: true });
-    config.headers['X-CSRF-Token'] = session.data.csrfToken;
+  if (apiBaseUrl === "/applicant-api" && !["get", "head", "options"].includes((config.method || "get").toLowerCase())) {
+    const session = await axios.get("/api/me", { withCredentials: true });
+    config.headers["X-CSRF-Token"] = session.data.csrfToken;
   }
   return config;
 });
