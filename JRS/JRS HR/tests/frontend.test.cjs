@@ -167,15 +167,22 @@ test('unknown or malformed application routes never silently display all records
   assert.equal(V.parseRoute('#/applications/%E0%A4%A')[0],'not-found');
 });
 
-async function controller(hash,{db=M.seed()}={}){
+async function controller(hash,{db=M.seed(),search=''}={}){
   const c=views(),elements=new Map(),events=new Map(),windowEvents=new Map(),storage=new Map();
   db.systemNotifications=[];db.currentUser={name:'HR User',role:'HR_MANAGER'};
   const element=selector=>{if(!elements.has(selector))elements.set(selector,{innerHTML:'',textContent:'',hidden:false,open:false,isConnected:true,classList:{toggle(){},remove(){}},showModal(){this.open=true;},close(){this.open=false;},focus(){},addEventListener(){},insertAdjacentHTML(_where,html){this.innerHTML+=html;}});return elements.get(selector);};
-  Object.assign(c,{location:{hash},history:{replaceState(_state,_title,url){c.location.hash=url;}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},document:{querySelector:element,querySelectorAll:()=>[],addEventListener:(name,fn)=>{if(!events.has(name))events.set(name,[]);events.get(name).push(fn);}},HRRemote:{boot:async()=>({db,error:''})},HRExtra:{attach:()=>({action:async()=>false})},setTimeout,clearTimeout,FormData:class{entries(){return [][Symbol.iterator]();}},URL});
+  Object.assign(c,{location:{hash,search},history:{replaceState(_state,_title,url){c.location.hash=url;}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},document:{querySelector:element,querySelectorAll:()=>[],addEventListener:(name,fn)=>{if(!events.has(name))events.set(name,[]);events.get(name).push(fn);}},HRRemote:{boot:async()=>({db,error:''})},HRExtra:{attach:()=>({action:async()=>false})},setTimeout,clearTimeout,FormData:class{entries(){return [][Symbol.iterator]();}},URL});
   c.addEventListener=(name,fn)=>windowEvents.set(name,fn);c.scrollTo=()=>{};
   await vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),c);
   return {c,e:element,storage,db,async selectQueue(value){for(const fn of events.get('change')||[])await fn({target:{dataset:{filter:'queue'},value}});},navigate(path){c.location.hash=path;windowEvents.get('hashchange')();},async action(name,id){const button={disabled:false,isConnected:false,dataset:{action:name,id},closest:()=>null};const event={target:{closest:selector=>selector==='[data-action]'?button:null},preventDefault(){}};for(const fn of events.get('click')||[])await fn(event);}};
 }
+
+test('job-specific application links initialize a removable position filter',async()=>{
+  const db=M.seed(),id=db.jobs[0].id,page=await controller('#/applications',{db,search:'?job='+id});
+  assert.ok(page.e('#content').innerHTML.includes('value="'+id+'" selected'));
+  await page.action('clear-filters');
+  assert.ok(!page.e('#content').innerHTML.includes('value="'+id+'" selected'));
+});
 
 test('offer actions depend on approval, expiry and manager permission rather than academic data',async()=>{
   const db=M.seed(),application=db.applications.find(a=>a.stage==='Offer'),applicant=db.candidates.find(c=>c.id===application.candidateId);

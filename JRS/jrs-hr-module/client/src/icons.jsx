@@ -1,4 +1,6 @@
 const icons = {
+  plus: <path d="M12 5v14M5 12h14" />,
+  search: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></>,
   dashboard: (
     <>
       <rect x="3" y="3" width="7" height="7" rx="1" />

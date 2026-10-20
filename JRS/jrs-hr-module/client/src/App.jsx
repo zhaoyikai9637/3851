@@ -8,6 +8,7 @@ import { Notifications } from "../pages/notifications/Notifications";
 import { EditProfile, Profile } from "../pages/profile/Profile";
 import { Templates } from "../pages/templates/Templates";
 import { Recruitment } from '../pages/recruitment/Recruitment';
+import { JobPostings } from '../pages/jobs/JobPostings';
 
 class PageBoundary extends Component {
   state = { failed: false };
@@ -22,7 +23,7 @@ const page = (content) => <PageBoundary>{content}</PageBoundary>;
 export function App() {
   return <AuthProvider><Routes><Route element={<WorkspaceLayout />}>
     <Route index element={<Navigate to="/notifications" replace />} />
-    {workspaceLinks.map(([path, name]) => <Route key={path} path={path.slice(1)} element={page(<Recruitment page={path === '/job-postings' ? 'jobs' : path.slice(1)} title={name} />)} />)}
+    {workspaceLinks.map(([path, name]) => <Route key={path} path={path.slice(1)} element={page(path === '/job-postings' ? <JobPostings/> : <Recruitment page={path.slice(1)} title={name} />)} />)}
     <Route path="outbox" element={<Navigate to="/applications" replace />} />
     <Route path="notifications" element={page(<Notifications />)} />
     <Route path="templates" element={page(<Templates />)} />

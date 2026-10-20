@@ -77,3 +77,12 @@
 - Replaced static location text with accessible parent-path controls. HR Workspace returns to Dashboard; Edit Profile includes My Profile; application subpages publish their actual hierarchy and allow returning to parent queues. Embedded breadcrumbs are not duplicated inside the content.
 - Path updates retain origin/source checks, bounded labels, route allowlists and location ownership. Returning from a candidate profile clears the embedded path. Communication tabs remain unchanged.
 - Verification: root tests 24, frontend 91, backend/API 183, isolated MySQL 12, recruitment tests 107 and Jest 73 passed; production builds and English-only validation passed. Browser checks confirmed stable Reports height across section changes and working Applications / Offer parent navigation. A 390px viewport check confirmed the path remains accessible and horizontally scrollable. No business data or mail settings changed.
+
+## Job Postings design pilot (2026-10-20)
+
+- User-approved pilot only: table-first jobs, status/search filters, pagination, and a wide right-side drawer with Overview, Requirements and Publishing tabs. Other HR pages, applicant pages and login are not redesigned.
+- Removed the meaningless HR Workspace parent from this pilot's location bar. Real application parent paths remain navigable. Viewing applications from a job opens the existing queue with its job filter selected; clearing filters still works.
+- Merged the standalone publishing form into job create/edit. English text inputs and an English calendar use DD/MM/YYYY; API dates remain ISO. Drawer actions stay visible, and closing dirty edits requires confirmation.
+- Added a shared-session adapter over the original recruitment command service. Job and publication values commit in the same transaction; native validation, permissions, sending locks, audit, revision checks and idempotency remain authoritative. No schema migration or new login mechanism.
+- Verification: frontend 100, HR backend/API 183, isolated HR MySQL 12, root 24, default workflow MySQL 2, experimental workflow MySQL 2, native recruitment 108 and Jest 73 tests passed. Production build and English-only check passed (384 files, zero issues). Desktop and 390px mobile table/drawer/calendar and dirty-close behavior were checked in the browser. Browser-entered trial dates were discarded; no real email was sent.
+- Await user review of this pilot before extending the visual pattern to other HR pages. Keep the standalone personal module unchanged.

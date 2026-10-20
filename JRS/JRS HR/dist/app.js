@@ -204,4 +204,6 @@
   window.addEventListener('hashchange',routeChanged);
   document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));
   routeChanged();
+  const requestedJob=/[?&]job=([A-Za-z0-9_-]+)(?:&|$)/.exec(location.search||'')?.[1];
+  if(route[0]==='applications'&&requestedJob&&store.db.jobs.some(job=>job.id===requestedJob)){ui.job=requestedJob;render();}
 })().catch(error=>{const host=document.querySelector('#login-screen');host.hidden=false;host.innerHTML='<div class="login-card"><h1>Unable to open HR workspace</h1><p id="boot-error"></p><a class="button primary" href="/">Try again</a></div>';document.querySelector('#boot-error').textContent=error.message;});

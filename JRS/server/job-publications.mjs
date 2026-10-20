@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { namespacePool } from './sql-namespace.mjs';
 import { httpError } from './security.mjs';
 const date = z.string().refine(value => value === '' || (/^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value), 'Enter a valid date.');
-const schema = z.object({ salaryRange: z.string().trim().max(80), closingDate: date, publishDate: date, unpublishDate: date }).strict().superRefine((data, context) => {
+export const publicationSchema = z.object({ salaryRange: z.string().trim().max(80), closingDate: date, publishDate: date, unpublishDate: date }).strict().superRefine((data, context) => {
   if (data.publishDate && data.closingDate && data.closingDate < data.publishDate) context.addIssue({ code: 'custom', message: 'Closing date must not be before publication.', path: ['closingDate'] });
   if (data.publishDate && data.unpublishDate && data.unpublishDate < data.publishDate) context.addIssue({ code: 'custom', message: 'Unpublish date must not be before publication.', path: ['unpublishDate'] });
 });
@@ -13,7 +13,7 @@ export function jobPublicationServices(pool, recruitment, bridge) {
       return { items };
     },
     async saveJobPublication(userId, id, body) {
-      const data = schema.parse(body), connection = await pool.getConnection();
+      const data = publicationSchema.parse(body), connection = await pool.getConnection();
       try {
         await connection.beginTransaction();
         await connection.query('SELECT revision FROM recruiting_workspace WHERE id=1 FOR UPDATE');

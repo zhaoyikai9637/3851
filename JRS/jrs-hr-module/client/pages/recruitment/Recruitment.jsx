@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { PageHeading, Loading, ErrorBox } from '../../src/shared';
 import { api } from '../../src/api';
-import { JobPublishing } from './JobPublishing';
 
 export function Recruitment({ page, title }) {
   const frame = useRef(null), navigate = useNavigate();
-  const { pathname, key: locationKey } = useLocation(), { setTrail } = useOutletContext();
+  const { pathname, search, key: locationKey } = useLocation(), { setTrail } = useOutletContext();
   const [candidate, setCandidate] = useState('');
   const [rows, setRows] = useState(null), [error, setError] = useState(null);
   useEffect(() => {
@@ -35,5 +34,7 @@ export function Recruitment({ page, title }) {
   }, [navigate, pathname, locationKey, setTrail]);
   if (page === 'candidates' && !candidate) return <><PageHeading title="Candidates" /><ErrorBox error={error} />{!rows && !error ? <Loading /> : <section className="surface"><div className="table-responsive"><table className="table align-middle mb-0"><thead><tr><th>Name</th><th>Email</th><th>Location</th><th>Profile</th></tr></thead><tbody>{rows?.map(row => <tr key={row.id}><td>{row.name}</td><td>{row.email}</td><td>{row.location}</td><td><button className="btn btn-outline-primary btn-sm" onClick={() => setCandidate(row.id)}>View candidate</button></td></tr>)}</tbody></table></div>{rows?.length === 0 && <div className="empty-state">No candidates yet.</div>}</section>}</>;
   const embeddedPage = candidate ? `candidate/${encodeURIComponent(candidate)}` : page;
-  return <>{page === 'jobs' && <JobPublishing />}{candidate && <button className="btn btn-outline-secondary mb-3" onClick={() => { setTrail(null); setCandidate(''); }}>Back to candidates</button>}<iframe ref={frame} title={title} src={`/recruitment/#/${embeddedPage}`} style={{ width: '100%', height: 'max(600px, calc(100dvh - 200px))', border: 0, display: 'block', background: 'transparent' }} /></>;
+  const filter = page === 'applications' ? new URLSearchParams(search).get('job') : null;
+  const source = `/recruitment/${filter ? '?job='+encodeURIComponent(filter) : ''}#/${embeddedPage}`;
+  return <>{candidate && <button className="btn btn-outline-secondary mb-3" onClick={() => { setTrail(null); setCandidate(''); }}>Back to candidates</button>}<iframe ref={frame} title={title} src={source} style={{ width: '100%', height: 'max(600px, calc(100dvh - 200px))', border: 0, display: 'block', background: 'transparent' }} /></>;
 }

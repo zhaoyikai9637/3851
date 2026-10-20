@@ -8,6 +8,7 @@ import { readSharedSession, createSharedIdentity, verifySharedWrite, httpError }
 import { namespacePool } from './sql-namespace.mjs';
 import { createRecruitmentBridge } from './recruitment-bridge.mjs';
 import { jobPublicationServices } from './job-publications.mjs';
+import { jobEditorRouter } from './job-editor.mjs';
 import candidateRepository from '../JRS Login and profile/server/services/repository.js';
 import candidateApp from '../JRS Login and profile/server/app.js';
 import recruitmentRepository from '../JRS HR/server/repository.cjs';
@@ -93,6 +94,7 @@ export async function createRuntime() {
       next();
     });
     app.use((req, res, next) => /^\/api\/(auth|hr)(\/|$)/.test(req.path) ? hr(req, res, next) : next());
+    app.use('/recruitment/api/hr/job-postings', jobEditorRouter({ recruitment, pool, requireUser:sharedAuth.requireUser }));
     app.use('/recruitment', recruiting);
     if (experimental) {
       const { mountExperimentalApplicant } = await import('./experimental/applicant.mjs');
