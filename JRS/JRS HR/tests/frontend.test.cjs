@@ -209,7 +209,7 @@ test('controller supports direct links, Back/Forward route changes and clearing 
   assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Offer</span>'));
   page.navigate('#/applications/pending-review');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications Review</span>'));
   assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications Review</span>'));
-  page.navigate('#/applications');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications</span>'));
+  page.navigate('#/applications');assert.equal(page.e('#secondary-navigation').innerHTML,'');
 });
 
 test('status selector reaches review, results, rejected, offer and all applications without a sidebar submenu',async()=>{
@@ -267,10 +267,11 @@ test('notifications respect Singapore date boundaries and communication lists pa
   assert.equal((html.match(/class="notification-item/g)||[]).length,4);
   assert.ok(html.includes('of 13 records'));assert.ok(html.includes('data-action="application"'));
   assert.equal(c.HRViews.localDay('2026-10-04T17:00:00Z'),'2026-10-05');
-  db.notifications=[{id:'draft',subject:'Subject',to:'test@example.com',createdAt:'2026-10-04T17:00:00Z',status:'Draft'}];
-  const outbox=c.HRViews.render(['outbox'],db,{...state(),pageSize:4});
-  assert.ok(outbox.includes('Email delivery is off'));
-  assert.match(outbox,/data-action="mail-send"[^>]+disabled/);
+  db.notifications=[{id:'draft',applicationId:db.applications[0].id,subject:'Subject',to:'test@example.com',createdAt:'2026-10-04T17:00:00Z',status:'Draft'}];
+  const emails=c.HRViews.applicationMessages(db,db.applications[0].id);
+  assert.ok(emails.includes('Drafts are saved for later'));
+  assert.match(emails,/data-action="mail-send"/);
+  assert.ok(!c.HRViews.render(['outbox'],db,state()).includes('Search messages'));
 });
 
 test('resume upload refreshes a stale revision so the same selected file can be retried',async()=>{

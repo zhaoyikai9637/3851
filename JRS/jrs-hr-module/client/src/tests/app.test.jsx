@@ -149,6 +149,33 @@ const writes = (path) =>
   );
 
 describe("authentication and navigation", () => {
+  it('removes the outbox entry and redirects its old URL to Applications', async () => {
+    mount('/outbox');
+    const navigation = await screen.findByRole('navigation', { name: 'Main navigation' });
+    expect(within(navigation).queryByRole('link', { name: 'Email Outbox' })).not.toBeInTheDocument();
+    expect(await screen.findByTitle('Applications')).toHaveAttribute('src', '/recruitment/#/applications');
+  });
+
+  it.each([['/templates', 'Email Templates'], ['/logs', 'Logs']])('routes embedded navigation to %s without falling back to Notifications', async (path, title) => {
+    mount('/applications');
+    const frame = await screen.findByTitle('Applications');
+    fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:navigate', path } }));
+    expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeVisible();
+  });
+
+  it('ignores frame sizing routes and untrusted navigation messages', async () => {
+    mount('/applications');
+    const frame = await screen.findByTitle('Applications');
+    for (const [origin, source, data] of [
+      [window.location.origin, frame.contentWindow, { type: 'jrs:frame', height: 850, route: 'notifications' }],
+      ['https://untrusted.example', frame.contentWindow, { type: 'jrs:navigate', path: '/templates' }],
+      [window.location.origin, window, { type: 'jrs:navigate', path: '/templates' }],
+      [window.location.origin, frame.contentWindow, { type: 'jrs:navigate', path: 'https://untrusted.example' }],
+    ]) fireEvent(window, new MessageEvent('message', { origin, source, data }));
+    expect(frame).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Notification Center' })).not.toBeInTheDocument();
+  });
+
   it.each(["/dashboard", "/applications", "/candidates", "/job-postings", "/interviews", "/outbox", "/reports", "/profile", "/profile/edit"])("hides communication navigation on %s", async (route) => {
     overrides["GET /recruitment/api/hr/candidates"] = () => json({ items: [] });
     overrides["GET /api/hr/job-publications"] = () => json({ items: [] });

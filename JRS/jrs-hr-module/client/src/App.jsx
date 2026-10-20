@@ -23,6 +23,7 @@ export function App() {
   return <AuthProvider><Routes><Route element={<WorkspaceLayout />}>
     <Route index element={<Navigate to="/notifications" replace />} />
     {workspaceLinks.map(([path, name]) => <Route key={path} path={path.slice(1)} element={page(<Recruitment page={path === '/job-postings' ? 'jobs' : path.slice(1)} title={name} />)} />)}
+    <Route path="outbox" element={<Navigate to="/applications" replace />} />
     <Route path="notifications" element={page(<Notifications />)} />
     <Route path="templates" element={page(<Templates />)} />
     <Route path="logs" element={page(<Logs />)} />

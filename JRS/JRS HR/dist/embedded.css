@@ -14,3 +14,7 @@ html, body { margin:0; background:#f2f5fa; font-family:"Segoe UI Variable","Sego
 .panel,.card { border-color:#dfe7f0; border-radius:14px; }
 .page-heading { margin-top:0; }
 body { overflow-x:hidden; }
+/* Fit content rather than feeding the iframe height back into its parent. */
+#app-shell > .workspace { height:auto !important; overflow:visible !important; }
+#content { flex:none !important; overflow:visible !important; }
+#modal { top:20px; bottom:auto; margin:0 auto; max-height:min(720px, calc(100dvh - 40px)); }

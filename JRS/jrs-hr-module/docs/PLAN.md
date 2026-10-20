@@ -65,3 +65,9 @@
 - Non-communication pages show their current location in a compact top bar instead of an empty account-only header. Communication tabs remain scoped to their own module.
 - Recruitment pages omit redundant single-item breadcrumbs, preserve linked multi-level trails, and remove explanatory page-heading subtitles. Existing actions, report tabs, status values and business data remain unchanged.
 - Regression tests exercised real page renderers and navigation routes: integrated frontend 82, backend/API 183, Jest 73, isolated MySQL 12 and root tests 21 passed. Standalone frontend 81 passed. Production builds and English-only validation passed. Reports was visually checked at desktop and 390px mobile widths.
+## Application email simplification (2026-10-20)
+
+- Removed the standalone Outbox page and sidebar entry; its legacy workspace URL redirects to Applications. Existing draft rows and sent-mail records are retained.
+- Application rows and detail views expose candidate-scoped email drafts and history. Saving/editing drafts stays in the application; sending requires a separate preview and explicit confirmation. Disabled delivery remains disabled, including in the confirmation form.
+- Embedded navigation uses explicit, origin/source-validated, allowlisted messages and React routing. Resize reports only update height; they cannot redirect to Notifications. Content-based sizing prevents iframe height feedback, and embedded dialogs remain near the visible top.
+- Verification: root tests 24, HR frontend 86, backend/API 183, isolated MySQL 12, Jest 73, and recruitment module tests 107 passed. Production builds and English-only checks passed. Desktop and 390px mobile email dialogs, legacy Outbox redirect, and Templates/Logs navigation were checked in the browser. No real email was sent and browser checks did not save test drafts.

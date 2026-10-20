@@ -10,7 +10,6 @@ export const workspaceLinks = [
   ["/candidates", "Candidates", "person"],
   ["/job-postings", "Job Postings", "jobs"],
   ["/interviews", "Interviews", "calendar"],
-  ["/outbox", "Email Outbox", "mail"],
   ["/reports", "Reports", "applications"],
 ];
 
