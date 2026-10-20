@@ -1,13 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { MySqlDataLayer } from '../JRS Applicant Portal/server/data/createDataLayer.js';
+import { MySqlDataLayer, jobFilters, matchesJob } from '../JRS Applicant Portal/server/data/createDataLayer.js';
 import hrService from '../JRS HR/server/service.cjs';
 import state from '../JRS HR/dist/state.js';
 import files from '../JRS Login and profile/server/services/files.js';
 import { namespacePool } from './sql-namespace.mjs';
 import { httpError } from './security.mjs';
 import { workFacts } from './applicant-facts.mjs';
+import { publicationState } from './job-publications.mjs';
 
 // Reuse the applicant module's validators, models and data methods. A shared
 // transaction makes an applicant submission and its HR queue entry atomic.
@@ -20,8 +21,33 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
     await this.repository.pool.execute("UPDATE jobs j JOIN JRS_JOB_LINK l ON l.portal_id=j.id JOIN recruiting_job_position r ON r.id=l.recruiting_id LEFT JOIN JRS_JOB_PUBLICATION p ON p.recruiting_id=r.id SET j.is_open=(r.status='Active' AND (p.publish_date IS NULL OR p.publish_date<=?) AND (p.unpublish_date IS NULL OR p.unpublish_date>?) AND (p.closing_date IS NULL OR p.closing_date>=?))", [today, today, today]);
   }
-  async listJobs(filters) { await this.refreshPublicationStatus(); return super.listJobs(filters); }
-  async getJob(id) { await this.refreshPublicationStatus(); return super.getJob(id); }
+  async publicationRecords() {
+    const [rows] = await this.repository.pool.query('SELECT l.portal_id AS id,r.status,p.publish_date AS publishDate,p.closing_date AS closingDate,p.unpublish_date AS unpublishDate FROM JRS_JOB_LINK l JOIN recruiting_job_position r ON r.id=l.recruiting_id LEFT JOIN JRS_JOB_PUBLICATION p ON p.recruiting_id=r.id WHERE l.portal_id IS NOT NULL');
+    return new Map(rows.map(row => [row.id,publicationState(row.status,row)]));
+  }
+  presentJob(job, state) {
+    return {...job,isOpen:!!state?.accepting,isVisible:!!state?.visible,applicationAvailability:state?.accepting?'Accepting applications':'No longer accepting applications'};
+  }
+  async listJobs(filters) {
+    const [records, publications] = await Promise.all([this.models.Job.findAll({order:[['closingDate','ASC']]}),this.publicationRecords()]);
+    const jobs = records.filter(row=>publications.get(row.id)?.visible).map(row=>this.presentJob(row.toJSON(),publications.get(row.id)));
+    return {jobs:jobs.filter(job=>matchesJob(job,filters)),filters:jobFilters(jobs)};
+  }
+  async getJob(id) {
+    const [job,publications] = await Promise.all([super.getJob(id),this.publicationRecords()]);
+    const state=publications.get(Number(id));
+    return job && state?.visible ? this.presentJob(job,state) : null;
+  }
+  async getCurrentApplication(userId) {
+    const application = await super.getCurrentApplication(userId);
+    if (!application) return null;
+    const publications = await this.publicationRecords();
+    const [[link]] = await this.repository.pool.execute('SELECT job_snapshot FROM JRS_APPLICATION_LINK WHERE portal_id=? AND account_id=?',[application.id,userId]);
+    const snapshot=typeof link?.job_snapshot==='string'?JSON.parse(link.job_snapshot):link?.job_snapshot;
+    application.jobSnapshotAvailable=!!snapshot;
+    application.job=this.presentJob(snapshot || application.job,publications.get(application.jobId));
+    return application;
+  }
   async getUserById(id) {
     const [[account]] = await this.repository.pool.execute("SELECT a.account_id,c.full_name,a.email FROM MODULE_ACCOUNT a JOIN CANDIDATE c ON c.account_id=a.account_id WHERE a.account_id=? AND a.role='candidate'", [id]);
     if (!account) return null;
@@ -99,6 +125,8 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       const [[canonical]] = await query('SELECT * FROM CANDIDATE WHERE account_id=?', [userId]);
       const [[jobLink]] = await query('SELECT * FROM JRS_JOB_LINK WHERE portal_id=?', [job.id]);
       if (!jobLink || !canonical) throw httpError(409, 'This job or candidate has not been linked.');
+      const [[publication]] = await query('SELECT r.status,p.publish_date AS publishDate,p.closing_date AS closingDate,p.unpublish_date AS unpublishDate FROM recruiting_job_position r LEFT JOIN JRS_JOB_PUBLICATION p ON p.recruiting_id=r.id WHERE r.id=?',[jobLink.recruiting_id]);
+      if (!publicationState(publication?.status,publication).accepting) throw httpError(404,'This role is not available for applications.');
       const before = await this.recruitment.load(connection), after = state.clone(before), at = new Date().toISOString();
       const candidateId = `account-${userId}`;
       if (!after.candidates.some(c => c.id === candidateId)) {
@@ -116,7 +144,7 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       after.revision++; after.updatedAt = at;
       await this.recruitment.save(connection, before, after);
       const [[canonicalApplication]] = await query('SELECT canonical_id FROM JRS_HR_APPLICATION_LINK WHERE recruiting_id=?', [result.application.id]);
-      await query('INSERT INTO JRS_APPLICATION_LINK(portal_id,recruiting_id,canonical_id,account_id) VALUES(?,?,?,?)', [application.id, result.application.id, canonicalApplication.canonical_id, userId]);
+      await query('INSERT INTO JRS_APPLICATION_LINK(portal_id,recruiting_id,canonical_id,account_id,job_snapshot) VALUES(?,?,?,?,?)', [application.id, result.application.id, canonicalApplication.canonical_id, userId,JSON.stringify(job.toJSON())]);
       await query('UPDATE CANDIDATE SET contact_number=?,home_location=?,updated_at=UTC_TIMESTAMP() WHERE account_id=?', [values.phone, values.location, userId]);
       const [[resumeLink]] = await query('SELECT f.* FROM RESUME_FILE f JOIN JRS_RESUME_LINK l ON l.canonical_id=f.file_id WHERE l.portal_id=?', [resume.id]);
       if (resumeLink?.file_type === 'application/pdf') await connection.execute('INSERT INTO hr_resume(candidate_id,filename,size_bytes,content,uploaded_at) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE filename=VALUES(filename),size_bytes=VALUES(size_bytes),content=VALUES(content),uploaded_at=VALUES(uploaded_at)', [candidateId, resume.originalName.slice(0, 150), resume.size, await fs.readFile(path.join(this.uploadDir, resumeLink.storage_key)), at]);

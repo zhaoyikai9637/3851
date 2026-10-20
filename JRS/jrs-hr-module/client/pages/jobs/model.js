@@ -71,8 +71,10 @@ export function jobPayload(draft) {
     fail(error.message, "Publishing");
   }
   if (payload.publishDate && payload.closingDate && payload.closingDate < payload.publishDate)
-    fail("Closing date must not be before publication.", "Publishing");
+    fail("Application deadline must not be before publication.", "Publishing");
   if (payload.publishDate && payload.unpublishDate && payload.unpublishDate < payload.publishDate)
     fail("Unpublish date must not be before publication.", "Publishing");
+  if (payload.closingDate && payload.unpublishDate && payload.unpublishDate <= payload.closingDate)
+    fail("Unpublish date must be after the application deadline.", "Publishing");
   return payload;
 }

@@ -188,23 +188,23 @@ export function JobDrawer({
               confirmation === "discard"
                 ? "Discard unsaved changes?"
                 : job.status === "Closed"
-                  ? "Reopen this job?"
-                  : "Close this job?"
+                  ? "Reopen recruitment?"
+                  : "Close recruitment?"
             }
           >
             <h3>
               {confirmation === "discard"
                 ? "Discard unsaved changes?"
                 : job.status === "Closed"
-                  ? "Reopen this job?"
-                  : "Close this job?"}
+                  ? "Reopen recruitment?"
+                  : "Close recruitment?"}
             </h3>
             <p>
               {confirmation === "discard"
                 ? "Your unsaved edits will be discarded."
                 : job.status === "Closed"
-                  ? "This job will be active again."
-                  : "Existing applications will be retained. This job will no longer be active."}
+                  ? "Internal recruitment will resume. Publication dates still control candidate visibility and new applications."
+                  : "Recruitment will stop. Existing applications are retained, but progression is blocked until reopened. This is not the same as unpublishing."}
             </p>
             <div className="job-confirmation-actions">
               <button
@@ -282,7 +282,7 @@ export function JobDrawer({
                       maxLength={500}
                     />
                     <Select
-                      label="Posting status"
+                      label="Recruitment status"
                       value={draft.status}
                       options={["Draft", "Active", "Closed"]}
                       onChange={change("status")}
@@ -355,7 +355,7 @@ export function JobDrawer({
                       maxLength={80}
                       placeholder="e.g. SGD 5,000 - 6,000"
                     />
-                    {["Closing date", "Publish date", "Unpublish date"].map((label, index) => {
+                    {["Application deadline", "Publish date", "Unpublish date"].map((label, index) => {
                       const key = ["closingDate", "publishDate", "unpublishDate"][index];
                       return (
                         <DateField
@@ -418,7 +418,7 @@ export function JobDrawer({
                 <dl>
                   {[
                     ["Salary range", job.salaryRange],
-                    ["Closing date", displayDate(job.closingDate)],
+                    ["Application deadline", displayDate(job.closingDate)],
                     ["Publish date", displayDate(job.publishDate)],
                     ["Unpublish date", displayDate(job.unpublishDate)],
                   ].map(([label, value]) => (
@@ -462,7 +462,7 @@ export function JobDrawer({
               disabled={busy}
               onClick={() => setConfirmation("status")}
             >
-              {job.status === "Closed" ? "Reopen job" : "Close job"}
+              {job.status === "Closed" ? "Reopen recruitment" : "Close recruitment"}
             </button>
             <div>
               <button

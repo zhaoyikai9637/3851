@@ -14,7 +14,7 @@ function publicUser(user) {
   return value;
 }
 
-function jobFilters(jobs) {
+export function jobFilters(jobs) {
   const unique = (key) => [...new Set(jobs.map((job) => job[key]))].sort();
   return {
     departments: unique("department"),
@@ -24,7 +24,7 @@ function jobFilters(jobs) {
   };
 }
 
-function matchesJob(job, filters) {
+export function matchesJob(job, filters) {
   const search = String(filters.search || "").trim().toLowerCase();
   const searchText = [
     job.title,

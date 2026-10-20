@@ -27,7 +27,7 @@ export async function createRuntime() {
   const close = async () => { await Promise.all([pool.end(), communicationDb.close(), applicantDb?.close()]); };
   try {
     const [[version]] = await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-    if (version?.version !== 6) throw new Error('Run npm run db:setup on the isolated integration database first.');
+    if (version?.version !== 7) throw new Error('Run npm run db:setup on the isolated integration database first.');
     const experimental = settings.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL === 'true';
     const repository = new candidateRepository.Repository(pool), bridge = createRecruitmentBridge(pool, { experimentalApplicantPortal: experimental });
     const recruitment = recruitmentRepository.createRepository(namespacePool(pool));

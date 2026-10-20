@@ -84,7 +84,7 @@ async function edit(ui) {
 it("presents a table-first jobs workspace without the standalone publishing form or artificial root breadcrumb", async () => {
   mount();
   const table = await screen.findByRole("table", { name: "Job postings" });
-  for (const name of ["Position", "Status", "Applications", "Salary range", "Closing date"])
+  for (const name of ["Position", "Status", "Applications", "Salary range", "Application deadline"])
     expect(within(table).getByRole("columnheader", { name })).toBeVisible();
   expect(within(table).getByText("31/12/2030")).toBeVisible();
   expect(screen.queryByText("Publishing settings")).not.toBeInTheDocument();
@@ -102,10 +102,10 @@ it("edits basic and publishing fields together and sends ISO dates with the exis
   await ui.clear(screen.getByLabelText("Job title"));
   await ui.type(screen.getByLabelText("Job title"), "Senior Developer");
   await ui.click(screen.getByRole("tab", { name: "Publishing" }));
-  expect(screen.getByLabelText("Closing date")).toHaveValue("31/12/2030");
+  expect(screen.getByLabelText("Application deadline")).toHaveValue("31/12/2030");
   expect(document.querySelector('input[type="date"]')).toBeNull();
-  await ui.clear(screen.getByLabelText("Closing date"));
-  await ui.type(screen.getByLabelText("Closing date"), "30/11/2030");
+  await ui.clear(screen.getByLabelText("Application deadline"));
+  await ui.type(screen.getByLabelText("Application deadline"), "30/11/2030");
   await ui.click(screen.getByRole("button", { name: "Save job" }));
   expect(await screen.findByRole("button", { name: "View Senior Developer" })).toBeVisible();
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
@@ -138,8 +138,8 @@ it("rejects impossible day-first dates without sending a save request", async ()
   const ui = mount();
   await edit(ui);
   await ui.click(screen.getByRole("tab", { name: "Publishing" }));
-  await ui.clear(screen.getByLabelText("Closing date"));
-  await ui.type(screen.getByLabelText("Closing date"), "31/02/2030");
+  await ui.clear(screen.getByLabelText("Application deadline"));
+  await ui.type(screen.getByLabelText("Application deadline"), "31/02/2030");
   await ui.click(screen.getByRole("button", { name: "Save job" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("valid date");
   expect(
@@ -151,11 +151,11 @@ it("uses an English calendar and writes the chosen date in day/month/year order"
   const ui = mount();
   await edit(ui);
   await ui.click(screen.getByRole("tab", { name: "Publishing" }));
-  await ui.click(screen.getByRole("button", { name: "Open Closing date calendar" }));
+  await ui.click(screen.getByRole("button", { name: "Open Application deadline calendar" }));
   expect(screen.getByText("December 2030")).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Next month" }));
   await ui.click(screen.getByRole("button", { name: "15 January 2031" }));
-  expect(screen.getByLabelText("Closing date")).toHaveValue("15/01/2031");
+  expect(screen.getByLabelText("Application deadline")).toHaveValue("15/01/2031");
 });
 
 it("preserves edits and displays server conflicts instead of claiming a successful save", async () => {
@@ -198,14 +198,14 @@ it("creates a job from the same drawer with requirement templates and publishing
 it("requires confirmation to close a job and retains the existing status-change command semantics", async () => {
   const ui = mount();
   await ui.click(await screen.findByRole("button", { name: "View Software Developer" }));
-  await ui.click(screen.getByRole("button", { name: "Close job" }));
-  const confirmation = screen.getByRole("alertdialog", { name: "Close this job?" });
+  await ui.click(screen.getByRole("button", { name: "Close recruitment" }));
+  const confirmation = screen.getByRole("alertdialog", { name: "Close recruitment?" });
   await ui.click(within(confirmation).getByRole("button", { name: "Confirm close" }));
   expect(await screen.findByText("Closed", { selector: ".job-status" })).toBeVisible();
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
   expect(data.items[0].status).toBe("Closed");
   await ui.click(screen.getByRole("button", { name: "View Software Developer" }));
-  await ui.click(screen.getByRole("button", { name: "Reopen job" }));
+  await ui.click(screen.getByRole("button", { name: "Reopen recruitment" }));
   await ui.click(screen.getByRole("button", { name: "Confirm reopen" }));
   expect(await screen.findByText("Active", { selector: ".job-status" })).toBeVisible();
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
@@ -220,4 +220,36 @@ it("opens applications filtered to the selected job", async () => {
     "src",
     "/recruitment/?job=job-a#/applications",
   );
+});
+
+it("blocks an unpublish date that ends before the deadline day has finished", async () => {
+  const ui = mount();
+  await edit(ui);
+  await ui.click(screen.getByRole("tab", {name:"Publishing"}));
+  await ui.type(screen.getByLabelText("Unpublish date"),"31/12/2030");
+  await ui.click(screen.getByRole("button", {name:"Save job"}));
+  expect(await screen.findByRole("alert")).toHaveTextContent("after the application deadline");
+  expect(screen.getByLabelText("Unpublish date")).toHaveValue("31/12/2030");
+});
+
+it("keeps 100 jobs usable across paging, filtering and returning from edits", async () => {
+  const base=structuredClone(data.items[0]);
+  data.items=Array.from({length:100},(_,i)=>({...base,id:`job-${i}`,title:`Role ${String(i+1).padStart(3,"0")} with a long specialist position title`,department:i%2?"Operations":"Engineering",status:i%2?"Draft":"Active",applications:i, salaryRange:i%3?"":"SGD 5,000 - 6,000"}));
+  const ui=mount();
+  const table=await screen.findByRole("table",{name:"Job postings"});
+  expect(within(table).getAllByRole("row")).toHaveLength(11);
+  expect(screen.getByText("1–10 of 100 jobs")).toBeVisible();
+  await ui.click(screen.getByRole("button",{name:"Next",exact:true}));
+  await ui.click(screen.getByRole("button",{name:"View Role 011 with a long specialist position title"}));
+  await ui.click(screen.getByRole("button",{name:"Edit job"}));
+  await ui.type(screen.getByLabelText("Job title")," revised");
+  await ui.click(screen.getByRole("button",{name:"Save job"}));
+  expect(await screen.findByRole("button",{name:"View Role 011 with a long specialist position title revised"})).toBeVisible();
+  expect(screen.getByText("11–20 of 100 jobs")).toBeVisible();
+  await ui.click(screen.getByRole("button",{name:"Draft",exact:true}));
+  expect(screen.getByText("1–10 of 50 jobs")).toBeVisible();
+  await ui.type(screen.getByRole("searchbox",{name:"Search jobs"}),"Role 100");
+  expect(screen.getByText("1–1 of 1 jobs")).toBeVisible();
+  await ui.clear(screen.getByRole("searchbox",{name:"Search jobs"}));
+  expect(screen.getByText("1–10 of 50 jobs")).toBeVisible();
 });

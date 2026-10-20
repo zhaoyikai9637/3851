@@ -10,6 +10,7 @@ import { up as createCommunicationSchema } from '../jrs-hr-module/server/src/mig
 import { defineModels as applicantModels } from '../JRS Applicant Portal/server/models/index.js';
 import { defaultTemplates } from '../jrs-hr-module/server/src/seed.js';
 import originalContent from '../jrs-hr-module/server/data/original-content.json' with { type: 'json' };
+import { migrateApplicationSnapshot } from '../server/migrations/007-application-snapshot.mjs';
 
 const settings = loadSettings();
 let admin, pool, sequelize;
@@ -29,7 +30,7 @@ try {
   const [tables] = await pool.query('SHOW TABLES');
   if (tables.length) {
     const [[version]] = await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-    if (![1, 2, 3, 4, 5, 6].includes(version?.version)) throw new Error('Existing schema is not a completed JRS integration database. No automatic overwrite.');
+    if (![1, 2, 3, 4, 5, 6, 7].includes(version?.version)) throw new Error('Existing schema is not a completed JRS integration database. No automatic overwrite.');
     if (version.version === 1) {
       await pool.query('CREATE TABLE JRS_CANDIDATE_LINK (recruiting_id VARCHAR(96) PRIMARY KEY, canonical_id INT NOT NULL UNIQUE) ENGINE=InnoDB');
       await pool.query('CREATE TABLE JRS_HR_APPLICATION_LINK (recruiting_id VARCHAR(96) PRIMARY KEY, canonical_id INT NOT NULL UNIQUE) ENGINE=InnoDB');
@@ -60,6 +61,7 @@ try {
       await pool.query('ALTER TABLE JRS_JOB_LINK MODIFY portal_id INT UNSIGNED NULL');
       await pool.execute('UPDATE JRS_INTEGRATION_VERSION SET version=6 WHERE id=1');
     }
+    await migrateApplicationSnapshot(pool);
     console.log('Existing integrated database retained; no reseeding.');
   } else {
     sequelize = new Sequelize(settings.DB_NAME, settings.DB_USER, settings.DB_PASSWORD, { dialect: 'mysql', host: settings.DB_HOST, port: 3307, logging: false, define: { underscored: true } });
@@ -110,6 +112,7 @@ try {
     const accountsFile = settings.DB_NAME.includes('_test_') ? 'accounts-test.json' : 'accounts.json';
     await fs.writeFile(path.join(root, '.local', accountsFile), JSON.stringify(accounts, null, 2), { flag: 'wx' });
     await pool.execute('INSERT INTO JRS_INTEGRATION_VERSION(id,version) VALUES(1,6)');
+    await migrateApplicationSnapshot(pool);
     console.log(`Integrated local schema ready; ${profiles.length} authoritative HR profiles, private local login accounts. No cloud writes.`);
     console.log(`Local login credentials: .local/${accountsFile} (never commit this file).`);
   }

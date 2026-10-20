@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import { test } from 'node:test';
 import request from 'supertest';
+import { resetTestLoginBuckets } from './helpers/isolated-auth.mjs';
 process.env.DB_NAME = 'jrs_integrated_test_20261019';
 process.env.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL = 'true';
 
@@ -30,6 +31,7 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
   assert.equal(typeof runtime.createRuntime, 'function', 'Integrated application assembly is missing');
   const site = await runtime.createRuntime();
   try {
+    await resetTestLoginBuckets(site);
     const accounts = JSON.parse(await fs.readFile(new URL('../.local/accounts-test.json', import.meta.url)));
     const manager = request.agent(site.app), applicant = request.agent(site.app);
     const hrLogin = await manager.post('/api/login').send({ email: accounts[0].email, password: accounts[0].password }).expect(200);
@@ -86,10 +88,39 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
     const candidate = workspace.body.candidates.find(row => row.email === email);
     const hrApplication = workspace.body.applications.find(row => row.candidateId === candidate?.id && workspace.body.jobs.some(j => j.id === row.jobId && j.title === roleName));
     assert.ok(hrApplication, 'Applicant submission must reach the shared HR queue');
+    const publicationBody = {salaryRange:'SGD 5,000-6,000',publishDate:'',closingDate:'2020-01-01',unpublishDate:''};
+    await manager.put(`/api/hr/job-publications/${publishing.id}`).set('X-CSRF-Token',hrIdentity.body.csrfToken).send(publicationBody).expect(200);
+    const expired = await request(site.app).get('/applicant-api/jobs').expect(200);
+    assert.equal(expired.body.jobs.find(row=>row.id===job.id)?.isOpen,false,'Expired roles remain visible until their unpublish date');
+    await manager.put(`/api/hr/job-publications/${publishing.id}`).set('X-CSRF-Token',hrIdentity.body.csrfToken).send({...publicationBody,unpublishDate:'2020-01-02'}).expect(200);
+    const hidden = await request(site.app).get('/applicant-api/jobs').expect(200);
+    assert.ok(!hidden.body.jobs.some(row=>row.id===job.id),'Unpublished roles disappear from discovery');
+    await request(site.app).get(`/applicant-api/jobs/${job.id}`).expect(404);
+    const editState = await manager.get('/recruitment/api/hr/workspace').expect(200);
+    const existingJob = editState.body.jobs.find(row=>row.id===publishing.id);
+    await manager.post('/recruitment/api/hr/commands/job-save').set('X-CSRF-Token',sharedCsrf)
+      .set('If-Match',String(editState.body.revision)).set('Idempotency-Key',randomUUID())
+      .send({...existingJob,title:roleName+' revised',skills:existingJob.skills.join(','),requirements:existingJob.requirements.join('\n')}).expect(200);
+    const retained = await applicant.get('/applicant-api/applications/me').expect(200);
+    assert.equal(retained.body.application.job.title,roleName);
+    assert.equal(retained.body.application.jobSnapshotAvailable,true);
+    assert.equal(retained.body.application.job.isOpen,false);
+    assert.equal(retained.body.application.job.applicationAvailability,'No longer accepting applications');
+    const afterUnpublish = await manager.get('/recruitment/api/hr/workspace').expect(200);
+    assert.equal(afterUnpublish.body.jobs.find(row=>row.id===publishing.id).status,'Active','Unpublishing must not close internal recruitment');
+    const newApplicant=request.agent(site.app),newEmail=`unpublish-${randomUUID()}@example.test`;
+    await newApplicant.post('/api/register').send({email:newEmail,password,first_name:'Unpublish',last_name:'Test'}).expect(201);
+    const newLogin=await newApplicant.post('/api/login').send({email:newEmail,password}).expect(200);
+    const newResume=await newApplicant.post('/applicant-api/resumes').set('X-CSRF-Token',newLogin.body.csrfToken)
+      .attach('resume',Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'),{filename:'unpublish-test.pdf',contentType:'application/pdf'}).expect(201);
+    await newApplicant.post('/applicant-api/applications').set('X-CSRF-Token',newLogin.body.csrfToken).send({
+      jobId:job.id,resumeId:newResume.body.resume.id,phone:'+65 8123 4567',location:'Singapore',coverLetter:'Isolated test only.',
+      experiences:[{companyName:'Example Test Company',jobTitle:'Developer',startDate:'2024-01',endDate:'',currentRole:true,responsibilities:'Implemented and tested recruitment software.',achievements:'',skills:'JavaScript'}],roleAnswers:{},
+    }).expect(404);
     const notices = await manager.get('/api/hr/notifications').expect(200);
     assert.ok(notices.body.items.some(row => row.title.includes('Integration Applicant')), 'Original Notification Center must receive the application event');
     await manager.post('/recruitment/api/hr/commands/move-interview').set('X-CSRF-Token', sharedCsrf)
-      .set('If-Match', String(workspace.body.revision)).set('Idempotency-Key', randomUUID())
+      .set('If-Match', String(afterUnpublish.body.revision)).set('Idempotency-Key', randomUUID())
       .send({ applicationId: hrApplication.id, notify: false, notes: 'Integration verification.' }).expect(200);
     const status = await applicant.get('/applicant-api/applications/me').expect(200);
     assert.equal(status.body.application.id, application.body.application.id);

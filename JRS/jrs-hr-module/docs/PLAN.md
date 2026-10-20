@@ -91,3 +91,11 @@
 
 - Removed Job Postings success banners and their unused state/styles. Save, create, close and reopen still update the table immediately; error feedback and explicit confirmations remain intact.
 - Updated regression tests to verify visible job results without a success banner, including reopening a closed job. Frontend 100, backend/API 183, isolated MySQL 12 and Jest 73 tests passed; production build and English-only checks passed. No backend or database rules changed. Browser layout testing was not repeated for this banner-only removal.
+
+## Publication rules and 100-job acceptance (2026-10-21)
+
+- Implemented user-confirmed UTC+08 publication/deadline/unpublish rules. Candidate discovery and accepting applications are independent; unpublishing preserves internal recruitment and existing applications. Close recruitment is explicitly labelled separately.
+- Added an additive schema version 7 migration for new application job snapshots. Applied and repeated only on the approved local dev/test schemas. Existing unknown historical snapshots remain absent; no cloud changes or reseeding.
+- Verified applicant list/detail/submission boundaries, owner-only application access, immutable submission-time content and HR progression after unpublishing. Necessary availability text was added without redesigning applicant/login pages.
+- Verification: root 26, default workflow MySQL 2, experimental workflow MySQL 2, HR frontend 102, backend/API 183, isolated HR MySQL 12, native recruitment 108 and Jest 73 passed. Both frontend production builds and English-only checks passed. 100-job table behavior and desktop/390px scrolling were checked with isolated fixtures; no fixture data entered cloud or development recruitment tables.
+- See JOB_PUBLICATION_RULES.md. HR-wide visual rollout and extensible assessment criteria are still pending and must follow this milestone.

@@ -117,7 +117,7 @@ export function JobPostings() {
                     <th>Status</th>
                     <th>Applications</th>
                     <th>Salary range</th>
-                    <th>Closing date</th>
+                    <th>Application deadline</th>
                     <th>
                       <span className="visually-hidden">Actions</span>
                     </th>

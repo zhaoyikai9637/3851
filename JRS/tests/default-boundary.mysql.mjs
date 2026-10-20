@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import fs from 'node:fs/promises';
 import request from 'supertest';
 import { randomUUID } from 'node:crypto';
+import { resetTestLoginBuckets } from './helpers/isolated-auth.mjs';
 process.env.DB_NAME = 'jrs_integrated_test_20261019';
 process.env.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL = 'false';
 const { createRuntime } = await import('../server/runtime.mjs');
@@ -10,6 +11,7 @@ const { createRuntime } = await import('../server/runtime.mjs');
 test('job editor saves job details and publishing together while retaining authentication, validation, concurrency and retry safety', async () => {
   const site = await createRuntime();
   try {
+    await resetTestLoginBuckets(site);
     const endpoint = '/recruitment/api/hr/job-postings';
     await request(site.app).get(endpoint).expect(401);
     const accounts = JSON.parse(await fs.readFile(new URL('../.local/accounts-test.json', import.meta.url)));
@@ -44,6 +46,7 @@ test('job editor saves job details and publishing together while retaining authe
 test('default site keeps shared login/profile and HR available but does not expose the unfinished applicant portal', async () => {
   const site = await createRuntime();
   try {
+    await resetTestLoginBuckets(site);
     await request(site.app).get('/').expect(302).expect('Location', '/pages/login/login.html');
     await request(site.app).get('/pages/login/login.html').expect(200);
     await request(site.app).get('/pages/profile/profile.html').expect(200);

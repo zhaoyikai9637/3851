@@ -1,4 +1,5 @@
 import { httpError } from './security.mjs';
+import { publicationState } from './job-publications.mjs';
 
 const publicStatus = stage => ({ 'Pending Review': 'Submitted', Interview: 'Interview', Offer: 'Decision', Hired: 'Accepted', Rejected: 'Rejected' }[stage] || 'In Review');
 const templateKind = type => ({ INTERVIEW_INVITE: 'Interview Invite', OFFER_LETTER: 'Offer Letter', ACCEPTED: 'Accepted', REJECTED: 'Rejected', APPLICATION_REJECTION: 'Rejected', INTERVIEW_REJECTION: 'Rejected', OFFER_WITHDRAWAL: 'Rejected', OFFER_DECLINED_ACKNOWLEDGEMENT: 'In Progress' }[type] || 'In Progress');
@@ -18,8 +19,7 @@ export function createRecruitmentBridge(pool, { experimentalApplicantPortal = fa
     for (const job of after.jobs) {
       const [[link]] = await connection.execute('SELECT * FROM JRS_JOB_LINK WHERE recruiting_id=?', [job.id]);
       const [[publication]] = await connection.execute('SELECT * FROM JRS_JOB_PUBLICATION WHERE recruiting_id=?', [job.id]);
-      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
-      const open = job.status === 'Active' && (!publication?.publish_date || publication.publish_date <= today) && (!publication?.unpublish_date || publication.unpublish_date > today) && (!publication?.closing_date || publication.closing_date >= today);
+      const open = publicationState(job.status,{publishDate:publication?.publish_date,unpublishDate:publication?.unpublish_date,closingDate:publication?.closing_date}).accepting;
       const fields = [job.title, job.department, job.location, job.mode, job.type, job.experience, publication?.salary_range || '', job.description.slice(0, 500), JSON.stringify([job.description]), JSON.stringify(job.requirements), '[]', '[]', '[]', publication?.closing_date || null, open];
       let portalId = link?.portal_id ?? null;
       if (experimentalApplicantPortal) {

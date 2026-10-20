@@ -85,6 +85,7 @@ export default function ApplicationStatusPage() {
         <div>
           <p className="eyebrow text-primary">YOUR APPLICATION</p>
           <h2>{application.job.title}</h2>
+          {application.job.isOpen === false && <span className="status-badge">No longer accepting applications</span>}
           <div className="job-meta-list prominent">
             <span><BriefcaseBusiness size={19} />{application.job.department}</span>
             <span><MapPin size={19} />{application.job.location}</span>
