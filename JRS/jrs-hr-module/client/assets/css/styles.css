@@ -256,10 +256,10 @@ button:disabled {
   padding: 0 34px;
   gap: 20px;
 }
-.profile-topbar {
+.compact-topbar {
   justify-content: flex-end;
 }
-.profile-topbar .mobile-toggle {
+.compact-topbar .mobile-toggle {
   margin-right: auto;
 }
 .top-tabs {
@@ -1112,7 +1112,7 @@ button:disabled {
     gap: 8px 15px;
     position: relative;
   }
-  .topbar.profile-topbar {
+  .topbar.compact-topbar {
     height: 76px;
     padding-bottom: 12px;
     align-content: center;

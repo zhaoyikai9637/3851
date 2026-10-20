@@ -90,3 +90,9 @@ Two active seed HR profiles (manager and staff) were read from the team cloud da
 The local-only development entry now uses the imported manager profile. The staff profile is also stored locally, but no browser role switch or additional login system was added. These remain test profiles, not verified real staff identities. Team authentication and upstream-to-local ID mapping remain separate integration work. Private runtime configuration and database records are not committed to Git.
 
 Verification: the overwrite transaction checked exact equality of all local/cloud HR profile fields before commit. Actual local-MySQL-backed development login and profile reads were rechecked for both final profile IDs; unauthenticated and logged-out profile reads returned 401. Backend tests: 182 passed; frontend tests: 68 passed; isolated MySQL tests: 12 passed; production build succeeded. No browser layout check was performed because UI code was unchanged.
+# Navigation isolation update (2026-10-20)
+
+- Communication tabs are restricted to Notifications, Templates and Logs.
+- Other workspace routes retain the account menu and use the compact header.
+- Added 13 route and navigation-transition regression cases. The integrated project also preserves embedded recruitment breadcrumbs while hiding duplicate shell controls.
+- Verification: integrated frontend 82, backend/API 183, Jest 73 and isolated MySQL 12 tests passed; integrated boundary/unit tests 18 passed; production builds passed. Standalone frontend 81 tests passed on rerun; its pre-existing loading test raced on the first run. Desktop browser checks confirmed Applications retains its native navigation and Notifications retains its three tabs. Mobile visual testing was not repeated.

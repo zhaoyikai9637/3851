@@ -45,7 +45,8 @@ function AccountMenu({ user, onLogout }) {
 export function WorkspaceLayout() {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false), [confirmLogout, setConfirmLogout] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(null);
-  const location = useLocation(), isProfilePage = location.pathname.startsWith("/profile");
+  const location = useLocation();
+  const isCommunicationPage = communicationLinks.some(([path]) => path === location.pathname);
   useEffect(() => { setSidebarOpen(false); document.title = `${pageName(location.pathname)} · JRS`; }, [location.pathname]);
   async function signOut() { setBusy(true); setError(null); try { await logout(); } catch (nextError) { setError(nextError); } finally { setBusy(false); } }
   const navigation = <SidebarNavigation pathname={location.pathname} onNavigate={() => setSidebarOpen(false)} />;
@@ -54,9 +55,9 @@ export function WorkspaceLayout() {
     <aside className="sidebar">{navigation}</aside>
     {sidebarOpen && <Modal title="Workspace navigation" onClose={() => setSidebarOpen(false)}><div className="mobile-navigation">{navigation}</div></Modal>}
     <div className="workspace-body">
-      <header className={`topbar${isProfilePage ? " profile-topbar" : ""}`}>
+      <header className={`topbar${isCommunicationPage ? "" : " compact-topbar"}`}>
         <button className="icon-button mobile-toggle" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}>☰</button>
-        {!isProfilePage && <nav className="top-tabs" aria-label="Communication pages">{communicationLinks.map(([path, name]) => <NavLink key={path} to={path}>{name}</NavLink>)}</nav>}
+        {isCommunicationPage && <nav className="top-tabs" aria-label="Communication pages">{communicationLinks.map(([path, name]) => <NavLink key={path} to={path}>{name}</NavLink>)}</nav>}
         <AccountMenu user={user} onLogout={() => { setConfirmLogout(true); setError(null); }} />
       </header>
       <main id="main-content" className="main-content" tabIndex={-1}><Outlet /></main>

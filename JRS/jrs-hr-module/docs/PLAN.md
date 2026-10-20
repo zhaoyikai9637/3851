@@ -54,3 +54,9 @@
 - Configure the agreed team sign-in URL.
 - Run migrations with the deployment database role.
 - Enable SMTP only after sender-domain and operational approval.
+# Navigation isolation update (2026-10-20)
+
+- Communication tabs are restricted to Notifications, Templates and Logs.
+- Other workspace routes retain the account menu and use the compact header.
+- Added 13 route and navigation-transition regression cases. The integrated project also preserves embedded recruitment breadcrumbs while hiding duplicate shell controls.
+- Verification: integrated frontend 82, backend/API 183, Jest 73 and isolated MySQL 12 tests passed; integrated boundary/unit tests 18 passed; production builds passed. Standalone frontend 81 tests passed on rerun; its pre-existing loading test raced on the first run. Desktop browser checks confirmed Applications retains its native navigation and Notifications retains its three tabs. Mobile visual testing was not repeated.

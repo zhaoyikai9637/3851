@@ -149,6 +149,31 @@ const writes = (path) =>
   );
 
 describe("authentication and navigation", () => {
+  it.each(["/dashboard", "/applications", "/candidates", "/job-postings", "/interviews", "/outbox", "/reports", "/profile", "/profile/edit"])("hides communication navigation on %s", async (route) => {
+    overrides["GET /recruitment/api/hr/candidates"] = () => json({ items: [] });
+    overrides["GET /api/hr/job-publications"] = () => json({ items: [] });
+    mount(route);
+    expect(await screen.findByRole("navigation", { name: "Main navigation" })).toBeVisible();
+    expect(screen.queryByRole("navigation", { name: "Communication pages" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Riley Morgan/ })).toBeVisible();
+  });
+
+  it.each(["/notifications", "/templates", "/logs"])("shows communication navigation on %s", async (route) => {
+    mount(route);
+    const tabs = await screen.findByRole("navigation", { name: "Communication pages" });
+    expect(within(tabs).getAllByRole("link")).toHaveLength(3);
+    expect(within(tabs).getByRole("link", { current: "page" })).toHaveAttribute("href", route);
+  });
+
+  it("updates communication navigation when moving between modules", async () => {
+    const ui = mount();
+    const sidebar = await screen.findByRole("navigation", { name: "Main navigation" });
+    await ui.click(within(sidebar).getByRole("link", { name: "Dashboard" }));
+    expect(screen.queryByRole("navigation", { name: "Communication pages" })).not.toBeInTheDocument();
+    await ui.click(within(sidebar).getByRole("link", { name: "Notifications" }));
+    expect(await screen.findByRole("navigation", { name: "Communication pages" })).toBeVisible();
+  });
+
   it('edits job publication details using the existing HR interface and real API contract', async () => {
     overrides['GET /api/hr/job-publications'] = () => json({ items: [{ id: 'job-a', title: 'Software Developer', status: 'Active', salaryRange: '', closingDate: null, publishDate: null, unpublishDate: null }] });
     overrides['PUT /api/hr/job-publications/job-a'] = (url, options) => {
