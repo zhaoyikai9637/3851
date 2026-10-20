@@ -299,24 +299,6 @@
   font-size: 12px;
   padding: 6px 10px;
 }
-.jobs-save-notice {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #edf7f2;
-  border: 1px solid #d1e8db;
-  border-radius: 9px;
-  color: #267452;
-  font-size: 13px;
-  padding: 12px 16px;
-  margin-bottom: 18px;
-}
-.jobs-save-notice button {
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 20px;
-}
 .jobs-empty {
   padding: 65px 20px;
   text-align: center;

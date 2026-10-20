@@ -107,7 +107,8 @@ it("edits basic and publishing fields together and sends ISO dates with the exis
   await ui.clear(screen.getByLabelText("Closing date"));
   await ui.type(screen.getByLabelText("Closing date"), "30/11/2030");
   await ui.click(screen.getByRole("button", { name: "Save job" }));
-  expect(await screen.findByRole("status")).toHaveTextContent("Job saved.");
+  expect(await screen.findByRole("button", { name: "View Senior Developer" })).toBeVisible();
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
   const [, options] = fetcher.mock.calls.find(
     ([url, options]) => url === endpoint && options.method === "POST",
   );
@@ -186,7 +187,8 @@ it("creates a job from the same drawer with requirement templates and publishing
   await ui.selectOptions(screen.getByLabelText("Requirement template"), "Software Developer");
   await ui.click(screen.getByRole("button", { name: "Use template" }));
   await ui.click(screen.getByRole("button", { name: "Save job" }));
-  expect(await screen.findByRole("status")).toHaveTextContent("Job saved.");
+  expect(await screen.findByRole("button", { name: "View New Developer" })).toBeVisible();
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
   expect(data.items.find((row) => row.id === "job-new")).toMatchObject({
     title: "New Developer",
     status: "Draft",
@@ -199,8 +201,14 @@ it("requires confirmation to close a job and retains the existing status-change 
   await ui.click(screen.getByRole("button", { name: "Close job" }));
   const confirmation = screen.getByRole("alertdialog", { name: "Close this job?" });
   await ui.click(within(confirmation).getByRole("button", { name: "Confirm close" }));
-  expect(await screen.findByRole("status")).toHaveTextContent("Job closed.");
+  expect(await screen.findByText("Closed", { selector: ".job-status" })).toBeVisible();
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
   expect(data.items[0].status).toBe("Closed");
+  await ui.click(screen.getByRole("button", { name: "View Software Developer" }));
+  await ui.click(screen.getByRole("button", { name: "Reopen job" }));
+  await ui.click(screen.getByRole("button", { name: "Confirm reopen" }));
+  expect(await screen.findByText("Active", { selector: ".job-status" })).toBeVisible();
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
 });
 
 it("opens applications filtered to the selected job", async () => {

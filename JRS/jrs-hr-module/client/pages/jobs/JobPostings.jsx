@@ -12,8 +12,7 @@ export function JobPostings() {
     navigate = useNavigate();
   const [data, setData] = useState(null),
     [error, setError] = useState(null),
-    [drawer, setDrawer] = useState(null),
-    [notice, setNotice] = useState("");
+    [drawer, setDrawer] = useState(null);
   const [search, setSearch] = useState(""),
     [status, setStatus] = useState("All"),
     [page, setPage] = useState(1);
@@ -47,15 +46,12 @@ export function JobPostings() {
   async function save(payload) {
     const latest = await client.save(payload, data.revision);
     setData(latest);
-    setNotice("Job saved.");
   }
   async function changeStatus(id, next) {
     const latest = await client.status(id, next, data.revision);
     setData(latest);
-    setNotice(next === "Closed" ? "Job closed." : "Job reopened.");
   }
   function open(id) {
-    setNotice("");
     setDrawer({ id });
   }
   return (
@@ -77,14 +73,6 @@ export function JobPostings() {
           Create job
         </button>
       </header>
-      {notice && (
-        <div className="jobs-save-notice" role="status">
-          {notice}
-          <button type="button" aria-label="Dismiss notification" onClick={() => setNotice("")}>
-            ×
-          </button>
-        </div>
-      )}
       <ErrorBox error={error} retry={() => refresh().catch(setError)} />
       {!data && !error ? (
         <Loading />

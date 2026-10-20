@@ -122,3 +122,7 @@ Verification: the overwrite transaction checked exact equality of all local/clou
 - Added a shared-session adapter over the original recruitment command service. Job and publication values commit in the same transaction; native validation, permissions, sending locks, audit, revision checks and idempotency remain authoritative. No schema migration or new login mechanism.
 - Verification: frontend 100, HR backend/API 183, isolated HR MySQL 12, root 24, default workflow MySQL 2, experimental workflow MySQL 2, native recruitment 108 and Jest 73 tests passed. Production build and English-only check passed (384 files, zero issues). Desktop and 390px mobile table/drawer/calendar and dirty-close behavior were checked in the browser. Browser-entered trial dates were discarded; no real email was sent.
 - Await user review of this pilot before extending the visual pattern to other HR pages. Keep the standalone personal module unchanged.
+## Job action feedback cleanup (2026-10-20)
+
+- Removed Job Postings success banners and their unused state/styles. Save, create, close and reopen still update the table immediately; error feedback and explicit confirmations remain intact.
+- Updated regression tests to verify visible job results without a success banner, including reopening a closed job. Frontend 100, backend/API 183, isolated MySQL 12 and Jest 73 tests passed; production build and English-only checks passed. No backend or database rules changed. Browser layout testing was not repeated for this banner-only removal.
