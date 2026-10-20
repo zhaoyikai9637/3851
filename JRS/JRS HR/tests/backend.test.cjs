@@ -10,6 +10,26 @@ const user={id:'test-hr',name:'Junye Shen',role:'HR_MANAGER'};
 function setup(){return {...M.seed(),templates:templates(),systemNotifications:[],mailLogs:[],currentUser:user};}
 function run(db,cmd,p,u=user){const next=M.clone(db);const result=applyCommand(next,cmd,p,u);return {db:next,result};}
 
+test('interview criteria retain their own scores without replacing the manual overall rating or recommendation',()=>{
+  const db=setup(),a=db.applications[0];a.stage='Interview';
+  db.interviews=[{id:'assessment-meeting',applicationId:a.id,date:M.day(-2),time:'10:00',duration:45,format:'Video',location:'Test meeting',interviewer:user.name,status:'Scheduled',feedback:null}];
+  const assessment=JSON.stringify([{label:'System design',rating:5},{label:'Communication',rating:4}]);
+  const saved=run(db,'feedback',{applicationId:a.id,interviewId:'assessment-meeting',rating:2,recommendation:'Hold',notes:'Explicit human assessment.',assessment}).db;
+  assert.deepEqual(saved.interviews[0].feedback.assessment,[{label:'System design',rating:5},{label:'Communication',rating:4}]);
+  assert.equal(saved.applications[0].feedback.rating,2);
+  assert.equal(saved.applications[0].feedback.recommendation,'Hold');
+});
+
+test('invalid or duplicate assessment criteria fail before changing the application',()=>{
+  for(const assessment of ['not JSON','{}',JSON.stringify([{label:'Communication',rating:4},{label:' communication ',rating:2}]),JSON.stringify([{label:'Skill',rating:6}]),JSON.stringify([{label:'',rating:3}])]){
+    const db=setup(),a=db.applications[0];a.stage='Interview';
+    db.interviews=[{id:'assessment-meeting',applicationId:a.id,date:M.day(-2),time:'10:00',duration:45,status:'Scheduled',feedback:null}];
+    const previous=JSON.stringify(db);
+    assert.throws(()=>applyCommand(db,'feedback',{applicationId:a.id,interviewId:'assessment-meeting',rating:4,recommendation:'Proceed',notes:'Explicit human assessment.',assessment},user));
+    assert.equal(JSON.stringify(db),previous);
+  }
+});
+
 test('direct backend job updates enforce requirements and preserve the complete list atomically',()=>{
   const criteria=[...M.requirements.forTitle('Software Developer'),'Ability to review pull requests and explain maintainability trade-offs.','Practical knowledge of diagnosing production errors and implementing recovery fixes.'];
   const payload=(d,requirements)=>({...d.jobs[0],skills:d.jobs[0].skills.join(', '),requirements});

@@ -125,6 +125,30 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
     const status = await applicant.get('/applicant-api/applications/me').expect(200);
     assert.equal(status.body.application.id, application.body.application.id);
     assert.equal(status.body.application.status, 'Interview');
+    const interviewId='assessment-'+randomUUID();
+    await site.recruitment.transaction(async connection=>{
+      const previous=await site.recruitment.load(connection),next=M.clone(previous);
+      next.interviews.push({id:interviewId,applicationId:hrApplication.id,date:M.day(-2),time:'10:00',duration:45,format:'Video',location:'Isolated feedback fixture',interviewer:accounts[0].name,notes:'',status:'Scheduled',feedback:null});
+      next.revision++;
+      await site.recruitment.save(connection,previous,next);
+    },true);
+    const feedbackState=await manager.get('/recruitment/api/hr/workspace').expect(200);
+    const assessment=[{label:'System design',rating:5},{label:'Communication',rating:3}];
+    await manager.post('/recruitment/api/hr/commands/feedback').set('X-CSRF-Token',sharedCsrf)
+      .set('If-Match',String(feedbackState.body.revision)).set('Idempotency-Key',randomUUID())
+      .send({applicationId:hrApplication.id,interviewId,rating:4,recommendation:'Hold',notes:'Human review in isolated test.',assessment:JSON.stringify(assessment)}).expect(200);
+    const recorded=await manager.get('/recruitment/api/hr/workspace').expect(200);
+    assert.deepEqual(recorded.body.interviews.find(row=>row.id===interviewId).feedback.assessment,assessment,'Individual scores must survive a real database reload');
+    assert.equal(recorded.body.applications.find(row=>row.id===hrApplication.id).feedback.recommendation,'Hold');
+    assert.deepEqual(recorded.body.applications.find(row=>row.id===hrApplication.id).feedback.assessment,assessment);
+    await assert.rejects(site.recruitment.transaction(async connection=>{
+      const previous=await site.recruitment.load(connection),next=M.clone(previous);
+      next.interviews.find(row=>row.id===interviewId).feedback.assessment[0].rating=1;
+      next.revision++;
+      await site.recruitment.save(connection,previous,next);
+    },true),/cannot be rewritten/);
+    const preserved=await manager.get('/recruitment/api/hr/workspace').expect(200);
+    assert.deepEqual(preserved.body.interviews.find(row=>row.id===interviewId).feedback.assessment,assessment);
     await manager.post('/api/auth/logout').set('X-CSRF-Token', hrIdentity.body.csrfToken).send({}).expect(204);
     await manager.get('/api/me').expect(401);
     await manager.get('/recruitment/api/auth/me').expect(401);

@@ -9,10 +9,9 @@ export function WorkspacePath({ pathname, trail }) {
     : [{ label: pageName(pathname) }]);
   return <nav className="workspace-location" aria-label="Current location">
     <ol>
-      {pathname !== '/job-postings' && <li><Link to="/dashboard">HR Workspace</Link></li>}
       {items.map((item, index) => <Fragment key={`${index}-${item.label}`}>
-        {(pathname !== '/job-postings' || index > 0) && <li className="path-separator" aria-hidden="true">/</li>}
-        <li>{index === items.length - 1 ? <span aria-current="page">{item.label}</span>
+        {index > 0 && <li className="path-separator" aria-hidden="true">/</li>}
+        <li>{index === items.length - 1 ? <h1 id="workspace-page-title" aria-current="page">{item.label}</h1>
           : item.to ? <Link to={item.to}>{item.label}</Link>
           : <button type="button" onClick={() => embedded?.open(item.route)}>{item.label}</button>}</li>
       </Fragment>)}

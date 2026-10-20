@@ -266,8 +266,12 @@ button:disabled {
 .workspace-location a:hover, .workspace-location button:hover { color:var(--primary); background:var(--surface-soft); }
 .workspace-location a:focus-visible, .workspace-location button:focus-visible { outline:2px solid var(--primary); outline-offset:1px; }
 .workspace-location [aria-current="page"] { color:var(--text); font-weight:600; }
+.workspace-location h1 { margin:0; font-size:18px; line-height:1.35; letter-spacing:-0.02em; }
+.compact-workspace > .main-content { padding-top:24px; }
+.page-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:12px; margin-bottom:18px; }
+.compact-workspace .btn { min-height:40px; border-radius:8px; }
 .path-separator { opacity:0.6; }
-@media (max-width:650px) { .workspace-location { font-size:12px; } .workspace-location ol { gap:3px; } }
+@media (max-width:650px) { .workspace-location { font-size:12px; } .workspace-location ol { gap:3px; } .workspace-location h1 {font-size:15px;} .compact-workspace > .main-content {padding-top:18px;} }
 .compact-topbar .mobile-toggle {
   margin-right: auto;
 }

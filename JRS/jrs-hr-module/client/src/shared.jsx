@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { useOutletContext } from 'react-router-dom';
 import { api } from "./api";
 
 export function useLoad(url) {
@@ -78,6 +79,8 @@ export function PageHeading({
   action,
   className = "",
 }) {
+  const compact = useOutletContext()?.compactHeading;
+  if (compact) return action ? <div className="page-actions">{action}</div> : null;
   return (
     <div className={`page-heading ${className}`.trim()}>
       <div>

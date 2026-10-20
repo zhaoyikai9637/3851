@@ -56,14 +56,14 @@ export function WorkspaceLayout() {
     <a className="skip-link" href="#main-content">Skip to content</a>
     <aside className="sidebar">{navigation}</aside>
     {sidebarOpen && <Modal title="Workspace navigation" onClose={() => setSidebarOpen(false)}><div className="mobile-navigation">{navigation}</div></Modal>}
-    <div className="workspace-body">
+    <div className={`workspace-body${isCommunicationPage ? '' : ' compact-workspace'}`}>
       <header className={`topbar${isCommunicationPage ? "" : " compact-topbar"}`}>
         <button className="icon-button mobile-toggle" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}>☰</button>
         {isCommunicationPage && <nav className="top-tabs" aria-label="Communication pages">{communicationLinks.map(([path, name]) => <NavLink key={path} to={path}>{name}</NavLink>)}</nav>}
         {!isCommunicationPage && <WorkspacePath pathname={location.pathname} trail={trail?.owner === location.key ? trail : null} />}
         <AccountMenu user={user} onLogout={() => { setConfirmLogout(true); setError(null); }} />
       </header>
-      <main id="main-content" className="main-content" tabIndex={-1}><Outlet context={{ setTrail }} /></main>
+      <main id="main-content" className="main-content" tabIndex={-1} aria-labelledby={isCommunicationPage ? undefined : 'workspace-page-title'}><Outlet context={{ setTrail, compactHeading: !isCommunicationPage }} /></main>
       <footer className="workspace-footer"><span>JRS · Human Resources</span><span>Dates shown in UTC+08:00</span></footer>
     </div>
     {confirmLogout && <Modal title="Log out of your workspace?" onClose={() => !busy && setConfirmLogout(false)} footer={<><button className="btn btn-outline-secondary" disabled={busy} onClick={() => setConfirmLogout(false)}>Cancel</button><button className="btn btn-primary" disabled={busy} onClick={signOut}>{busy ? "Logging out…" : "Logout"}</button></>}>

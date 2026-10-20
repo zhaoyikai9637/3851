@@ -9,6 +9,7 @@ import { namespacePool } from './sql-namespace.mjs';
 import { createRecruitmentBridge } from './recruitment-bridge.mjs';
 import { jobPublicationServices } from './job-publications.mjs';
 import { jobEditorRouter } from './job-editor.mjs';
+import { loadAssessments, saveAssessments } from './interview-assessments.mjs';
 import candidateRepository from '../JRS Login and profile/server/services/repository.js';
 import candidateApp from '../JRS Login and profile/server/app.js';
 import recruitmentRepository from '../JRS HR/server/repository.cjs';
@@ -27,13 +28,14 @@ export async function createRuntime() {
   const close = async () => { await Promise.all([pool.end(), communicationDb.close(), applicantDb?.close()]); };
   try {
     const [[version]] = await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-    if (version?.version !== 7) throw new Error('Run npm run db:setup on the isolated integration database first.');
+    if (version?.version !== 8) throw new Error('Run npm run db:setup on the isolated integration database first.');
     const experimental = settings.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL === 'true';
     const repository = new candidateRepository.Repository(pool), bridge = createRecruitmentBridge(pool, { experimentalApplicantPortal: experimental });
     const recruitment = recruitmentRepository.createRepository(namespacePool(pool));
-    const load = recruitment.load, save = recruitment.save;
-    recruitment.load = async connection => { await bridge.templates(connection); return load(connection); };
-    recruitment.save = async (connection, before, after) => { await save(connection, before, after); await bridge.mirror(connection, before, after); };
+    const load = recruitment.load, save = recruitment.save, snapshot = recruitment.snapshot;
+    recruitment.snapshot = async userId => loadAssessments(pool,await snapshot(userId));
+    recruitment.load = async connection => { await bridge.templates(connection); return loadAssessments(connection,await load(connection)); };
+    recruitment.save = async (connection, before, after) => { await save(connection, before, after); await saveAssessments(connection,before,after); await bridge.mirror(connection, before, after); };
     // The original repository closes over its private load/save. Wrap its transaction
     // callbacks too, so original HR command code crosses the same integration boundary.
     const transact = recruitment.transaction;

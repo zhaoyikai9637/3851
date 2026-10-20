@@ -22,4 +22,4 @@ Boundary tests cover the exact start/end instants in UTC+08. The isolated experi
 
 The 100-job UI fixture is isolated from databases. Automated tests exercise ten-row pages, status and search filtering, edit-return position and long titles. Desktop and 390px mobile checks cover wrapping, scrolling and access to offscreen columns. This is not a production-scale performance benchmark.
 
-Next stages remain separate: unify other HR pages, then design and implement extensible interview assessment criteria. Do not infer new scoring weights or change authorization as part of visual cleanup.
+The following compact HR layout and per-interview criteria stages are documented in HR_WORKSPACE_AND_ASSESSMENT.md. They retain publication rules and do not add scoring weights or alter authorization.

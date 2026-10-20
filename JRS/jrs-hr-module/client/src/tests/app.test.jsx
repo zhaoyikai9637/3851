@@ -171,10 +171,12 @@ describe("authentication and navigation", () => {
     expect(frame.style.height).toBe(height);
   });
 
-  it('uses the workspace path to return to Dashboard', async () => {
+  it('uses the sidebar to return to Dashboard without an artificial breadcrumb parent', async () => {
     const ui = mount('/interviews');
     const path = await screen.findByRole('navigation', { name: 'Current location' });
-    await ui.click(within(path).getByRole('link', { name: 'HR Workspace' }));
+    expect(within(path).queryByRole('link', { name: 'HR Workspace' })).not.toBeInTheDocument();
+    expect(within(path).getByRole('heading',{name:'Interviews',level:1})).toBeVisible();
+    await ui.click(within(screen.getByRole('navigation',{name:'Main navigation'})).getByRole('link',{name:'Dashboard'}));
     expect(await screen.findByTitle('Dashboard')).toBeVisible();
   });
 
@@ -232,7 +234,7 @@ describe("authentication and navigation", () => {
     expect(await screen.findByRole("navigation", { name: "Main navigation" })).toBeVisible();
     expect(screen.queryByRole("navigation", { name: "Communication pages" })).not.toBeInTheDocument();
     const location = screen.getByRole("navigation", { name: "Current location" });
-    if (route !== '/job-postings') expect(location).toHaveTextContent("HR Workspace");
+    expect(location).not.toHaveTextContent("HR Workspace");
     expect(within(location).getByText(/.+/, { selector: '[aria-current="page"]' })).toBeVisible();
     expect(screen.getByRole("button", { name: /Riley Morgan/ })).toBeVisible();
   });

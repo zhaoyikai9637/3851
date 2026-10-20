@@ -11,6 +11,21 @@ function views(){
 }
 function state(){return {page:1,q:'',job:'',stage:'',priority:'',from:'',to:'',resumePage:1,zoom:90};}
 
+test('assessment rows start unscored and saved summaries escape custom names',()=>{
+  const {HRViews:V}=views();
+  assert.equal(typeof V.assessmentForm,'function');
+  const {JSDOM}=require('jsdom'),dom=new JSDOM(V.assessmentForm());
+  const rows=dom.window.document.querySelectorAll('[data-assessment-row]');
+  assert.equal(rows.length,4);
+  for(const row of rows) assert.equal(row.querySelector('select').value,'');
+  assert.equal(dom.window.document.querySelector('[data-action="assessment-add"]').textContent,'Add criterion');
+  dom.window.document.body.innerHTML=V.assessmentSummary([{label:'<img src=x onerror=alert(1)>',rating:3}]);
+  assert.equal(dom.window.document.querySelector('img'),null);
+  assert.ok(dom.window.document.body.textContent.includes('<img src=x onerror=alert(1)>'));
+  assert.ok(dom.window.document.body.textContent.includes('3 / 5'));
+  dom.window.close();
+});
+
 test('review status filter, avatar resume links and right-hand actions work across statuses',()=>{
   const {HRViews:V}=views(),db=M.seed(),ui=state();
   const html=V.render(['applications','offer'],db,ui);

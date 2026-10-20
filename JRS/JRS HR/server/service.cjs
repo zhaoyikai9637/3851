@@ -1,6 +1,7 @@
 'use strict';
 const M=require('../dist/state.js');
 const {fail}=require('./errors.cjs');
+const {parseAssessment}=require('./assessment.cjs');
 const {hash}=require('./auth.cjs');
 const now=()=>new Date().toISOString();
 const text=(v,label,max=500,optional=false)=>{
@@ -38,6 +39,7 @@ function validatePayload(p) {
 }
 function applyCommand(db,command,p,user) {
   validatePayload(p);if(managerOnly.has(command)&&user.role!=='HR_MANAGER')fail(403,'This action requires an HR Manager.');
+  const assessment=command==='feedback'&&p.assessment!==undefined?parseAssessment(p.assessment):null;
   if(!standard.has(command)&&!custom.has(command))fail(404,'Unknown HR action.');
   // Never change an application while its exact message is being handed to SMTP.
   const applicationId=p.applicationId||(['complete-task'].includes(command)?find(db.tasks,p.id).applicationId:null);
@@ -61,6 +63,7 @@ function applyCommand(db,command,p,user) {
     if(command==='message'&&/[\r\n]/.test(String(p.subject)))fail(422,'Email subject cannot contain new lines.');
     if(command==='offer-message'&&db.notifications.some(n=>n.applicationId===p.applicationId&&n.kind==='Offer'&&['Sent','Sending','Uncertain'].includes(n.status)))fail(409,'An offer message has already been submitted. Review its history.');
     try{result=M.apply(db,command,p,{actor:user.name});}catch(e){fail(422,e.message,'WORKFLOW_ERROR');}
+    if(assessment) find(db.interviews,p.interviewId).feedback.assessment=assessment;
     if(['offer','approve-offer'].includes(command)){const a=find(db.applications,p.applicationId),entry=db.activity.find(x=>!activityIds.has(x.id));if(entry)entry.notes=`SGD ${a.offer.salary}/month; starts ${a.offer.startDate}; respond by ${a.offer.expiry}. Terms: ${a.offer.terms}`;}
     if(result.notification&&p.templateId){const t=find(db.templates,p.templateId);result.notification.templateId=t.id;result.notification.templateName=t.name;if(t.kind==='Offer Letter')result.notification.kind='Offer';if(t.kind==='Interview Invite')result.notification.kind='Interview schedule';}
   } else if(command==='application-create') {

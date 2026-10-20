@@ -39,6 +39,21 @@ test('page headings omit explanatory subtitles without losing their actions', as
   } finally { dom.window.close(); }
 });
 
+test('embedded toolbars keep report sections and their export action on one accessible row', async () => {
+  const dom=await views();
+  try {
+    dom.window.document.body.innerHTML='<main id="content"><div class="page-heading"><div><h2>Reports</h2></div><div class="heading-actions"><button>Export Report</button></div></div><nav class="section-tabs" aria-label="Report sections"><button>Overview</button></nav><section class="panel">Business data</section></main>';
+    dom.window.eval(await readFile(new URL('../JRS HR/dist/layout.js',import.meta.url),'utf8'));
+    const content=dom.window.document.querySelector('main');
+    dom.window.HRLayout.apply(content,'reports',{});
+    const toolbar=content.querySelector('.workspace-toolbar');
+    assert.ok(toolbar);
+    assert.equal(toolbar.querySelector('[aria-label="Report sections"]').textContent,'Overview');
+    assert.equal(toolbar.querySelector('.heading-actions button').textContent,'Export Report');
+    assert.equal(content.querySelector('.panel').textContent,'Business data');
+  } finally {dom.window.close();}
+});
+
 test('embedded HR pages leave the shared path and account controls to the outer shell', async () => {
   const html = await readFile(new URL('../JRS HR/dist/index.html', import.meta.url), 'utf8');
   const css = await readFile(new URL('../JRS HR/dist/embedded.css', import.meta.url), 'utf8');

@@ -89,6 +89,17 @@ it("presents a table-first jobs workspace without the standalone publishing form
   expect(within(table).getByText("31/12/2030")).toBeVisible();
   expect(screen.queryByText("Publishing settings")).not.toBeInTheDocument();
   expect(screen.queryByTitle("Job Postings")).not.toBeInTheDocument();
+  expect(screen.getAllByRole("heading", { name: "Job Postings", level: 1 })).toHaveLength(1);
+  expect(
+    within(screen.getByRole("main")).queryByRole("heading", { name: "Job Postings" }),
+  ).not.toBeInTheDocument();
+  const toolbar = screen.getByRole("toolbar", { name: "Job filters and actions" });
+  expect(within(toolbar).getByRole("button", { name: "Create job" })).toBeVisible();
+  expect(within(toolbar).getByRole("combobox", { name: "Filter by department" })).toBeVisible();
+  expect(
+    within(toolbar).getByRole("combobox", { name: "Filter by recruitment status" }),
+  ).toBeVisible();
+  expect(screen.queryByText(/drafts$/)).not.toBeInTheDocument();
   expect(
     within(screen.getByRole("navigation", { name: "Current location" })).queryByText(
       "HR Workspace",
@@ -225,31 +236,81 @@ it("opens applications filtered to the selected job", async () => {
 it("blocks an unpublish date that ends before the deadline day has finished", async () => {
   const ui = mount();
   await edit(ui);
-  await ui.click(screen.getByRole("tab", {name:"Publishing"}));
-  await ui.type(screen.getByLabelText("Unpublish date"),"31/12/2030");
-  await ui.click(screen.getByRole("button", {name:"Save job"}));
+  await ui.click(screen.getByRole("tab", { name: "Publishing" }));
+  await ui.type(screen.getByLabelText("Unpublish date"), "31/12/2030");
+  await ui.click(screen.getByRole("button", { name: "Save job" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("after the application deadline");
   expect(screen.getByLabelText("Unpublish date")).toHaveValue("31/12/2030");
 });
 
 it("keeps 100 jobs usable across paging, filtering and returning from edits", async () => {
-  const base=structuredClone(data.items[0]);
-  data.items=Array.from({length:100},(_,i)=>({...base,id:`job-${i}`,title:`Role ${String(i+1).padStart(3,"0")} with a long specialist position title`,department:i%2?"Operations":"Engineering",status:i%2?"Draft":"Active",applications:i, salaryRange:i%3?"":"SGD 5,000 - 6,000"}));
-  const ui=mount();
-  const table=await screen.findByRole("table",{name:"Job postings"});
+  const base = structuredClone(data.items[0]);
+  data.items = Array.from({ length: 100 }, (_, i) => ({
+    ...base,
+    id: `job-${i}`,
+    title: `Role ${String(i + 1).padStart(3, "0")} with a long specialist position title`,
+    department: i % 2 ? "Operations" : "Engineering",
+    status: i % 2 ? "Draft" : "Active",
+    applications: i,
+    salaryRange: i % 3 ? "" : "SGD 5,000 - 6,000",
+  }));
+  const ui = mount();
+  const table = await screen.findByRole("table", { name: "Job postings" });
   expect(within(table).getAllByRole("row")).toHaveLength(11);
   expect(screen.getByText("1–10 of 100 jobs")).toBeVisible();
-  await ui.click(screen.getByRole("button",{name:"Next",exact:true}));
-  await ui.click(screen.getByRole("button",{name:"View Role 011 with a long specialist position title"}));
-  await ui.click(screen.getByRole("button",{name:"Edit job"}));
-  await ui.type(screen.getByLabelText("Job title")," revised");
-  await ui.click(screen.getByRole("button",{name:"Save job"}));
-  expect(await screen.findByRole("button",{name:"View Role 011 with a long specialist position title revised"})).toBeVisible();
+  await ui.click(screen.getByRole("button", { name: "Next", exact: true }));
+  await ui.click(
+    screen.getByRole("button", { name: "View Role 011 with a long specialist position title" }),
+  );
+  await ui.click(screen.getByRole("button", { name: "Edit job" }));
+  await ui.type(screen.getByLabelText("Job title"), " revised");
+  await ui.click(screen.getByRole("button", { name: "Save job" }));
+  expect(
+    await screen.findByRole("button", {
+      name: "View Role 011 with a long specialist position title revised",
+    }),
+  ).toBeVisible();
   expect(screen.getByText("11–20 of 100 jobs")).toBeVisible();
-  await ui.click(screen.getByRole("button",{name:"Draft",exact:true}));
+  await ui.selectOptions(
+    screen.getByRole("combobox", { name: "Filter by recruitment status" }),
+    "Draft",
+  );
   expect(screen.getByText("1–10 of 50 jobs")).toBeVisible();
-  await ui.type(screen.getByRole("searchbox",{name:"Search jobs"}),"Role 100");
+  await ui.type(screen.getByRole("searchbox", { name: "Search jobs" }), "Role 100");
   expect(screen.getByText("1–1 of 1 jobs")).toBeVisible();
-  await ui.clear(screen.getByRole("searchbox",{name:"Search jobs"}));
+  await ui.clear(screen.getByRole("searchbox", { name: "Search jobs" }));
   expect(screen.getByText("1–10 of 50 jobs")).toBeVisible();
+});
+
+it("combines department, status and search and clears all filters from an empty result", async () => {
+  const base = structuredClone(data.items[0]);
+  data.items = [
+    base,
+    {
+      ...base,
+      id: "job-b",
+      title: "Operations Analyst",
+      department: "Operations",
+      status: "Draft",
+    },
+    { ...base, id: "job-c", title: "Operations Lead", department: "Operations", status: "Active" },
+  ];
+  const ui = mount();
+  await screen.findByRole("table", { name: "Job postings" });
+  await ui.selectOptions(
+    screen.getByRole("combobox", { name: "Filter by department" }),
+    "Operations",
+  );
+  expect(screen.getByText("1–2 of 2 jobs")).toBeVisible();
+  await ui.selectOptions(
+    screen.getByRole("combobox", { name: "Filter by recruitment status" }),
+    "Draft",
+  );
+  expect(screen.getByRole("button", { name: "View Operations Analyst" })).toBeVisible();
+  expect(screen.queryByRole("button", { name: "View Operations Lead" })).not.toBeInTheDocument();
+  await ui.type(screen.getByRole("searchbox", { name: "Search jobs" }), "missing");
+  await ui.click(screen.getByRole("button", { name: "Clear filters" }));
+  expect(screen.getByRole("combobox", { name: "Filter by department" })).toHaveValue("");
+  expect(screen.getByRole("combobox", { name: "Filter by recruitment status" })).toHaveValue("All");
+  expect(screen.getByText("1–3 of 3 jobs")).toBeVisible();
 });

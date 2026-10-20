@@ -133,3 +133,18 @@ Verification: the overwrite transaction checked exact equality of all local/clou
 - Verified applicant list/detail/submission boundaries, owner-only application access, immutable submission-time content and HR progression after unpublishing. Necessary availability text was added without redesigning applicant/login pages.
 - Verification: root 26, default workflow MySQL 2, experimental workflow MySQL 2, HR frontend 102, backend/API 183, isolated HR MySQL 12, native recruitment 108 and Jest 73 passed. Both frontend production builds and English-only checks passed. 100-job table behavior and desktop/390px scrolling were checked with isolated fixtures; no fixture data entered cloud or development recruitment tables.
 - See JOB_PUBLICATION_RULES.md. HR-wide visual rollout and extensible assessment criteria are still pending and must follow this milestone.
+## Compact HR layout and extensible assessment (2026-10-21)
+
+- Adopted the user's compact toolbar reference without restoring inconsistent page names. Job Postings removes the large duplicate heading/totals and adds dynamic department plus status/search filters. Other HR business pages use compact shared titles, real parent paths and preserved actions; communication tabs stay scoped.
+- Embedded HR date controls now use English calendars and DD/MM/YYYY while retaining original ISO form fields, filter events and date constraints. Fixed an absolute hidden table label that caused outer mobile horizontal overflow.
+- Added editable per-interview assessment criteria with unselected scores, manual overall rating/recommendation and escaped historical summaries. No automatic hiring decision, weighted score, new role permission or global template editor.
+- Applied additive schema version 8 only to dedicated local dev/test databases. Assessment snapshots share the feedback transaction, survive reload and reject later rewrites. Old feedback and login/applicant layouts are preserved; cloud data and real candidates were not changed.
+- Verification: HR frontend 103, backend/API 183, isolated HR MySQL 12, native recruitment 111, Jest 73, root 30, default workflow MySQL 2 and experimental MySQL 2 passed. Production build and English-only checks passed. Desktop/390px job controls, reports, English calendar, add/remove/submit assessment and independent score results were checked. Browser scoring used only fictional in-memory fixtures; no real mail.
+- See HR_WORKSPACE_AND_ASSESSMENT.md for the integration-only storage adapter and migration command. Broader global scoring-template or weight design remains separate.
+
+## Persistent local demonstration records (2026-10-21)
+
+- At the user's request, imported the visual examples into the active local development database: 100 Demo jobs, two fictional candidates, two applications and two interviews. One interview awaits feedback; the completed example preserves criterion scores separately from the manual overall score.
+- Existing recruitment records and HR identities are retained. No cloud writes, new login accounts, resume files, real email or fabricated sent-mail events. Future publication settings keep these demonstration jobs out of current public discovery.
+- The explicit local-only CLI is transactional, repeatable and writes a private pre-import recruitment snapshot. Two real-MySQL regressions verify preservation, assessment persistence, repeat imports and database-target guards. The browser confirmed the normal Job Postings and Interviews pages read the persisted examples.
+- See DEMO_DATA.md. Database rows and private snapshots are not published to Git; only the importer, tests and documentation are shared.
