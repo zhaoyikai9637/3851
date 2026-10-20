@@ -1,4 +1,4 @@
-const { updateJobDetails, deleteJobRecord } = require('../client/pages/edit-job/editjob');
+const { updateJobDetails, deleteJobRecord } = require('../client/pages/edit-job/editJob');
 
 describe('Edit Job Tests', () => {
     test('Should update job attributes accurately', () => {

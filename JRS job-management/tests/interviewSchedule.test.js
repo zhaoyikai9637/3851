@@ -1,4 +1,4 @@
-const { initialInterviews, filterInterviews } = require('../client/pages/interview-schedule/interviewschedule');
+const { initialInterviews, filterInterviews } = require('../client/pages/interview-schedule/interviewSchedule');
 
 describe('Interview Schedule Module Tests', () => {
     test('Should filter interviews by selected date', () => {

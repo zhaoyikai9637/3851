@@ -1,4 +1,4 @@
-const { initialJobs, filterJobs, deleteJob } = require('../client/pages/job-management/jobmanagement');
+const { initialJobs, filterJobs, deleteJob } = require('../client/pages/job-management/jobManagement');
 
 describe('Job Management Module Tests', () => {
     test('Should filter jobs by search query, department, and status', () => {

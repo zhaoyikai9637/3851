@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "test": "jest"
+    "test": "jest",
+    "seed:demo": "node server/config/db.js --seed-demo",
+    "seed:samples": "node server/config/db.js --seed-samples"
   },
   "dependencies": {
     "cors": "^2.8.5",

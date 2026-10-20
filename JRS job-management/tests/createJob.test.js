@@ -1,4 +1,4 @@
-const { validateJobForm, submitJobForm } = require('../client/pages/create-job/createjob');
+const { validateJobForm, submitJobForm } = require('../client/pages/create-job/createJob');
 
 describe('Create Job Form Validation Tests', () => {
     test('Should fail validation if job title is empty', () => {

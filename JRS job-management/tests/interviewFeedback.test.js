@@ -1,4 +1,4 @@
-const { submitFeedback } = require('../client/pages/interview-feedback/interviewfeedback');
+const { submitFeedback } = require('../client/pages/interview-feedback/interviewFeedback');
 
 describe('Interview Feedback Submission Tests', () => {
     test('Should reject submission without overall recommendation', () => {
