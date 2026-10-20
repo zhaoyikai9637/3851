@@ -80,7 +80,7 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
       .attach('resume', Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'), { filename: 'integration-resume.pdf', contentType: 'application/pdf' }).expect(201);
     const application = await applicant.post('/applicant-api/applications').set('X-CSRF-Token', csrf).send({
       jobId: job.id, resumeId: resume.body.resume.id, phone: '+65 8123 4567', location: 'Singapore', coverLetter: 'Local integration verification only.',
-      experiences: [{ companyName: 'Example Test Company', jobTitle: 'Developer', startDate: '2024-01', endDate: '', currentRole: true, responsibilities: 'Implemented and tested recruitment software.', achievements: '', skills: 'JavaScript' }], roleAnswers: {},
+      experiences: [{ companyName: 'Example Test Company', jobTitle: 'Developer', startDate: '2024-01', endDate: '', currentRole: true, responsibilities: 'Implemented and tested recruitment software.', achievements: '', skills: ['JAVASCRIPT'] }], roleAnswers: {},
     }).expect(response => assert.equal(response.status, 201, JSON.stringify(response.body)));
     const workspace = await manager.get('/recruitment/api/hr/workspace').expect(200);
     const candidate = workspace.body.candidates.find(row => row.email === email);

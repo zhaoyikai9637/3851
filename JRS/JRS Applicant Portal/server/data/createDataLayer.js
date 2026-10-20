@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { createSequelize } from "../config/database.js";
 import { defineModels } from "../models/index.js";
 import { demoJobs, demoProfile } from "./seedData.js";
+import { normaliseText, employmentCode, experienceCode, workModeCode } from "./jobOptions.js";
 
 function plain(record) {
   return record?.toJSON ? record.toJSON() : structuredClone(record);
@@ -25,19 +26,19 @@ function jobFilters(jobs) {
 }
 
 function matchesJob(job, filters) {
-  const search = String(filters.search || "").trim().toLowerCase();
-  const searchText = [
+  const search = normaliseText(filters.search);
+  const searchText = normaliseText([
     job.title,
-    job.department,
     job.summary,
     ...(job.requirements || []),
-  ].join(" ").toLowerCase();
+  ].join(" "));
 
   return (!search || searchText.includes(search))
     && (!filters.department || job.department === filters.department)
-    && (!filters.location || job.location === filters.location)
-    && (!filters.workMode || job.workMode === filters.workMode)
-    && (!filters.experienceLevel || job.experienceLevel === filters.experienceLevel);
+    && (!filters.location || normaliseText(job.location) === normaliseText(filters.location))
+    && (!filters.workMode || workModeCode(job.workMode) === workModeCode(filters.workMode))
+    && (!filters.employmentType || employmentCode(job.employmentType) === employmentCode(filters.employmentType))
+    && (!filters.experienceLevel || experienceCode(job.experienceLevel) === experienceCode(filters.experienceLevel));
 }
 
 class DemoDataLayer {
@@ -214,6 +215,9 @@ export class MySqlDataLayer {
 
   async initialise() {
     await this.sequelize.authenticate();
+    if (process.env.INTEGRATION_MODE === "team") {
+      throw new Error("Team database connection verified, but applicant schema mapping is not ready. Shared tables will not be created or seeded. See TEAM_DATABASE_INTEGRATION.md.");
+    }
     await this.sequelize.sync();
 
     const { User, ApplicantProfile, Job } = this.models;

@@ -493,7 +493,7 @@ textarea.form-control {
 
 .search-surface {
   display: grid;
-  grid-template-columns: minmax(270px, 0.65fr) minmax(430px, 1.35fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 38px;
   align-items: end;
   padding: 28px 30px;
@@ -724,6 +724,23 @@ textarea.form-control {
 
 .back-link:hover {
   color: var(--jrs-blue);
+}
+
+.role-details-page {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;
+  min-width: 0;
+}
+
+.role-details-page .role-header {
+  flex-wrap: wrap;
+}
+
+.role-details-page .role-header > div {
+  flex: 1 1 480px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .role-header,
@@ -1065,6 +1082,84 @@ textarea.form-control {
   margin: -12px 0 0;
   color: var(--jrs-muted);
   font-size: 13px;
+}
+
+.skill-selector {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.skill-selector legend {
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.skill-search {
+  position: relative;
+  max-width: 420px;
+}
+
+.skill-search > svg {
+  position: absolute;
+  top: 50%;
+  left: 13px;
+  transform: translateY(-50%);
+  color: var(--jrs-muted);
+  pointer-events: none;
+}
+
+.skill-search > input {
+  padding-left: 41px;
+}
+
+.selected-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.selected-skill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border: 1px solid #b8ccec;
+  border-radius: 5px;
+  background: #edf4ff;
+  color: #214c94;
+  font-weight: 700;
+}
+
+.skill-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 7px 14px;
+  max-height: 220px;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+
+.skill-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.skill-option > input {
+  flex: none;
+  margin: 0;
+}
+
+.skill-empty,
+.skill-selector > small {
+  color: var(--jrs-muted);
 }
 
 .role-question-list {
@@ -1940,6 +2035,11 @@ textarea.form-control {
   .section-heading.with-action {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .role-details-page .role-header > div {
+    flex: 0 1 auto;
+    width: 100%;
   }
 
   .job-card-action .btn,

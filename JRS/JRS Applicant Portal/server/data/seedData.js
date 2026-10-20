@@ -1,3 +1,5 @@
+import { normaliseJobStorage } from "./jobOptions.js";
+
 export const demoJobs = [
   {
     id: 1,
@@ -6,7 +8,7 @@ export const demoJobs = [
     location: "Singapore",
     workMode: "Hybrid",
     employmentType: "Full-time",
-    experienceLevel: "3+ years",
+    experienceLevel: "3-5 years",
     salaryRange: "SGD 7,000-9,000 per month",
     summary: "Build reliable recruitment products and mentor engineers in a collaborative product team.",
     responsibilities: [
@@ -83,7 +85,7 @@ export const demoJobs = [
     location: "Singapore",
     workMode: "Hybrid",
     employmentType: "Full-time",
-    experienceLevel: "2+ years",
+    experienceLevel: "1-3 years",
     salaryRange: "SGD 5,200-7,200 per month",
     summary: "Design simple, accessible recruitment experiences for applicants and hiring teams.",
     responsibilities: [
@@ -150,7 +152,7 @@ export const demoJobs = [
     closingDate: "2026-12-20",
     isOpen: true,
   },
-];
+].map(normaliseJobStorage);
 
 export const demoProfile = {
   phone: "+65 8123 4567",
@@ -160,6 +162,7 @@ export const demoProfile = {
     {
       institution: "University of Newcastle",
       qualification: "Bachelor of Information Technology",
+      qualificationLevel: "BACHELOR",
       startYear: "2024",
       graduationYear: "2026",
     },

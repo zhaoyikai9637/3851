@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { param, query } from "express-validator";
 import { validateRequest } from "../middleware/validate.js";
+import { employmentCode, experienceCode, workModeCode } from "../data/jobOptions.js";
 
 const router = Router();
 
@@ -10,8 +11,9 @@ router.get(
     query("search").optional().trim().isLength({ max: 100 }).withMessage("Search text must be 100 characters or fewer."),
     query("department").optional().trim().isLength({ max: 80 }),
     query("location").optional().trim().isLength({ max: 100 }),
-    query("workMode").optional().trim().isLength({ max: 40 }),
-    query("experienceLevel").optional().trim().isLength({ max: 60 }),
+    query("workMode").optional().customSanitizer(workModeCode).isIn(["HYBRID", "REMOTE", "ON_SITE"]),
+    query("employmentType").optional().customSanitizer(employmentCode).isIn(["FULL_TIME", "PART_TIME"]),
+    query("experienceLevel").optional().customSanitizer(experienceCode).isIn(["YEARS_1_3", "YEARS_3_5", "YEARS_5_7"]),
   ],
   validateRequest,
   async (req, res, next) => {

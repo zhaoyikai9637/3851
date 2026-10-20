@@ -9,6 +9,7 @@ import jobRoutes from '../../JRS Applicant Portal/server/routes/jobs.js';
 import profileRoutes from '../../JRS Applicant Portal/server/routes/profile.js';
 import resumeRoutes from '../../JRS Applicant Portal/server/routes/resumes.js';
 import applicationRoutes from '../../JRS Applicant Portal/server/routes/applications.js';
+import optionRoutes from '../../JRS Applicant Portal/server/routes/options.js';
 import { errorHandler as applicantErrors } from '../../JRS Applicant Portal/server/middleware/errors.js';
 
 // Loaded only through the explicit experimental switch; not part of the default site.
@@ -36,6 +37,7 @@ export async function mountExperimentalApplicant({ app, applicantDb, repository,
   applicants.get('/auth/me', (req, res) => res.json({ user: req.user }));
   applicants.post('/auth/logout', async (req, res) => { await identity.logout(req, res); res.status(204).end(); });
   applicants.use('/jobs', jobRoutes);
+  applicants.use('/options', optionRoutes);
   applicants.use('/profile', profileRoutes);
   applicants.use('/resumes', resumeRoutes);
   applicants.use('/applications', applicationRoutes);

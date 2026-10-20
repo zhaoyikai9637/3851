@@ -1,13 +1,13 @@
-import { BriefcaseBusiness, Building2, Clock3, MapPin, Search, SlidersHorizontal } from "lucide-react";
+import { BriefcaseBusiness, Clock3, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
+import { jobLabel } from "../../utils/jobLabels";
 
 const initialFilters = {
   search: "",
-  department: "",
+  employmentType: "",
   location: "",
-  workMode: "",
   experienceLevel: "",
 };
 
@@ -54,17 +54,11 @@ export default function JobsPage({ authenticated = false }) {
   return (
     <div className="page-stack">
       <section className="search-surface surface">
-        <div className="section-heading compact">
-          <p className="eyebrow text-primary">{authenticated ? "APPLICANT JOB SEARCH" : "COMPANY VACANCIES"}</p>
-          <h2>{authenticated ? "Find a suitable role" : "Explore open roles"}</h2>
-          <p>{authenticated ? "Choose the one role that best matches your skills and experience." : "Search current opportunities and review the requirements before signing in."}</p>
-        </div>
-
         <form className="job-search-form" onSubmit={handleSearch}>
           <label className="visually-hidden" htmlFor="job-search">Search roles</label>
           <div className="input-with-icon">
             <Search size={22} aria-hidden="true" />
-            <input id="job-search" name="search" className="form-control form-control-lg" type="search" value={filters.search} onChange={updateFilter} maxLength={100} placeholder="Search by job title, skill, or department" />
+            <input id="job-search" name="search" className="form-control form-control-lg" type="search" value={filters.search} onChange={updateFilter} maxLength={100} placeholder="Search by job title or skill" />
           </div>
           <button className="btn btn-primary btn-lg" type="submit">Search jobs</button>
         </form>
@@ -79,10 +73,11 @@ export default function JobsPage({ authenticated = false }) {
 
           <div className="filter-fields">
             <label className="form-label-group">
-              <span>Department</span>
-              <select className="form-select form-select-lg" name="department" value={filters.department} onChange={updateFilter}>
-                <option value="">All departments</option>
-                {options.departments.map((value) => <option key={value} value={value}>{value}</option>)}
+              <span>Employment type</span>
+              <select className="form-select form-select-lg" name="employmentType" value={filters.employmentType} onChange={updateFilter}>
+                <option value="">All employment types</option>
+                <option value="FULL_TIME">Full-time</option>
+                <option value="PART_TIME">Part-time</option>
               </select>
             </label>
             <label className="form-label-group">
@@ -93,17 +88,12 @@ export default function JobsPage({ authenticated = false }) {
               </select>
             </label>
             <label className="form-label-group">
-              <span>Work mode</span>
-              <select className="form-select form-select-lg" name="workMode" value={filters.workMode} onChange={updateFilter}>
-                <option value="">All work modes</option>
-                {options.workModes.map((value) => <option key={value} value={value}>{value}</option>)}
-              </select>
-            </label>
-            <label className="form-label-group">
-              <span>Experience level</span>
+              <span>Experience required</span>
               <select className="form-select form-select-lg" name="experienceLevel" value={filters.experienceLevel} onChange={updateFilter}>
                 <option value="">All experience levels</option>
-                {options.experienceLevels.map((value) => <option key={value} value={value}>{value}</option>)}
+                <option value="YEARS_1_3">1-3 years</option>
+                <option value="YEARS_3_5">3-5 years</option>
+                <option value="YEARS_5_7">5-7 years</option>
               </select>
             </label>
           </div>
@@ -115,13 +105,7 @@ export default function JobsPage({ authenticated = false }) {
         </aside>
 
         <section className="jobs-results" aria-live="polite">
-          <div className="results-heading">
-            <div>
-              <p className="eyebrow">CURRENT VACANCIES</p>
-              <h2>{loading ? "Finding roles..." : jobs.length + " role" + (jobs.length === 1 ? "" : "s") + " available"}</h2>
-            </div>
-            <span className="results-note">Applications close on the date shown</span>
-          </div>
+          {loading && <div role="status"><span className="spinner-border text-primary" aria-hidden="true" /><span className="visually-hidden">Loading jobs...</span></div>}
 
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
           {!loading && !error && jobs.length === 0 && (
@@ -139,17 +123,15 @@ export default function JobsPage({ authenticated = false }) {
                 <div className="job-card-main">
                   <div className="job-title-row">
                     <div>
-                      <span className="department-badge">{job.department}</span>
                       <h3>{job.title}</h3>
                     </div>
-                    <span className="job-type">{job.employmentType}</span>
+                    <span className="job-type">{jobLabel(job.employmentType)}</span>
                   </div>
                   <p className="job-summary">{job.summary}</p>
                   <div className="job-meta-list">
                     <span><MapPin size={18} />{job.location}</span>
-                    <span><Building2 size={18} />{job.workMode}</span>
-                    <span><BriefcaseBusiness size={18} />{job.experienceLevel}</span>
-                    <span><Clock3 size={18} />{job.closingDate ? `Closes ${new Date(job.closingDate + 'T00:00:00').toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}` : 'Closing date not specified'}</span>
+                    <span><BriefcaseBusiness size={18} />{jobLabel(job.experienceLevel)}</span>
+                    {job.closingDate && <span><Clock3 size={18} />Closes {new Date(job.closingDate + "T00:00:00").toLocaleDateString("en-SG", { day: "numeric", month: "short" })}</span>}
                   </div>
                 </div>
                 <div className="job-card-action">
