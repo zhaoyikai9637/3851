@@ -145,6 +145,51 @@ it("keeps unsaved edits until the user explicitly discards them", async () => {
   expect(screen.queryByRole("dialog", { name: "Edit job" })).not.toBeInTheDocument();
 });
 
+function backdropGesture(dialog, startX = 100, endX = startX) {
+  vi.spyOn(dialog, "getBoundingClientRect").mockReturnValue({
+    left: 400,
+    right: 900,
+    top: 0,
+    bottom: 800,
+  });
+  fireEvent(
+    dialog,
+    new MouseEvent("pointerdown", { bubbles: true, clientX: startX, clientY: 100 }),
+  );
+  fireEvent.click(dialog, { clientX: endX, clientY: 100 });
+}
+
+it("returns to the same job list when the drawer backdrop is clicked", async () => {
+  const ui = mount();
+  await ui.click(await screen.findByRole("button", { name: "View Software Developer" }));
+  backdropGesture(screen.getByRole("dialog"));
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(screen.getByRole("table", { name: "Job postings" })).toBeVisible();
+});
+
+it("does not close for internal blank space or dragging from the drawer to its backdrop", async () => {
+  const ui = mount();
+  await ui.click(await screen.findByRole("button", { name: "View Software Developer" }));
+  const dialog = screen.getByRole("dialog");
+  backdropGesture(dialog, 500);
+  expect(dialog).toBeVisible();
+  backdropGesture(dialog, 500, 100);
+  expect(dialog).toBeVisible();
+});
+
+it("protects unsaved edits when closing through the backdrop", async () => {
+  const ui = mount();
+  await edit(ui);
+  await ui.type(screen.getByLabelText("Job title"), " revised");
+  backdropGesture(screen.getByRole("dialog"));
+  expect(screen.getByRole("alertdialog", { name: "Discard unsaved changes?" })).toBeVisible();
+  await ui.click(screen.getByRole("button", { name: "Keep editing" }));
+  expect(screen.getByLabelText("Job title")).toHaveValue("Software Developer revised");
+  backdropGesture(screen.getByRole("dialog"));
+  await ui.click(screen.getByRole("button", { name: "Discard changes" }));
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
 it("rejects impossible day-first dates without sending a save request", async () => {
   const ui = mount();
   await edit(ui);

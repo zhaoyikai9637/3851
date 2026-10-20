@@ -115,3 +115,11 @@
 - Existing recruitment records and HR identities are retained. No cloud writes, new login accounts, resume files, real email or fabricated sent-mail events. Future publication settings keep these demonstration jobs out of current public discovery.
 - The explicit local-only CLI is transactional, repeatable and writes a private pre-import recruitment snapshot. Two real-MySQL regressions verify preservation, assessment persistence, repeat imports and database-target guards. The browser confirmed the normal Job Postings and Interviews pages read the persisted examples.
 - See DEMO_DATA.md. Database rows and private snapshots are not published to Git; only the importer, tests and documentation are shared.
+
+## Drawer dismissal and useful demo workflows (2026-10-21)
+
+- Job drawer backdrop clicks now use the existing guarded close flow. Internal blank-space clicks and drags starting inside do not dismiss it; dirty edits still require explicit discard and busy saves remain protected.
+- Replaced untouched generic Demo job placeholders with role-specific skills, requirements, teams, salary ranges and recruitment statuses. Every Demo job now links to at least one application. The enriched local batch has 101 fictional candidates/applications, 55 interviews and 13 follow-up tasks covering all six recruitment stages.
+- Existing real records, user-edited demos and the two original feedback examples remain intact. The local-only enrichment transaction is repeatable, backs up the recruitment snapshot including assessments and updates only demo canonical links. No cloud writes, real mail, login accounts or resume files.
+- Added three frontend backdrop regressions and a rolled-back real-MySQL enrichment regression. Browser verification confirmed direct backdrop dismissal, dirty confirmation/discard, persisted role data and a job-filtered application case. See DEMO_DATA.md for repeatable commands.
+- Verification: HR frontend 106, backend/API 183, isolated HR MySQL 12, native recruitment 111, Jest 73, root 30, demo MySQL 3 and default/experimental workflow MySQL 2 each passed (522 total). Production build and English-only validation passed.

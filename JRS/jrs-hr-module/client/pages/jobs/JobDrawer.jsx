@@ -44,6 +44,7 @@ export function JobDrawer({
 }) {
   const dialog = useRef(null),
     content = useRef(null),
+    backdropStart = useRef(false),
     formId = useId();
   const [draft, setDraft] = useState(() => jobDraft(job)),
     [baseline, setBaseline] = useState(() => JSON.stringify(jobDraft(job)));
@@ -77,6 +78,16 @@ export function JobDrawer({
     if (busy) return;
     if (dirty) setConfirmation("discard");
     else onClose();
+  }
+  function isBackdrop(event) {
+    if (event.target !== event.currentTarget) return false;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    return (
+      event.clientX < bounds.left ||
+      event.clientX > bounds.right ||
+      event.clientY < bounds.top ||
+      event.clientY > bounds.bottom
+    );
   }
   function edit(event) {
     event.preventDefault();
@@ -123,6 +134,17 @@ export function JobDrawer({
       ref={dialog}
       className="job-drawer"
       aria-label={title}
+      onPointerDown={(event) => {
+        backdropStart.current = isBackdrop(event);
+      }}
+      onPointerCancel={() => {
+        backdropStart.current = false;
+      }}
+      onClick={(event) => {
+        const dismiss = backdropStart.current && isBackdrop(event);
+        backdropStart.current = false;
+        if (dismiss) close();
+      }}
       onCancel={(event) => {
         event.preventDefault();
         close();
@@ -355,18 +377,20 @@ export function JobDrawer({
                       maxLength={80}
                       placeholder="e.g. SGD 5,000 - 6,000"
                     />
-                    {["Application deadline", "Publish date", "Unpublish date"].map((label, index) => {
-                      const key = ["closingDate", "publishDate", "unpublishDate"][index];
-                      return (
-                        <DateField
-                          key={key}
-                          label={label}
-                          value={draft[key]}
-                          onChange={change(key)}
-                          disabled={busy}
-                        />
-                      );
-                    })}
+                    {["Application deadline", "Publish date", "Unpublish date"].map(
+                      (label, index) => {
+                        const key = ["closingDate", "publishDate", "unpublishDate"][index];
+                        return (
+                          <DateField
+                            key={key}
+                            label={label}
+                            value={draft[key]}
+                            onChange={change(key)}
+                            disabled={busy}
+                          />
+                        );
+                      },
+                    )}
                   </div>
                 </>
               )}
