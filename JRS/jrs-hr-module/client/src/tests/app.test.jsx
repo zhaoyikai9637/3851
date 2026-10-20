@@ -155,12 +155,16 @@ describe("authentication and navigation", () => {
     mount(route);
     expect(await screen.findByRole("navigation", { name: "Main navigation" })).toBeVisible();
     expect(screen.queryByRole("navigation", { name: "Communication pages" })).not.toBeInTheDocument();
+    const location = screen.getByRole("navigation", { name: "Current location" });
+    expect(location).toHaveTextContent("HR Workspace");
+    expect(within(location).getByText(/.+/, { selector: '[aria-current="page"]' })).toBeVisible();
     expect(screen.getByRole("button", { name: /Riley Morgan/ })).toBeVisible();
   });
 
   it.each(["/notifications", "/templates", "/logs"])("shows communication navigation on %s", async (route) => {
     mount(route);
     const tabs = await screen.findByRole("navigation", { name: "Communication pages" });
+    expect(screen.queryByRole("navigation", { name: "Current location" })).not.toBeInTheDocument();
     expect(within(tabs).getAllByRole("link")).toHaveLength(3);
     expect(within(tabs).getByRole("link", { current: "page" })).toHaveAttribute("href", route);
   });

@@ -257,8 +257,12 @@ button:disabled {
   gap: 20px;
 }
 .compact-topbar {
-  justify-content: flex-end;
+  height: 64px;
+  justify-content: space-between;
 }
+.workspace-location { display:flex; align-items:center; gap:12px; min-width:0; font-size:14px; color:var(--muted); }
+.workspace-location [aria-current="page"] { color:var(--text); font-weight:600; overflow-wrap:anywhere; }
+@media (max-width:650px) { .workspace-location > span:not([aria-current]) { display:none; } .workspace-location { font-size:13px; } }
 .compact-topbar .mobile-toggle {
   margin-right: auto;
 }

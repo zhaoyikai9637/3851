@@ -15,7 +15,7 @@
   const datetime=d=>new Date(d).toLocaleString('en-SG',{timeZone:'Asia/Singapore',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const person=(db,a)=>{const c=candidate(db,a);return `<div class="person">${avatar(c)}<div><strong>${e(c.name)}</strong><small>${e(c.email)}</small></div></div>`;};
   const empty=(title,detail='Try changing your filters.')=>`<div class="empty">${icon('file')}<h3>${e(title)}</h3><p>${e(detail)}</p></div>`;
-  const header=(title,sub='',actions='')=>`<div class="page-heading"><div><h2>${title}</h2>${sub?`<p>${sub}</p>`:''}</div><div class="heading-actions">${actions}</div></div>`;
+  const header=(title,_subtitle='',actions='')=>`<div class="page-heading"><div><h2>${title}</h2></div><div class="heading-actions">${actions}</div></div>`;
   const select=(name,values,current,label)=>`<select data-filter="${name}" aria-label="${label}">${values.map(v=>{const [id,text]=Array.isArray(v)?v:[v,v];return `<option value="${e(id)}" ${current===id?'selected':''}>${e(text)}</option>`;}).join('')}</select>`;
   const search=(q,placeholder='Search work queue')=>`<label class="search">${icon('search')}<input data-search value="${e(q)}" placeholder="${placeholder}" aria-label="${placeholder}"></label>`;
   const applicationStages=[['applications-review','Pending Review'],['interview-results','Interview Results'],['rejected','Rejected'],['offer','Offer']];
@@ -57,6 +57,7 @@
       const names={dashboard:'Dashboard',jobs:'Job Postings',interviews:'Interviews',reports:'Reports','hr-profile':'My Profile'};
       trail.push(['',names[page]||'Page not found']);
     }
+    if(trail.length<2)return '';
     return '<ol>'+trail.map(([path,label],index)=>'<li>'+(index?'<span class="breadcrumb-separator" aria-hidden="true">'+icon('right')+'</span>':'')+(index===trail.length-1?'<span class="breadcrumb-current" aria-current="page">'+e(label)+'</span>':link(path,e(label),'breadcrumb-link'))+'</li>').join('')+'</ol>';
   }
   const pageSize=(ui,kind='rows')=>kind==='cards'?(ui.compact?2:4):kind==='dashboard'?Math.max(3,(ui.pageSize||6)-3):ui.pageSize||6;

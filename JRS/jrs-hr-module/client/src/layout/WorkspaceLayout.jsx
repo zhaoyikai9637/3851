@@ -58,6 +58,7 @@ export function WorkspaceLayout() {
       <header className={`topbar${isCommunicationPage ? "" : " compact-topbar"}`}>
         <button className="icon-button mobile-toggle" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}>☰</button>
         {isCommunicationPage && <nav className="top-tabs" aria-label="Communication pages">{communicationLinks.map(([path, name]) => <NavLink key={path} to={path}>{name}</NavLink>)}</nav>}
+        {!isCommunicationPage && <nav className="workspace-location" aria-label="Current location"><span>HR Workspace</span><span aria-hidden="true">/</span><span aria-current="page">{location.pathname === "/profile/edit" ? "Edit Profile" : pageName(location.pathname)}</span></nav>}
         <AccountMenu user={user} onLogout={() => { setConfirmLogout(true); setError(null); }} />
       </header>
       <main id="main-content" className="main-content" tabIndex={-1}><Outlet /></main>

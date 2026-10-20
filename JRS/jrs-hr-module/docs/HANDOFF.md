@@ -96,3 +96,8 @@ Verification: the overwrite transaction checked exact equality of all local/clou
 - Other workspace routes retain the account menu and use the compact header.
 - Added 13 route and navigation-transition regression cases. The integrated project also preserves embedded recruitment breadcrumbs while hiding duplicate shell controls.
 - Verification: integrated frontend 82, backend/API 183, Jest 73 and isolated MySQL 12 tests passed; integrated boundary/unit tests 18 passed; production builds passed. Standalone frontend 81 tests passed on rerun; its pre-existing loading test raced on the first run. Desktop browser checks confirmed Applications retains its native navigation and Notifications retains its three tabs. Mobile visual testing was not repeated.
+# Workspace heading refinement (2026-10-20)
+
+- Non-communication pages show their current location in a compact top bar instead of an empty account-only header. Communication tabs remain scoped to their own module.
+- Recruitment pages omit redundant single-item breadcrumbs, preserve linked multi-level trails, and remove explanatory page-heading subtitles. Existing actions, report tabs, status values and business data remain unchanged.
+- Regression tests exercised real page renderers and navigation routes: integrated frontend 82, backend/API 183, Jest 73, isolated MySQL 12 and root tests 21 passed. Standalone frontend 81 passed. Production builds and English-only validation passed. Reports was visually checked at desktop and 390px mobile widths.

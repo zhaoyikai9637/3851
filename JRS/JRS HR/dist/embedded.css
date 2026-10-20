@@ -4,6 +4,11 @@ html, body { margin:0; background:#f2f5fa; font-family:"Segoe UI Variable","Sego
 #app-shell > .workspace > .topbar.has-secondary-nav { display:flex !important; position:static; height:auto; min-height:0; padding:0 0 20px; background:transparent; border:0; }
 #app-shell > .workspace > .topbar > :not(#secondary-navigation) { display:none !important; }
 #secondary-navigation { margin:0; flex-wrap:wrap; }
+#secondary-navigation .breadcrumb-link, #secondary-navigation .breadcrumb-current { min-height:28px; padding:2px 0; border:0; font-size:13px; }
+#secondary-navigation .breadcrumb-current { color:var(--text); }
+#app-shell #content .page-heading { margin:0 0 24px; align-items:center; gap:16px; }
+#app-shell #content .page-heading h2 { margin:0; font-size:30px; line-height:1.2; letter-spacing:-0.03em; font-weight:700; }
+@media(max-width:700px) { #app-shell #content .page-heading h2 { font-size:25px; } }
 #app-shell > .workspace { margin:0 !important; width:100% !important; min-height:0 !important; }
 #content { padding:0 !important; max-width:none !important; margin:0 !important; }
 .panel,.card { border-color:#dfe7f0; border-radius:14px; }
