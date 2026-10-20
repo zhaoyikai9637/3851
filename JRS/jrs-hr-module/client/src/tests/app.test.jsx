@@ -149,6 +149,53 @@ const writes = (path) =>
   );
 
 describe("authentication and navigation", () => {
+  it('restores the Candidates path when returning from an embedded candidate profile', async () => {
+    overrides['GET /recruitment/api/hr/candidates'] = () => json({items:[{id:'candidate-a',name:'Test Candidate',email:'candidate@example.test',location:'Singapore'}]});
+    const ui = mount('/candidates');
+    await ui.click(await screen.findByRole('button', {name:'View candidate'}));
+    const frame = screen.getByTitle('Candidates');
+    fireEvent(window, new MessageEvent('message', {origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:location',items:[{label:'Applications',route:'applications'},{label:'Candidate Profile',route:null}]}}));
+    await ui.click(screen.getByRole('button',{name:'Back to candidates'}));
+    const path = screen.getByRole('navigation',{name:'Current location'});
+    expect(within(path).queryByText('Candidate Profile')).not.toBeInTheDocument();
+    expect(within(path).getByText('Candidates')).toHaveAttribute('aria-current','page');
+  });
+
+  it('keeps Reports viewport stable when embedded content alternates between compact and expanded heights', async () => {
+    mount('/reports');
+    const frame = await screen.findByTitle('Reports');
+    const height = frame.style.height;
+    for (const next of [691, 600, 691, 600]) fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:frame', height: next } }));
+    expect(frame.style.height).toBe(height);
+  });
+
+  it('uses the workspace path to return to Dashboard', async () => {
+    const ui = mount('/interviews');
+    const path = await screen.findByRole('navigation', { name: 'Current location' });
+    await ui.click(within(path).getByRole('link', { name: 'HR Workspace' }));
+    expect(await screen.findByTitle('Dashboard')).toBeVisible();
+  });
+
+  it('includes a clickable My Profile parent when editing a profile', async () => {
+    const ui = mount('/profile/edit');
+    const path = await screen.findByRole('navigation', { name: 'Current location' });
+    await ui.click(within(path).getByRole('link', { name: 'My Profile' }));
+    expect(await screen.findByRole('heading', { name: 'My Profile', level: 1 })).toBeVisible();
+  });
+
+  it('shows embedded parent paths and clears them when leaving the module', async () => {
+    const ui = mount('/applications');
+    const frame = await screen.findByTitle('Applications');
+    fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [{label:'Applications',route:'applications'},{label:'Offer',route:null}] } }));
+    const path = screen.getByRole('navigation', { name: 'Current location' });
+    expect(within(path).getByRole('button', { name: 'Applications' })).toBeVisible();
+    expect(within(path).getByText('Offer')).toHaveAttribute('aria-current', 'page');
+    fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [] } }));
+    expect(within(path).queryByText('Offer')).not.toBeInTheDocument();
+    await ui.click(within(screen.getByRole('navigation', { name:'Main navigation' })).getByRole('link', { name:'Reports' }));
+    expect(within(screen.getByRole('navigation', {name:'Current location'})).queryByText('Offer')).not.toBeInTheDocument();
+  });
+
   it('removes the outbox entry and redirects its old URL to Applications', async () => {
     mount('/outbox');
     const navigation = await screen.findByRole('navigation', { name: 'Main navigation' });

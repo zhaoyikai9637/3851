@@ -4,6 +4,7 @@ import { useAuth } from "../auth";
 import { Icon } from "../icons";
 import { Avatar, ErrorBox, Modal } from "../shared";
 import { communicationLinks, pageName, workspaceLinks } from "./navigation";
+import { WorkspacePath } from './WorkspacePath';
 
 function SidebarNavigation({ pathname, onNavigate }) {
   const communicationPage = communicationLinks.some(([path]) => path === pathname);
@@ -43,6 +44,7 @@ function AccountMenu({ user, onLogout }) {
 }
 
 export function WorkspaceLayout() {
+  const [trail, setTrail] = useState(null);
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false), [confirmLogout, setConfirmLogout] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(null);
   const location = useLocation();
@@ -58,10 +60,10 @@ export function WorkspaceLayout() {
       <header className={`topbar${isCommunicationPage ? "" : " compact-topbar"}`}>
         <button className="icon-button mobile-toggle" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}>☰</button>
         {isCommunicationPage && <nav className="top-tabs" aria-label="Communication pages">{communicationLinks.map(([path, name]) => <NavLink key={path} to={path}>{name}</NavLink>)}</nav>}
-        {!isCommunicationPage && <nav className="workspace-location" aria-label="Current location"><span>HR Workspace</span><span aria-hidden="true">/</span><span aria-current="page">{location.pathname === "/profile/edit" ? "Edit Profile" : pageName(location.pathname)}</span></nav>}
+        {!isCommunicationPage && <WorkspacePath pathname={location.pathname} trail={trail?.owner === location.key ? trail : null} />}
         <AccountMenu user={user} onLogout={() => { setConfirmLogout(true); setError(null); }} />
       </header>
-      <main id="main-content" className="main-content" tabIndex={-1}><Outlet /></main>
+      <main id="main-content" className="main-content" tabIndex={-1}><Outlet context={{ setTrail }} /></main>
       <footer className="workspace-footer"><span>JRS · Human Resources</span><span>Dates shown in UTC+08:00</span></footer>
     </div>
     {confirmLogout && <Modal title="Log out of your workspace?" onClose={() => !busy && setConfirmLogout(false)} footer={<><button className="btn btn-outline-secondary" disabled={busy} onClick={() => setConfirmLogout(false)}>Cancel</button><button className="btn btn-primary" disabled={busy} onClick={signOut}>{busy ? "Logging out…" : "Logout"}</button></>}>

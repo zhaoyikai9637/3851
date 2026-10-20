@@ -18,3 +18,5 @@ body { overflow-x:hidden; }
 #app-shell > .workspace { height:auto !important; overflow:visible !important; }
 #content { flex:none !important; overflow:visible !important; }
 #modal { top:20px; bottom:auto; margin:0 auto; max-height:min(720px, calc(100dvh - 40px)); }
+html, body { overflow-y:auto !important; }
+#app-shell > .workspace > .topbar.has-secondary-nav { display:none !important; }

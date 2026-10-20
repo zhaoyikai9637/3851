@@ -39,7 +39,7 @@ test('page headings omit explanatory subtitles without losing their actions', as
   } finally { dom.window.close(); }
 });
 
-test('embedded HR pages retain their contextual navigation without duplicate account controls', async () => {
+test('embedded HR pages leave the shared path and account controls to the outer shell', async () => {
   const html = await readFile(new URL('../JRS HR/dist/index.html', import.meta.url), 'utf8');
   const css = await readFile(new URL('../JRS HR/dist/embedded.css', import.meta.url), 'utf8');
   const dom = new JSDOM(html);
@@ -53,7 +53,7 @@ test('embedded HR pages retain their contextual navigation without duplicate acc
     header.classList.add('has-secondary-nav');
     navigation.hidden = false;
     navigation.innerHTML = '<a href="#/applications">Applications</a>';
-    assert.notEqual(getComputedStyle(header).display, 'none');
+    assert.equal(getComputedStyle(header).display, 'none');
     assert.notEqual(getComputedStyle(navigation).display, 'none');
     assert.equal(getComputedStyle(header.querySelector('.account-menu')).display, 'none');
     assert.equal(getComputedStyle(document.querySelector('#app-shell > .sidebar')).display, 'none');

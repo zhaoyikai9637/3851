@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
 
-test('embedded communication links have distinct destinations and resize reports never navigate', async () => {
-  const dom = new JSDOM('<main id="content"></main><a href="#/templates">Templates</a><a href="#/mail-log">Logs</a>', { url: 'http://localhost/recruitment/#/applications', runScripts: 'outside-only' });
+test('embedded links have distinct destinations and publish usable parent paths without resize feedback', async () => {
+  const dom = new JSDOM('<main id="content"></main><nav id="secondary-navigation"><ol><li><a href="#/applications">Applications</a></li><li><span>Offer</span></li></ol></nav><a href="#/templates">Templates</a><a href="#/mail-log">Logs</a>', { url: 'http://localhost/recruitment/#/applications/offer', runScripts: 'outside-only' });
   const messages = [];
   const w = dom.window;
   let resize;
@@ -18,10 +18,9 @@ test('embedded communication links have distinct destinations and resize reports
     assert.deepEqual(messages.pop(), { data: { type: 'jrs:navigate', path: '/templates' }, origin: 'http://localhost' });
     w.document.querySelector('a[href="#/mail-log"]').click();
     assert.deepEqual(messages.pop(), { data: { type: 'jrs:navigate', path: '/logs' }, origin: 'http://localhost' });
-    resize();
-    assert.equal(messages.at(-1).data.type, 'jrs:frame');
-    assert.equal(messages.at(-1).data.route, undefined);
-    assert.equal(messages.at(-1).data.path, undefined);
-    assert.equal(messages.at(-1).data.height, 324);
+    w.dispatchEvent(new w.Event('load'));
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepEqual(messages.at(-1).data, { type: 'jrs:location', items: [{ label:'Applications', route:'applications' }, { label:'Offer', route:null }] });
+    assert.equal(resize, undefined, 'Content resizing must not resize the iframe viewport');
   } finally { w.close(); }
 });
