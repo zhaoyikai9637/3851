@@ -56,3 +56,58 @@
     .dashboard-body .profile-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .dashboard-body .applicant-sidebar { transition: none; } }
+
+/* Saved career, education and certification records. */
+.profile-record { border: 2px solid #e8eaf0; border-radius: 18px; padding: 24px 26px; margin-bottom: 18px; color: #303b4e; }
+.profile-record .record-title { margin: 0 42px 8px 0; font-size: 20px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.record-subtitle { margin: 0; font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
+.record-dates { margin: 18px 0 0; color: #566987; font-size: 15px; line-height: 1.6; }
+.record-description { margin: 18px 0 0; font-size: 16px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.record-description.is-expanded { display: block; overflow: visible; -webkit-line-clamp: unset; }
+.record-edit { position: absolute; top: 20px; right: 20px; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 6px; border: 0; border-radius: 6px; background: transparent; color: #303b4e; cursor: pointer; }
+.record-edit:hover { background: #f1f5f9; }
+.record-edit svg, .record-more svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.record-more { display: inline-flex; align-items: center; gap: 10px; margin-top: 8px; padding: 0; background: transparent; border: 0; color: #303b4e; font: inherit; font-size: 16px; cursor: pointer; }
+.record-more[hidden], .record-delete[hidden] { display: none; }
+.record-more span { text-decoration: underline; text-underline-offset: 4px; }
+.record-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+.record-edit:focus-visible, .record-more:focus-visible { outline: 2px solid #2563eb; outline-offset: 4px; }
+.record-delete { margin-left: auto; color: #b42318; }
+@media (max-width: 720px) {
+    .profile-record { padding: 20px; border-radius: 16px; }
+    .profile-record .record-title { font-size: 18px; }
+    .record-edit { top: 16px; right: 14px; }
+}
+
+/* Keep edit and delete available on the card and inside its editing drawer. */
+.record-actions { position: absolute; top: 20px; right: 20px; display: grid; gap: 4px; }
+.record-actions .record-edit { position: static; }
+.record-actions .record-trash:hover { color: #b42318; background: #fff1f2; }
+.profile-record .record-subtitle, .profile-record .record-dates { padding-right: 42px; }
+@media (max-width: 720px) { .record-actions { top: 16px; right: 14px; } }
+
+/* Reserve the same checkbox column on every date row to align both date pairs. */
+.drawer .date-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 104px; gap: 16px; align-items: center; }
+.drawer .date-fields > select { width: 100%; min-width: 0; height: 48px; margin: 0; padding: 0 12px; font: inherit; font-size: 14px; }
+.drawer .date-fields .checkbox-label { margin: 0; font-size: 13px; }
+@media (max-width: 520px) {
+    .drawer { width: 100%; max-width: 480px; padding: 24px 20px; }
+    .drawer .date-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .drawer .date-fields .checkbox-label { grid-column: 1 / -1; }
+}
+
+.profile-record-summary { min-height: 128px; }
+.profile-record-summary .record-description { margin-top: 0; padding-right: 42px; }
+.text-count { margin-top: 6px; text-align: right; font-size: 12px; color: #566987; }
+.text-count.is-over-limit { color: #b42318; }
+
+.profile-record { min-height: 128px; }
+#skillTags .remove-skill-btn { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: transparent; font: inherit; font-size: 20px; line-height: 1; }
+#skillTags .remove-skill-btn:hover { background: #fff1f2; }
+#skillTags .remove-skill-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+#skillTags .remove-skill-btn:disabled { opacity: .5; cursor: wait; }
+
+.profile-record-languages .language-detail { padding-right: 42px; font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
+.profile-record-languages .language-detail + .language-detail { margin-top: 12px; }
+.profile-record-languages .language-detail strong { font-weight: 600; }
+
