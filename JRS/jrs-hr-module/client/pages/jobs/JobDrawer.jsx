@@ -119,7 +119,7 @@ export function JobDrawer({
     setBusy(true);
     setError(null);
     try {
-      await onStatus(job.id, job.status === "Closed" ? "Active" : "Closed");
+      await onStatus(job.id, ["Closed", "Stopped"].includes(job.status) ? "Active" : "Closed");
       onClose();
     } catch (error) {
       setError(error);
@@ -209,7 +209,7 @@ export function JobDrawer({
             aria-label={
               confirmation === "discard"
                 ? "Discard unsaved changes?"
-                : job.status === "Closed"
+                : ["Closed", "Stopped"].includes(job.status)
                   ? "Reopen recruitment?"
                   : "Close recruitment?"
             }
@@ -217,16 +217,16 @@ export function JobDrawer({
             <h3>
               {confirmation === "discard"
                 ? "Discard unsaved changes?"
-                : job.status === "Closed"
+                : ["Closed", "Stopped"].includes(job.status)
                   ? "Reopen recruitment?"
                   : "Close recruitment?"}
             </h3>
             <p>
               {confirmation === "discard"
                 ? "Your unsaved edits will be discarded."
-                : job.status === "Closed"
-                  ? "Internal recruitment will resume. Publication dates still control candidate visibility and new applications."
-                  : "Recruitment will stop. Existing applications are retained, but progression is blocked until reopened. This is not the same as unpublishing."}
+                : ["Closed", "Stopped"].includes(job.status)
+                  ? "New applications and existing application processing will resume. Publication dates still control candidate visibility."
+                  : "New applications will stop. Existing applications can still progress through interviews and offers. Select Stopped when editing to stop both intake and application progression."}
             </p>
             <div className="job-confirmation-actions">
               <button
@@ -245,7 +245,7 @@ export function JobDrawer({
               >
                 {confirmation === "discard"
                   ? "Discard changes"
-                  : job.status === "Closed"
+                  : ["Closed", "Stopped"].includes(job.status)
                     ? "Confirm reopen"
                     : "Confirm close"}
               </button>
@@ -306,9 +306,12 @@ export function JobDrawer({
                     <Select
                       label="Recruitment status"
                       value={draft.status}
-                      options={["Draft", "Active", "Closed"]}
+                      options={["Draft", "Active", "Closed", "Stopped"]}
                       onChange={change("status")}
                     />
+                    <p className="job-field-hint" role="status">
+                      {{Active:'Active: new applications and application processing are enabled.',Closed:'Closed: new applications are stopped; existing applications can continue.',Stopped:'Stopped: new applications and application progression are stopped.',Draft:'Draft: new applications and application progression are not enabled.'}[draft.status]}
+                    </p>
                   </div>
                 </>
               )}
@@ -486,7 +489,7 @@ export function JobDrawer({
               disabled={busy}
               onClick={() => setConfirmation("status")}
             >
-              {job.status === "Closed" ? "Reopen recruitment" : "Close recruitment"}
+              {["Closed", "Stopped"].includes(job.status) ? "Reopen recruitment" : "Close recruitment"}
             </button>
             <div>
               <button

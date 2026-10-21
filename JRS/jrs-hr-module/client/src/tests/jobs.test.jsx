@@ -76,6 +76,18 @@ function mount() {
   );
   return userEvent.setup();
 }
+
+it("explains closed intake separately from stopped processing and saves the stopped status", async () => {
+  const ui=mount();
+  await edit(ui);
+  const status=screen.getByLabelText('Recruitment status');
+  await ui.selectOptions(status,'Closed');
+  expect(screen.getByText('Closed: new applications are stopped; existing applications can continue.')).toBeVisible();
+  await ui.selectOptions(status,'Stopped');
+  expect(screen.getByText('Stopped: new applications and application progression are stopped.')).toBeVisible();
+  await ui.click(screen.getByRole('button',{name:'Save job',exact:true}));
+  expect(await screen.findByText('Stopped',{selector:'.job-status'})).toBeVisible();
+});
 async function edit(ui) {
   await ui.click(await screen.findByRole("button", { name: "View Software Developer" }));
   await ui.click(screen.getByRole("button", { name: "Edit job" }));

@@ -101,7 +101,7 @@ export function JobPostings() {
               setPage(1);
             }}
           >
-            {["All", "Active", "Draft", "Closed"].map((value) => (
+            {["All", "Active", "Draft", "Closed", "Stopped"].map((value) => (
               <option key={value} value={value}>
                 {value === "All" ? "All statuses" : value}
               </option>

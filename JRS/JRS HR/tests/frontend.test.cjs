@@ -68,7 +68,9 @@ test('HR reviews resumes against written requirements without academic prompts o
     for(const text of ['screening-status','Awaiting applicant info','Requirements not met','Field of study not accepted','Update education details'])assert.ok(!html.includes(text));
     assert.ok(html.includes('Job Requirements'));assert.ok(!new RegExp('data-action="'+action+'"[^>]*disabled').test(html));
     j.status='Closed';html=V.render([route,application.id],db,state());
-    assert.match(html,new RegExp('data-action="'+action+'"[^>]*disabled'),'A closed job still blocks progression');
+    assert.ok(!new RegExp('data-action="'+action+'"[^>]*disabled').test(html),'Closed intake permits existing applications');
+    j.status='Stopped';html=V.render([route,application.id],db,state());
+    assert.match(html,new RegExp('data-action="'+action+'"[^>]*disabled'),'Stopped processing blocks progression');
   }
 });
 
@@ -211,6 +213,15 @@ test('offer actions depend on approval, expiry and manager permission rather tha
   }
   application.offer.expiry=M.day(-1);const expired=await controller('#/applications/offer',{db});await expired.action('application',application.id);
   assert.match(expired.e('#modal-body').innerHTML,/data-action="offer-accept"[^>]*disabled/);
+});
+
+test('stopped processing disables offer advancement controls',async()=>{
+  const db=M.seed(),a=db.applications.find(a=>a.stage==='Offer');
+  db.jobs.find(j=>j.id===a.jobId).status='Stopped';a.offer.expiry=M.day(7);
+  for(const approval of ['Awaiting approval','Approved']){
+    a.offer.approval=approval;const page=await controller('#/applications/offer',{db});await page.action('application',a.id);
+    for(const action of ['offer-edit',approval==='Approved'?'offer-message':'offer-approve','offer-accept'])assert.match(page.e('#modal-body').innerHTML,new RegExp('data-action="'+action+'"[^>]*disabled'));
+  }
 });
 
 test('HR explicitly chooses a rejection reason without an automatic academic decision',async()=>{

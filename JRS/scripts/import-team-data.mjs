@@ -11,7 +11,7 @@ try{
  if(settings.DB_MODE!=='team')assertLocalDatabase(settings);
  db=await mysql.createConnection(settings.db);
  const [[identity]]=await db.query('SELECT DATABASE() AS target,version FROM JRS_INTEGRATION_VERSION WHERE id=1');
- if(identity.target!==settings.DB_NAME||identity.version!==10)throw new Error('Target must match the reviewed schema-10 runtime configuration.');
+ if(identity.target!==settings.DB_NAME||identity.version!==11)throw new Error('Target must match the reviewed schema-11 runtime configuration.');
  await db.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');await db.beginTransaction();
  const plan=await inspectImport(db,batch);
  const folder=path.join(root,'.local','controlled-imports',String(Date.now()));await fs.mkdir(folder,{recursive:true});

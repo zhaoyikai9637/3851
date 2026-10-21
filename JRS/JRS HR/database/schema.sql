@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS hr_job_position (
  experience VARCHAR(100) NOT NULL, education VARCHAR(150) NOT NULL,
  minimum_education_level VARCHAR(32) NOT NULL DEFAULT 'Not configured',
  accepted_majors JSON NOT NULL DEFAULT (JSON_ARRAY()),
- status ENUM('Active','Draft','Closed') NOT NULL, description TEXT NOT NULL,
+ status ENUM('Active','Draft','Closed','Stopped') NOT NULL, description TEXT NOT NULL,
  skills JSON NOT NULL, requirements JSON NOT NULL, created_at VARCHAR(30) NOT NULL, INDEX (status)
 ) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS hr_candidate (

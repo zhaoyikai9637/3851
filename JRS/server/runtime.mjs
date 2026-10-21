@@ -33,7 +33,7 @@ export async function createRuntime({mailTransport}={}) {
   const close = async () => { await Promise.all([pool.end(), communicationDb.close(), applicantDb?.close()]); };
   try {
     const [[version]] = await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-    if (version?.version !== 10) throw new Error('The database requires the approved integration schema version 10. Local setup is not a cloud migration command.');
+    if (version?.version !== 11) throw new Error('The database requires the approved integration schema version 11. Local setup is not a cloud migration command.');
     const experimental = settings.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL !== 'false';
     const repository = new candidateRepository.Repository(pool,{integratedRoot:true}), bridge = createRecruitmentBridge(pool, { experimentalApplicantPortal: experimental });
     const recruitment = recruitmentRepository.createRepository(namespacePool(pool));

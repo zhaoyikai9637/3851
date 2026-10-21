@@ -2,6 +2,11 @@
 
 ## Current continuation status - 2026-10-21
 
+Job intake and processing are now separate: Closed stops new applications while
+existing applications can continue; Stopped stops both intake and progression.
+Draft remains non-operational. Schema 11 was backed up and applied to local dev/test;
+cloud migration is pending an authorized schema owner. See ../../docs/JOB_LIFECYCLE.md.
+
 Embedded height-only resize events no longer rebuild recruitment content. This
 keeps native Job Information details expanded and search focus/caret intact when
 the outer page fits the iframe to changing content. Search also defers filtering

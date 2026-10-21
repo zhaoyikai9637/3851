@@ -14,6 +14,7 @@ import { migrateApplicationSnapshot } from '../server/migrations/007-application
 import { migrateInterviewAssessments } from '../server/migrations/008-interview-assessments.mjs';
 
 import { migrateApplicantProfile } from '../server/migrations/009-applicant-profile.mjs';
+import {migrateJobLifecycle} from '../server/migrations/011-job-lifecycle.mjs';
 import {migrateMailHistory} from '../server/migrations/010-mail-history.mjs';
 const settings = loadSettings();
 assertLocalDatabase(settings);
@@ -34,7 +35,7 @@ try {
   const [tables] = await pool.query('SHOW TABLES');
   if (tables.length) {
     const [[version]] = await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(version?.version)) throw new Error('Existing schema is not a completed JRS integration database. No automatic overwrite.');
+    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(version?.version)) throw new Error('Existing schema is not a completed JRS integration database. No automatic overwrite.');
     if (version.version === 1) {
       await pool.query('CREATE TABLE JRS_CANDIDATE_LINK (recruiting_id VARCHAR(96) PRIMARY KEY, canonical_id INT NOT NULL UNIQUE) ENGINE=InnoDB');
       await pool.query('CREATE TABLE JRS_HR_APPLICATION_LINK (recruiting_id VARCHAR(96) PRIMARY KEY, canonical_id INT NOT NULL UNIQUE) ENGINE=InnoDB');
@@ -65,10 +66,11 @@ try {
       await pool.query('ALTER TABLE JRS_JOB_LINK MODIFY portal_id INT UNSIGNED NULL');
       await pool.execute('UPDATE JRS_INTEGRATION_VERSION SET version=6 WHERE id=1');
     }
-    await migrateApplicationSnapshot(pool);
-    await migrateInterviewAssessments(pool);
+    if(version.version<7)await migrateApplicationSnapshot(pool);
+    if(version.version<8)await migrateInterviewAssessments(pool);
     await migrateApplicantProfile(pool);
     await migrateMailHistory(pool);
+    await migrateJobLifecycle(pool);
     console.log('Existing integrated database retained; no reseeding.');
   } else {
     sequelize = new Sequelize(settings.DB_NAME, settings.DB_USER, settings.DB_PASSWORD, { dialect: 'mysql', host: settings.DB_HOST, port: 3307, logging: false, define: { underscored: true } });
@@ -124,6 +126,7 @@ try {
     console.log(`Integrated local schema ready; ${profiles.length} authoritative HR profiles, private local login accounts. No cloud writes.`);
     await migrateApplicantProfile(pool);
     await migrateMailHistory(pool);
+    await migrateJobLifecycle(pool);
     console.log(`Local login credentials: .local/${accountsFile} (never commit this file).`);
   }
 } catch (error) {

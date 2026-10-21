@@ -2,6 +2,10 @@
 
 ## Current continuation plan - 2026-10-21
 
+- Closed intake now retains existing interview/offer processing; Stopped blocks
+  both intake and progression. Local schema 11 applied; team schema migration is
+  documented separately in ../../docs/JOB_LIFECYCLE.md before team rollout.
+
 - Fixed content-height resize replacing focused search inputs and collapsing Job
   Information. Added IME composition handling and three regression tests; verified
   desktop and 390px interactions, unit/API/MySQL suites and production builds.

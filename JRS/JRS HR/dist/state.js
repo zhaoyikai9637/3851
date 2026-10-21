@@ -33,7 +33,7 @@
     if(!db||db.schemaVersion!==2||!Number.isInteger(db.revision))throw Error('Unsupported workspace data.');
     for(const key of ['jobs','candidates','applications','interviews','tasks','notifications','activity'])if(!Array.isArray(db[key])||db[key].some(x=>!x||typeof x.id!=='string')||new Set(db[key].map(x=>x.id)).size!==db[key].length)throw Error('Invalid '+key+' data.');
     for(const c of db.candidates)if(typeof c.name!=='string'||typeof c.email!=='string'||!Array.isArray(c.skills))throw Error('Invalid candidate data.');
-    for(const j of db.jobs)if(typeof j.title!=='string'||!Array.isArray(j.skills)||!Array.isArray(j.requirements)||!['Active','Draft','Closed'].includes(j.status))throw Error('Invalid job data.');
+    for(const j of db.jobs)if(typeof j.title!=='string'||!Array.isArray(j.skills)||!Array.isArray(j.requirements)||!['Active','Draft','Closed','Stopped'].includes(j.status))throw Error('Invalid job data.');
     for(const c of db.candidates){
       if(c.educationLevel!=null&&![...screening.LEVELS,screening.UNKNOWN].includes(c.educationLevel))throw Error('Invalid education level.');
       if(c.educationMajor!=null&&typeof c.educationMajor!=='string')throw Error('Invalid field of study.');
@@ -57,10 +57,11 @@
     const activity=(summary,notes='',from=null,to=null)=>{const e={id:uid('activity'),applicationId:a?.id||null,summary,notes,from,to,actor,at:iso()};db.activity.unshift(e);return e;};
     const message=(subject,body)=>{body=body.replace(/Sarah Mitchell(?=\n|$)/g,actor);const n={id:uid('notice'),applicationId:a.id,candidateId:c.id,to:c.email,subject,body,status:'Draft',read:false,createdAt:iso()};db.notifications.unshift(n);return n;};
     const transition=(to,allowed,summary,notes='')=>{if(!allowed.includes(a.stage))throw Error('This action is not available from '+a.stage+'.');const from=a.stage;a.stage=to;a.retentionStartedAt=['Offer','Rejected'].includes(to)?iso():null;if(notes)a.notes.push({text:notes,at:iso(),actor});return activity(summary,notes,from,to);};
+    if(a&&['move-interview','schedule','offer','approve-offer','offer-message','accept-offer'].includes(action)&&!['Active','Closed'].includes(j.status))throw Error('Resume application processing in Job Postings before continuing.');
     let result={};
     switch(action){
       case 'move-interview':{
-        if(j.status!=='Active')throw Error('Activate this job before advancing the application.');const notes=String(p.notes||'').trim();if(notes.length>500)throw Error('Notes must be 500 characters or fewer.');
+        if(!['Active','Closed'].includes(j.status))throw Error('Resume application processing before advancing the application.');const notes=String(p.notes||'').trim();if(notes.length>500)throw Error('Notes must be 500 characters or fewer.');
         result.activity=transition('Interview',['Pending Review'],c.name+' moved to Interview',notes);
         if(p.notify){result.notification=message('Interview invitation — '+j.title,'Hello '+c.name+',\n\nThank you for applying for '+j.title+'. We would like to invite you to the interview stage. Our team will follow up with the schedule and preparation details.\n\nBest regards,\nSarah Mitchell\nJRS Recruitment');result.notification.kind='Interview invitation';}break;
       }
@@ -72,7 +73,7 @@
         if(p.notify){result.notification=message('Application update — '+j.title,'Hello '+c.name+',\n\nThank you for your interest in '+j.title+' and the time you shared with us. After careful consideration, we will not be progressing your application for this position. We wish you the best in your job search.\n\nBest regards,\nSarah Mitchell\nJRS Recruitment');result.notification.kind='Rejected';}break;
       }
       case 'schedule':{
-        if(a.stage!=='Interview'||j.status!=='Active')throw Error('Scheduling requires an active job and an application in Interview.');dateCheck(p.date,'interview date');if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(p.time))throw Error('Choose a valid time.');
+        if(a.stage!=='Interview'||!['Active','Closed'].includes(j.status))throw Error('Scheduling requires enabled application processing and an application in Interview.');dateCheck(p.date,'interview date');if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(p.time))throw Error('Choose a valid time.');
         const start=instant(p.date,p.time),duration=Number(p.duration);if(start<=Date.now())throw Error('Choose an interview time in the future.');if(![15,30,45,60,90,120].includes(duration))throw Error('Choose a valid duration.');
         const interviewer=required(p.interviewer,'Interviewer',100),location=required(p.location,'Meeting details',300);if(!['Video','On-site','Phone'].includes(p.format))throw Error('Choose an interview format.');
         const existing=p.interviewId?find(db.interviews,p.interviewId,'Interview'):null;if(existing&&(existing.applicationId!==a.id||existing.status!=='Scheduled'))throw Error('This interview cannot be rescheduled.');
@@ -86,7 +87,7 @@
       case 'cancel-interview':{const i=find(db.interviews,p.interviewId);if(i.applicationId!==a.id||i.status!=='Scheduled')throw Error('Only a scheduled interview can be cancelled.');const reason=required(p.reason,'Cancellation reason');i.status='Cancelled';db.notifications.filter(n=>n.applicationId===a.id&&n.kind==='Interview schedule'&&n.status==='Draft').forEach(n=>n.status='Superseded');activity('Interview cancelled',reason);break;}
       case 'feedback':{const i=find(db.interviews,p.interviewId);if(i.applicationId!==a.id||i.status!=='Scheduled')throw Error('This interview is not awaiting feedback.');if(instant(i.date,i.time)>Date.now())throw Error('Record feedback after the interview starts.');const rating=Number(p.rating);if(!Number.isInteger(rating)||rating<1||rating>5)throw Error('Choose a rating between 1 and 5.');if(!['Proceed','Hold','Reject'].includes(p.recommendation))throw Error('Choose a recommendation.');const f={rating,notes:required(p.notes,'Feedback',3000),recommendation:p.recommendation,recordedAt:iso()};result.activity=transition('Interview Results',['Interview'],'Interview feedback recorded');i.status='Completed';i.feedback=f;a.feedback=f;break;}
       case 'offer':{
-        if(!['Interview Results','Offer'].includes(a.stage)||j.status!=='Active')throw Error('Prepare offers from interview results for an active job.');if(a.offer&&a.offer.status!=='Draft')throw Error('This offer is no longer editable.');const salary=Number(p.salary);if(!Number.isFinite(salary)||salary<=0||salary>1000000)throw Error('Enter a valid monthly salary.');dateCheck(p.startDate,'start date');dateCheck(p.expiry,'expiry date');if(p.expiry<day()||p.startDate<=p.expiry)throw Error('Expiry must be today or later; start date must be after expiry.');const terms=required(p.terms,'Offer terms',3000);db.notifications.filter(n=>n.applicationId===a.id&&n.kind==='Offer'&&n.status==='Draft').forEach(n=>n.status='Superseded');a.offer={salary,currency:'SGD',startDate:p.startDate,expiry:p.expiry,terms,approval:'Awaiting approval',status:'Draft',createdAt:a.offer?.createdAt||iso()};result.activity=a.stage==='Interview Results'?transition('Offer',['Interview Results'],'Offer prepared'):activity('Offer details updated');break;
+        if(!['Interview Results','Offer'].includes(a.stage)||!['Active','Closed'].includes(j.status))throw Error('Prepare offers from interview results while application processing is enabled.');if(a.offer&&a.offer.status!=='Draft')throw Error('This offer is no longer editable.');const salary=Number(p.salary);if(!Number.isFinite(salary)||salary<=0||salary>1000000)throw Error('Enter a valid monthly salary.');dateCheck(p.startDate,'start date');dateCheck(p.expiry,'expiry date');if(p.expiry<day()||p.startDate<=p.expiry)throw Error('Expiry must be today or later; start date must be after expiry.');const terms=required(p.terms,'Offer terms',3000);db.notifications.filter(n=>n.applicationId===a.id&&n.kind==='Offer'&&n.status==='Draft').forEach(n=>n.status='Superseded');a.offer={salary,currency:'SGD',startDate:p.startDate,expiry:p.expiry,terms,approval:'Awaiting approval',status:'Draft',createdAt:a.offer?.createdAt||iso()};result.activity=a.stage==='Interview Results'?transition('Offer',['Interview Results'],'Offer prepared'):activity('Offer details updated');break;
       }
       case 'approve-offer':if(a.stage!=='Offer'||a.offer?.status!=='Draft'||a.offer.approval==='Approved'||a.offer.expiry<day())throw Error('Only an unapproved, unexpired draft offer can be approved.');a.offer.approval='Approved';activity('Offer approved');break;
       case 'offer-message':{
@@ -110,10 +111,10 @@
         if(acceptedMajors.length>20||acceptedMajors.some(value=>value.length>150))throw Error('Enter up to 20 fields of study, each at most 150 characters.');
         const education=old?.education||'See Job Requirements';
         const v={title:required(p.title,'Job title',100),department:required(p.department,'Department',100),type:p.type,mode:p.mode,location:required(p.location,'Location',100),experience:required(p.experience,'Experience',100),education,minimumEducationLevel,acceptedMajors,description:required(p.description,'Description',3000),requirements:requirements.validate(p.requirements),skills:required(p.skills,'Skills',500).split(',').map(x=>x.trim()).filter(Boolean),status:p.status};
-        if(!['Active','Draft','Closed'].includes(v.status)||!['Full-time','Part-time','Contract','Internship'].includes(v.type)||!['On-site','Hybrid','Remote'].includes(v.mode))throw Error('Choose valid job settings.');
+        if(!['Active','Draft','Closed','Stopped'].includes(v.status)||!['Full-time','Part-time','Contract','Internship'].includes(v.type)||!['On-site','Hybrid','Remote'].includes(v.mode))throw Error('Choose valid job settings.');
         if(old)Object.assign(old,v);else db.jobs.push({id:uid('job'),...v,createdAt:iso()});activity(old?'Job posting updated':'Job posting created',v.title);break;
       }
-      case 'job-status':{const item=find(db.jobs,p.id);if(!['Active','Closed'].includes(p.status))throw Error('Invalid job status.');item.status=p.status;activity('Job posting '+p.status.toLowerCase(),item.title);break;}
+      case 'job-status':{const item=find(db.jobs,p.id);if(!['Active','Closed','Stopped'].includes(p.status))throw Error('Invalid job status.');item.status=p.status;activity('Job posting '+p.status.toLowerCase(),item.title);break;}
       default:throw Error('Unknown action.');
     }
     if(result.activity&&result.notification)result.activity.notificationId=result.notification.id;

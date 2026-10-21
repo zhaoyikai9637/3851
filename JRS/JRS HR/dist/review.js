@@ -27,13 +27,13 @@
   }
   function render(route,db,ui){
     const a=db.applications.find(a=>a.id===route[1]);if(!a)return V.empty('Application not found','Return to Applications and select an existing record.');
-    const c=candidate(db,a),j=job(db,a),results=route[0]==='results',canAdvance=j.status==='Active';
+    const c=candidate(db,a),j=job(db,a),results=route[0]==='results',canAdvance=['Active','Closed'].includes(j.status);
     let decisions;
     if(results&&a.stage==='Interview Results')decisions=button('offer-edit','Prepare Offer',a.id,'primary',canAdvance&&a.feedback?'':'disabled')+button('reject','Reject',a.id,'danger');
     else if(!results&&a.stage==='Pending Review')decisions=button('move-interview','Move to Interview',a.id,'primary',canAdvance?'':'disabled')+button('reject','Reject',a.id,'danger');
     else decisions=button('application','View current stage',a.id,'primary');
     const details=results?resultsContent(db,a)+`<details class="result-job-details"><summary>Job Description & Requirements</summary>${jobDetails(j)}</details>`:jobDetails(j);
-    return heading(db,a,results)+`<div class="review-grid ${results?'results-grid':''}">${viewer(db,a,ui)}<aside class="panel requirements"><div class="requirements-body" tabindex="0">${details}</div><div class="next-step"><div class="review-decision-actions">${decisions}${button('activity','Activity',a.id,'secondary')}</div>${j.status!=='Active'?'<p class="danger-text">Activate this job before progressing applicants.</p>':''}</div></aside></div>`;
+    return heading(db,a,results)+`<div class="review-grid ${results?'results-grid':''}">${viewer(db,a,ui)}<aside class="panel requirements"><div class="requirements-body" tabindex="0">${details}</div><div class="next-step"><div class="review-decision-actions">${decisions}${button('activity','Activity',a.id,'secondary')}</div>${!canAdvance?'<p class="danger-text">Application processing is paused. Resume it in Job Postings.</p>':''}</div></aside></div>`;
   }
   root.HRReview={render,requirementsRows,jobDetails,viewer};
 })(window);
