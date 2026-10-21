@@ -1315,8 +1315,8 @@ button:disabled {
 .access-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
 /* Shared HR workspace language: compact tools, readable tables, one detail layer. */
 .workspace-sections { display:flex; gap:6px; border-bottom:1px solid var(--line); margin:0 0 20px; overflow:auto; }
-.workspace-sections a { padding:11px 16px; color:var(--muted); text-decoration:none; white-space:nowrap; border-bottom:3px solid transparent; font-weight:600; }
-.workspace-sections a.active { color:var(--blue); border-color:var(--blue); }
+.workspace-sections a { display:inline-flex; align-items:center; min-height:42px; padding:11px 16px; color:var(--muted); text-decoration:none; white-space:nowrap; border-radius:12px; border-bottom:3px solid transparent; font-weight:600; }
+.workspace-sections a.active { color:var(--blue); border-color:var(--blue); background:#ebf1ff; }
 .workspace-toolbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
 .workspace-toolbar input { max-width:340px; min-height:40px; }
 .compact-workspace .surface { border-radius:14px; border:1px solid var(--line); box-shadow:none; }

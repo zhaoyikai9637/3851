@@ -2,6 +2,10 @@
 
 ## Current continuation status - 2026-10-21
 
+Communication navigation (Notifications, Templates, Logs) now matches the Reports
+selected-tab treatment: pale blue background, rounded corners and a blue bottom
+border. Edge switching and 390px navigation fit were verified; runtime build passed.
+
 Applications, Candidates, Interviews, Reports lists and Job Postings now calculate page sizes
 from real row heights and an independent outer-browser space budget. This reduces
 unnecessary scrolling without clipping content. Search focus, IME and expandable
