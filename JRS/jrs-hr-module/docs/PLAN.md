@@ -1,5 +1,20 @@
 # Delivery plan
 
+## User waiting queue - 2026-10-21
+
+These requests are recorded for later implementation; do not treat them as done.
+
+1. Adapt list pagination to the available viewport height. Applications / Interview
+   is the supplied example: show fewer rows when needed and move remaining records
+   to page 2 and later pages, keeping pagination reachable without unnecessary page
+   scrolling. Review similar list pages and desktop/mobile layouts. Do not hide or
+   clip overflow to simulate a fix, remove necessary document scrolling, or restore
+   the iframe resize loop that disrupted search and Job Information expansion.
+   This refines the earlier browser-scroll request for short, paginated lists.
+2. Job Postings needs a substantial UI redesign. Remind the user of this queued
+   requirement when returning to Job Postings design work. Scope and design details
+   remain to be agreed before that redesign is implemented.
+
 ## Current continuation plan - 2026-10-21
 
 - Closed intake now retains existing interview/offer processing; Stopped blocks
