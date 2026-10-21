@@ -200,8 +200,16 @@
   });
   // Close a detail dialog when a route link inside it is followed.
   document.addEventListener('click',ev=>{const a=ev.target.closest('a[href^="#/"]');if(a&&$('#modal').open){if(dirty()&&!confirm('Discard unsaved form changes?')){ev.preventDefault();return;}close(true);}});
+  function searchInput(input){
+    const start=input.selectionStart,end=input.selectionEnd;
+    ui.q=input.value;ui.page=1;render();
+    const next=$('[data-search]');next?.focus({preventScroll:true});next?.setSelectionRange(start,end);
+  }
+  let composingSearch=false;
+  document.addEventListener('compositionstart',ev=>{if(ev.target.matches('[data-search]'))composingSearch=true;});
+  document.addEventListener('compositionend',ev=>{if(ev.target.matches('[data-search]')){composingSearch=false;searchInput(ev.target);}});
   document.addEventListener('input',ev=>{
-    if(ev.target.matches('[data-search]')){const input=ev.target,position=input.selectionStart;ui.q=input.value;ui.page=1;render();const next=$('[data-search]');next?.focus();next?.setSelectionRange(position,position);}
+    if(ev.target.matches('[data-search]')&&!ev.isComposing&&!composingSearch)searchInput(ev.target);
     if(ev.target.name==='requirements')refreshRequirements(ev.target.closest('form'));
     if(ev.target.name==='notes'&&$('#modal [data-note-count]'))$('#modal [data-note-count]').textContent=ev.target.value.length;
   });
@@ -213,7 +221,14 @@
     if(target.dataset.filter){ui[target.dataset.filter]=target.value;ui.page=1;render();}
     if(target.name==='reason'&&$('[data-other-reason]')){const other=$('[data-other-reason]');other.hidden=target.value!=='Other';other.querySelector('input').required=!other.hidden;}
   });
-  let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>render(),180);});
+  // The host fits this iframe to its content. Height changes must not replace
+  // focused inputs or collapse native details; only a width change needs layout.
+  let resizeTimer,layoutWidth=window.innerWidth;
+  window.addEventListener('resize',()=>{
+    if(window.innerWidth===layoutWidth)return;
+    layoutWidth=window.innerWidth;clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(()=>render(),180);
+  });
   window.addEventListener('hashchange',routeChanged);
   document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));
   routeChanged();

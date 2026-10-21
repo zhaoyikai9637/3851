@@ -2,6 +2,10 @@
 
 ## Current continuation plan - 2026-10-21
 
+- Fixed content-height resize replacing focused search inputs and collapsing Job
+  Information. Added IME composition handling and three regression tests; verified
+  desktop and 390px interactions, unit/API/MySQL suites and production builds.
+
 - Browser page scrolling now matches Job Postings across the embedded workspace.
   Interviews wheel scrolling, Reports height stability and desktop/phone layouts
   were checked. See `../../docs/HR_PAGE_SCROLLING.md` for implementation and scope.

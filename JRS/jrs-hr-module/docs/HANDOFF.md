@@ -2,6 +2,14 @@
 
 ## Current continuation status - 2026-10-21
 
+Embedded height-only resize events no longer rebuild recruitment content. This
+keeps native Job Information details expanded and search focus/caret intact when
+the outer page fits the iframe to changing content. Search also defers filtering
+until IME composition completes. Three regression tests first failed, then passed;
+root tests (109), frontend tests (122), backend/API tests (183), dedicated MySQL
+tests (12) and production builds passed. Edge desktop and 390px interaction checks
+verified continued search input and persistent Job Information expansion.
+
 Dashboard, Applications, Interviews and Reports now use browser page scrolling,
 matching Job Postings. Intrinsic content height replaces the fixed iframe viewport;
 wheel chaining and width-only responsive rules prevent blocked scrolling and
