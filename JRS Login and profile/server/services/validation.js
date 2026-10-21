@@ -41,7 +41,7 @@ const sections = {
         const end_month_year = is_current_role ? null : month(b.end_month_year, 'End date');
         ordered(start_month_year, end_month_year);
         return { job_title: text(b.job_title, 'Job title', 150, true), company_name: text(b.company_name, 'Company', 150, true),
-            start_month_year, end_month_year, is_current_role, description: text(b.description, 'Description', 5000) };
+            start_month_year, end_month_year, is_current_role, description: text(b.description, 'Description', 2000) };
     } },
     education: { table: 'EDUCATION', key: 'education_id', validate(b) {
         const is_current_study = bool(b.is_current_study);
@@ -50,14 +50,14 @@ const sections = {
         return { institution: text(b.institution, 'Institution', 150, true), qualification: text(b.qualification, 'Qualification', 150, true),
             is_current_study, finished_year: is_current_study ? null : finished_year || null,
             end_month_year: is_current_study ? month(b.end_month_year, 'Expected finish') : null,
-            description: text(b.description, 'Course highlights', 5000) };
+            description: text(b.description, 'Course highlights', 2000) };
     } },
     certifications: { table: 'CERTIFICATION', key: 'cert_id', validate(b) {
         const no_expiry = bool(b.no_expiry), issue_month_year = month(b.issue_month_year, 'Issue date');
         const expiry_month_year = no_expiry ? null : month(b.expiry_month_year, 'Expiry date');
         ordered(issue_month_year, expiry_month_year);
         return { cert_name: text(b.cert_name, 'Certificate name', 150, true), issuing_org: text(b.issuing_org, 'Issuer', 150),
-            issue_month_year, expiry_month_year, no_expiry, description: text(b.description, 'Description', 5000) };
+            issue_month_year, expiry_month_year, no_expiry, description: text(b.description, 'Description', 2000) };
     } }
 };
 function skills(value) {
@@ -74,3 +74,4 @@ function languages(value) {
     return result;
 }
 module.exports = { fail, text, email, password, id, profile, sections, skills, languages };
+
