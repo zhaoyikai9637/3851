@@ -14,6 +14,8 @@ export const workspaceLinks = [
 ];
 
 export function pageName(pathname) {
+  if(pathname === "/notifications") return "Notification Center";
+  if(pathname === "/templates") return "Email Templates";
   return (
     communicationLinks.find(([path]) => path === pathname)?.[1] ||
     workspaceLinks.find(([path]) => path === pathname)?.[1] ||

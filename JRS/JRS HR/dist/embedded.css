@@ -47,3 +47,40 @@ html, body { overflow-y:auto !important; }
 .hr-date-days small { font-size:10px; color:#74829a; }
 @media(max-width:600px) { .assessment-row { grid-template-columns:minmax(0,1fr) 100px; gap:8px; } .assessment-row > button { grid-column:1 / -1; justify-self:end; } }
 #app-shell > .workspace > .topbar.has-secondary-nav { display:none !important; }
+/* HR-wide density and task hierarchy follow the Job Postings pilot. */
+#content .panel { box-shadow:none; border:1px solid var(--line); border-radius:14px; }
+#content .section-tabs { display:flex; gap:5px; padding:0; margin:0 0 18px; overflow:auto; flex-wrap:nowrap; }
+#content .section-tabs a,#content .section-tabs button { display:inline-flex; align-items:center; min-height:42px; padding:9px 14px; border:0; border-bottom:3px solid transparent; white-space:nowrap; font-size:13px; color:#5b6b82; background:transparent; text-decoration:none; }
+#content .section-tabs .selected { color:#315fd2; border-color:#315fd2; background:#ebf1ff; }
+#content th { background:#f8fafd; color:#5b6b82; font-size:11px; font-weight:600; padding:15px 18px; }
+#content td { padding:16px 18px; font-size:13px; vertical-align:middle; }
+#content .row-actions { display:flex; gap:8px; align-items:center; flex-wrap:nowrap; justify-content:flex-end; }
+.row-menu { position:relative; text-align:left; min-width:64px; }
+.row-menu summary { cursor:pointer; border:1px solid #dfe7f0; padding:10px 12px; border-radius:8px; background:white; font-size:12px; }
+.row-menu[open] { position:relative; z-index:4; }
+.row-menu>div { display:flex; flex-direction:column; gap:5px; padding:8px; margin-top:6px; background:white; min-width:160px; border:1px solid #dfe7f0; border-radius:8px; }
+.work-queue { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:22px; }
+.work-queue-item { display:flex; flex-direction:column; gap:12px; padding:20px; border:1px solid #dfe7f0; border-radius:12px; background:white; color:#24344e; text-decoration:none; font-size:13px; }
+.work-queue-item:hover { border-color:#315fd2; }.work-queue-item strong {font-size:26px;}
+.dashboard-work {display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:18px;margin-bottom:18px;}
+.work-schedule {padding:16px;}.work-schedule>div {margin-bottom:16px;}
+#content .application-table {table-layout:auto;}
+#content .application-table th:first-child,#content .application-table th:last-child {width:auto;}
+#content .queue-toolbar {padding:0 0 18px;background:transparent;border:0;gap:12px;flex-wrap:wrap;}
+#content .queue-panel {background:transparent;border:0;}
+#content .queue-panel>.table-scroll {padding:0;background:white;border:1px solid #dfe7f0;border-radius:14px;}
+#content .queue-panel>.table-footer {background:white;border:1px solid #dfe7f0;border-top:0;}
+.hr-date-options {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:8px 0;}
+.hr-date-options button {min-height:42px;border:0;background:white;border-radius:6px;font-size:13px;}
+.hr-date-options button:hover {background:#ebf1ff;}
+.hr-date-month [data-level] {flex:1;font-weight:600;width:auto;}
+#modal.task-drawer {position:fixed;inset:0 0 0 auto;margin:0;width:min(680px,94vw);max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;}
+#modal.long-task {position:fixed;inset:0;margin:0;width:100%;max-width:none;height:100dvh;max-height:100dvh;border-radius:0;}
+#modal.long-task .form>.modal-content {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;}
+#modal.long-task .assessment-editor,#modal.long-task .modal-candidate,#modal.long-task .field-label,#modal.long-task .candidate-id,#modal.long-task .form-error {grid-column:1/-1;}
+@media(max-width:900px){.work-queue {grid-template-columns:repeat(2,minmax(0,1fr));}.dashboard-work {grid-template-columns:1fr;}}
+@media(max-width:600px){.work-queue {gap:10px;}.work-queue-item {padding:14px;}.work-queue-item strong {font-size:22px;}#modal.long-task .form>.modal-content {grid-template-columns:1fr;}#content .row-actions {justify-content:flex-start;}#content .application-table {min-width:760px;}}
+@media(min-width:701px) {
+ #content .queue-panel>.table-scroll {overflow:visible;}
+ .row-menu>div {position:absolute;right:0;top:100%;z-index:5;box-shadow:0 8px 24px #19294715;}
+}

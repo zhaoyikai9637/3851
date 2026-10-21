@@ -242,7 +242,7 @@ describe("authentication and navigation", () => {
   it.each(["/notifications", "/templates", "/logs"])("shows communication navigation on %s", async (route) => {
     mount(route);
     const tabs = await screen.findByRole("navigation", { name: "Communication pages" });
-    expect(screen.queryByRole("navigation", { name: "Current location" })).not.toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Current location" })).toBeVisible();
     expect(within(tabs).getAllByRole("link")).toHaveLength(3);
     expect(within(tabs).getByRole("link", { current: "page" })).toHaveAttribute("href", route);
   });
@@ -499,7 +499,7 @@ describe("notification workflow", () => {
     await waitFor(() =>
       expect(writes("/api/hr/notifications/restore-unread")).toHaveLength(1),
     );
-    expect(await screen.findByText("2 unread notifications")).toBeVisible();
+    expect(await screen.findByRole("button",{name:"Unread 2"})).toBeVisible();
     expect(screen.queryByText("Unread notifications restored.")).not.toBeInTheDocument();
   });
   it("automatically applies search, date and type filters, exposes chips and clears them", async () => {
@@ -512,7 +512,7 @@ describe("notification workflow", () => {
     );
     await ui.click(screen.getByRole("button", { name: "Date" }));
     fireEvent.change(screen.getByLabelText("From date"), {
-      target: { value: "09/01/2026" },
+      target: { value: "01/09/2026" },
     });
     fireEvent.change(screen.getByLabelText("To date"), {
       target: { value: "09/09/2026" },
@@ -544,66 +544,37 @@ describe("notification workflow", () => {
     ).toBeVisible();
     expect(screen.queryByText("No notifications yet")).not.toBeInTheDocument();
   });
-  it("uses an English MM/DD/YYYY date format and rejects invalid dates", async () => {
+  it("uses an English DD/MM/YYYY date format and rejects invalid dates", async () => {
     const ui = mount();
     await screen.findByText("New application received");
     await ui.click(screen.getByRole("button", { name: "Date" }));
-    expect(screen.getByLabelText("From date")).toHaveAttribute("placeholder", "MM/DD/YYYY");
-    expect(screen.getByLabelText("To date")).toHaveAttribute("placeholder", "MM/DD/YYYY");
+    expect(screen.getByLabelText("From date")).toHaveAttribute("placeholder", "DD/MM/YYYY");
+    expect(screen.getByLabelText("To date")).toHaveAttribute("placeholder", "DD/MM/YYYY");
     fireEvent.change(screen.getByLabelText("From date"), {
       target: { value: "13/40/2026" },
     });
-    expect(await screen.findByRole("alert")).toHaveTextContent("MM/DD/YYYY");
+    expect(await screen.findByRole("alert")).toHaveTextContent("DD/MM/YYYY");
   });
-  it("restores calendar selection while keeping the English display format", async () => {
-    const ui = mount();
-    await screen.findByText("New application received");
-    await ui.click(screen.getByRole("button", { name: "Date" }));
-    const fromCalendar = screen.getByLabelText(
-      "Choose From date from calendar",
-    );
-    const toCalendar = screen.getByLabelText("Choose To date from calendar");
-    expect(fromCalendar).toHaveAttribute("type", "date");
-    expect(toCalendar).toHaveAttribute("type", "date");
-    expect(fromCalendar.getAttribute("max")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(toCalendar).toHaveAttribute("max", fromCalendar.getAttribute("max"));
-    fromCalendar.focus();
-    expect(fromCalendar).toHaveFocus();
-    expect(fireEvent.wheel(fromCalendar)).toBe(false);
-    expect(fromCalendar).not.toHaveFocus();
-    fireEvent.change(fromCalendar, {
-      target: { value: "2026-09-01" },
-    });
-    fireEvent.change(toCalendar, {
-      target: { value: "2026-09-09" },
-    });
-    expect(screen.getByLabelText("From date")).toHaveValue("09/01/2026");
+  it("restores English calendar selection and sends ISO history bounds",async()=>{
+    const ui=mount();await screen.findByText("New application received");await ui.click(screen.getByRole("button",{name:"Date"}));
+    for(const [label,day] of [["From date",1],["To date",9]]) {
+      await ui.click(screen.getByRole("button",{name:`Open ${label} calendar`}));
+      await ui.click(screen.getByRole("button",{name:"Choose month"}));
+      await ui.click(screen.getByRole("button",{name:"Choose year"}));
+      await ui.click(screen.getByRole("button",{name:"2026",exact:true}));
+      await ui.click(screen.getByRole("button",{name:"September",exact:true}));
+      await ui.click(screen.getByRole("button",{name:`${day} September 2026`}));
+    }
+    expect(screen.getByLabelText("From date")).toHaveValue("01/09/2026");
     expect(screen.getByLabelText("To date")).toHaveValue("09/09/2026");
-    await waitFor(() =>
-      expect(
-        fetcher.mock.calls.some(([url]) =>
-          url.includes("from=2026-09-01&to=2026-09-09"),
-        ),
-      ).toBe(true),
-    );
+    await waitFor(()=>expect(fetcher.mock.calls.some(([url])=>url.includes("from=2026-09-01&to=2026-09-09"))).toBe(true));
   });
-  it("limits the calendar and rejects future manual dates", async () => {
-    const ui = mount();
-    await screen.findByText("New application received");
-    await ui.click(screen.getByRole("button", { name: "Date" }));
-    const fromCalendar = screen.getByLabelText(
-      "Choose From date from calendar",
-    );
-    expect(fromCalendar.getAttribute("max")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    fireEvent.change(screen.getByLabelText("To date"), {
-      target: { value: "12/31/9999" },
-    });
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Future dates are not available for activity history.",
-    );
-    expect(
-      fetcher.mock.calls.some(([url]) => url.includes("to=9999-12-31")),
-    ).toBe(false);
+  it("rejects future manual history dates without native localized inputs",async()=>{
+    const ui=mount();await screen.findByText("New application received");await ui.click(screen.getByRole("button",{name:"Date"}));
+    expect(document.querySelector('input[type="date"]')).toBeNull();
+    fireEvent.change(screen.getByLabelText("To date"),{target:{value:"31/12/9999"}});
+    expect(await screen.findByRole("alert")).toHaveTextContent("Future dates");
+    expect(fetcher.mock.calls.some(([url])=>url.includes("to=9999-12-31"))).toBe(false);
   });
   it("shows only a clearly labeled read-only application summary", async () => {
     const ui = mount();
@@ -698,14 +669,9 @@ describe("email templates", () => {
   ])("matches the notification heading hierarchy on %s", async (route, title) => {
     mount(route);
     const heading = await screen.findByRole("heading", { level: 1, name: title });
-    const header = heading.parentElement.parentElement;
-    expect(within(header).queryByText("HR WORKSPACE")).not.toBeInTheDocument();
-    if (route === "/templates") expect(await within(header).findByText("2 saved templates")).toBeVisible();
-    else {
-      await screen.findByText("Sent");
-      expect(heading.parentElement.querySelector("p")).toBeEmptyDOMElement();
-    }
-    if (route === "/templates") expect(within(header).getByRole("button", { name: /Create template/ })).toBeVisible();
+    expect(within(screen.getByRole("navigation",{name:"Current location"})).getByRole("heading",{level:1,name:title})).toBeVisible();
+    if(route==="/templates") expect(await screen.findByText("2 saved templates")).toBeVisible();
+    expect(screen.getAllByRole("heading",{level:1})).toHaveLength(1);
   });
   it.each([0, 1, 3])("shows the saved template count for %i items", async (count) => {
     state.templates = Array.from({ length: count }, (_, index) => ({ ...templates[0], templateId: index + 1 }));
@@ -715,9 +681,9 @@ describe("email templates", () => {
   it.each([0, 1, 37])("uses the API total rather than the current log page length for %i emails", async (total) => {
     overrides["GET /api/hr/logs"] = () => json({ items: total ? [state.log] : [], total, page: 1, pageSize: 10 });
     mount("/logs");
-    expect(await screen.findByText(`${total} sent`)).toBeVisible();
+    if(total) expect(await screen.findByText(total===37?"1–10 of 37":"1–1 of 1")).toBeVisible(); else expect(await screen.findByText("No sent emails found")).toBeVisible();
     const heading = screen.getByRole("heading", { level: 1, name: "Logs" });
-    expect(heading.parentElement.querySelector("p")).toBeEmptyDOMElement();
+    expect(heading.parentElement.querySelector("p")).toBeNull();
   });
   it("keeps filtered results working without a heading count", async () => {
     overrides["GET /api/hr/logs"] = (url) => {
@@ -725,19 +691,19 @@ describe("email templates", () => {
       return json({ items: filtered ? [] : [state.log], total: filtered ? 0 : 1, page: 1, pageSize: 10 });
     };
     const ui = mount("/logs");
-    await screen.findByText("1 sent");
+    await screen.findByRole("table",{name:"Sent email history"});
     await ui.type(screen.getByLabelText("Search"), "No match");
     await ui.click(screen.getByRole("button", { name: "Apply" }));
-    expect(await screen.findByText("0 sent")).toBeVisible();
+    expect(await screen.findByText("No sent emails found")).toBeVisible();
     const heading = screen.getByRole("heading", { level: 1, name: "Logs" });
-    expect(heading.parentElement.querySelector("p")).toBeEmptyDOMElement();
+    expect(heading.parentElement.querySelector("p")).toBeNull();
   });
   it.each(["/templates", "/logs"])("does not invent a zero count when %s fails to load", async (route) => {
     overrides[`GET /api/hr${route}`] = () => json({ error: { message: "Service unavailable." } }, 503);
     mount(route);
     await screen.findByRole("alert");
     const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading.parentElement.querySelector("p")).toBeEmptyDOMElement();
+    expect(heading.parentElement.querySelector("p")).toBeNull();
   });
   it("selects, saves and reopens a type added only to shared configuration", async () => {
     const ui = mount("/templates");
@@ -769,7 +735,7 @@ describe("email templates", () => {
   });
   it("presents the template total as inventory metadata, not an unread badge", async () => {
     mount("/templates");
-    expect(await screen.findByText(`${templates.length} saved`)).toBeVisible();
+    expect(await screen.findByText(`${templates.length} saved templates`)).toBeVisible();
     expect(document.querySelector(".template-list-panel .count-pill")).toBeNull();
   });
 
@@ -1005,4 +971,36 @@ describe("logs and HR profile", () => {
     );
     expect(name).toHaveValue("Unsaved Riley");
   });
+});
+it("opens allowlisted HR deep links from the embedded dashboard while rejecting untrusted routes",async()=>{
+ const ui=mount("/dashboard");const frame=await screen.findByTitle("Dashboard");
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:workspace",intent:true,route:"applications/offer"}}));
+ await waitFor(()=>expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer"));
+ const next=screen.getByTitle("Applications");
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",intent:true,route:"https://evil.test"}}));
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",route:"dashboard"}}));
+ expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer");
+});
+it("keeps the Candidates parent path and search context when opening a person",async()=>{
+ overrides["GET /recruitment/api/hr/candidates"]=()=>json({items:[{id:"person-1",name:"Casey",email:"casey@example.test"}],total:21,page:2,limit:20});
+ const ui=mount("/candidates?q=Casey&page=2");
+ await ui.click(await screen.findByRole("button",{name:"View profile for Casey"}));
+ const frame=screen.getByTitle("Candidates");
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:location",items:[{label:"Applications",route:"applications"},{label:"Candidate Profile"}]}}));
+ const path=screen.getByRole("navigation",{name:"Current location"});
+ expect(within(path).queryByRole("button",{name:"Applications",exact:true})).not.toBeInTheDocument();
+ await ui.click(within(path).getByRole("button",{name:"Candidates",exact:true}));
+ expect(await screen.findByRole("searchbox",{name:"Search candidates"})).toHaveValue("Casey");
+ expect(screen.getByText("Page 2 of 2")).toBeVisible();
+});
+it("leaves the candidate profile when switching to another HR workspace", async () => {
+  overrides["GET /recruitment/api/hr/candidates"] = () => json({items:[{id:"person-1",name:"Casey"}],total:1,page:1,limit:20});
+  const ui = mount("/candidates");
+  await ui.click(await screen.findByRole("button", {name:"View profile for Casey"}));
+  expect(screen.getByTitle("Candidates")).toHaveAttribute("src","/recruitment/#/candidate/person-1");
+  await ui.click(screen.getByRole("link", {name:"Reports",exact:true}));
+  expect(await screen.findByTitle("Reports")).toHaveAttribute("src","/recruitment/#/reports");
+  expect(screen.queryByRole("button",{name:"Back to candidates"})).not.toBeInTheDocument();
+  await ui.click(screen.getByRole("link", {name:"Candidates",exact:true}));
+  expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
 });

@@ -123,3 +123,20 @@
 - Existing real records, user-edited demos and the two original feedback examples remain intact. The local-only enrichment transaction is repeatable, backs up the recruitment snapshot including assessments and updates only demo canonical links. No cloud writes, real mail, login accounts or resume files.
 - Added three frontend backdrop regressions and a rolled-back real-MySQL enrichment regression. Browser verification confirmed direct backdrop dismissal, dirty confirmation/discard, persisted role data and a job-filtered application case. See DEMO_DATA.md for repeatable commands.
 - Verification: HR frontend 106, backend/API 183, isolated HR MySQL 12, native recruitment 111, Jest 73, root 30, demo MySQL 3 and default/experimental workflow MySQL 2 each passed (522 total). Production build and English-only validation passed.
+
+## HR-wide consistency rollout (2026-10-21, confirmed and implemented)
+
+- Q9-Q11 approved: use mixed task surfaces, prioritize common viewing paths within three navigation clicks, and return completed actions to their work queue. Preserve required confirmations and long-form validation.
+- Unified compact titles, toolbars, controls, tables and feedback surfaces across HR. Dashboard is queue-first; Applications has stage tabs and row menus; Candidates has server-backed search and pagination; Interviews has time-based shortcuts. Notifications remains a feed, Templates remains split-view, and sent email history uses a table/detail drawer.
+- English calendars support days, months and decade/year selection. Inputs display DD/MM/YYYY and transport ISO dates; historical and min/max constraints remain enforced.
+- Fixed explicit cross-module navigation without allowing late iframe load messages to redirect the active page. Candidate profile return retains query/page and uses its real Candidates parent path.
+- No new framework, database migration, cloud writes, real email, permission expansion or automatic hiring decision. Applicant and login implementation remains queued in PLAN.md.
+- Verification: frontend 113, backend/API 183, isolated HR MySQL 12, native recruitment 111, Jest 73, root 34, demo MySQL 3, default workflow MySQL 2 and experimental workflow MySQL 2 passed (533 total). Production build passed. See HR_INTERFACE_ROLLOUT.md for scope and acceptance details.
+
+### Waiting queue after the HR phase
+
+1. Applicant information synchronization: inspect existing shared identity/profile/application contracts, define authoritative fields and conflict ownership, then verify candidate-owned reads and writes reach the intended HR views without creating duplicate identities. No cloud overwrite or bidirectional conflict policy is assumed.
+2. Applicant-facing visual consistency and reusable English date picker, after its data synchronization scope is confirmed.
+3. Login/profile entry visual consistency, retaining the existing shared authentication, roles, session security and password-reset rules. Do not add another login system.
+
+This queue records future scope only; no applicant/login UI or synchronization implementation has started in this phase.

@@ -1,7 +1,12 @@
 (() => {
   const targets = { notifications: '/notifications', templates: '/templates', 'mail-log': '/logs', 'hr-profile': '/profile', outbox: '/applications' };
-  function navigate(route) {
-    if (window.parent === window || !targets[route]) return false;
+  function navigate(route, intent=false) {
+    if (window.parent === window) return false;
+    if (/^(?:dashboard|jobs|interviews|reports|applications(?:\/(?:applications-review|pending-review|interview|interview-results|offer|rejected|hired))?|(?:review|results)\/[A-Za-z0-9_-]+|candidate\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)$/.test(route)) {
+      if(intent) window.parent.postMessage({type:'jrs:workspace',route,intent:true},location.origin);
+      return false;
+    }
+    if (!targets[route]) return false;
     window.parent.postMessage({ type: 'jrs:navigate', path: targets[route] }, location.origin);
     return true;
   }
@@ -18,7 +23,7 @@
   }
   document.addEventListener('click', event => {
     const anchor = event.target.closest('a[href^="#/"]');
-    if (anchor && navigate(anchor.getAttribute('href').slice(2))) event.preventDefault();
+    if (anchor && navigate(anchor.getAttribute('href').slice(2),true)) event.preventDefault();
   });
   window.addEventListener('hashchange', () => { navigate(location.hash.slice(2)); queueMicrotask(report); });
   window.addEventListener('load', () => { navigate(location.hash.slice(2)); report(); });

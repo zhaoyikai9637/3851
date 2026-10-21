@@ -40,6 +40,12 @@ test("English HR date controls retain ISO form values, constraints and filter ch
     doc.querySelector('[aria-label="Open Meeting date calendar"]').click();
     assert.ok(doc.body.textContent.includes("January 2031"));
     assert.equal(doc.querySelector('input[type="date"]'), null);
+    assert.ok(doc.querySelector('[aria-label="Choose month"]'),'Calendar must expose month selection');
+    doc.querySelector('[aria-label="Choose month"]').click();
+    doc.querySelector('[aria-label="Choose year"]').click();
+    assert.ok(doc.body.textContent.includes('2030–2039'));
+    doc.querySelector('[data-year="2031"]').click();
+    doc.querySelector('[data-pick-month="0"]').click();
     doc.querySelector('[aria-label="16 January 2031"]').click();
     assert.equal(visible.value, "16/01/2031");
     assert.equal(hidden.value, "2031-01-16");

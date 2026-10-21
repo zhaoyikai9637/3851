@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext } from "react-router-dom";
 import { api } from "./api";
+import { DateField } from "../pages/jobs/DateField";
 
 export function useLoad(url) {
   const [state, setState] = useState({ data: null, busy: true, error: null });
@@ -11,12 +12,10 @@ export function useLoad(url) {
     api
       .request(url, { signal: controller.signal })
       .then((data) => {
-        if (!controller.signal.aborted)
-          setState({ data, busy: false, error: null });
+        if (!controller.signal.aborted) setState({ data, busy: false, error: null });
       })
       .catch((error) => {
-        if (!controller.signal.aborted)
-          setState({ data: null, busy: false, error });
+        if (!controller.signal.aborted) setState({ data: null, busy: false, error });
       });
     return () => controller.abort();
   }, [url, revision]);
@@ -56,8 +55,7 @@ export function ErrorBox({ error, retry }) {
 export function Loading() {
   return (
     <div className="loading-state" role="status">
-      <span className="spinner-border spinner-border-sm" aria-hidden="true" />{" "}
-      Loading…
+      <span className="spinner-border spinner-border-sm" aria-hidden="true" /> Loading…
     </div>
   );
 }
@@ -135,9 +133,10 @@ export function Pagination({ data, onPage }) {
     </nav>
   );
 }
-export function Modal({ title, children, onClose, footer }) {
+export function Modal({ title, children, onClose, footer, drawer = false }) {
   const ref = useRef(null),
-    titleId = useId();
+    titleId = useId(),
+    backdrop = useRef(false);
   useEffect(() => {
     const dialog = ref.current,
       previous = document.activeElement;
@@ -150,7 +149,29 @@ export function Modal({ title, children, onClose, footer }) {
   return (
     <dialog
       ref={ref}
-      className="jrs-dialog"
+      className={`jrs-dialog${drawer ? " side-drawer" : ""}`}
+      onPointerDown={(event) => {
+        const r = event.currentTarget.getBoundingClientRect();
+        backdrop.current =
+          event.target === event.currentTarget &&
+          (event.clientX < r.left ||
+            event.clientX > r.right ||
+            event.clientY < r.top ||
+            event.clientY > r.bottom);
+      }}
+      onClick={(event) => {
+        const r = event.currentTarget.getBoundingClientRect();
+        if (
+          backdrop.current &&
+          event.target === event.currentTarget &&
+          (event.clientX < r.left ||
+            event.clientX > r.right ||
+            event.clientY < r.top ||
+            event.clientY > r.bottom)
+        )
+          onClose();
+        backdrop.current = false;
+      }}
       aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault();
@@ -159,12 +180,7 @@ export function Modal({ title, children, onClose, footer }) {
     >
       <div className="dialog-heading">
         <h2 id={titleId}>{title}</h2>
-        <button
-          type="button"
-          className="icon-button"
-          aria-label="Close dialog"
-          onClick={onClose}
-        >
+        <button type="button" className="icon-button" aria-label="Close dialog" onClick={onClose}>
           ×
         </button>
       </div>
@@ -197,12 +213,12 @@ export function Avatar({ user, large = false }) {
     </span>
   );
 }
-export function parseUsDate(value) {
+export function parseDisplayDate(value) {
   const text = value.trim();
   if (!text) return "";
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text);
   if (!match) return null;
-  const [, month, day, year] = match;
+  const [, day, month, year] = match;
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   if (
     date.getUTCFullYear() !== Number(year) ||
@@ -223,112 +239,28 @@ export function businessToday(now = new Date()) {
   return `${values.year}-${values.month}-${values.day}`;
 }
 export function historicalDateRange(fromValue, toValue, today = businessToday()) {
-  const from = parseUsDate(fromValue);
-  const to = parseUsDate(toValue);
-  if (from === null || to === null)
-    return { error: "Enter dates as MM/DD/YYYY." };
+  const from = parseDisplayDate(fromValue);
+  const to = parseDisplayDate(toValue);
+  if (from === null || to === null) return { error: "Enter dates as DD/MM/YYYY." };
   if ((from && from > today) || (to && to > today))
     return { error: "Future dates are not available for activity history." };
-  if (from && to && from > to)
-    return { error: "From date must not be after To date." };
+  if (from && to && from > to) return { error: "From date must not be after To date." };
   return { from, to, error: null };
 }
-function formatUsDate(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return "";
-  const [year, month, day] = value.split("-");
-  return `${month}/${day}/${year}`;
-}
-function CalendarDateField({
-  label,
-  name,
-  values,
-  setValues,
-  min,
-  max,
-  showHelpWhenEmpty,
-}) {
-  const parsedValue = parseUsDate(values[name]) || "";
-  const pickerValue = parsedValue && parsedValue <= max ? parsedValue : "";
-  const textInputRef = useRef(null);
-  const pickerInputRef = useRef(null);
-  useEffect(() => {
-    const stopWheelSelection = (event) => {
-      event.preventDefault();
-      event.currentTarget.blur();
-    };
-    const inputs = [textInputRef.current, pickerInputRef.current].filter(Boolean);
-    inputs.forEach((input) =>
-      input.addEventListener("wheel", stopWheelSelection, { passive: false }),
-    );
-    return () =>
-      inputs.forEach((input) =>
-        input.removeEventListener("wheel", stopWheelSelection),
-      );
-  }, []);
+function CalendarDateField({ label, name, values, setValues, min, max }) {
   return (
-    <Field
+    <DateField
       label={label}
-      help={showHelpWhenEmpty || values[name] ? "Today or earlier" : null}
-    >
-      {(id) => (
-        <div className="date-input-control">
-          <input
-            ref={textInputRef}
-            id={id}
-            type="text"
-            className="form-control"
-            placeholder="MM/DD/YYYY"
-            inputMode="numeric"
-            autoComplete="off"
-            maxLength={10}
-            value={values[name]}
-            onChange={(e) =>
-              setValues((current) => ({
-                ...current,
-                [name]: e.target.value,
-              }))
-            }
-          />
-          <span className="date-picker-button" aria-hidden="true">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect x="3" y="5" width="18" height="16" rx="2" />
-              <path d="M8 3v4M16 3v4M3 10h18" />
-            </svg>
-          </span>
-          <input
-            ref={pickerInputRef}
-            type="date"
-            className="date-picker-native"
-            aria-label={`Choose ${label} from calendar`}
-            value={pickerValue}
-            min={min || undefined}
-            max={max}
-            onChange={(e) => {
-              if (e.target.value && e.target.value > max) return;
-              setValues((current) => ({
-                ...current,
-                [name]: formatUsDate(e.target.value),
-              }));
-            }}
-          />
-        </div>
-      )}
-    </Field>
+      value={values[name]}
+      min={min}
+      max={max}
+      onChange={(value) => setValues((current) => ({ ...current, [name]: value }))}
+    />
   );
 }
 export function DateFields({ values, setValues, showHelpWhenEmpty = true }) {
   const maximumDate = businessToday();
-  const parsedFromDate = parseUsDate(values.from) || "";
+  const parsedFromDate = parseDisplayDate(values.from) || "";
   const minimumToDate = parsedFromDate <= maximumDate ? parsedFromDate : "";
   return (
     <>

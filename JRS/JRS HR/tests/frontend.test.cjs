@@ -29,7 +29,7 @@ test('assessment rows start unscored and saved summaries escape custom names',()
 test('review status filter, avatar resume links and right-hand actions work across statuses',()=>{
   const {HRViews:V}=views(),db=M.seed(),ui=state();
   const html=V.render(['applications','offer'],db,ui);
-  assert.equal(ui.stage,'Offer');assert.ok(html.includes('data-filter="queue"'));
+  assert.equal(ui.stage,'Offer');assert.ok(html.includes('aria-label="Application stages"'));
   assert.ok(V.filtered(db,ui).every(a=>a.stage==='Offer'));
   const review=V.render(['applications','applications-review'],db,ui);
   assert.ok(review.includes('class="applicant-resume-link"'));assert.ok(review.includes('Move to Interview'));assert.ok(review.includes('Reject'));assert.ok(review.includes('Details'));
@@ -236,10 +236,10 @@ test('controller supports direct links, Back/Forward route changes and clearing 
 
 test('status selector reaches review, results, rejected, offer and all applications without a sidebar submenu',async()=>{
   const page=await controller('#/applications/offer');
-  assert.ok(page.e('#content').innerHTML.includes('data-filter="queue"'));
+  assert.ok(page.e('#content').innerHTML.includes('aria-label="Application stages"'));
   for(const [value,path] of [['Pending Review','applications/applications-review'],['Interview Results','applications/interview-results'],['Rejected','applications/rejected'],['Offer','applications/offer'],['','applications']]){
     await page.selectQueue(value);assert.equal(page.c.location.hash,'/'+path);
-    page.navigate('#/'+path);assert.ok(page.e('#content').innerHTML.includes('data-filter="queue"'));
+    page.navigate('#/'+path);assert.ok(page.e('#content').innerHTML.includes('aria-label="Application stages"'));
     assert.ok(!page.e('#navigation').innerHTML.includes('nav-child'));
   }
 });
@@ -249,7 +249,7 @@ test('application pagination reaches every result and clamps the last page after
   const total=db.applications.filter(a=>a.stage==='Pending Review').length;
   for(let page=1;page<=Math.ceil(total/4);page++){
     ui.page=page;const html=V.render(['applications','pending-review'],db,ui);
-    const matches=[...html.matchAll(/href="#\/review\/([^"]+)"/g)];assert.ok(matches.length<=4);
+    const matches=[...new Map([...html.matchAll(/href="#\/review\/([^"]+)"/g)].map(m=>[m[1],m])).values()];assert.ok(matches.length<=4);
     matches.forEach(m=>{assert.ok(!ids.has(m[1]));ids.add(m[1]);});
   }
   assert.equal(ids.size,total);
@@ -259,15 +259,13 @@ test('application pagination reaches every result and clamps the last page after
   assert.equal(ui.page,1);assert.ok(empty.includes('Showing 0–0 of 0 applications'));
 });
 
-test('dashboard uses the signed-in name and sorts recent applications newest first before slicing',()=>{
-  const {HRViews:V}=views(),db=M.seed();db.currentUser={name:'Junye Shen'};
-  db.applications[0].createdAt='2020-01-01T00:00:00.000Z';
-  db.applications.at(-1).createdAt='2090-01-01T00:00:00.000Z';
+test('dashboard prioritizes actionable work queues rather than a decorative welcome header',()=>{
+  const {HRViews:V}=views(),db=M.seed();db.currentUser={name:'Example HR'};
   const html=V.render(['dashboard'],db,{...state(),page:900,pageSize:6});
-  assert.ok(html.includes('Welcome, Junye Shen'));assert.ok(!html.includes('Good morning, Sarah'));
-  const first=V.render(['dashboard'],db,{...state(),pageSize:6});
-  assert.ok(first.includes('data-id="'+db.applications.at(-1).id+'"'));
-  assert.ok(!first.includes('data-id="'+db.applications[0].id+'"'));
+  assert.ok(html.includes('aria-label="Work queue"'));
+  assert.ok(html.includes('Applications to review'));
+  assert.ok(html.includes('Offers awaiting approval'));
+  assert.ok(!html.includes('View Full Calendar'));
 });
 
 test('rejected application attention distinguishes historical, draft, uncertain and sent messages',()=>{

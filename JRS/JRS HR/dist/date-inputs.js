@@ -92,7 +92,8 @@
           iso(input.value) ||
           new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
         let year = Number(selected.slice(0, 4)),
-          month = Number(selected.slice(5, 7)) - 1;
+          month = Number(selected.slice(5, 7)) - 1,
+          view = "days";
         const panel = document.createElement("span");
         panel.className = "hr-date-calendar";
         panel.setAttribute("role", "group");
@@ -104,11 +105,17 @@
           const first = new Date(Date.UTC(year, month, 1, 12)),
             offset = (first.getUTCDay() + 6) % 7,
             days = new Date(Date.UTC(year, month + 1, 0, 12)).getUTCDate();
-          const title = first.toLocaleDateString("en-GB", {
+          let title = first.toLocaleDateString("en-GB", {
             month: "long",
             year: "numeric",
             timeZone: "UTC",
           });
+          const decade = Math.floor(year / 10) * 10;
+          const unit = view === "days" ? "month" : view === "months" ? "year" : "decade";
+          const level =
+            view === "days" ? "Choose month" : view === "months" ? "Choose year" : "Year range";
+          if (view !== "days")
+            title = view === "months" ? String(year) : decade + "–" + (decade + 9);
           let cells = "<span></span>".repeat(offset);
           for (let day = 1; day <= days; day++) {
             const date =
@@ -125,12 +132,77 @@
             });
             cells += `<button type="button" data-date="${date}" aria-label="${description}" ${(original.min && date < original.min) || (original.max && date > original.max) ? "disabled" : ""}>${day}</button>`;
           }
-          panel.innerHTML = `<span class="hr-date-month"><button type="button" data-month="-1" aria-label="Previous month">‹</button><strong>${title}</strong><button type="button" data-month="1" aria-label="Next month">›</button></span><span class="hr-date-days">${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => "<small>" + day + "</small>").join("")}${cells}</span><button type="button" data-clear="true">Clear date</button>`;
+          let options = "";
+          if (view === "months")
+            for (let value = 0; value < 12; value++)
+              options +=
+                '<button type="button" data-pick-month="' +
+                value +
+                '">' +
+                new Date(Date.UTC(2024, value, 1)).toLocaleDateString("en-GB", {
+                  month: "long",
+                  timeZone: "UTC",
+                }) +
+                "</button>";
+          if (view === "years")
+            for (let value = decade; value < decade + 10; value++)
+              options +=
+                '<button type="button" data-year="' +
+                value +
+                '" ' +
+                (value < 1 || value > 9999 ? "disabled" : "") +
+                ">" +
+                value +
+                "</button>";
+          panel.innerHTML =
+            '<span class="hr-date-month"><button type="button" data-month="-1" aria-label="Previous ' +
+            unit +
+            '">‹</button><button type="button" data-level="true" aria-label="' +
+            level +
+            '">' +
+            title +
+            '</button><button type="button" data-month="1" aria-label="Next ' +
+            unit +
+            '">›</button></span>' +
+            (view === "days"
+              ? '<span class="hr-date-days">' +
+                ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                  .map((day) => "<small>" + day + "</small>")
+                  .join("") +
+                cells +
+                "</span>"
+              : '<span class="hr-date-options">' + options + "</span>") +
+            '<button type="button" data-clear="true">Clear date</button>';
         }
         panel.addEventListener("click", (event) => {
           const target = event.target.closest("button");
           if (!target || target.disabled) return;
+          if (target.dataset.level) {
+            view = view === "days" ? "months" : "years";
+            render();
+            return;
+          }
+          if (target.dataset.year !== undefined) {
+            year = Number(target.dataset.year);
+            view = "months";
+            render();
+            return;
+          }
+          if (target.dataset.pickMonth !== undefined) {
+            month = Number(target.dataset.pickMonth);
+            view = "days";
+            render();
+            return;
+          }
           if (target.dataset.month) {
+            if (view !== "days") {
+              year = Math.max(
+                1,
+                Math.min(9999, year + Number(target.dataset.month) * (view === "years" ? 10 : 1)),
+              );
+              render();
+              return;
+            }
             month += Number(target.dataset.month);
             if (month < 0) {
               month = 11;

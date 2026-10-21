@@ -3,7 +3,8 @@
   'use strict';
   const V=HRViews,{e,button,badge,person,candidate,job}=V;
   const store=await HRRemote.boot(),$=s=>document.querySelector(s);
-  const defaults=()=>({page:1,q:'',job:'',stage:'',priority:'',from:'',to:'',full:false,period:'today',resumePage:1,zoom:100,resumeFit:true,jobStatus:'',interviewStatus:'Scheduled',interviewDate:'',noticeTab:'all'});
+  const defaults=()=>({page:1,q:'',job:'',stage:'',priority:'',from:'',to:'',full:false,period:'today',resumePage:1,zoom:100,resumeFit:true,jobStatus:'',interviewStatus:'',interviewScope:'all',interviewDate:'',noticeTab:'all'});
+  const listStates=new Map();
   let pendingJob='',ui=defaults(),route=['dashboard'],modalTrigger=null,formSnapshot='',busy=false,toastTimer;
   function renderNavigation(){
     $('#navigation').innerHTML=V.navigation(route,store.db);
@@ -13,10 +14,10 @@
   }
 
   const app=id=>{const a=store.db.applications.find(a=>a.id===id);if(!a)throw Error('Application not found.');return a;};
-  function go(path){if(location.hash==='#/'+path){route=path.split('/');render();}else location.hash='/'+path;}
+  function go(path){if(window.parent&&window.parent!==window)window.parent.postMessage({type:'jrs:workspace',route:path,intent:true},location.origin);if(location.hash==='#/'+path){route=path.split('/');render();}else location.hash='/'+path;}
   function notify(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,5500);}
   function render(){
-    const db=store.db,page=route[0];ui.pageSize=Math.max(4,Math.min(10,Math.floor(((window.innerHeight||768)-365)/58)));ui.compact=(window.innerHeight||768)<850;if(page==='applications'){const width=window.innerWidth||1300,height=window.innerHeight||768;ui.pageSize=width>1000&&height>=620?Math.max(3,Math.min(10,Math.floor((height-(width<1250?340:280))/(width<1250?120:92)))):4;}
+    const db=store.db,page=route[0];ui.pageSize=Math.max(4,Math.min(10,Math.floor(((window.innerHeight||768)-365)/58)));ui.compact=(window.innerHeight||768)<850;ui.pageSize=10;
     const names={dashboard:'Dashboard',applications:'Applications',review:'Resume Review',results:'Interview Results',success:'Status Update',candidate:'Candidate Profile',jobs:'Job Postings',interviews:'Interviews',reports:'Reports',notifications:'Notification Center',outbox:'Email Outbox',templates:'Email Templates','mail-log':'Notification Log','hr-profile':'My Profile'};
     const label=page==='applications'&&V.stageForRoute(route)?'Applications / '+V.stageLabel(V.stageForRoute(route)):names[page]||'HR Workspace';document.title='JRS | '+label;$('#page-label').textContent=label;
     renderNavigation();
@@ -28,7 +29,7 @@
 
   }
   function routeChanged(){
-    $('.sidebar').classList?.remove('mobile-open');$('[data-action=mobile-menu]').setAttribute?.('aria-expanded','false');ui=defaults();route=V.parseRoute(location.hash);if(route[0]==='applications'&&pendingJob){ui.job=pendingJob;pendingJob='';}ui.profileApplicationId=route[2]||'';
+    $('.sidebar').classList?.remove('mobile-open');$('[data-action=mobile-menu]').setAttribute?.('aria-expanded','false');listStates.set(route.join('/'),HRModel.clone(ui));route=V.parseRoute(location.hash);ui={...defaults(),...(listStates.get(route.join('/'))||{})};if(route[0]==='applications'&&pendingJob){ui.job=pendingJob;pendingJob='';}ui.profileApplicationId=route[2]||'';
     if(location.hash.replace(/^#\/?/,'').split('/')[0]==='candidates')history.replaceState(null,'','#/applications');
     if(location.hash.startsWith('#/applications/pending-review'))history.replaceState(null,'','#/applications/applications-review');
     render();$('#content').focus({preventScroll:true});window.scrollTo(0,0);
@@ -37,7 +38,7 @@
   function open(title,subtitle,html,ic='file',tone='blue',wide=false){
     const modal=$('#modal');if(!modal.open)modalTrigger=document.activeElement;
     $('#modal-title').textContent=title;$('#modal-subtitle').textContent=subtitle;$('#modal-icon').innerHTML=`<span class="icon-disc ${tone}">${icon(ic)}</span>`;
-    $('#modal-body').innerHTML=html;window.HRLayout?.form($('#modal-body'));modal.classList.toggle('wide',wide);if(!modal.open)modal.showModal();formSnapshot=snapshot();if(window.parent!==window)window.parent.postMessage({type:'jrs:dialog'},location.origin);
+    $('#modal-body').innerHTML=html;window.HRLayout?.form($('#modal-body'));modal.classList.toggle('wide',wide);modal.classList.toggle('task-drawer',!!$('#modal-body form[data-command="schedule"],#modal-body form[data-command="task"],#modal-body form[data-command="filters"]'));modal.classList.toggle('long-task',!!$('#modal-body form[data-command="feedback"],#modal-body form[data-command="offer"]'));if(!modal.open)modal.showModal();formSnapshot=snapshot();if(window.parent!==window)window.parent.postMessage({type:'jrs:dialog'},location.origin);
     setTimeout(()=>$('#modal [autofocus]')?.focus(),0);
   }
   function dirty(){return !!formSnapshot&&snapshot()!==formSnapshot;}
@@ -117,8 +118,8 @@
       if(cmd==='application-create'){delete p.applicationId;p.candidate={name:data.name,email:data.email,phone:data.phone,location:data.location,experience:data.experience,skills:data.skills};if(p.candidateId)delete p.candidate;}
       const r=await commit(cmd,p);close(true);render();
       if(cmd==='feedback'){go('results/'+id);return;}
-      if(['move-interview','reject','offer','accept-offer'].includes(cmd)&&r.activity){go('success/'+r.activity.id);return;}
-      if(cmd==='schedule'){go('interviews');notify('Interview saved'+(p.notify?'; email draft saved to the application.':'.'));}
+      if(['move-interview','reject','offer','accept-offer'].includes(cmd)&&r.activity){go(V.applicationPath(app(id).stage));return;}
+      if(cmd==='schedule'){if(route[0]!=='interviews')go('interviews');}
       else if(cmd==='message'){applicationMessages(id);notify('Email draft saved. No email has been sent.');}
       else if(cmd==='application-create'){go('review/'+r.application.id);notify('Application received.');}
       else if(cmd==='job-save'){go('jobs');notify('Job posting saved.');}
@@ -152,6 +153,7 @@
         case 'section':ui.section=id;ui.page=1;render();document.querySelector('[data-action=section][data-id="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});break;
         case 'page':ui.page=Math.max(1,Number(id));render();break;
         case 'period':ui.period=id;render();break;
+        case 'interview-queue':ui.interviewScope=id;ui.interviewStatus='';ui.page=1;render();break;
         case 'export':exportApplications();break;
         case 'filters':open('Filter Applications','Apply filters to the work queue.',form('filters','',V.select?choice('Position','job',[['','All positions'],...store.db.jobs.map(j=>[j.id,j.title])],ui.job)+choice('Priority','priority',[['','All priorities'],'High','Normal'],ui.priority)+`<div class="form-grid">${field('Applied from','from',ui.from,'date')}${field('Applied to','to',ui.to,'date')}</div>`:'','Apply Filters'),'filter');break;
         case 'application':applicationDetails(id);break;

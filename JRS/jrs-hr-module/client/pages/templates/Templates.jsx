@@ -67,7 +67,6 @@ export function Templates() {
         eyebrow={null}
         className="workspace-page-heading"
         title="Email Templates"
-        description={load.data ? `${load.data.items.length} saved template${load.data.items.length === 1 ? "" : "s"}` : null}
         action={
           <button className="btn btn-primary" disabled={load.busy} onClick={() => choose(null)}>
             + Create template
@@ -87,7 +86,9 @@ export function Templates() {
             <section className="surface template-list-panel">
               <div className="section-heading">
                 <h2>Templates</h2>
-                <span className="section-count">{load.data.items.length} saved</span>
+                <span className="section-count">
+                  {load.data.items.length} saved template{load.data.items.length === 1 ? "" : "s"}
+                </span>
               </div>
               <div className="template-list">
                 {load.data.items.length ? (

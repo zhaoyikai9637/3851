@@ -1312,3 +1312,31 @@ button:disabled {
 .access-card h1 { font-size: 25px; line-height: 1.35; margin-bottom: 18px; }
 .access-card p { line-height: 1.7; }
 .access-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
+/* Shared HR workspace language: compact tools, readable tables, one detail layer. */
+.workspace-sections { display:flex; gap:6px; border-bottom:1px solid var(--line); margin:0 0 20px; overflow:auto; }
+.workspace-sections a { padding:11px 16px; color:var(--muted); text-decoration:none; white-space:nowrap; border-bottom:3px solid transparent; font-weight:600; }
+.workspace-sections a.active { color:var(--blue); border-color:var(--blue); }
+.workspace-toolbar { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+.workspace-toolbar input { max-width:340px; min-height:40px; }
+.compact-workspace .surface { border-radius:14px; border:1px solid var(--line); box-shadow:none; }
+.compact-workspace .btn,.compact-workspace .form-control,.compact-workspace .form-select { border-radius:8px; min-height:40px; }
+.compact-workspace .table th { background:#f8fafd; font-size:11px; text-transform:uppercase; color:var(--muted); font-weight:600; padding:16px 20px; }
+.compact-workspace .table td { padding:18px 20px; vertical-align:middle; border-color:var(--line); }
+.compact-workspace .table tr:hover td { background:#f8fafd; }
+.job-calendar-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; padding:8px 0; }
+.job-calendar-options button { min-height:42px; border:0; border-radius:6px; color:var(--text,#24344e); background:transparent; font-size:13px; }
+.job-calendar-options button:hover,.job-calendar-heading .calendar-level:hover { background:#ebf1ff; }
+.job-calendar-heading .calendar-level { width:auto; flex:1; font-weight:600; border-radius:6px; }
+.job-calendar button:disabled { opacity:.35; cursor:not-allowed; }
+.jrs-dialog.side-drawer { position:fixed; inset:0 0 0 auto; margin:0; width:min(760px,90vw); max-width:100vw; height:100dvh; max-height:100dvh; border:0; border-radius:0; }
+.side-drawer .dialog-body { flex:1; overflow:auto; }
+.side-drawer[open] { display:flex; flex-direction:column; }
+.profile-form .form-actions,.template-editor .editor-footer { position:sticky; bottom:0; background:white; border-top:1px solid var(--line); padding:18px; z-index:2; }
+.log-table { margin-bottom:0; min-width:680px; }
+@media(max-width:700px) { .workspace-sections { margin-bottom:16px; }.workspace-sections a { padding:10px 12px; }.jrs-dialog.side-drawer {width:100vw;}.candidate-surface .table {min-width:620px;}.compact-workspace .table td {padding:14px 12px;} }
+.notification-surface,.log-surface { overflow:visible; }
+.job-calendar { z-index:20; }
+.profile-grid form>.editor-actions,.template-editor .editor-actions { position:sticky;bottom:0;background:white;padding:16px 0;border-top:1px solid var(--line);z-index:2; }
+.profile-edit-grid .editor-form>.editor-actions {position:sticky;bottom:0;z-index:2;background:white;border-top:1px solid var(--line);padding:16px 0;}
+.candidate-name {border:0;background:transparent;padding:4px 0;min-height:36px;text-align:left;font-weight:650;color:#24344e;}
+.candidate-name:hover,.candidate-name:focus-visible {color:#315fd2;text-decoration:underline;}
