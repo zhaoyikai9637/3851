@@ -4,7 +4,7 @@ import { ErrorBox, Loading } from "../../src/shared";
 import { Icon } from "../../src/icons";
 import { createJobsClient } from "./api";
 import { displayDate } from "./model";
-import { JobDrawer } from "./JobDrawer";
+import { JobDetails } from "./JobDetails";
 import {useViewportRows} from '../../src/useViewportRows';
 import "./jobs.css";
 
@@ -13,8 +13,9 @@ export function JobPostings() {
     navigate = useNavigate();
   const [data, setData] = useState(null),
     [error, setError] = useState(null),
-    [drawer, setDrawer] = useState(null);
-  const list=useRef(null),pageSize=useViewportRows(list,data);
+    [details, setDetails] = useState(null);
+  const list=useRef(null),trigger=useRef(null),pageSize=useViewportRows(list,data);
+  useEffect(()=>{if(!details)trigger.current?.focus();},[details]);
   const [search, setSearch] = useState(""),
     [department, setDepartment] = useState(""),
     [status, setStatus] = useState("All"),
@@ -44,7 +45,7 @@ export function JobPostings() {
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize)),
     current = Math.min(page, pages),
     visible = filtered.slice((current - 1) * pageSize, current * pageSize);
-  const selected = drawer?.id ? items.find((job) => job.id === drawer.id) : null;
+  const selected = details?.id ? items.find((job) => job.id === details.id) : null;
   async function refresh() {
     const latest = await client.load();
     setData(latest);
@@ -59,10 +60,12 @@ export function JobPostings() {
     setData(latest);
   }
   function open(id) {
-    setDrawer({ id });
+    trigger.current=document.activeElement;
+    setDetails({ id });
   }
   return (
-    <div className="jobs-workspace" ref={list}>
+    <>
+    <div className="jobs-workspace" ref={list} hidden={!!details}>
       <div className="jobs-toolbar" role="toolbar" aria-label="Job filters and actions">
         <label className="jobs-search">
           <Icon name="search" />
@@ -240,18 +243,19 @@ export function JobPostings() {
           </section>
         )
       )}
-      {drawer && (
-        <JobDrawer
-          key={drawer.id || "new"}
+    </div>
+      {details && (
+        <JobDetails
+          key={details.id || "new"}
           job={selected}
           templates={data.templates}
-          onClose={() => setDrawer(null)}
+          onClose={() => setDetails(null)}
           onSave={save}
           onStatus={changeStatus}
           onRefresh={refresh}
           onApplications={(id) => navigate(`/applications?job=${encodeURIComponent(id)}`)}
         />
       )}
-    </div>
+    </>
   );
 }

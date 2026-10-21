@@ -109,6 +109,18 @@ async function edit(ui) {
   await ui.click(screen.getByRole("button", { name: "Edit job" }));
 }
 
+it('opens a normal full-page editor with all fields available together and no modal scroll lock',async()=>{
+  const ui=mount();
+  await edit(ui);
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.queryByRole('table',{name:'Job postings'})).not.toBeInTheDocument();
+  for(const label of ['Job title','Job description','Job requirements','Salary range','Application deadline']) {
+    expect(screen.getByLabelText(label)).toBeVisible();
+  }
+  expect(document.body.style.overflow).not.toBe('hidden');
+  expect(screen.queryByRole('tablist',{name:'Job details sections'})).not.toBeInTheDocument();
+});
+
 it("presents a table-first jobs workspace without the standalone publishing form or artificial root breadcrumb", async () => {
   mount();
   const table = await screen.findByRole("table", { name: "Job postings" });
@@ -140,7 +152,6 @@ it("edits basic and publishing fields together and sends ISO dates with the exis
   await edit(ui);
   await ui.clear(screen.getByLabelText("Job title"));
   await ui.type(screen.getByLabelText("Job title"), "Senior Developer");
-  await ui.click(screen.getByRole("tab", { name: "Publishing" }));
   expect(screen.getByLabelText("Application deadline")).toHaveValue("31/12/2030");
   expect(document.querySelector('input[type="date"]')).toBeNull();
   await ui.clear(screen.getByLabelText("Application deadline"));
@@ -164,64 +175,47 @@ it("keeps unsaved edits until the user explicitly discards them", async () => {
   const ui = mount();
   await edit(ui);
   await ui.type(screen.getByLabelText("Job title"), " revised");
-  await ui.click(screen.getByRole("button", { name: "Close job drawer" }));
+  await ui.click(screen.getByRole("button", { name: "Back to job postings" }));
   expect(screen.getByRole("alertdialog", { name: "Discard unsaved changes?" })).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Keep editing" }));
   expect(screen.getByLabelText("Job title")).toHaveValue("Software Developer revised");
   await ui.click(screen.getByRole("button", { name: "Cancel editing" }));
   await ui.click(screen.getByRole("button", { name: "Discard changes" }));
-  expect(screen.queryByRole("dialog", { name: "Edit job" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "Edit job" })).not.toBeInTheDocument();
 });
 
-function backdropGesture(dialog, startX = 100, endX = startX) {
-  vi.spyOn(dialog, "getBoundingClientRect").mockReturnValue({
-    left: 400,
-    right: 900,
-    top: 0,
-    bottom: 800,
-  });
-  fireEvent(
-    dialog,
-    new MouseEvent("pointerdown", { bubbles: true, clientX: startX, clientY: 100 }),
-  );
-  fireEvent.click(dialog, { clientX: endX, clientY: 100 });
-}
-
-it("returns to the same job list when the drawer backdrop is clicked", async () => {
+it("returns to the retained job list through the explicit back button", async () => {
   const ui = mount();
   await ui.click(await screen.findByRole("button", { name: "View Software Developer" }));
-  backdropGesture(screen.getByRole("dialog"));
-  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  await ui.click(screen.getByRole('button',{name:'Back to job postings'}));
+  expect(screen.queryByRole('region',{name:'Software Developer'})).not.toBeInTheDocument();
   expect(screen.getByRole("table", { name: "Job postings" })).toBeVisible();
 });
 
-it("does not close for internal blank space or dragging from the drawer to its backdrop", async () => {
+it("keeps the full-page job open when blank space is clicked", async () => {
   const ui = mount();
   await ui.click(await screen.findByRole("button", { name: "View Software Developer" }));
-  const dialog = screen.getByRole("dialog");
-  backdropGesture(dialog, 500);
-  expect(dialog).toBeVisible();
-  backdropGesture(dialog, 500, 100);
-  expect(dialog).toBeVisible();
+  const page = screen.getByRole('region',{name:'Software Developer'});
+  fireEvent.click(page);
+  expect(page).toBeVisible();
 });
 
-it("protects unsaved edits when closing through the backdrop", async () => {
+it("warns before refreshing with unsaved edits and removes the warning after discarding", async () => {
   const ui = mount();
   await edit(ui);
   await ui.type(screen.getByLabelText("Job title"), " revised");
-  backdropGesture(screen.getByRole("dialog"));
-  expect(screen.getByRole("alertdialog", { name: "Discard unsaved changes?" })).toBeVisible();
-  await ui.click(screen.getByRole("button", { name: "Keep editing" }));
-  expect(screen.getByLabelText("Job title")).toHaveValue("Software Developer revised");
-  backdropGesture(screen.getByRole("dialog"));
+  const unload=new Event('beforeunload',{cancelable:true});
+  window.dispatchEvent(unload);
+  expect(unload.defaultPrevented).toBe(true);
+  await ui.click(screen.getByRole('button',{name:'Back to job postings'}));
   await ui.click(screen.getByRole("button", { name: "Discard changes" }));
-  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  const after=new Event('beforeunload',{cancelable:true});window.dispatchEvent(after);
+  expect(after.defaultPrevented).toBe(false);
 });
 
 it("rejects impossible day-first dates without sending a save request", async () => {
   const ui = mount();
   await edit(ui);
-  await ui.click(screen.getByRole("tab", { name: "Publishing" }));
   await ui.clear(screen.getByLabelText("Application deadline"));
   await ui.type(screen.getByLabelText("Application deadline"), "31/02/2030");
   await ui.click(screen.getByRole("button", { name: "Save job" }));
@@ -234,7 +228,6 @@ it("rejects impossible day-first dates without sending a save request", async ()
 it("uses an English calendar and writes the chosen date in day/month/year order", async () => {
   const ui = mount();
   await edit(ui);
-  await ui.click(screen.getByRole("tab", { name: "Publishing" }));
   await ui.click(screen.getByRole("button", { name: "Open Application deadline calendar" }));
   expect(screen.getByText("December 2030")).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Next month" }));
@@ -254,7 +247,7 @@ it("preserves edits and displays server conflicts instead of claiming a successf
   expect(screen.queryByText("Job saved.")).not.toBeInTheDocument();
 });
 
-it("creates a job from the same drawer with requirement templates and publishing fields", async () => {
+it("creates a job from the full-page form with requirement templates and publishing fields", async () => {
   const ui = mount();
   await screen.findByRole("table", { name: "Job postings" });
   await ui.click(screen.getByRole("button", { name: "Create job" }));
@@ -266,7 +259,6 @@ it("creates a job from the same drawer with requirement templates and publishing
     ["Required skills", "JavaScript, SQL"],
   ])
     await ui.type(screen.getByLabelText(label), value);
-  await ui.click(screen.getByRole("tab", { name: "Requirements" }));
   await ui.type(screen.getByLabelText("Job description"), "Develop reliable applications.");
   await ui.selectOptions(screen.getByLabelText("Requirement template"), "Software Developer");
   await ui.click(screen.getByRole("button", { name: "Use template" }));
@@ -309,7 +301,6 @@ it("opens applications filtered to the selected job", async () => {
 it("blocks an unpublish date that ends before the deadline day has finished", async () => {
   const ui = mount();
   await edit(ui);
-  await ui.click(screen.getByRole("tab", { name: "Publishing" }));
   await ui.type(screen.getByLabelText("Unpublish date"), "31/12/2030");
   await ui.click(screen.getByRole("button", { name: "Save job" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("after the application deadline");

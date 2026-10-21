@@ -3,7 +3,6 @@ import { ErrorBox } from "../../src/shared";
 import { DateField } from "./DateField";
 import { displayDate, jobDraft, jobPayload } from "./model";
 
-const sections = ["Overview", "Requirements", "Publishing"];
 function Field({ label, value, onChange, multiline = false, ...props }) {
   const id = useId(),
     Control = multiline ? "textarea" : "input";
@@ -33,7 +32,7 @@ function Select({ label, value, options, onChange }) {
   );
 }
 
-export function JobDrawer({
+export function JobDetails({
   job,
   templates,
   onClose,
@@ -42,34 +41,31 @@ export function JobDrawer({
   onApplications,
   onRefresh,
 }) {
-  const dialog = useRef(null),
+  const heading = useRef(null),
     content = useRef(null),
-    backdropStart = useRef(false),
     formId = useId();
   const [draft, setDraft] = useState(() => jobDraft(job)),
     [baseline, setBaseline] = useState(() => JSON.stringify(jobDraft(job)));
   const [editing, setEditing] = useState(!job),
-    [section, setSection] = useState("Overview"),
     [template, setTemplate] = useState("");
   const [error, setError] = useState(null),
     [busy, setBusy] = useState(false),
     [confirmation, setConfirmation] = useState(null);
   const dirty = editing && JSON.stringify(draft) !== baseline;
   useEffect(() => {
-    if (confirmation && content.current) content.current.scrollTop = 0;
+    if (confirmation) content.current?.scrollIntoView?.({block:'start'});
   }, [confirmation]);
   const title = editing ? (job ? "Edit job" : "Create job") : job.title;
   useEffect(() => {
-    const previous = document.activeElement,
-      overflow = document.body.style.overflow;
-    dialog.current.showModal();
-    document.body.style.overflow = "hidden";
-    return () => {
-      dialog.current?.close();
-      document.body.style.overflow = overflow;
-      previous?.focus();
-    };
-  }, []);
+    heading.current?.focus({preventScroll:true});
+    heading.current?.closest('.job-details-page')?.scrollIntoView?.({block:'start'});
+  }, [editing]);
+  useEffect(()=>{
+    if(!dirty)return;
+    const warn=event=>{event.preventDefault();event.returnValue='';};
+    window.addEventListener('beforeunload',warn);
+    return ()=>window.removeEventListener('beforeunload',warn);
+  },[dirty]);
   const change = (key) => (value) => {
     setDraft((current) => ({ ...current, [key]: value }));
     setError(null);
@@ -79,22 +75,11 @@ export function JobDrawer({
     if (dirty) setConfirmation("discard");
     else onClose();
   }
-  function isBackdrop(event) {
-    if (event.target !== event.currentTarget) return false;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    return (
-      event.clientX < bounds.left ||
-      event.clientX > bounds.right ||
-      event.clientY < bounds.top ||
-      event.clientY > bounds.bottom
-    );
-  }
   function edit(event) {
     event.preventDefault();
     const value = jobDraft(job);
     setDraft(value);
     setBaseline(JSON.stringify(value));
-    setSection("Overview");
     setError(null);
     setEditing(true);
   }
@@ -109,8 +94,7 @@ export function JobDrawer({
       onClose();
     } catch (error) {
       setError(error);
-      if (error.tab) setSection(error.tab);
-      if (content.current) content.current.scrollTop = 0;
+      content.current?.scrollIntoView?.({block:'start'});
     } finally {
       setBusy(false);
     }
@@ -130,30 +114,14 @@ export function JobDrawer({
   }
   const count = draft.requirements.split(/\r?\n/).filter((row) => row.trim()).length;
   return (
-    <dialog
-      ref={dialog}
-      className="job-drawer"
+    <section
+      className="job-details-page"
       aria-label={title}
-      onPointerDown={(event) => {
-        backdropStart.current = isBackdrop(event);
-      }}
-      onPointerCancel={() => {
-        backdropStart.current = false;
-      }}
-      onClick={(event) => {
-        const dismiss = backdropStart.current && isBackdrop(event);
-        backdropStart.current = false;
-        if (dismiss) close();
-      }}
-      onCancel={(event) => {
-        event.preventDefault();
-        close();
-      }}
     >
-      <header className="job-drawer-heading">
+      <header className="job-page-heading">
         <div>
           <span className="job-kicker">{editing ? "JOB EDITOR" : "JOB DETAILS"}</span>
-          <h2>{title}</h2>
+          <h2 ref={heading} tabIndex={-1}>{title}</h2>
           {!editing && (
             <span className={`job-status job-status-${job.status.toLowerCase()}`}>
               {job.status}
@@ -162,28 +130,14 @@ export function JobDrawer({
         </div>
         <button
           type="button"
-          className="job-icon-button"
-          aria-label="Close job drawer"
+          className="job-secondary"
           disabled={busy}
           onClick={close}
         >
-          ×
+          Back to job postings
         </button>
       </header>
-      <div className="job-drawer-tabs" role="tablist" aria-label="Job details sections">
-        {sections.map((name) => (
-          <button
-            key={name}
-            type="button"
-            role="tab"
-            aria-selected={section === name}
-            onClick={() => setSection(name)}
-          >
-            {name}
-          </button>
-        ))}
-      </div>
-      <div ref={content} className="job-drawer-content">
+      <div ref={content} className="job-page-content">
         <ErrorBox error={error} />
         {error?.status === 409 && (
           <button
@@ -255,8 +209,7 @@ export function JobDrawer({
         {editing ? (
           <form id={formId} noValidate onSubmit={save}>
             <fieldset disabled={busy || !!confirmation} className="job-editor-fields">
-              {section === "Overview" && (
-                <>
+                <section className="job-form-section" aria-label="Position information">
                   <div className="job-section-title">
                     <h3>Position information</h3>
                   </div>
@@ -313,17 +266,15 @@ export function JobDrawer({
                       {{Active:'Active: new applications and application processing are enabled.',Closed:'Closed: new applications are stopped; existing applications can continue.',Stopped:'Stopped: new applications and application progression are stopped.',Draft:'Draft: new applications and application progression are not enabled.'}[draft.status]}
                     </p>
                   </div>
-                </>
-              )}
-              {section === "Requirements" && (
-                <>
+                </section>
+                <section className="job-form-section" aria-label="Description and requirements">
                   <div className="job-section-title">
                     <h3>Description & requirements</h3>
                   </div>
                   <Field
                     label="Job description"
                     multiline
-                    rows={6}
+                    rows={10}
                     maxLength={3000}
                     value={draft.description}
                     onChange={change("description")}
@@ -365,10 +316,8 @@ export function JobDrawer({
                   <span className="job-field-hint">
                     {count} / 8–12 requirements · one criterion per line
                   </span>
-                </>
-              )}
-              {section === "Publishing" && (
-                <>
+                </section>
+                <section className="job-form-section" aria-label="Compensation and publishing">
                   <div className="job-section-title">
                     <h3>Compensation & publishing</h3>
                   </div>
@@ -395,13 +344,11 @@ export function JobDrawer({
                       },
                     )}
                   </div>
-                </>
-              )}
+                </section>
             </fieldset>
           </form>
         ) : (
-          <section className="job-read-details" aria-label={section}>
-            {section === "Overview" && (
+          <section className="job-read-details" aria-label="Job information">
               <>
                 <h3>Position information</h3>
                 <dl>
@@ -426,8 +373,6 @@ export function JobDrawer({
                   ))}
                 </div>
               </>
-            )}
-            {section === "Requirements" && (
               <>
                 <h3>Job description</h3>
                 <p className="job-description">{job.description}</p>
@@ -438,8 +383,6 @@ export function JobDrawer({
                   ))}
                 </ol>
               </>
-            )}
-            {section === "Publishing" && (
               <>
                 <h3>Compensation & publishing</h3>
                 <dl>
@@ -456,11 +399,10 @@ export function JobDrawer({
                   ))}
                 </dl>
               </>
-            )}
           </section>
         )}
       </div>
-      <footer className="job-drawer-footer">
+      <footer className="job-page-footer">
         {editing ? (
           <>
             <span className="job-draft-state">
@@ -513,6 +455,6 @@ export function JobDrawer({
           </>
         )}
       </footer>
-    </dialog>
+    </section>
   );
 }

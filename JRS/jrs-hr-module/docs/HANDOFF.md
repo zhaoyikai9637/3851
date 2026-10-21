@@ -1,5 +1,27 @@
 # Engineering handoff
 
+## Job editing update - 2026-10-22
+
+Job Postings now opens details and editing in the normal full-width workspace,
+replacing the modal side drawer. Editing presents position information, long-form
+description/requirements and compensation/publishing together in one continuous
+form. Desktop uses two columns for short fields; phones use one. Textareas use
+15px text and remain vertically resizable. Browser document scrolling replaces
+the drawer scroll region, and a sticky footer keeps Save/Cancel reachable.
+
+The explicit Back/Cancel actions confirm discarding dirty edits; beforeunload
+requests the browser's refresh/close warning while edits are dirty. This is not
+autosave. List search, filters and pagination remain mounted while details are
+open, and closing restores focus to the initiating list button. Existing API
+payloads, revisions, validation and status command behavior are preserved.
+
+Verified in Edge at desktop and 390px: full-width editor, normal document scroll,
+continuous fields, sticky actions, retained edits after Keep editing, discard to
+the retained list, and no phone document horizontal overflow. Root 118, frontend
+129 (including 18 job tests), native HR 112, backend/API 183 and isolated MySQL
+12 tests passed; both production clients built. Browser checks did not save
+changes to existing job records. Remaining list/design refinements stay queued.
+
 ## Current continuation status - 2026-10-21
 
 Page sections now live in the shared white header. Applications, Interviews,

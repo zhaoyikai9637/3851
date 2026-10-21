@@ -4,11 +4,16 @@
 
 The following request remains queued for later implementation.
 
-1. Job Postings needs a substantial UI redesign. Remind the user of this queued
-   requirement when returning to Job Postings design work. Scope and design details
-   remain to be agreed before that redesign is implemented.
+1. Job Postings editing redesign delivered on 2026-10-22: full-width continuous
+   form replaces the side drawer and tabs. Remaining list/design refinements need
+   a separate user brief; remind the user when returning to that design work.
 
 ## Current continuation plan - 2026-10-21
+
+- Delivered normal full-page Job Postings details/editing with all fields together,
+  browser scrolling, sticky Save/Cancel, dirty-edit confirmation, refresh warning
+  and preserved list filters/page. Desktop/390px checks, unit/API/MySQL suites and
+  production builds passed. Drafts are not automatically saved.
 
 - Completed shared white-header section navigation and removed visible titles
   from Applications, Interviews, Reports and communication pages. Verified
