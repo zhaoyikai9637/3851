@@ -2,6 +2,13 @@
 
 ## Current continuation status - 2026-10-21
 
+Applications, Candidates, Interviews, Reports lists and Job Postings now calculate page sizes
+from real row heights and an independent outer-browser space budget. This reduces
+unnecessary scrolling without clipping content. Search focus, IME and expandable
+details remain protected. Candidates retains its list/page when opening a profile.
+Edge desktop, 390px and 320px checks passed after browser control was restored.
+See ../../docs/VIEWPORT_PAGINATION.md for measured sizes and remaining necessary scroll.
+
 Job intake and processing are now separate: Closed stops new applications while
 existing applications can continue; Stopped stops both intake and progression.
 Draft remains non-operational. Schema 11 was backed up and applied to local dev/test;

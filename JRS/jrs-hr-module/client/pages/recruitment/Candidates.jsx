@@ -1,13 +1,23 @@
 import { useSearchParams } from "react-router-dom";
+import {useEffect,useRef,useState} from 'react';
+import {useViewportRows} from '../../src/useViewportRows';
 import { ErrorBox, Loading, Pagination, useLoad } from "../../src/shared";
 
 export function Candidates({ onOpen }) {
   const [params, setParams] = useSearchParams();
+  const list=useRef(null),[limit,setLimit]=useState(()=>Math.max(1,Math.min(10,Number(params.get('pageSize'))||10)));
   const search = params.get("q") || "",
     page = Math.max(1, Number(params.get("page")) || 1);
   const load = useLoad(
-    `/recruitment/api/hr/candidates?${new URLSearchParams({ q: search, page: String(page), limit: "20" })}`,
+    `/recruitment/api/hr/candidates?${new URLSearchParams({ q: search, page: String(page), limit: String(limit) })}`,
   );
+  const size=useViewportRows(list,load.data,limit);
+  useEffect(()=>{
+    if(size===limit)return;
+    const nextPage=Math.floor((page-1)*limit/size)+1;
+    setLimit(size);
+    setParams(current=>{const next=new URLSearchParams(current);next.set('pageSize',String(size));if(nextPage>1)next.set('page',String(nextPage));else next.delete('page');return next;},{replace:true});
+  },[size,limit,page,setParams]);
   function update(key, value) {
     setParams(
       (current) => {
@@ -21,7 +31,7 @@ export function Candidates({ onOpen }) {
     );
   }
   return (
-    <>
+    <div className="candidate-list-workspace" ref={list}>
       <div className="workspace-toolbar" role="search" aria-label="Candidate filters">
         <input
           type="search"
@@ -92,6 +102,6 @@ export function Candidates({ onOpen }) {
           )
         )}
       </section>
-    </>
+    </div>
   );
 }

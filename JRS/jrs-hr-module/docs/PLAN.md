@@ -2,20 +2,19 @@
 
 ## User waiting queue - 2026-10-21
 
-These requests are recorded for later implementation; do not treat them as done.
+The following request remains queued for later implementation.
 
-1. Adapt list pagination to the available viewport height. Applications / Interview
-   is the supplied example: show fewer rows when needed and move remaining records
-   to page 2 and later pages, keeping pagination reachable without unnecessary page
-   scrolling. Review similar list pages and desktop/mobile layouts. Do not hide or
-   clip overflow to simulate a fix, remove necessary document scrolling, or restore
-   the iframe resize loop that disrupted search and Job Information expansion.
-   This refines the earlier browser-scroll request for short, paginated lists.
-2. Job Postings needs a substantial UI redesign. Remind the user of this queued
+1. Job Postings needs a substantial UI redesign. Remind the user of this queued
    requirement when returning to Job Postings design work. Scope and design details
    remain to be agreed before that redesign is implemented.
 
 ## Current continuation plan - 2026-10-21
+
+- Implemented viewport-sized pagination for Applications, Candidates, Interviews, Reports lists
+  and Job Postings. Excess records move to later pages; phone rows use measured
+  height and necessary document scrolling remains available. Search/IME and native
+  detail expansion regressions are covered. Desktop/phone browser checks passed;
+  Candidates returns to its retained list page. See ../../docs/VIEWPORT_PAGINATION.md.
 
 - Closed intake now retains existing interview/offer processing; Stopped blocks
   both intake and progression. Local schema 11 applied; team schema migration is

@@ -6,6 +6,21 @@
   const defaults=()=>({page:1,q:'',job:'',stage:'',priority:'',from:'',to:'',full:false,period:'today',resumePage:1,zoom:100,resumeFit:true,jobStatus:'',interviewStatus:'',interviewScope:'all',interviewDate:'',noticeTab:'all'});
   const listStates=new Map();
   let pendingJob='',ui=defaults(),route=['dashboard'],modalTrigger=null,formSnapshot='',busy=false,toastTimer;
+  let listBudget=window.innerHeight-180,fitTimer,rowHeight=0,fitKey='';
+  function fitList(){
+    if(composingSearch)return;
+    if(!['applications','interviews','reports','jobs'].includes(route[0]))return;
+    const key=route.join('/')+':'+(ui.section||'')+':'+window.innerWidth;
+    if(key!==fitKey){fitKey=key;rowHeight=0;}
+    const result=window.HRPagination?.measure($('#content'),listBudget,rowHeight);
+    if(!result)return;
+    rowHeight=result.rowHeight;
+    if(result.size!==ui.pageSize){
+      const offset=(ui.page-1)*ui.pageSize;
+      ui.pageSize=result.size;ui.page=Math.floor(offset/result.size)+1;render();
+    }
+  }
+  function scheduleFit(){clearTimeout(fitTimer);fitTimer=setTimeout(fitList,0);}
   function renderNavigation(){
     $('#navigation').innerHTML=V.navigation(route,store.db);
     const secondary=V.secondaryNavigation(route,store.db,ui),nav=$('#secondary-navigation');
@@ -17,7 +32,9 @@
   function go(path){if(window.parent&&window.parent!==window)window.parent.postMessage({type:'jrs:workspace',route:path,intent:true},location.origin);if(location.hash==='#/'+path){route=path.split('/');render();}else location.hash='/'+path;}
   function notify(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,5500);}
   function render(){
-    const db=store.db,page=route[0];ui.pageSize=Math.max(4,Math.min(10,Math.floor(((window.innerHeight||768)-365)/58)));ui.compact=(window.innerHeight||768)<850;ui.pageSize=10;
+    const focused=document.activeElement?.matches('[data-search]')?document.activeElement:null;
+    const selection=focused?[focused.selectionStart,focused.selectionEnd]:null;
+    const db=store.db,page=route[0];ui.pageSize=ui.pageSize||10;ui.compact=(window.innerHeight||768)<850;
     const names={dashboard:'Dashboard',applications:'Applications',review:'Resume Review',results:'Interview Results',success:'Status Update',candidate:'Candidate Profile',jobs:'Job Postings',interviews:'Interviews',reports:'Reports',notifications:'Notification Center',outbox:'Email Outbox',templates:'Email Templates','mail-log':'Notification Log','hr-profile':'My Profile'};
     const label=page==='applications'&&V.stageForRoute(route)?'Applications / '+V.stageLabel(V.stageForRoute(route)):names[page]||'HR Workspace';document.title='JRS | '+label;$('#page-label').textContent=label;
     renderNavigation();
@@ -27,6 +44,8 @@
     if(['candidate','review','results'].includes(page)){const a=page==='candidate'?db.applications.find(a=>a.candidateId===route[1]&&(!route[2]||a.id===route[2])):db.applications.find(a=>a.id===route[1]);if(a)$('#content').insertAdjacentHTML('beforeend','<section class="panel padded spaced">'+V.applicationMessages(db,a.id)+'</section>');}
     if(page==='candidate'){const c=db.candidates.find(c=>c.id===route[1]);if(c)$('#content .heading-actions')?.insertAdjacentHTML('beforeend',button('candidate-edit','Edit Contact Details',c.id)+button('resume-upload','Upload Resume',c.id));if(c){const applications=db.applications.filter(a=>a.candidateId===c.id);if(applications.length>1)$('#content .page-heading')?.insertAdjacentHTML('afterend','<nav class="module-tabs" aria-label="Candidate applications">'+applications.map(a=>V.link('candidate/'+c.id+'/'+a.id,e(job(db,a).title)+' · '+e(V.stageLabel(a.stage)),ui.profileApplicationId===a.id?'active':'')).join('')+'</nav>');}}
 
+    if(selection){const input=$('[data-search]');input?.focus({preventScroll:true});input?.setSelectionRange(...selection);}
+    scheduleFit();
   }
   function routeChanged(){
     $('.sidebar').classList?.remove('mobile-open');$('[data-action=mobile-menu]').setAttribute?.('aria-expanded','false');listStates.set(route.join('/'),HRModel.clone(ui));route=V.parseRoute(location.hash);ui={...defaults(),...(listStates.get(route.join('/'))||{})};if(route[0]==='applications'&&pendingJob){ui.job=pendingJob;pendingJob='';}ui.profileApplicationId=route[2]||'';
@@ -222,10 +241,21 @@
     if(target.name==='reason'&&$('[data-other-reason]')){const other=$('[data-other-reason]');other.hidden=target.value!=='Other';other.querySelector('input').required=!other.hidden;}
   });
   // The host fits this iframe to its content. Height changes must not replace
-  // focused inputs or collapse native details; only a width change needs layout.
-  let resizeTimer,layoutWidth=window.innerWidth;
+  // focused inputs or collapse native details. Real standalone viewport changes
+  // and host capacity messages can still update pagination.
+  window.addEventListener('message',event=>{
+    if(window.parent===window||event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='jrs:viewport')return;
+    const value=event.data.availableHeight;
+    if(!Number.isFinite(value)||value<80||value>10000||value===listBudget)return;
+    listBudget=value;scheduleFit();
+  });
+  window.addEventListener('load',scheduleFit);
+  if(typeof ResizeObserver==='function')new ResizeObserver(scheduleFit).observe($('#content'));
+  let resizeTimer,layoutWidth=window.innerWidth,layoutHeight=window.innerHeight;
   window.addEventListener('resize',()=>{
-    if(window.innerWidth===layoutWidth)return;
+    if(window.innerWidth===layoutWidth&&(window.parent!==window||window.innerHeight===layoutHeight))return;
+    if(window.parent===window)listBudget=window.innerHeight-180;
+    layoutHeight=window.innerHeight;
     layoutWidth=window.innerWidth;clearTimeout(resizeTimer);
     resizeTimer=setTimeout(()=>render(),180);
   });

@@ -194,6 +194,21 @@ describe("authentication and navigation", () => {
     await ui.click(within(screen.getByRole('navigation',{name:'Main navigation'})).getByRole('link',{name:'Dashboard'}));
     expect(await screen.findByTitle('Dashboard')).toBeVisible();
   });
+  it('sends a stable list budget after reserving outer header, padding and footer space',async()=>{
+    mount('/applications');const frame=await screen.findByTitle('Applications');
+    frame.getBoundingClientRect=()=>({top:120});
+    const footer=document.querySelector('.workspace-footer');footer.getBoundingClientRect=()=>({height:55});
+    const post=vi.spyOn(frame.contentWindow,'postMessage');
+    fireEvent.load(frame);
+    const payload=post.mock.calls.at(-1)[0];
+    expect(payload.type).toBe('jrs:viewport');
+    expect(payload.availableHeight).toBeGreaterThan(0);
+    expect(payload.availableHeight).toBeLessThan(window.innerHeight-175);
+    post.mockClear();
+    fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:frame',height:400}}));
+    expect(post.mock.calls.at(-1)[0].availableHeight).toBe(payload.availableHeight);
+  });
+
   it('opens embedded dialogs at the browser viewport top so footer actions remain reachable',async()=>{
     mount('/interviews');const frame=await screen.findByTitle('Interviews');
     frame.getBoundingClientRect=()=>({top:120});frame.scrollIntoView=vi.fn();
@@ -1030,6 +1045,32 @@ it("opens allowlisted HR deep links from the embedded dashboard while rejecting 
  fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",route:"dashboard"}}));
  expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer");
 });
+it('fits Candidates to the viewport and requests the remaining records on the next page',async()=>{
+ const rows=Array.from({length:18},(_,i)=>({id:'fit-'+i,name:'Person '+(i+1),email:'person-'+i+'@example.test'}));
+ overrides['GET /recruitment/api/hr/candidates']=url=>{
+  const params=new URL(url,'http://localhost').searchParams,limit=Number(params.get('limit')),page=Number(params.get('page'));
+  return json({items:rows.slice((page-1)*limit,page*limit),total:rows.length,page,limit});
+ };
+ const rect=vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(){
+  const height=this.matches('.candidate-list-workspace')?200+document.querySelectorAll('tbody tr').length*80:this.matches('tr')?80:this.matches('.workspace-footer')?55:0;
+  return {top:this.matches('.candidate-list-workspace')?140:0,height,bottom:height,left:0,right:1000,width:1000};
+ });
+ try{
+  const ui=mount('/candidates');
+  await waitFor(()=>expect(screen.getByText('1–4 of 18')).toBeVisible());
+  expect(screen.getByRole('searchbox',{name:'Search candidates'})).toBeVisible();
+  await ui.click(screen.getByRole('button',{name:'Next',exact:true}));
+  expect(await screen.findByRole('button',{name:'View profile for Person 5',exact:true})).toBeVisible();
+  expect(screen.getByText('5–8 of 18')).toBeVisible();
+  const reads=()=>fetcher.mock.calls.filter(([url])=>url.startsWith('/recruitment/api/hr/candidates?')).length;
+  const beforeReturn=reads();
+  await ui.click(screen.getByRole('button',{name:'View profile for Person 5',exact:true}));
+  await ui.click(screen.getByRole('button',{name:'Back to candidates',exact:true}));
+  expect(await screen.findByText('5–8 of 18')).toBeVisible();
+  expect(reads()).toBe(beforeReturn);
+ }finally{rect.mockRestore();}
+});
+
 it("keeps the Candidates parent path and search context when opening a person",async()=>{
  overrides["GET /recruitment/api/hr/candidates"]=()=>json({items:[{id:"person-1",name:"Casey",email:"casey@example.test"}],total:21,page:2,limit:20});
  const ui=mount("/candidates?q=Casey&page=2");

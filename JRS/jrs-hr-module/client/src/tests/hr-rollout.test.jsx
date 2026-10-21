@@ -87,13 +87,13 @@ it("finds candidates beyond the old first-100 cap and retains the list after pro
   expect(await screen.findByText("Person 1")).toBeVisible();
   expect(screen.getByRole("searchbox", { name: "Search candidates" })).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Next", exact: true }));
-  expect(await screen.findByText("Person 21")).toBeVisible();
-  await ui.click(screen.getByRole("button", { name: "View profile for Person 21" }));
+  expect(await screen.findByText("Person 11")).toBeVisible();
+  await ui.click(screen.getByRole("button", { name: "View profile for Person 11" }));
   await ui.click(screen.getByRole("button", { name: "Back to candidates" }));
-  expect(await screen.findByText("Person 21")).toBeVisible();
+  expect(await screen.findByText("Person 11")).toBeVisible();
   await ui.type(screen.getByRole("searchbox", { name: "Search candidates" }), "Person 121");
   expect(await screen.findByText("Person 121")).toBeVisible();
-  expect(screen.queryByText("Person 21")).not.toBeInTheDocument();
+  expect(screen.queryByText("Person 11")).not.toBeInTheDocument();
 });
 it("opens an empty calendar in the current UTC+08 business month",()=>{
  vi.useFakeTimers();try {

@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ErrorBox, Loading } from "../../src/shared";
 import { Icon } from "../../src/icons";
 import { createJobsClient } from "./api";
 import { displayDate } from "./model";
 import { JobDrawer } from "./JobDrawer";
+import {useViewportRows} from '../../src/useViewportRows';
 import "./jobs.css";
 
 export function JobPostings() {
@@ -13,6 +14,7 @@ export function JobPostings() {
   const [data, setData] = useState(null),
     [error, setError] = useState(null),
     [drawer, setDrawer] = useState(null);
+  const list=useRef(null),pageSize=useViewportRows(list,data);
   const [search, setSearch] = useState(""),
     [department, setDepartment] = useState(""),
     [status, setStatus] = useState("All"),
@@ -39,9 +41,9 @@ export function JobPostings() {
           .toLowerCase()
           .includes(search.toLowerCase()),
     );
-  const pages = Math.max(1, Math.ceil(filtered.length / 10)),
+  const pages = Math.max(1, Math.ceil(filtered.length / pageSize)),
     current = Math.min(page, pages),
-    visible = filtered.slice((current - 1) * 10, current * 10);
+    visible = filtered.slice((current - 1) * pageSize, current * pageSize);
   const selected = drawer?.id ? items.find((job) => job.id === drawer.id) : null;
   async function refresh() {
     const latest = await client.load();
@@ -60,7 +62,7 @@ export function JobPostings() {
     setDrawer({ id });
   }
   return (
-    <div className="jobs-workspace">
+    <div className="jobs-workspace" ref={list}>
       <div className="jobs-toolbar" role="toolbar" aria-label="Job filters and actions">
         <label className="jobs-search">
           <Icon name="search" />
@@ -210,7 +212,7 @@ export function JobPostings() {
             <footer className="jobs-table-footer">
               <span>
                 {filtered.length
-                  ? `${(current - 1) * 10 + 1}–${Math.min(current * 10, filtered.length)} of ${filtered.length} jobs`
+                  ? `${(current - 1) * pageSize + 1}–${Math.min(current * pageSize, filtered.length)} of ${filtered.length} jobs`
                   : "0 jobs"}
               </span>
               <nav aria-label="Job result pages">

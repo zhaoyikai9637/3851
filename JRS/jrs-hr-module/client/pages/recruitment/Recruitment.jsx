@@ -15,7 +15,12 @@ export function Recruitment({ page, title }) {
   const [candidate, setCandidate] = useState("");
   const [contentHeight, setContentHeight] = useState(600);
   function reportViewport() {
-    frame.current?.contentWindow?.postMessage({type:'jrs:viewport',height:window.innerHeight},window.location.origin);
+    const element=frame.current;
+    if(!element)return;
+    const main=element.closest('main'),footer=document.querySelector('.workspace-footer');
+    const bottom=main?parseFloat(getComputedStyle(main).paddingBottom)||0:0;
+    const availableHeight=Math.max(80,Math.floor(window.innerHeight-(element.getBoundingClientRect().top+window.scrollY)-bottom-(footer?.getBoundingClientRect().height||0)-8));
+    element.contentWindow?.postMessage({type:'jrs:viewport',height:window.innerHeight,availableHeight},window.location.origin);
   }
   useEffect(() => {
     window.addEventListener('resize',reportViewport);
@@ -89,7 +94,6 @@ export function Recruitment({ page, title }) {
     window.addEventListener("message", receive);
     return () => window.removeEventListener("message", receive);
   }, [navigate, pathname, locationKey, setTrail, page, candidate]);
-  if (page === "candidates" && !candidate) return <Candidates onOpen={setCandidate} />;
   const requested = new URLSearchParams(search).get("view");
   const embeddedPage = candidate
     ? `candidate/${encodeURIComponent(candidate)}`
@@ -100,6 +104,7 @@ export function Recruitment({ page, title }) {
   const source = `/recruitment/${filter ? "?job=" + encodeURIComponent(filter) : ""}#/${embeddedPage}`;
   return (
     <>
+      {page==='candidates'&&<div hidden={Boolean(candidate)}><Candidates onOpen={setCandidate}/></div>}
       {candidate && (
         <button
           className="btn btn-outline-secondary mb-3"
@@ -111,7 +116,7 @@ export function Recruitment({ page, title }) {
           Back to candidates
         </button>
       )}
-      <iframe
+      {(page!=='candidates'||candidate)&&<iframe
         ref={frame}
         title={title}
         src={source}
@@ -124,7 +129,7 @@ export function Recruitment({ page, title }) {
           display: "block",
           background: "transparent",
         }}
-      />
+      />}
     </>
   );
 }

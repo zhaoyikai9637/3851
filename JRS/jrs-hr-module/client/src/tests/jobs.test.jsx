@@ -88,6 +88,22 @@ it("explains closed intake separately from stopped processing and saves the stop
   await ui.click(screen.getByRole('button',{name:'Save job',exact:true}));
   expect(await screen.findByText('Stopped',{selector:'.job-status'})).toBeVisible();
 });
+
+it('fits jobs to available height and moves remaining jobs to the next page',async()=>{
+  data.items=Array.from({length:18},(_,i)=>({...data.items[0],id:'fit-'+i,title:'Position '+(i+1)}));
+  const rect=vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(){
+    const height=this.matches('.jobs-workspace')?200+document.querySelectorAll('tbody tr').length*80:this.matches('tr')?80:this.matches('.workspace-footer')?55:0;
+    return {top:this.matches('.jobs-workspace')?140:0,height,bottom:height,left:0,right:1000,width:1000};
+  });
+  try{
+    const ui=mount();
+    await screen.findByRole('button',{name:'View Position 1',exact:true});
+    await vi.waitFor(()=>expect(document.querySelectorAll('tbody tr')).toHaveLength(4));
+    await ui.click(screen.getByRole('button',{name:'Next',exact:true}));
+    expect(await screen.findByRole('button',{name:'View Position 5',exact:true})).toBeVisible();
+    expect(screen.queryByRole('button',{name:'View Position 1',exact:true})).not.toBeInTheDocument();
+  }finally{rect.mockRestore();}
+});
 async function edit(ui) {
   await ui.click(await screen.findByRole("button", { name: "View Software Developer" }));
   await ui.click(screen.getByRole("button", { name: "Edit job" }));
