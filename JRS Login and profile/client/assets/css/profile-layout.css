@@ -111,3 +111,21 @@
 .profile-record-languages .language-detail + .language-detail { margin-top: 12px; }
 .profile-record-languages .language-detail strong { font-weight: 600; }
 
+/* Spacing between saved skills and the Add skills button. */
+#skillTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    margin-bottom: 16px;
+}
+
+#skillTags:empty {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+#skillTags .skill-chip {
+    margin: 0;
+}
+
