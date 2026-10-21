@@ -3,6 +3,10 @@
 .login-page .page-container { min-height: calc(100dvh - 70px); padding: 32px 20px; }
 .login-page .login-card { width: 100%; max-width: 440px; padding: 28px 24px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .login-card .auth-title { font-size: 32px; line-height: 1.2; letter-spacing: -.025em; margin-bottom: 28px; }
+.recovery-page .auth-subtitle { margin-top: -12px; margin-bottom: 24px; color: #475467; font-size: 14px; line-height: 1.6; }
+.recovery-page .auth-subtitle strong { overflow-wrap: anywhere; }
+.recovery-page .resend-container { font-size: 13px; }
+.recovery-page .toggle-password { font-size: 12px; padding: 4px; }
 .login-card .form-group { margin-bottom: 20px; }
 .login-card .form-group label { font-size: 14px; font-weight: 600; color: #172033; }
 .login-card .form-group input { height: 44px; border-radius: 8px; font-size: 14px; }

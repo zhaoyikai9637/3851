@@ -22,4 +22,8 @@ The explicit project policy for newly registered or reset passwords is 8-72 prin
 
 This composition restriction is a user-selected product rule, not a claim of compliance with current NIST password guidance. NIST SP 800-63B-4 advises against composition requirements and recommends broader character support: https://pages.nist.gov/800-63-4/sp800-63b.html . No claim is made that banning Unicode improves password security.
 
+## Recovery layout completion
+
+Forgot-password, check-email and set-new-password now share the compact login layout and stylesheet. Their previous split-screen authentication class is removed. This eliminates the large left branding panel while retaining the original wordmark, recovery controls, return links and transport logic. Real HTML/CSS regressions verify a block layout, a 440px maximum form width, no card shadow and consistent 44px actions. No SMTP setting or delivery logic changes are included.
+
 Automated acceptance includes password visibility/icon state, page restoration, all missing character classes, non-ASCII/control characters, invalid lengths, creation/reset endpoint enforcement, legacy login and unchanged password whitespace. The isolated staged publication snapshot passed 56 root tests, 69 login-module tests and English-only validation. The restarted active local service returned the new login page and policy script and refused an invalid registration before account creation. Actual Edge visual acceptance remains pending while local browser control is disabled.
