@@ -16,6 +16,17 @@ async function loginPage(query='') {
   dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
   return dom;
 }
+for (const query of ['', '?mode=register&returnTo=%2Fapplicant%2Fapply%2Frole-a']) test('authentication offers a direct return to public jobs: '+query, async () => {
+  const dom=await loginPage(query),d=dom.window.document;
+  try {
+    const link=[...d.querySelectorAll('a')].find(a=>a.textContent.trim()==='Back to jobs');
+    assert.ok(link,'A return to public jobs is available');
+    assert.equal(new URL(link.href).pathname,'/jobs');
+    assert.equal(link.closest('form'),null,'Returning to jobs does not submit credentials');
+    assert.equal(link.hidden,false);
+  } finally {dom.window.close();}
+});
+
 test('password visibility is accessible and registration restores private password entry', async () => {
   const dom = await loginPage(), w = dom.window, d = w.document;
   try {

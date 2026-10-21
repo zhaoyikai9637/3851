@@ -3,6 +3,9 @@
 .login-page .page-container { min-height: calc(100dvh - 70px); padding: 32px 20px; }
 .login-page .login-card { width: 100%; max-width: 440px; padding: 28px 24px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .login-card .auth-title { font-size: 32px; line-height: 1.2; letter-spacing: -.025em; margin-bottom: 28px; }
+.login-card .back-to-jobs { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: -8px 0 16px; color: #425777; font-size: 14px; font-weight: 500; text-decoration: none; }
+.login-card .back-to-jobs:hover { color: #292acb; text-decoration: underline; text-underline-offset: 3px; }
+.login-card .back-to-jobs svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .recovery-page .auth-subtitle { margin-top: -12px; margin-bottom: 24px; color: #475467; font-size: 14px; line-height: 1.6; }
 .recovery-page .auth-subtitle strong { overflow-wrap: anywhere; }
 .recovery-page .resend-container { font-size: 13px; }

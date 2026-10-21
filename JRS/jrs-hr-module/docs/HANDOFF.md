@@ -2,6 +2,12 @@
 
 ## Current continuation status - 2026-10-21
 
+Login and registration now expose an arrow-labelled Back to jobs link above the
+form. It opens the public `/jobs` route without submitting credentials. This
+follow-up passed 15 login DOM tests and 69 login Jest tests; the actual running
+server serves the link/styles and its destination returns HTTP 200. Source and
+tests were synchronized to the runtime checkout. No browser visual check was run.
+
 This section supersedes historical pending statements below. See
 `../../docs/TEAM_MAIL_OPERATIONS.md` for current operations and limitations.
 

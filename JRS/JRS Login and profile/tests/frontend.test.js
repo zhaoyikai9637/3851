@@ -78,7 +78,7 @@ test('all local HTML resources exist and no inline event handlers remain', () =>
             const html = fs.readFileSync(filename, 'utf8');
             expect(html).not.toMatch(/\son\w+\s*=/i);
             for (const match of html.matchAll(/(?:src|href|action)="([^"]+)"/g)) {
-                if (/^(https?:|#)/.test(match[1])) continue;
+                if (/^(https?:|#)/.test(match[1]) || match[1] === '/jobs') continue; // Public route supplied by the integrated server.
                 expect(fs.existsSync(match[1].startsWith('/') ? path.join(root, match[1].slice(1)) : path.resolve(folder, match[1]))).toBe(true);
             }
             const script = filename.replace(/\.html$/, '.js');

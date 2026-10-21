@@ -2,6 +2,9 @@
 
 ## Current continuation plan - 2026-10-21
 
+- Added and verified Back to jobs on login/registration; refreshing login keeps
+  the login URL, while this explicit control returns to public browsing.
+
 The historical waiting queue below has been partially implemented. Current
 behavior and deployment boundaries are in `../../docs/TEAM_MAIL_OPERATIONS.md`.
 
