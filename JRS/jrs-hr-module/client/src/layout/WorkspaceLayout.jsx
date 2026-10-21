@@ -104,6 +104,7 @@ function AccountMenu({ user, onLogout }) {
 
 export function WorkspaceLayout() {
   const [trail, setTrail] = useState(null);
+  const [sections,setSections]=useState(null);
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false),
     [confirmLogout, setConfirmLogout] = useState(false),
@@ -111,6 +112,7 @@ export function WorkspaceLayout() {
     [error, setError] = useState(null);
   const location = useLocation();
   const isCommunicationPage = communicationLinks.some(([path]) => path === location.pathname);
+  const navigationOnly = isCommunicationPage || ['/applications', '/interviews', '/reports'].includes(location.pathname);
   useEffect(() => {
     setSidebarOpen(false);
     document.title = `${pageName(location.pathname)} · JRS`;
@@ -141,6 +143,7 @@ export function WorkspaceLayout() {
         </Modal>
       )}
       <div className="workspace-body compact-workspace">
+        <div className={`workspace-header${navigationOnly ? ' navigation-only-header' : ''}`}>
         <header className="topbar compact-topbar">
           <button
             className="icon-button mobile-toggle"
@@ -150,12 +153,12 @@ export function WorkspaceLayout() {
             ☰
           </button>
 
-          {
+          {navigationOnly ? <h1 className="visually-hidden" id="workspace-page-title">{pageName(location.pathname)}</h1> : <div className="workspace-title">
             <WorkspacePath
               pathname={location.pathname}
               trail={trail?.owner === location.key ? trail : null}
             />
-          }
+          </div>}
           <AccountMenu
             user={user}
             onLogout={() => {
@@ -164,22 +167,24 @@ export function WorkspaceLayout() {
             }}
           />
         </header>
+        {isCommunicationPage && (
+          <nav className="workspace-sections" aria-label="Communication pages">
+            {communicationLinks.map(([path,name])=><NavLink key={path} to={path}>{name}</NavLink>)}
+          </nav>
+        )}
+        {!isCommunicationPage&&sections?.owner===location.key&&sections.items.length>0&&(
+          <nav className="workspace-sections" aria-label={sections.label}>
+            {sections.items.map((item,index)=><button type="button" key={index} className={item.selected?'active':''} aria-pressed={item.selected} onClick={()=>sections.select(index)}>{item.label}</button>)}
+          </nav>
+        )}
+        </div>
         <main
           id="main-content"
           className="main-content"
           tabIndex={-1}
           aria-labelledby="workspace-page-title"
         >
-          {isCommunicationPage && (
-            <nav className="workspace-sections" aria-label="Communication pages">
-              {communicationLinks.map(([path, name]) => (
-                <NavLink key={path} to={path}>
-                  {name}
-                </NavLink>
-              ))}
-            </nav>
-          )}
-          <Outlet context={{ setTrail, compactHeading: true }} />
+          <Outlet context={{ setTrail, setSections, compactHeading: true }} />
         </main>
         <footer className="workspace-footer">
           <span>JRS · Human Resources</span>

@@ -151,6 +151,28 @@ const writes = (path) =>
   );
 
 describe("authentication and navigation", () => {
+  it('places communication navigation inside the white workspace header',async()=>{
+    mount('/notifications');
+    const nav=await screen.findByRole('navigation',{name:'Communication pages'});
+    expect(nav.closest('.workspace-header')).not.toBeNull();
+    expect(document.querySelector('main')).not.toContainElement(nav);
+  });
+
+  it('hosts trusted embedded sections in the header and sends selection to their source frame',async()=>{
+    const ui=mount('/reports'),frame=await screen.findByTitle('Reports');
+    const data={type:'jrs:sections',key:'reports-tabs',label:'Report sections',items:[{label:'Overview',selected:true},{label:'Job performance',selected:false}]};
+    fireEvent(window,new MessageEvent('message',{origin:'https://untrusted.example',source:frame.contentWindow,data}));
+    expect(screen.queryByRole('navigation',{name:'Report sections'})).not.toBeInTheDocument();
+    fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data}));
+    const nav=await screen.findByRole('navigation',{name:'Report sections'});
+    expect(nav.closest('.workspace-header')).not.toBeNull();
+    expect(within(nav).getByRole('button',{name:'Overview'})).toHaveAttribute('aria-pressed','true');
+    const post=vi.spyOn(frame.contentWindow,'postMessage');
+    await ui.click(within(nav).getByRole('button',{name:'Job performance'}));
+    expect(post).toHaveBeenCalledWith({type:'jrs:select-section',key:'reports-tabs',index:1},window.location.origin);
+    await ui.click(screen.getByRole('link',{name:'Dashboard',exact:true}));
+    expect(screen.queryByRole('navigation',{name:'Report sections'})).not.toBeInTheDocument();
+  });
   it('opens Dashboard by default after entering the HR workspace', async () => {
     mount('/');
     expect(await screen.findByTitle('Dashboard')).toHaveAttribute('src','/recruitment/#/dashboard');
@@ -188,9 +210,8 @@ describe("authentication and navigation", () => {
 
   it('uses the sidebar to return to Dashboard without an artificial breadcrumb parent', async () => {
     const ui = mount('/interviews');
-    const path = await screen.findByRole('navigation', { name: 'Current location' });
-    expect(within(path).queryByRole('link', { name: 'HR Workspace' })).not.toBeInTheDocument();
-    expect(within(path).getByRole('heading',{name:'Interviews',level:1})).toBeVisible();
+    expect(await screen.findByRole('heading',{name:'Interviews',level:1})).toHaveClass('visually-hidden');
+    expect(screen.queryByRole('navigation', { name: 'Current location' })).not.toBeInTheDocument();
     await ui.click(within(screen.getByRole('navigation',{name:'Main navigation'})).getByRole('link',{name:'Dashboard'}));
     expect(await screen.findByTitle('Dashboard')).toBeVisible();
   });
@@ -223,17 +244,16 @@ describe("authentication and navigation", () => {
     expect(await screen.findByRole('heading', { name: 'My Profile', level: 1 })).toBeVisible();
   });
 
-  it('shows embedded parent paths and clears them when leaving the module', async () => {
+  it('keeps embedded stage paths out of the compact navigation header', async () => {
     const ui = mount('/applications');
     const frame = await screen.findByTitle('Applications');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [{label:'Applications',route:'applications'},{label:'Offer',route:null}] } }));
-    const path = screen.getByRole('navigation', { name: 'Current location' });
-    expect(within(path).getByRole('button', { name: 'Applications' })).toBeVisible();
-    expect(within(path).getByText('Offer')).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByRole('navigation', { name: 'Current location' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading',{name:'Applications',level:1})).toHaveClass('visually-hidden');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [] } }));
-    expect(within(path).queryByText('Offer')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button',{name:'Applications',exact:true})).not.toBeInTheDocument();
     await ui.click(within(screen.getByRole('navigation', { name:'Main navigation' })).getByRole('link', { name:'Reports' }));
-    expect(within(screen.getByRole('navigation', {name:'Current location'})).queryByText('Offer')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading',{name:'Reports',level:1})).toHaveClass('visually-hidden');
   });
 
   it('removes the outbox entry and redirects its old URL to Applications', async () => {
@@ -269,16 +289,22 @@ describe("authentication and navigation", () => {
     mount(route);
     expect(await screen.findByRole("navigation", { name: "Main navigation" })).toBeVisible();
     expect(screen.queryByRole("navigation", { name: "Communication pages" })).not.toBeInTheDocument();
-    const location = screen.getByRole("navigation", { name: "Current location" });
-    expect(location).not.toHaveTextContent("HR Workspace");
-    expect(within(location).getByText(/.+/, { selector: '[aria-current="page"]' })).toBeVisible();
+    const location = screen.queryByRole("navigation", { name: "Current location" });
+    if(['/applications','/interviews','/outbox','/reports'].includes(route)) {
+      expect(location).not.toBeInTheDocument();
+      expect(screen.getByRole('heading',{level:1})).toHaveClass('visually-hidden');
+    } else {
+      expect(location).not.toHaveTextContent("HR Workspace");
+      expect(within(location).getByText(/.+/, { selector: '[aria-current="page"]' })).toBeVisible();
+    }
     expect(screen.getByRole("button", { name: /Riley Morgan/ })).toBeVisible();
   });
 
   it.each(["/notifications", "/templates", "/logs"])("shows communication navigation on %s", async (route) => {
     mount(route);
     const tabs = await screen.findByRole("navigation", { name: "Communication pages" });
-    expect(screen.getByRole("navigation", { name: "Current location" })).toBeVisible();
+    expect(screen.queryByRole("navigation", { name: "Current location" })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading',{level:1})).toHaveClass('visually-hidden');
     expect(within(tabs).getAllByRole("link")).toHaveLength(3);
     expect(within(tabs).getByRole("link", { current: "page" })).toHaveAttribute("href", route);
   });
@@ -722,7 +748,7 @@ describe("email templates", () => {
   ])("matches the notification heading hierarchy on %s", async (route, title) => {
     mount(route);
     const heading = await screen.findByRole("heading", { level: 1, name: title });
-    expect(within(screen.getByRole("navigation",{name:"Current location"})).getByRole("heading",{level:1,name:title})).toBeVisible();
+    expect(heading).toHaveClass('visually-hidden');
     if(route==="/templates") expect(await screen.findByText("2 saved templates")).toBeVisible();
     expect(screen.getAllByRole("heading",{level:1})).toHaveLength(1);
   });

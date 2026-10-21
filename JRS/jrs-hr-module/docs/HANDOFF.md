@@ -2,6 +2,20 @@
 
 ## Current continuation status - 2026-10-21
 
+Page sections now live in the shared white header. Applications, Interviews,
+Reports and communication pages omit visible title/breadcrumb rows; their page
+heading remains available to assistive technology. Desktop sections share one
+row with the account control; phones retain a separate horizontally scrollable
+section row below the menu/account controls. Candidate detail sections also use
+the shared header while retaining their breadcrumb. Embedded navigation uses
+same-origin/source checks and a mounted acknowledgement before hiding its source.
+The host recalculates pagination space after header size changes.
+
+Verified in Edge: Applications All/Hired, Reports Job performance, Interviews
+Upcoming and communication Templates switching; 390px navigation has no document
+horizontal overflow. Root 118, frontend 128, native HR 112, backend/API 183 and
+isolated MySQL 12 tests passed; both production clients built successfully.
+
 Communication navigation (Notifications, Templates, Logs) now matches the Reports
 selected-tab treatment: pale blue background, rounded corners and a blue bottom
 border. Edge switching and 390px navigation fit were verified; runtime build passed.

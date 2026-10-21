@@ -10,6 +10,11 @@ The following request remains queued for later implementation.
 
 ## Current continuation plan - 2026-10-21
 
+- Completed shared white-header section navigation and removed visible titles
+  from Applications, Interviews, Reports and communication pages. Verified
+  desktop/390px switching, trusted frame messages, pagination sizing, unit/API/
+  MySQL suites and production builds. Accessible page headings remain in place.
+
 - Implemented viewport-sized pagination for Applications, Candidates, Interviews, Reports lists
   and Job Postings. Excess records move to later pages; phone rows use measured
   height and necessary document scrolling remains available. Search/IME and native
