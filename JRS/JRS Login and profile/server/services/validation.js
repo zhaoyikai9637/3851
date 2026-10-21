@@ -1,4 +1,5 @@
 const { validatePhoneNumberLength } = require('../../client/utils/materials_summary_utils');
+const { passwordPolicyError } = require('../../client/utils/password-policy');
 function fail(message, status = 400) { const error = new Error(message); error.status = status; throw error; }
 function text(value, label, max, required = false) {
     if (typeof value !== 'string') { if (value == null && !required) return ''; fail(`${label} must be text.`); }
@@ -12,7 +13,8 @@ function email(value) {
     return result;
 }
 function password(value) {
-    if (typeof value !== 'string' || value.length < 8 || Buffer.byteLength(value, 'utf8') > 72) fail('Password must contain at least 8 characters and at most 72 UTF-8 bytes.');
+    const error = passwordPolicyError(value);
+    if (error) fail(error);
     return value;
 }
 function id(value) { const n = Number(value); if (!Number.isSafeInteger(n) || n < 1) fail('Invalid record ID.'); return n; }

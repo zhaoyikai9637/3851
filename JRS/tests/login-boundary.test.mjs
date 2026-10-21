@@ -21,7 +21,7 @@ for (const [role, experimental, query, expected] of [
   // Network and navigation are external boundaries; exercise the actual submit handler.
   const location = { search: query, href: '' };
   dom.window.JRS = { request: async endpoint => endpoint === '/login' ? { user: { role } } : { experimentalApplicantPortal: experimental } };
-  dom.window.Function('window', source)( { location } );
+  dom.window.Function('window', source)( { location, addEventListener: dom.window.addEventListener.bind(dom.window) } );
   dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
   dom.window.document.getElementById('loginForm').dispatchEvent(new dom.window.Event('submit', { cancelable: true }));
   await new Promise(resolve => setImmediate(resolve));

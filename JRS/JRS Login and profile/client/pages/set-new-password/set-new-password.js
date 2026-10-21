@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (button.disabled) return;
         error.textContent = '';
         if (password.value !== confirm.value) { error.textContent = 'Passwords do not match.'; return; }
-        if (!validatePasswordLength(password.value)) { error.textContent = 'Use at least 8 characters and at most 72 UTF-8 bytes.'; return; }
+        const policyError = JRSPasswordPolicy.passwordPolicyError(password.value);
+        if (policyError) { error.textContent = policyError; password.focus(); return; }
         button.disabled = true;
         try {
             await JRS.request('/set-new-password', { method: 'POST', body: { resetToken: token, newPassword: password.value } });

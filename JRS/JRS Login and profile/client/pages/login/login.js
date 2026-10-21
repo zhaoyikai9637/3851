@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const address = email.value.trim();
         check(email, 'emailError', !address ? 'Required field' : address.length > 150 ? 'Email address must not exceed 150 characters.' : email.validity.typeMismatch || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address) ? 'Enter a valid email address.' : '');
         const bytes = new TextEncoder().encode(password.value).length;
-        check(password, 'passwordError', !password.value ? 'Required field' : registering && password.value.length < 8 ? 'Use 8 characters or more.' : bytes > 72 ? 'Password must not exceed 72 UTF-8 bytes.' : '');
+        check(password, 'passwordError', !password.value ? 'Required field' : registering ? JRSPasswordPolicy.passwordPolicyError(password.value) : bytes > 72 ? 'Password must not exceed 72 UTF-8 bytes.' : '');
         if (registering) check($('registerFirstName'), 'registerNameError', !$('registerFirstName').value.trim() ? 'Required field' : '');
         return invalid;
     }
@@ -41,32 +41,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function syncMode() {
         $('registerNames').hidden = !registering;
-        $('authTitle').textContent = registering ? 'Create account' : 'Log in';
+        $('authTitle').textContent = registering ? 'Create account' : 'Sign in';
         button.textContent = registering ? 'Create account' : 'Log in';
-        toggle.textContent = registering ? 'Log in' : 'Register';
+        toggle.textContent = registering ? 'Log in' : 'Create a candidate account';
         $('registerPrompt').textContent = registering ? 'Already have an account?' : 'Don’t have an account?';
         $('forgotPasswordLink').hidden = registering;
         password.autocomplete = registering ? 'new-password' : 'current-password';
+        $('passwordHint').hidden = !registering;
+    }
+    function setPasswordVisible(visible) {
+        password.type = visible ? 'text' : 'password';
+        $('togglePassword').setAttribute('aria-pressed', String(visible));
+        $('togglePassword').setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+        // SVG elements do not reflect the HTML hidden property consistently.
+        $('passwordSlash').toggleAttribute('hidden', visible);
     }
     toggle.addEventListener('click', () => {
         registering = !registering;
         submitted = false;
         if (registering) {
             email.value = ''; password.value = '';
-            password.type = 'password';
-            $('togglePassword').setAttribute('aria-pressed', 'false');
-            $('togglePassword').setAttribute('aria-label', 'Show password');
-            $('passwordSlash').hidden = true;
         }
+        setPasswordVisible(false);
         clearErrors(); syncMode();
     });
     $('togglePassword').addEventListener('click', () => {
-        const visible = password.type === 'password';
-        password.type = visible ? 'text' : 'password';
-        $('togglePassword').setAttribute('aria-pressed', String(visible));
-        $('togglePassword').setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
-        $('passwordSlash').hidden = !visible;
+        setPasswordVisible(password.type === 'password');
     });
+    setPasswordVisible(false);
+    window.addEventListener('pageshow', () => setPasswordVisible(false));
     form.addEventListener('submit', async event => {
         event.preventDefault();
         if (button.disabled) return;
@@ -79,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (registering) {
                 await JRS.request('/register', { method: 'POST', body: { email: email.value.trim(), password: password.value,
                     first_name: $('registerFirstName').value, last_name: $('registerLastName').value } });
-                registering = false; submitted = false; clearErrors(); syncMode();
+                registering = false; submitted = false; clearErrors(); setPasswordVisible(false); syncMode();
                 feedback('Account created. You can now log in.', true);
             } else {
                 const result = await JRS.request('/login', { method: 'POST', body: { email: email.value.trim(), password: password.value } });
