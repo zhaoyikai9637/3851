@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../src/api";
 import { useAuth } from "../../src/auth";
+import templateVariables from '../../../shared/template-variables.json';
 import {
   Empty,
   ErrorBox,
@@ -18,7 +19,7 @@ const blank = {
   body: "",
   usageType: Object.keys(usageTypes)[0],
 };
-const tokens = ["CandidateName", "JobTitle", "CompanyName", "HRName"];
+const tokens = Object.keys(templateVariables);
 const fieldsOf = (row) =>
   row ? Object.fromEntries(Object.keys(blank).map((key) => [key, row[key]])) : { ...blank };
 export function Templates() {
@@ -104,7 +105,6 @@ export function Templates() {
                       </span>
                       <span>
                         <strong>{t.templateName}</strong>
-                        <small>{usageTypes[t.usageType] || t.usageType}</small>
                       </span>
                       <span aria-hidden="true">›</span>
                     </button>
@@ -216,7 +216,7 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
     if (unknown.length)
       return setError(
         new Error(
-          `Unsupported variable: ${unknown[0][0]}. Choose one of the four supported variables.`,
+          `Unsupported variable: ${unknown[0][0]}. Choose a supported variable.`,
         ),
       );
     if (form.subject.length > 255 || form.body.length > 20000)
@@ -245,6 +245,15 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
           JobTitle: "Software Developer",
           CompanyName: "JRS",
           HRName: user.fullName,
+          InterviewDate: "<Interview date from application>",
+          InterviewTime: "<Interview time from application>",
+          InterviewLocation: "<Interview location from application>",
+          InterviewFormat: "<Interview format from application>",
+          Interviewer: "<Interviewer from application>",
+          OfferSalary: "<Approved salary from offer>",
+          OfferCurrency: "<Approved currency from offer>",
+          OfferStartDate: "<Start date from offer>",
+          OfferDeadline: "<Response deadline from offer>",
         })[key] || match,
     );
   return (
@@ -388,7 +397,7 @@ function TemplateEditor({ template, onDirty, onDelete, onSaved }) {
       </form>
       {preview && (
         <Modal title="Template preview" onClose={() => setPreview(false)}>
-          <p className="notice">Sample values only. No email is sent.</p>
+          <p className="notice">Sample identity values only. Interview and offer details come from the actual application when preparing an email. No email is sent.</p>
           <dl>
             <dt>Subject</dt>
             <dd className="text-snapshot">{render(form.subject) || "—"}</dd>

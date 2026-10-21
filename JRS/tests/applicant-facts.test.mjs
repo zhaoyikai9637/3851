@@ -4,8 +4,13 @@ const facts = await import('../server/applicant-facts.mjs').catch(error => { if 
 test('overlapping employment is not counted twice during HR integration', () => {
   assert.equal(typeof facts.workFacts, 'function', 'Applicant experience mapping is missing');
   const result = facts.workFacts([{ startDate: '2021-01', endDate: '2023-01', currentRole: false, skills: 'JavaScript, SQL' }, { startDate: '2022-01', endDate: '2024-01', currentRole: false, skills: 'SQL, React' }], '2026-10');
-  assert.equal(result.experience, 3);
+  assert.equal(result.experience, 3.1);
   assert.deepEqual(result.skills, ['JavaScript', 'SQL', 'React']);
+});
+
+test('HR uses inclusive months and displays the standardized skill labels',()=>{
+ const result=facts.workFacts([{startDate:'2026-10',endDate:'2026-10',currentRole:false,skills:['REACT','SQL']}],'2026-10');
+ assert.equal(result.experience,0.1);assert.deepEqual(result.skills,['React','SQL']);
 });
 test('current roles use the current month and invalid date ranges are refused', () => {
   assert.equal(typeof facts.workFacts, 'function', 'Applicant experience mapping is missing');

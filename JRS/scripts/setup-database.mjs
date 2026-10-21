@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto';
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcrypt';
 import { Sequelize } from 'sequelize';
-import { root, loadSettings } from '../server/config.mjs';
+import { root, loadSettings, assertLocalDatabase } from '../server/config.mjs';
 import { recruitmentSql } from '../server/sql-namespace.mjs';
 import { up as createCommunicationSchema } from '../jrs-hr-module/server/src/migrations/001-module.js';
 import { defineModels as applicantModels } from '../JRS Applicant Portal/server/models/index.js';
@@ -13,7 +13,10 @@ import originalContent from '../jrs-hr-module/server/data/original-content.json'
 import { migrateApplicationSnapshot } from '../server/migrations/007-application-snapshot.mjs';
 import { migrateInterviewAssessments } from '../server/migrations/008-interview-assessments.mjs';
 
+import { migrateApplicantProfile } from '../server/migrations/009-applicant-profile.mjs';
+import {migrateMailHistory} from '../server/migrations/010-mail-history.mjs';
 const settings = loadSettings();
+assertLocalDatabase(settings);
 let admin, pool, sequelize;
 try {
   const adminOptions = { host: '127.0.0.1', port: 3307, user: 'root', multipleStatements: false };
@@ -31,7 +34,7 @@ try {
   const [tables] = await pool.query('SHOW TABLES');
   if (tables.length) {
     const [[version]] = await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-    if (![1, 2, 3, 4, 5, 6, 7, 8].includes(version?.version)) throw new Error('Existing schema is not a completed JRS integration database. No automatic overwrite.');
+    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(version?.version)) throw new Error('Existing schema is not a completed JRS integration database. No automatic overwrite.');
     if (version.version === 1) {
       await pool.query('CREATE TABLE JRS_CANDIDATE_LINK (recruiting_id VARCHAR(96) PRIMARY KEY, canonical_id INT NOT NULL UNIQUE) ENGINE=InnoDB');
       await pool.query('CREATE TABLE JRS_HR_APPLICATION_LINK (recruiting_id VARCHAR(96) PRIMARY KEY, canonical_id INT NOT NULL UNIQUE) ENGINE=InnoDB');
@@ -64,6 +67,8 @@ try {
     }
     await migrateApplicationSnapshot(pool);
     await migrateInterviewAssessments(pool);
+    await migrateApplicantProfile(pool);
+    await migrateMailHistory(pool);
     console.log('Existing integrated database retained; no reseeding.');
   } else {
     sequelize = new Sequelize(settings.DB_NAME, settings.DB_USER, settings.DB_PASSWORD, { dialect: 'mysql', host: settings.DB_HOST, port: 3307, logging: false, define: { underscored: true } });
@@ -117,6 +122,8 @@ try {
     await migrateApplicationSnapshot(pool);
     await migrateInterviewAssessments(pool);
     console.log(`Integrated local schema ready; ${profiles.length} authoritative HR profiles, private local login accounts. No cloud writes.`);
+    await migrateApplicantProfile(pool);
+    await migrateMailHistory(pool);
     console.log(`Local login credentials: .local/${accountsFile} (never commit this file).`);
   }
 } catch (error) {

@@ -2,6 +2,12 @@ import { ArrowLeft, ArrowRight, Check, FileText, FileUp, Plus, Trash2 } from "lu
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
+import { jobLabel } from "../../utils/jobLabels";
+import MonthSelect from "../../components/MonthSelect";
+import { PhoneField, LocationField } from "../../components/ContactFields";
+import SkillSelector from "../../components/SkillSelector";
+import { canonicalPhone, locationParts, locationLabel } from "../../../shared/contactFields";
+import { experienceError, experienceMonths } from "../../../shared/applicantFields";
 
 const steps = ["Basic information", "Work experience", "Role questions", "Review"];
 
@@ -14,7 +20,7 @@ function newExperience() {
     currentRole: false,
     responsibilities: "",
     achievements: "",
-    skills: "",
+    skills: [],
   };
 }
 
@@ -48,6 +54,7 @@ export default function ApplicationPage() {
         setForm((current) => ({
           ...current,
           phone: profileResponse.data.profile.phone || "",
+          experiences:profileResponse.data.profile.experiences?.length ? profileResponse.data.profile.experiences : current.experiences,
           location: profileResponse.data.profile.location || "",
           resumeId: resumeResponse.data.resumes[0]?.id || "",
         }));
@@ -101,6 +108,8 @@ export default function ApplicationPage() {
   function validateCurrentStep() {
     if (step === 0) {
       if (!form.phone.trim() || !form.location.trim()) return "Please complete your phone number and location.";
+      try { canonicalPhone(form.phone); } catch (error) { return error.message; }
+      if (!locationParts(form.location)[0]) return "Select your country of residence.";
       if (!form.resumeId) return "Upload and select a resume before continuing.";
     }
     if (step === 1) {
@@ -112,6 +121,8 @@ export default function ApplicationPage() {
         || !experience.responsibilities.trim()
       ));
       if (incomplete) return "Complete the required fields for every work experience.";
+      const dateError = experienceError(form.experiences);
+      if (dateError) return dateError;
     }
     if (step === 2) {
       const unanswered = job.roleQuestions.some((question) => question.required && !String(form.roleAnswers[question.id] || "").trim());
@@ -165,7 +176,7 @@ export default function ApplicationPage() {
         <div>
           <p className="eyebrow text-primary">APPLYING FOR</p>
           <h2>{job.title}</h2>
-          <p>{job.department} | {job.location} | {job.employmentType}</p>
+          <p>{job.location} | {jobLabel(job.employmentType)}</p>
         </div>
         <span className="step-position">Step {step + 1} of {steps.length}</span>
       </section>
@@ -188,14 +199,14 @@ export default function ApplicationPage() {
             <p>Confirm your contact details and select the resume for this role.</p>
           </div>
           <div className="form-grid two-columns">
-            <label className="form-label-group">
+            <div className="form-label-group">
               <span>Phone number <b>*</b></span>
-              <input className="form-control form-control-lg" name="phone" value={form.phone} onChange={updateField} maxLength={30} required />
-            </label>
-            <label className="form-label-group">
+              <PhoneField value={form.phone} onChange={(value) => setForm((current) => ({ ...current, phone: value }))} />
+            </div>
+            <div className="form-label-group">
               <span>Current location <b>*</b></span>
-              <input className="form-control form-control-lg" name="location" value={form.location} onChange={updateField} maxLength={100} required />
-            </label>
+              <LocationField value={form.location} onChange={(value) => setForm((current) => ({ ...current, location: value }))} />
+            </div>
           </div>
           <label className="form-label-group">
             <span>Resume for this application <b>*</b></span>
@@ -256,11 +267,11 @@ export default function ApplicationPage() {
                   </label>
                   <label className="form-label-group">
                     <span>Start month <b>*</b></span>
-                    <input className="form-control form-control-lg" type="month" name="startDate" value={experience.startDate} onChange={(event) => updateExperience(index, event)} required />
+                    <MonthSelect name="startDate" value={experience.startDate} onChange={(event) => updateExperience(index, event)} />
                   </label>
                   <label className="form-label-group">
                     <span>End month <b>*</b></span>
-                    <input className="form-control form-control-lg" type="month" name="endDate" value={experience.endDate} onChange={(event) => updateExperience(index, event)} disabled={experience.currentRole} required={!experience.currentRole} />
+                    <MonthSelect name="endDate" value={experience.endDate} onChange={(event) => updateExperience(index, event)} disabled={experience.currentRole} />
                   </label>
                 </div>
                 <label className="form-check current-role-check">
@@ -277,11 +288,7 @@ export default function ApplicationPage() {
                   <textarea className="form-control" name="achievements" rows="5" value={experience.achievements} onChange={(event) => updateExperience(index, event)} maxLength={1000} placeholder="Add outcomes, project examples, awards, or measurable improvements." />
                   <CharacterCount value={experience.achievements} limit={1000} />
                 </label>
-                <label className="form-label-group">
-                  <span>Skills, tools, and measurable results</span>
-                  <textarea className="form-control" name="skills" rows="4" value={experience.skills} onChange={(event) => updateExperience(index, event)} maxLength={600} placeholder="Example: React, JavaScript, reduced page load time by 20%." />
-                  <CharacterCount value={experience.skills} limit={600} />
-                </label>
+                <SkillSelector value={experience.skills} onChange={(skills) => updateExperience(index, { target: { name: "skills", value: skills, type: "select" } })} />
               </fieldset>
             ))}
           </div>
@@ -326,8 +333,9 @@ export default function ApplicationPage() {
             <div><dt>Position</dt><dd>{job.title}</dd></div>
             <div><dt>Resume</dt><dd>{selectedResume?.originalName}</dd></div>
             <div><dt>Phone</dt><dd>{form.phone}</dd></div>
-            <div><dt>Location</dt><dd>{form.location}</dd></div>
+            <div><dt>Location</dt><dd>{locationLabel(form.location)}</dd></div>
             <div><dt>Work experience</dt><dd>{form.experiences.length} entr{form.experiences.length === 1 ? "y" : "ies"}</dd></div>
+            <div><dt>Experience (calendar months, overlaps excluded)</dt><dd>{experienceError(form.experiences) ? "Check dates" : experienceMonths(form.experiences)}</dd></div>
             <div><dt>Role questions</dt><dd>{job.roleQuestions.length} completed</dd></div>
           </dl>
           <div className="submission-note">

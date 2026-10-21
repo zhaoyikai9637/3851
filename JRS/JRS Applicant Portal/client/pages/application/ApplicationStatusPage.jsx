@@ -2,6 +2,7 @@ import { ArrowRight, BriefcaseBusiness, CalendarDays, Check, EyeOff, FileText, M
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
+import { locationLabel } from "../../../shared/contactFields";
 
 const timeline = ["Submitted", "In Review", "Interview", "Decision"];
 
@@ -85,7 +86,6 @@ export default function ApplicationStatusPage() {
         <div>
           <p className="eyebrow text-primary">YOUR APPLICATION</p>
           <h2>{application.job.title}</h2>
-          {application.job.isOpen === false && <span className="status-badge">No longer accepting applications</span>}
           <div className="job-meta-list prominent">
             <span><BriefcaseBusiness size={19} />{application.job.department}</span>
             <span><MapPin size={19} />{application.job.location}</span>
@@ -133,7 +133,7 @@ export default function ApplicationStatusPage() {
               <dl>
                 <div><dt>Application ID</dt><dd>JRS-{String(application.id).padStart(5, "0")}</dd></div>
                 <div><dt>Resume</dt><dd><FileText size={18} />{application.resume?.originalName || "Resume attached"}</dd></div>
-                <div><dt>Location</dt><dd>{application.location}</dd></div>
+                <div><dt>Location</dt><dd>{locationLabel(application.location)}</dd></div>
               </dl>
             </section>
           </div>

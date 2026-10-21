@@ -1,5 +1,5 @@
 import { DataTypes as D } from 'sequelize';
-export function defineModels(db) {
+export function defineModels(db, { integratedMailHistory = false } = {}) {
   const pk = () => ({ type: D.INTEGER, primaryKey: true, autoIncrement: true });
   const str = (length, required = true) => ({ type: D.STRING(length), allowNull: !required });
   const fk = (nullable = false) => ({ type: D.INTEGER, allowNull: nullable });
@@ -34,7 +34,7 @@ export function defineModels(db) {
     eventKey: { ...str(150, false), unique: true }, isRead: { type: D.BOOLEAN, allowNull: false, defaultValue: false }, readAt: D.DATE
   }, { tableName: 'SYSTEM_NOTIFICATION', updatedAt: false });
   const Log = db.define('NotificationLog', {
-    logId: pk(), applicationId: fk(), templateId: fk(), senderUserId: fk(),
+    logId: pk(), applicationId: fk(), templateId: fk(integratedMailHistory), senderUserId: fk(),
     triggerEvent: str(100), sourceModule: str(100), recipientEmail: str(150),
     candidateName: str(100), positionTitle: str(150), templateName: str(150),
     emailSubject: str(255), emailBody: { type: D.TEXT, allowNull: false },

@@ -1,6 +1,7 @@
 import { BriefcaseBusiness, LogIn, UserRound } from "lucide-react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import {signInUrl} from '../utils/signInUrl';
 
 export default function PublicLayout() {
   const { user, loading } = useAuth();
@@ -30,10 +31,10 @@ export default function PublicLayout() {
               Applicant workspace
             </Link>
           ) : (
-            <Link className="btn btn-outline-primary" to="/connect">
+            <a className="btn btn-outline-primary" href={signInUrl()}>
               <LogIn size={19} />
               Sign in
-            </Link>
+            </a>
           )
         )}
       </header>
@@ -42,10 +43,6 @@ export default function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="public-footer">
-        <strong>JRS Company Careers</strong>
-        <span>Equal opportunity employment</span>
-      </footer>
     </div>
   );
 }

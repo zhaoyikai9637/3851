@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import templateTypes from '../../shared/template-types.json' with { type: 'json' };
+import templateVariables from '../../shared/template-variables.json' with { type: 'json' };
 export class HttpError extends Error { constructor(status, message) { super(message); this.status = status; } }
 export const idSchema = z.coerce.number().int().positive().max(2147483647);
 const line = n => z.string().trim().min(1).max(n).refine(s => !/[\r\n]/.test(s), 'Must be one line');
-export const variables = ['CandidateName', 'JobTitle', 'CompanyName', 'HRName'];
+export const variables = Object.keys(templateVariables);
 export function renderTemplate(text, values) {
   return text.replace(/\[([A-Za-z][A-Za-z0-9_]*)\]/g, (_, key) => {
     if (!variables.includes(key) || typeof values[key] !== 'string') throw new HttpError(422, `Unsupported or missing variable: [${key}]`);

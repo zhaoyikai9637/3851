@@ -151,6 +151,15 @@ const writes = (path) =>
   );
 
 describe("authentication and navigation", () => {
+  it('opens Dashboard by default after entering the HR workspace', async () => {
+    mount('/');
+    expect(await screen.findByTitle('Dashboard')).toHaveAttribute('src','/recruitment/#/dashboard');
+  });
+  it('shows template names once without duplicate usage subtitles', async () => {
+    mount('/templates');
+    const item = await screen.findByRole('button',{name: new RegExp(state.templates[0].templateName)});
+    expect(item.querySelector('small')).toBeNull();
+  });
   it('restores the Candidates path when returning from an embedded candidate profile', async () => {
     overrides['GET /recruitment/api/hr/candidates'] = () => json({items:[{id:'candidate-a',name:'Test Candidate',email:'candidate@example.test',location:'Singapore'}]});
     const ui = mount('/candidates');
@@ -265,18 +274,35 @@ describe("authentication and navigation", () => {
     expect(await screen.findByLabelText("Email subject")).toBeVisible();
     expect(writes('/api/auth/development-login')).toHaveLength(1);
   });
-  it("shows the configured team entry without a password form and resumes the same page after upstream sign-in", async () => {
+  it("redirects unsigned users directly to configured sign-in without an intermediate page", async () => {
     state.signedIn = false;
     overrides['GET /api/auth/config'] = () => json({loginUrl:'https://team.example.test/sign-in',adapterConfigured:true});
-    const ui = mount('/profile');
-    const link = await screen.findByRole('link', {name:'Go to team sign-in'});
-    expect(link).toHaveAttribute('href','https://team.example.test/sign-in');
+    const replace=vi.fn();
+    vi.stubGlobal('location',{href:'http://localhost/hr/profile',replace});
+    mount('/profile');
+    await waitFor(()=>expect(replace).toHaveBeenCalledWith('https://team.example.test/sign-in?returnTo=%2Fhr%2Fprofile'));
+    expect(screen.queryByRole('heading',{name:'Continue through team sign-in'})).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
     expect(fetcher.mock.calls.some(([url]) => url.startsWith('/api/hr/'))).toBe(false);
-    state.signedIn = true;
-    await ui.click(screen.getByRole('button', {name:'Check sign-in status'}));
-    expect(await screen.findByText('LOCAL-HR-001')).toBeVisible();
-    expect(fetcher.mock.calls.some(([url]) => url === '/api/auth/login')).toBe(false);
+  });
+  it('redirects an expired session directly to unified sign-in',async()=>{
+    const replace=vi.fn();vi.stubGlobal('location',{href:'http://localhost/hr/notifications',replace});
+    overrides['GET /api/auth/config']=()=>json({loginUrl:'http://localhost/pages/login/login.html',adapterConfigured:true});
+    overrides['GET /api/hr/notifications']=()=>json({error:{message:'Please sign in.'}},401);
+    mount();
+    await waitFor(()=>expect(replace).toHaveBeenCalledWith('http://localhost/pages/login/login.html?returnTo=%2Fhr%2Fnotifications'));
+    expect(screen.queryByRole('heading',{name:'Continue through team sign-in'})).not.toBeInTheDocument();
+    expect(screen.queryByText('New application received')).not.toBeInTheDocument();
+  });
+  it('logout goes directly to sign-in without reopening the previous HR page',async()=>{
+    const replace=vi.fn();vi.stubGlobal('location',{href:'http://localhost/hr/notifications',replace});
+    overrides['GET /api/auth/config']=()=>json({loginUrl:'http://localhost/pages/login/login.html',adapterConfigured:true});
+    const ui=mount();
+    await ui.click(await screen.findByRole('button',{name:/Riley Morgan HR Manager/}));
+    await ui.click(screen.getByRole('button',{name:'Logout'}));
+    await ui.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Logout'}));
+    await waitFor(()=>expect(replace).toHaveBeenCalledWith('http://localhost/pages/login/login.html'));
+    expect(screen.queryByRole('navigation',{name:'Main navigation'})).not.toBeInTheDocument();
   });
   it("reports the missing team integration without inventing a login URL", async () => {
     state.signedIn = false;
@@ -304,7 +330,7 @@ describe("authentication and navigation", () => {
     state.signedIn=false;
     overrides['GET /api/auth/config'] = () => json({loginUrl:'javascript:alert(1)',adapterConfigured:false});
     mount();
-    await screen.findByRole('heading', {name:'Continue through team sign-in'});
+    await screen.findByRole('heading', {name:'Unable to open workspace'});
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
   it("closes the avatar menu with Escape and outside clicks", async () => {
@@ -385,13 +411,13 @@ describe("authentication and navigation", () => {
         name: "Logout",
       }),
     );
-    expect(await screen.findByRole('heading', {name:'Continue through team sign-in'})).toBeVisible();
+    expect(await screen.findByRole('heading', {name:'Unable to open workspace'})).toBeVisible();
   });
   it("clears protected content when the server reports an expired session", async () => {
     overrides["GET /api/hr/notifications"] = () =>
       json({ error: { message: "Please sign in." } }, 401);
     mount();
-    expect(await screen.findByRole('heading', {name:'Continue through team sign-in'})).toBeVisible();
+    expect(await screen.findByRole('heading', {name:'Unable to open workspace'})).toBeVisible();
     expect(screen.getByRole("alert")).toHaveTextContent("session has expired");
     expect(
       screen.queryByText("New application received"),
@@ -659,8 +685,8 @@ describe("email templates", () => {
     await ui.selectOptions(usage, code);
     await ui.click(screen.getByRole("button", { name: "Save template" }));
     await screen.findByText("Template saved.");
-    await ui.click(screen.getByRole("button", { name: /Offer Letter Offer letter/ }));
-    await ui.click(screen.getByRole("button", { name: `Interview Invite ${label}`, exact: true }));
+    await ui.click(screen.getByRole("button", { name: /Offer Letter/ }));
+    await ui.click(screen.getByRole("button", { name: /Interview Invite/, exact: true }));
     expect(screen.getByLabelText("Usage type")).toHaveValue(code);
   });
   it.each([
@@ -712,9 +738,9 @@ describe("email templates", () => {
     await ui.click(screen.getByRole("button", { name: "Save template" }));
     expect(await screen.findByText("Template saved.")).toBeVisible();
     expect(state.templates[0].usageType).toBe("INTERVIEW_REMINDER");
-    await ui.click(screen.getByRole("button", { name: /Offer Letter Offer letter/ }));
+    await ui.click(screen.getByRole("button", { name: /Offer Letter/ }));
     expect(screen.getByLabelText("Usage type")).toHaveValue("OFFER_LETTER");
-    await ui.click(screen.getByRole("button", { name: /Interview Invite Interview reminder/ }));
+    await ui.click(screen.getByRole("button", { name: /Interview Invite/ }));
     expect(screen.getByLabelText("Usage type")).toHaveValue("INTERVIEW_REMINDER");
   });
   it("preserves unknown types and blocks saving until an explicit supported choice", async () => {
@@ -795,6 +821,17 @@ describe("email templates", () => {
     );
     expect(writes("/api/hr/templates/1")).toHaveLength(0);
   });
+  it('previews workflow variables as labelled placeholders without inventing interview or offer facts',async()=>{
+    const ui=mount('/templates');
+    const body=await screen.findByLabelText('Email body');
+    fireEvent.change(body,{target:{value:'[InterviewDate] [InterviewTime] [InterviewLocation] [OfferSalary] [OfferDeadline]'}});
+    await ui.click(screen.getByRole('button',{name:'Preview'}));
+    const dialog=screen.getByRole('dialog');
+    expect(dialog).toHaveTextContent('Interview date from application');
+    expect(dialog).toHaveTextContent('Approved salary from offer');
+    expect(dialog).not.toHaveTextContent('[InterviewDate]');
+    expect(dialog).toHaveTextContent('actual application');
+  });
   it("inserts variables at the subject cursor and previews HTML as plain text", async () => {
     const ui = mount("/templates");
     const subject = await screen.findByLabelText("Email subject");
@@ -836,7 +873,7 @@ describe("email templates", () => {
     const subject = await screen.findByLabelText("Email subject");
     await ui.type(subject, " unsaved");
     await ui.click(
-      screen.getByRole("button", { name: /Offer Letter Offer letter/ }),
+      screen.getByRole("button", { name: /Offer Letter/ }),
     );
     expect(screen.getByRole("dialog")).toHaveTextContent(
       "Discard unsaved changes?",
@@ -844,7 +881,7 @@ describe("email templates", () => {
     await ui.click(screen.getByRole("button", { name: "Keep editing" }));
     expect(subject).toHaveValue("Hello [CandidateName] unsaved");
     await ui.click(
-      screen.getByRole("button", { name: /Offer Letter Offer letter/ }),
+      screen.getByRole("button", { name: /Offer Letter/ }),
     );
     await ui.click(screen.getByRole("button", { name: "Discard changes" }));
     expect(await screen.findByLabelText("Email subject")).toHaveValue(

@@ -774,6 +774,7 @@ button:disabled {
 .template-option > span:nth-child(2) {
   flex: 1;
   min-width: 0;
+    text-align: center;
 }
 .template-option strong {
   display: block;
@@ -1340,3 +1341,9 @@ button:disabled {
 .profile-edit-grid .editor-form>.editor-actions {position:sticky;bottom:0;z-index:2;background:white;border-top:1px solid var(--line);padding:16px 0;}
 .candidate-name {border:0;background:transparent;padding:4px 0;min-height:36px;text-align:left;font-weight:650;color:#24344e;}
 .candidate-name:hover,.candidate-name:focus-visible {color:#315fd2;text-decoration:underline;}
+
+/* Original JRS two-circle brand, adapted to the dark HR sidebar. */
+.brand .brand-mark {display:flex;align-items:center;min-width:49px;width:49px;height:42px;background:none;border-radius:0;box-shadow:none;transform:none;}
+.brand-circle {display:block;flex:0 0 31px;height:31px;border-radius:50%;}
+.brand-circle-dark {background:#0f172a;border:1px solid #8293b2;}
+.brand-circle-blue {background:#416be0;margin-left:-12px;}

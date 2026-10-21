@@ -17,6 +17,7 @@ test('integrated site serves login, applicant pages and the original HR shell wi
   const site = await runtime.createRuntime();
   try {
     await request(site.app).get('/pages/login/login.html').expect(200);
+    await request(site.app).get('/').expect(302).expect('Location','/jobs');
     await request(site.app).get('/hr/notifications').expect('Content-Type', /html/).expect(200);
     await request(site.app).get('/applicant/jobs').expect('Content-Type', /html/).expect(200);
     await request(site.app).get('/.env').expect(404);
@@ -78,16 +79,35 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
     await applicant.get('/recruitment/api/auth/me').expect(403);
     const me = await applicant.get('/applicant-api/auth/me').expect(200);
     assert.equal(me.body.user.fullName, 'Integration Applicant');
+    const sharedUpload=await applicant.post('/api/profile/resume').set('X-CSRF-Token',csrf).attach('resume',Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'),{filename:'shared-profile.pdf',contentType:'application/pdf'}).expect(201);
+    const sharedFiles=await applicant.get('/applicant-api/resumes').expect(200);
+    assert.ok(sharedFiles.body.resumes.some(file=>file.originalName==='shared-profile.pdf'),'Personal-profile uploads must appear in the applicant resume list');
+    // Model independent ID sequences by reserving and removing one canonical file.
+    const [reserved]=await site.repository.pool.execute("INSERT INTO RESUME_FILE(candidate_id,file_name,storage_key,file_type,file_size) SELECT candidate_id,'sequence-fixture.pdf',?,'application/pdf',0 FROM CANDIDATE WHERE email=?",[randomUUID().replaceAll('-','').repeat(2),email]);
+    await site.repository.pool.execute('DELETE FROM RESUME_FILE WHERE file_id=?',[reserved.insertId]);
     const resume = await applicant.post('/applicant-api/resumes').set('X-CSRF-Token', csrf)
       .attach('resume', Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'), { filename: 'integration-resume.pdf', contentType: 'application/pdf' }).expect(201);
     const application = await applicant.post('/applicant-api/applications').set('X-CSRF-Token', csrf).send({
-      jobId: job.id, resumeId: resume.body.resume.id, phone: '+65 8123 4567', location: 'Singapore', coverLetter: 'Local integration verification only.',
-      experiences: [{ companyName: 'Example Test Company', jobTitle: 'Developer', startDate: '2024-01', endDate: '', currentRole: true, responsibilities: 'Implemented and tested recruitment software.', achievements: '', skills: 'JavaScript' }], roleAnswers: {},
+      jobId: job.id, resumeId: resume.body.resume.id, phone: '+65 8123 4567', location: '["SG","",""]', coverLetter: 'Local integration verification only.',
+      experiences: [{ companyName: 'Example Test Company', jobTitle: 'Developer', startDate: '2024-01', endDate: '', currentRole: true, responsibilities: 'Implemented and tested recruitment software.', achievements: '', skills: ['JAVASCRIPT'] }], roleAnswers: {},
     }).expect(response => assert.equal(response.status, 201, JSON.stringify(response.body)));
+    const [[submittedFile]]=await site.repository.pool.execute('SELECT l.canonical_id,a.applicant_snapshot FROM JRS_RESUME_LINK l JOIN JRS_APPLICATION_LINK a ON a.portal_id=? WHERE l.portal_id=?',[application.body.application.id,resume.body.resume.id]);
+    const submission=typeof submittedFile.applicant_snapshot==='string'?JSON.parse(submittedFile.applicant_snapshot):submittedFile.applicant_snapshot;
+    assert.notEqual(resume.body.resume.id,submittedFile.canonical_id,'Fixture exercises independent file IDs');
+    assert.equal(submission.resume.canonicalId,submittedFile.canonical_id,'Submitted resume identifies its authoritative file, not the portal row');
     const workspace = await manager.get('/recruitment/api/hr/workspace').expect(200);
     const candidate = workspace.body.candidates.find(row => row.email === email);
     const hrApplication = workspace.body.applications.find(row => row.candidateId === candidate?.id && workspace.body.jobs.some(j => j.id === row.jobId && j.title === roleName));
     assert.ok(hrApplication, 'Applicant submission must reach the shared HR queue');
+    await manager.get('/recruitment/api/hr/applications/'+encodeURIComponent(hrApplication.id)+'/submitted-resume').expect(200);
+    await applicant.get('/recruitment/api/hr/applications/'+encodeURIComponent(hrApplication.id)+'/submitted-resume').expect(403);
+    await applicant.put('/applicant-api/profile').set('X-CSRF-Token',csrf).send({phone:'+6591234567'}).expect(200);
+    const currentProfile=await applicant.get('/api/profile').expect(200);
+    assert.equal(currentProfile.body.profile.contact_number,'91234567');
+    const immutable=await applicant.get('/applicant-api/applications/me').expect(200);
+    assert.equal(immutable.body.application.submittedProfile.phone,'+6581234567');
+    const refreshedPerson=await manager.get('/recruitment/api/hr/workspace').expect(200);
+    assert.equal(refreshedPerson.body.candidates.find(c=>c.id===candidate.id).phone,'+6591234567');
     const publicationBody = {salaryRange:'SGD 5,000-6,000',publishDate:'',closingDate:'2020-01-01',unpublishDate:''};
     await manager.put(`/api/hr/job-publications/${publishing.id}`).set('X-CSRF-Token',hrIdentity.body.csrfToken).send(publicationBody).expect(200);
     const expired = await request(site.app).get('/applicant-api/jobs').expect(200);
@@ -114,13 +134,14 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
     const newResume=await newApplicant.post('/applicant-api/resumes').set('X-CSRF-Token',newLogin.body.csrfToken)
       .attach('resume',Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'),{filename:'unpublish-test.pdf',contentType:'application/pdf'}).expect(201);
     await newApplicant.post('/applicant-api/applications').set('X-CSRF-Token',newLogin.body.csrfToken).send({
-      jobId:job.id,resumeId:newResume.body.resume.id,phone:'+65 8123 4567',location:'Singapore',coverLetter:'Isolated test only.',
-      experiences:[{companyName:'Example Test Company',jobTitle:'Developer',startDate:'2024-01',endDate:'',currentRole:true,responsibilities:'Implemented and tested recruitment software.',achievements:'',skills:'JavaScript'}],roleAnswers:{},
+      jobId:job.id,resumeId:newResume.body.resume.id,phone:'+65 8123 4567',location:'["SG","",""]',coverLetter:'Isolated test only.',
+      experiences:[{companyName:'Example Test Company',jobTitle:'Developer',startDate:'2024-01',endDate:'',currentRole:true,responsibilities:'Implemented and tested recruitment software.',achievements:'',skills:['JAVASCRIPT']}],roleAnswers:{},
     }).expect(404);
     const notices = await manager.get('/api/hr/notifications').expect(200);
     assert.ok(notices.body.items.some(row => row.title.includes('Integration Applicant')), 'Original Notification Center must receive the application event');
+    const readyForTransition=await manager.get('/recruitment/api/hr/workspace').expect(200);
     await manager.post('/recruitment/api/hr/commands/move-interview').set('X-CSRF-Token', sharedCsrf)
-      .set('If-Match', String(afterUnpublish.body.revision)).set('Idempotency-Key', randomUUID())
+      .set('If-Match', String(readyForTransition.body.revision)).set('Idempotency-Key', randomUUID())
       .send({ applicationId: hrApplication.id, notify: false, notes: 'Integration verification.' }).expect(200);
     const status = await applicant.get('/applicant-api/applications/me').expect(200);
     assert.equal(status.body.application.id, application.body.application.id);

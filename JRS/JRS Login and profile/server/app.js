@@ -59,7 +59,7 @@ function createApp({ repository: repo, config, mailer, now = () => new Date(), i
         if (res.headersSent) return next(error);
         const status = error instanceof multer.MulterError ? 400 : error.status || (error.code === 'ENOENT' ? 404 : 500);
         if (status >= 500 && !error.status) console.error('Request failed:', error.code || 'INTERNAL_ERROR');
-        res.status(status).json({ valid: false, error: status >= 500 && !error.status ? 'Server error. Please try again later.' : error instanceof multer.MulterError ? 'Upload one file of at most 5 MB.' : status === 404 ? 'Not found.' : error.message });
+        res.status(status).json({ valid: false, error: status >= 500 && !error.status ? 'Server error. Please try again later.' : error instanceof multer.MulterError ? 'Upload one file of at most 5 MB.' : status === 404 && !error.status ? 'Not found.' : error.message });
     });
     return app;
 }

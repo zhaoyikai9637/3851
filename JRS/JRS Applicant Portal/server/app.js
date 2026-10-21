@@ -13,6 +13,7 @@ import authRoutes from "./routes/auth.js";
 import jobRoutes from "./routes/jobs.js";
 import profileRoutes from "./routes/profile.js";
 import resumeRoutes from "./routes/resumes.js";
+import optionRoutes from "./routes/options.js";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(currentDirectory, "../.env") });
@@ -60,6 +61,7 @@ export async function createApp() {
   });
   app.use("/api/auth", authRoutes);
   app.use("/api/jobs", jobRoutes);
+  app.use("/api/options", optionRoutes);
   app.use("/api/profile", requireApplicant, profileRoutes);
   app.use("/api/resumes", requireApplicant, resumeRoutes);
   app.use("/api/applications", requireApplicant, applicationRoutes);

@@ -1,9 +1,10 @@
 import { httpError } from './security.mjs';
 import { publicationState } from './job-publications.mjs';
+import templateVariables from '../jrs-hr-module/shared/template-variables.json' with {type:'json'};
 
 const publicStatus = stage => ({ 'Pending Review': 'Submitted', Interview: 'Interview', Offer: 'Decision', Hired: 'Accepted', Rejected: 'Rejected' }[stage] || 'In Review');
-const templateKind = type => ({ INTERVIEW_INVITE: 'Interview Invite', OFFER_LETTER: 'Offer Letter', ACCEPTED: 'Accepted', REJECTED: 'Rejected', APPLICATION_REJECTION: 'Rejected', INTERVIEW_REJECTION: 'Rejected', OFFER_WITHDRAWAL: 'Rejected', OFFER_DECLINED_ACKNOWLEDGEMENT: 'In Progress' }[type] || 'In Progress');
-const convertVariables = value => value.replace(/\[(CandidateName|JobTitle|CompanyName|HRName)\]/g, (_, key) => ({ CandidateName: '{{candidateName}}', JobTitle: '{{jobTitle}}', CompanyName: 'JRS', HRName: '{{hrName}}' }[key]));
+const templateKind = type => ({ INTERVIEW_INVITE: 'Interview Invite', OFFER_LETTER: 'Offer Letter', ACCEPTED: 'Accepted', REJECTED: 'Rejected', APPLICATION_REJECTION: 'Application Rejection', INTERVIEW_REJECTION: 'Interview Rejection', OFFER_WITHDRAWAL: 'Offer Withdrawal', OFFER_DECLINED_ACKNOWLEDGEMENT: 'Offer Declined Acknowledgement' }[type] || 'In Progress');
+const convertVariables = value => value.replace(/\[([A-Za-z][A-Za-z0-9_]*)\]/g, (original, key) => Object.hasOwn(templateVariables,key) ? '{{'+templateVariables[key]+'}}' : original);
 
 export function createRecruitmentBridge(pool, { experimentalApplicantPortal = false } = {}) {
   async function templates(connection) {
@@ -41,6 +42,15 @@ export function createRecruitmentBridge(pool, { experimentalApplicantPortal = fa
     }
     for (const c of after.candidates) {
       const [[link]] = await connection.execute('SELECT canonical_id FROM JRS_CANDIDATE_LINK WHERE recruiting_id=?', [c.id]);
+      if(link) {
+        const previous=before.candidates?.find(row=>row.id===c.id);
+        const fields={};
+        for(const [key,column] of [['name','full_name'],['email','email'],['phone','contact_number'],['location','home_location']])if(previous&&previous[key]!==c[key])fields[column]=c[key];
+        if(Object.hasOwn(fields,'contact_number'))fields.country_code='';
+        if(Object.hasOwn(fields,'home_location'))fields.structured_location=null;
+        const keys=Object.keys(fields);
+        if(keys.length)await connection.execute('UPDATE CANDIDATE SET '+keys.map(key=>'\`'+key+'\`=?').join(',')+' WHERE candidate_id=?',[...Object.values(fields),link.canonical_id]);
+      }
       if (!link) {
         await connection.execute('INSERT INTO CANDIDATE(full_name,email) VALUES(?,?)', [c.name, c.email]);
         const [[canonical]] = await connection.query('SELECT LAST_INSERT_ID() AS id');

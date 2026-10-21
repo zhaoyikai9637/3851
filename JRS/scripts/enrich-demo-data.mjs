@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import mysql from "mysql2/promise";
-import { root, loadSettings } from "../server/config.mjs";
+import { root, loadSettings, assertLocalDatabase } from "../server/config.mjs";
 import { namespacePool } from "../server/sql-namespace.mjs";
 import { createRecruitmentBridge } from "../server/recruitment-bridge.mjs";
 import { loadAssessments, saveAssessments } from "../server/interview-assessments.mjs";
@@ -224,8 +224,9 @@ export async function enrichDemoData(connection) {
 async function main() {
   if (!process.argv.includes("--apply"))
     throw new Error("Pass --apply to explicitly enrich the local Demo records.");
-  const settings = loadSettings(),
-    pool = mysql.createPool(settings.db),
+  const settings = loadSettings();
+  assertLocalDatabase(settings);
+  const pool = mysql.createPool(settings.db),
     connection = await pool.getConnection();
   try {
     await connection.beginTransaction();

@@ -1,0 +1,15 @@
+{
+  "CandidateName": "candidateName",
+  "JobTitle": "jobTitle",
+  "CompanyName": "companyName",
+  "HRName": "hrName",
+  "InterviewDate": "date",
+  "InterviewTime": "time",
+  "InterviewLocation": "location",
+  "InterviewFormat": "format",
+  "Interviewer": "interviewer",
+  "OfferSalary": "salary",
+  "OfferCurrency": "currency",
+  "OfferStartDate": "startDate",
+  "OfferDeadline": "expiry"
+}

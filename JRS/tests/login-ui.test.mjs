@@ -4,9 +4,9 @@ import fs from 'node:fs/promises';
 import {TextEncoder} from 'node:util';
 import {JSDOM} from 'jsdom';
 const base = new URL('../JRS Login and profile/client/pages/login/', import.meta.url);
-async function loginPage() {
+async function loginPage(query='') {
   const dom = new JSDOM(await fs.readFile(new URL('login.html', base), 'utf8'), {
-    url: 'http://localhost/pages/login/login.html', runScripts: 'outside-only'
+    url: 'http://localhost/pages/login/login.html'+query, runScripts: 'outside-only'
   });
   await new Promise(resolve => dom.window.addEventListener('load', resolve, {once:true}));
   dom.window.TextEncoder = TextEncoder;
@@ -31,6 +31,14 @@ test('password visibility is accessible and registration restores private passwo
     assert.equal(d.getElementById('forgotPasswordLink').hidden, true);
   } finally { w.close(); }
 });
+test('the visitor registration link opens account creation without losing its application return target',async()=>{
+ const dom=await loginPage('?mode=register&returnTo=%2Fapplicant%2Fapply%2Frole-a');
+ try{
+  assert.equal(dom.window.document.getElementById('registerNames').hidden,false);
+  assert.equal(dom.window.document.getElementById('password').autocomplete,'new-password');
+  assert.equal(new URLSearchParams(dom.window.location.search).get('returnTo'),'/applicant/apply/role-a');
+ }finally{dom.window.close();}
+});
 test('password icon reflects hidden and revealed states and returning to login hides the password', async () => {
   const dom = await loginPage(), w = dom.window, d = w.document;
   try {
@@ -54,7 +62,7 @@ test('password icon reflects hidden and revealed states and returning to login h
     assert.equal(password.type, 'password', 'restored pages do not expose a password');
   } finally { w.close(); }
 });
-for (const value of ['lowercase1!', 'UPPERCASE1!', 'NoDigitsHere!', 'NoSymbols123', 'Chinese1!\u4e2d\u6587', 'Emoji1!\u{1f600}']) {
+for (const value of ['lowercase1!', 'UPPERCASE1!', 'NoDigitsHere!', '1111111as', 'Chinese1!\u4e2d\u6587', 'Emoji1!\u{1f600}']) {
   test('registration blocks a password missing the required character policy: ' + JSON.stringify(value), async () => {
     const dom = await loginPage(), w = dom.window, d = w.document;
     try {
@@ -84,6 +92,23 @@ test('invalid fields block network requests and focus the first invalid field', 
     assert.equal(d.getElementById('email').getAttribute('aria-invalid'), 'true');
   } finally { w.close(); }
 });
+
+for (const submit of ['button', 'form']) test(`registration ${submit} submission lists missing password conditions`, async () => {
+  const dom = await loginPage('?mode=register'), w = dom.window, d = w.document;
+  try {
+    let requests=0; w.JRS={request:async()=>{requests++;return {};}};
+    d.getElementById('registerFirstName').value='Example';
+    d.getElementById('email').value='candidate@example.test';
+    for (const [value, message] of [['1111111as','Add at least one uppercase letter.'],['abc','Use at least 8 characters. Add at least one uppercase letter. Add at least one number.']]) {
+      d.getElementById('password').value=value;
+      if(submit==='button') d.getElementById('loginBtn').click();
+      else d.getElementById('loginForm').requestSubmit();
+      await new Promise(resolve=>setTimeout(resolve,0));
+      assert.equal(d.getElementById('passwordError').textContent,message);
+      assert.equal(requests,0);
+    }
+  } finally {w.close();}
+});
 test('registration uses the shared endpoint and returns to sign-in without trimming passwords', async () => {
   const dom = await loginPage(), w = dom.window, d = w.document;
   try {
@@ -92,11 +117,11 @@ test('registration uses the shared endpoint and returns to sign-in without trimm
     d.getElementById('registerToggle').click();
     d.getElementById('registerFirstName').value = 'Example';
     d.getElementById('email').value = 'candidate@example.test';
-    d.getElementById('password').value = ' Password1! ';
+    d.getElementById('password').value = ' Password123 ';
     d.getElementById('loginForm').dispatchEvent(new w.Event('submit', {cancelable:true}));
     await new Promise(resolve => setTimeout(resolve, 0));
     assert.equal(submitted.path, '/register');
-    assert.equal(submitted.body.password, ' Password1! ');
+    assert.equal(submitted.body.password, ' Password123 ');
     assert.equal(d.getElementById('registerNames').hidden, true);
     assert.equal(d.getElementById('password').autocomplete, 'current-password');
     assert.equal(d.getElementById('formMessage').hidden, false);

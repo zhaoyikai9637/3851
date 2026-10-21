@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const $ = id => document.getElementById(id);
     const form = $('loginForm'), button = $('loginBtn'), toggle = $('registerToggle');
     const email = $('email'), password = $('password');
-    let registering = false, submitted = false;
+    let registering = new URLSearchParams(window.location.search).get('mode') === 'register', submitted = false;
     ['token', 'account_id', 'user_email', 'userEmail'].forEach(key => localStorage.removeItem(key));
     function feedback(text, success = false) {
         $('formMessage').textContent = text;
@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setPasswordVisible(password.type === 'password');
     });
     setPasswordVisible(false);
+    syncMode();
     window.addEventListener('pageshow', () => setPasswordVisible(false));
     form.addEventListener('submit', async event => {
         event.preventDefault();
@@ -92,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const features = await JRS.request('/integration-config');
                     if (features.experimentalApplicantPortal) safeTarget = requested;
                 }
-                window.location.href = result.user.role === 'hr' ? '/hr/' : safeTarget;
+                const hrTarget = requested && !/[\\\r\n]/.test(requested) && /^\/hr\/(?:dashboard|job-postings|applications|candidates|interviews|reports|tasks|notifications|templates|logs|profile(?:\/edit)?)\/?(?:[?#].*)?$/.test(requested) ? requested : '/hr/';
+                window.location.href = result.user.role === 'hr' ? hrTarget : safeTarget;
             }
         } catch (err) {
             if (!registering && err.status === 401) {

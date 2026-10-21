@@ -1,5 +1,23 @@
 # Delivery plan
 
+## Current continuation plan - 2026-10-21
+
+The historical waiting queue below has been partially implemented. Current
+behavior and deployment boundaries are in `../../docs/TEAM_MAIL_OPERATIONS.md`.
+
+- Implemented: optional password symbols and specific validation; direct HR
+  sign-in redirect; applicant data/snapshot integration; shared SMTP and history;
+  additive schema 10; core canonical controlled imports; formal template library
+  and verified seed archival with historical logs preserved.
+- Runtime synchronization, both production builds, English checks and 709 fresh
+  unit/API/isolated-MySQL regressions completed. See `../../docs/VERIFICATION_20261021.md`.
+- Await normal candidate registration for the approved QQ inbox before full
+  recovery delivery acceptance. Real recruitment receipt also remains pending.
+- Await hosting platform choice for cloud deployment and named operator access.
+- Broader applicant visual consistency, interviewer placement, browser visual
+  acceptance, complete candidate offer decline and additional import adapters
+  remain separate work. Do not invent workflow records or platform permissions.
+
 ## Repository language policy - 2026-10-19
 
 - Keep current branch filenames and project text English-only; run the root check:english command.
@@ -139,4 +157,15 @@
 2. Applicant-facing visual consistency and reusable English date picker, after its data synchronization scope is confirmed.
 3. Login/profile entry visual consistency, retaining the existing shared authentication, roles, session security and password-reset rules. Do not add another login system.
 
-This queue records future scope only; no applicant/login UI or synchronization implementation has started in this phase.
+This is the historical queue. Necessary applicant/login integration and synchronization have since been implemented; broader applicant visual redesign remains queued. See the current continuation plan above.
+
+
+## Approved team integration execution (2026-10-21)
+
+1. Prepare a separate cloud database jrs_team without modifying the previous shared database. Retain local-only setup, seed and destructive test guards. Runtime uses verified TLS and a dedicated DML-only account; credentials are delivered separately in a private local text file.
+2. Inventory and back up existing cloud records, then migrate reviewed business data with explicit ID mappings. Exclude local demo/test batches. Member imports require preview, validation, deduplication and backup rather than whole-database overwrite.
+3. Reorganize shared login and recovery UI, restore the original two-circle JRS identity in both login and HR, and wire expiring single-use recovery links for HR and candidates. SMTP inbox acceptance depends on the login owner's configuration; automated transport tests do not prove delivery.
+4. Selectively integrate SiHuanjia's applicant standardization source, retaining the current publication guards, transactions and application snapshots. Current profile fields share one authoritative source; submitted materials remain immutable. Other members' changes are reported, not blindly merged.
+5. Final phase task added by the user: complete Notification email templates, then remove verified test templates whose names begin with JRS. Inventory content and references first; a prefix alone does not prove a template is disposable. Back up before cleanup, preserve sent-email snapshots, and archive referenced test templates rather than break references.
+
+Current status: shared target and local dev have schema 10 and ten active formal templates. Verified seed archival preserved history. The core integration is synchronized and tested; pending receipt/deployment/visual items are listed in the current continuation plan above.

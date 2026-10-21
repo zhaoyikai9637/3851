@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
   const [entry, setEntry] = useState(null);
   const [attempt, setAttempt] = useState(0);
+  const [signedOut, setSignedOut] = useState(false);
   useEffect(() => {
     let active = true;
     setChecking(true);
@@ -34,9 +35,17 @@ export function AuthProvider({ children }) {
   }, [attempt]);
   useEffect(() => api.onUnauthorized(() => {
     setSession(null);
-    setError(new Error("Your session has expired. Continue through team sign-in."));
+    setError(Object.assign(new Error("Your session has expired. Please sign in again."), {status:401}));
   }), []);
   const loginUrl = teamLoginLink(entry?.loginUrl);
+  const redirecting = !checking && !session && Boolean(loginUrl) && (!error || error.status === 401);
+  useEffect(() => {
+    if (!redirecting) return;
+    const target = new URL(loginUrl);
+    const current = new URL(window.location.href);
+    if (!signedOut && current.pathname.startsWith('/hr/')) target.searchParams.set('returnTo', current.pathname + current.search + current.hash);
+    window.location.replace(target.href);
+  }, [redirecting, loginUrl, signedOut]);
   async function developmentLogin() {
     setChecking(true);
     setError(null);
@@ -52,18 +61,17 @@ export function AuthProvider({ children }) {
     setUser: (user) => setSession((s) => ({ ...s, user })),
     async logout() {
       await api.logout();
+      setSignedOut(true);
       setSession(null);
       setError(null);
-      if (loginUrl) window.location.assign(loginUrl);
     },
   };
-  if (checking) return <main className="startup"><Loading /></main>;
+  if (checking || redirecting) return <main className="startup"><Loading /></main>;
   if (!session) return (
     <main className="access-page">
       <section className="access-card" aria-labelledby="access-title">
         <p className="eyebrow">JRS · HR WORKSPACE</p>
-        <h1 id="access-title">Continue through team sign-in</h1>
-        <p className="subtle">Use the JRS sign-in page to access your notifications and HR profile.</p>
+        <h1 id="access-title">{entry?.developmentLogin ? 'Local workspace access' : 'Unable to open workspace'}</h1>
         <ErrorBox error={error} />
         {entry?.adapterConfigured === false && <p>Team sign-in is not connected yet.</p>}
         {!loginUrl && !entry?.developmentLogin && <p>The team sign-in address has not been configured.</p>}

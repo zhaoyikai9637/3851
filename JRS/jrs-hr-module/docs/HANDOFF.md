@@ -1,5 +1,35 @@
 # Engineering handoff
 
+## Current continuation status - 2026-10-21
+
+This section supersedes historical pending statements below. See
+`../../docs/TEAM_MAIL_OPERATIONS.md` for current operations and limitations.
+
+- Schema 10 was applied after private backups to local dev and `jrs_team`;
+  all 52 pre-existing table counts were retained. The old cloud source was not changed.
+- Applicant/profile integration, submitted materials, shared mail configuration,
+  recovery routing and mail-history bridging are implemented and synchronized to
+  the actual runtime. Fresh regressions passed 709 tests; both clients built.
+  See `../../docs/VERIFICATION_20261021.md` for commands and remaining acceptance.
+- Password symbols are optional. Missing uppercase/lowercase/digit/length conditions
+  are reported individually; ASCII and safe bcrypt limits remain enforced.
+- Removed the HR sign-in intermediate page. Unauthenticated and expired sessions
+  enter shared sign-in directly. Safe deep links return to their business task;
+  logout and ordinary HR login retain Dashboard as the default.
+- Ten formal templates are active in dev and shared target. Nine exact local JRS
+  seeds and five exact old shared native seeds were archived, preserving history.
+  Native canonical-template edits are rejected. Business preview placeholders
+  distinguish missing actual interview and offer values from sample identity values.
+- The core canonical import tool supports private preview, explicit ID mapping,
+  conflict rejection, digest approval, backup and transactional inserts. Other
+  module tables/native recruitment links still need reviewed adapters.
+- User confirmed the SMTP test arrived. Candidate registration and real recovery
+  delivery, real recruitment email receipt, hosting selection and cross-role visual
+  acceptance remain pending. No platform roles or hosting deployment are claimed.
+- Teacher feedback was read from the original Word document. Pending placement
+  and cross-role visual questions remain explicit; historical test results below
+  are not fresh verification for this continuation.
+
 ## English-only repository cleanup - 2026-10-19
 
 Current tracked filenames, comments, diagnostics and documentation use English.
@@ -165,3 +195,14 @@ Verification: the overwrite transaction checked exact equality of all local/clou
 - Fixed explicit cross-module navigation without allowing late iframe load messages to redirect the active page. Candidate profile return retains query/page and uses its real Candidates parent path.
 - No new framework, database migration, cloud writes, real email, permission expansion or automatic hiring decision. Applicant and login implementation remains queued in PLAN.md.
 - Verification: frontend 113, backend/API 183, isolated HR MySQL 12, native recruitment 111, Jest 73, root 34, demo MySQL 3, default workflow MySQL 2 and experimental workflow MySQL 2 passed (533 total). Production build passed. See HR_INTERFACE_ROLLOUT.md for scope and acceptance details.
+
+
+## Approved team integration execution (2026-10-21)
+
+1. Prepare a separate cloud database jrs_team without modifying the previous shared database. Retain local-only setup, seed and destructive test guards. Runtime uses verified TLS and a dedicated DML-only account; credentials are delivered separately in a private local text file.
+2. Inventory and back up existing cloud records, then migrate reviewed business data with explicit ID mappings. Exclude local demo/test batches. Member imports require preview, validation, deduplication and backup rather than whole-database overwrite.
+3. Reorganize shared login and recovery UI, restore the original two-circle JRS identity in both login and HR, and wire expiring single-use recovery links for HR and candidates. SMTP inbox acceptance depends on the login owner's configuration; automated transport tests do not prove delivery.
+4. Selectively integrate SiHuanjia's applicant standardization source, retaining the current publication guards, transactions and application snapshots. Current profile fields share one authoritative source; submitted materials remain immutable. Other members' changes are reported, not blindly merged.
+5. Final phase task added by the user: complete Notification email templates, then remove verified test templates whose names begin with JRS. Inventory content and references first; a prefix alone does not prove a template is disposable. Back up before cleanup, preserve sent-email snapshots, and archive referenced test templates rather than break references.
+
+Current status: shared target and local dev have schema 10 and ten active formal templates. Core reviewed integration is synchronized and verified; see the current continuation section above. The user confirmed receipt of the earlier SMTP test. Candidate recovery and real recruitment inbox acceptance, deployment selection and visual acceptance remain pending.

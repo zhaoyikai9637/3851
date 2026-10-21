@@ -1,4 +1,17 @@
 import { DataTypes } from "sequelize";
+import { employmentCode, experienceCode, workModeCode } from "../data/jobOptions.js";
+
+function codedField(field, codes, normalise) {
+  return {
+    type: DataTypes.STRING(field === "experienceLevel" ? 60 : 40), allowNull: false,
+    validate: { isIn: [codes] },
+    set(value) {
+      const code = normalise(value);
+      if (!code) throw new Error(`Invalid ${field}; choose an approved option.`);
+      this.setDataValue(field, code);
+    },
+  };
+}
 
 export function defineModels(sequelize) {
   const User = sequelize.define("User", {
@@ -11,7 +24,7 @@ export function defineModels(sequelize) {
   const ApplicantProfile = sequelize.define("ApplicantProfile", {
     id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
     phone: { type: DataTypes.STRING(30), allowNull: false, defaultValue: "" },
-    location: { type: DataTypes.STRING(100), allowNull: false, defaultValue: "" },
+    location: { type: DataTypes.STRING(255), allowNull: false, defaultValue: "" },
     availabilityStatus: { type: DataTypes.ENUM("AVAILABLE", "CLOSED"), allowNull: false, defaultValue: "AVAILABLE" },
     education: { type: DataTypes.JSON, allowNull: false, defaultValue: [] },
     languages: { type: DataTypes.JSON, allowNull: false, defaultValue: [] },
@@ -22,9 +35,9 @@ export function defineModels(sequelize) {
     title: { type: DataTypes.STRING(120), allowNull: false },
     department: { type: DataTypes.STRING(80), allowNull: false },
     location: { type: DataTypes.STRING(100), allowNull: false },
-    workMode: { type: DataTypes.STRING(40), allowNull: false },
-    employmentType: { type: DataTypes.STRING(40), allowNull: false },
-    experienceLevel: { type: DataTypes.STRING(60), allowNull: false },
+    workMode: codedField("workMode", ["HYBRID", "REMOTE", "ON_SITE"], workModeCode),
+    employmentType: codedField("employmentType", ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP"], employmentCode),
+    experienceLevel: codedField("experienceLevel", ["YEARS_1_3", "YEARS_3_5", "YEARS_5_7"], experienceCode),
     salaryRange: { type: DataTypes.STRING(80), allowNull: false },
     summary: { type: DataTypes.STRING(500), allowNull: false },
     responsibilities: { type: DataTypes.JSON, allowNull: false },
@@ -47,7 +60,7 @@ export function defineModels(sequelize) {
   const Application = sequelize.define("Application", {
     id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
     phone: { type: DataTypes.STRING(30), allowNull: false },
-    location: { type: DataTypes.STRING(100), allowNull: false },
+    location: { type: DataTypes.STRING(255), allowNull: false },
     coverLetter: { type: DataTypes.TEXT, allowNull: false, defaultValue: "" },
     experiences: { type: DataTypes.JSON, allowNull: false },
     roleAnswers: { type: DataTypes.JSON, allowNull: false },

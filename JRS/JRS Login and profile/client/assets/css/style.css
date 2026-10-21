@@ -676,3 +676,35 @@ body {
 .profile-card-item .card-subtext { white-space: pre-wrap; overflow-wrap: anywhere; }
 .sidebar-menu [aria-disabled="true"] { opacity: .55; cursor: default; }
 #logoutBtn { background: transparent; border: 0; text-align: left; font: inherit; cursor: pointer; width: 100%; }
+
+/* Shared authentication layout; profile pages retain their own workspace. */
+.auth-page { min-height:100dvh; display:grid; grid-template-columns:minmax(280px,.85fr) minmax(480px,1.4fr); background:#fff; }
+.auth-page .top-header { height:auto; border:0; border-right:1px solid #e0e6ef; padding:clamp(32px,6vw,96px); align-items:flex-start; background:#eef2f8; }
+.auth-page .logo-container { gap:16px; align-items:center; }
+.auth-page .logo-circles { min-width:56px; }
+.auth-page .circle { width:34px; height:34px; }
+.auth-page .circle-blue { margin-left:-12px; }
+.auth-page .logo-title {font-size:30px;letter-spacing:.06em;}
+.auth-page .logo-subtitle {font-size:9px;margin-top:7px;letter-spacing:.08em;}
+.auth-page .page-container { min-height:100dvh; padding:48px 40px; }
+.auth-page .auth-card { box-shadow:none; max-width:460px; padding:24px; border-radius:0; }
+.auth-page .auth-title {font-size:30px;letter-spacing:-.025em;margin-bottom:28px;}
+.auth-page .auth-subtitle {margin-top:-12px;line-height:1.7;}
+.auth-page .form-group label {font-size:14px;}
+.auth-page .form-group input {min-height:46px;border-radius:8px;}
+.auth-page .btn-primary {height:46px;border-radius:8px;background:#355bce;}
+.auth-page #registerToggle {width:100%;padding:16px 8px;}
+.auth-page .forgot-link,.auth-page .resend-link {color:#355bce;}
+.auth-page .toggle-password {border:0;background:none;font-size:12px;font-weight:600;padding:8px;}
+.auth-page #newPassword {padding-right:70px;}
+.auth-page :focus-visible {outline:3px solid #a8bcf7;outline-offset:3px;}
+.auth-page [hidden] {display:none !important;}
+@media(max-width:760px) {
+ .auth-page {display:block;}
+ .auth-page .top-header {height:auto;padding:24px;border-right:0;border-bottom:1px solid #e0e6ef;}
+ .auth-page .logo-title {font-size:23px;}
+ .auth-page .circle {width:28px;height:28px;}
+ .auth-page .logo-subtitle {font-size:8px;}
+ .auth-page .page-container {min-height:0;padding:32px 16px;}
+ .auth-page .auth-card {padding:12px;width:100%;}
+}

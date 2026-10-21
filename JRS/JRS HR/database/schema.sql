@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS hr_notification_log (
  candidate_name VARCHAR(100) NOT NULL, job_title VARCHAR(100) NOT NULL, recipient VARCHAR(254) NOT NULL,
  subject VARCHAR(200) NOT NULL, body TEXT NOT NULL, template_name VARCHAR(100),
  trigger_event VARCHAR(50) NOT NULL, source_module VARCHAR(50) NOT NULL,
- message_id VARCHAR(300) NOT NULL, sent_at VARCHAR(30) NOT NULL, actor VARCHAR(100) NOT NULL,
+ message_id VARCHAR(300) NOT NULL, sent_at VARCHAR(30) NOT NULL, actor VARCHAR(100) NOT NULL, actor_id VARCHAR(96) NULL,
  FOREIGN KEY (draft_id) REFERENCES hr_email_draft(id), FOREIGN KEY (application_id) REFERENCES hr_application(id), INDEX (sent_at)
 ) ENGINE=InnoDB;
 CREATE TABLE IF NOT EXISTS hr_resume (

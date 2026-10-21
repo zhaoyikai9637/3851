@@ -40,5 +40,5 @@
 .login-card #registerNames .form-group { min-width: 0; }
 .login-card .password-hint { margin: 8px 0 0; color: #475467; font-size: 12px; line-height: 1.6; }
 /* Avoid a second password eye supplied by Edge beside the custom control. */
-.login-card #password::-ms-reveal, .login-card #password::-ms-clear { display: none; }
+.login-card input::-ms-reveal, .login-card input::-ms-clear { display: none; }
 @media (max-width: 360px) { .login-card #registerNames { grid-template-columns: 1fr; } }

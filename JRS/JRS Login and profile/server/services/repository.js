@@ -1,9 +1,11 @@
 const bcrypt = require('bcrypt');
 const { transaction } = require('../config/db');
 const { sections } = require('./validation');
+// MySQL DATETIME strings represent UTC, not the Windows machine's local timezone.
+const sqlDate = value => new Date(typeof value === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(value) ? value.replace(' ','T')+'Z' : value);
 
 class Repository {
-    constructor(pool) { this.pool = pool; }
+    constructor(pool, {integratedRoot=false} = {}) { this.pool = pool; this.integratedRoot=integratedRoot; }
     async rateLimit(key, expires, limit) {
         await this.pool.query('INSERT INTO JRS_RATE_LIMIT (bucket_key, hits, expires_at) VALUES (?, 1, ?) ON DUPLICATE KEY UPDATE hits = hits + 1', [key, expires]);
         const [[row]] = await this.pool.query('SELECT hits FROM JRS_RATE_LIMIT WHERE bucket_key = ?', [key]);
@@ -11,6 +13,15 @@ class Repository {
     }
     async findAccount(email) {
         const [[row]] = await this.pool.query('SELECT account_id, email, password_hash, role FROM MODULE_ACCOUNT WHERE email = ?', [email]);
+        return row;
+    }
+    async recoveryAccount(email) {
+        const [[row]] = await this.pool.query(`SELECT a.account_id, a.email, a.role,
+            CASE WHEN a.role = 'candidate' AND c.candidate_id IS NOT NULL THEN 1
+                 WHEN a.role = 'hr' AND h.account_status = 'ACTIVE' AND h.role IN ('HR_MANAGER','HR_STAFF') THEN 1
+                 ELSE 0 END AS recovery_eligible
+            FROM MODULE_ACCOUNT a LEFT JOIN CANDIDATE c ON c.account_id = a.account_id
+            LEFT JOIN HR_USER h ON h.user_id = a.hr_user_id WHERE a.email = ?`, [email]);
         return row;
     }
     async register(email, hash, first, last) {
@@ -72,25 +83,25 @@ class Repository {
             return true;
         });
     }
-    async saveReset(accountId, codeHash, expires, sentAt) {
+    async saveReset(accountId, codeHash, expires, sentAt, link = false) {
         return transaction(this.pool, async db => {
             // Same lock order as login/reset consumption, including for the first reset request.
             await db.query('SELECT account_id FROM MODULE_ACCOUNT WHERE account_id = ? FOR UPDATE', [accountId]);
             const [[previous]] = await db.query('SELECT sent_at FROM JRS_PASSWORD_RESET WHERE account_id = ? FOR UPDATE', [accountId]);
-            if (previous && sentAt - new Date(previous.sent_at) < 60000) return false;
-            await db.query(`INSERT INTO JRS_PASSWORD_RESET (account_id, code_hash, expires_at, attempts, sent_at)
-                VALUES (?, ?, ?, 0, ?) ON DUPLICATE KEY UPDATE code_hash = VALUES(code_hash), expires_at = VALUES(expires_at),
-                attempts = 0, sent_at = VALUES(sent_at), token_hash = NULL, token_expires_at = NULL`, [accountId, codeHash, expires, sentAt]);
+            if (previous && sentAt - sqlDate(previous.sent_at) < 60000) return false;
+            await db.query(`INSERT INTO JRS_PASSWORD_RESET (account_id, code_hash, expires_at, attempts, sent_at, token_hash, token_expires_at)
+                VALUES (?, ?, ?, 0, ?, ?, ?) ON DUPLICATE KEY UPDATE code_hash = VALUES(code_hash), expires_at = VALUES(expires_at),
+                attempts = 0, sent_at = VALUES(sent_at), token_hash = VALUES(token_hash), token_expires_at = VALUES(token_expires_at)`, [accountId, link ? null : codeHash, expires, sentAt, link ? codeHash : null, link ? expires : null]);
             return true;
         });
     }
-    async discardReset(accountId, codeHash) {
-        await this.pool.query('DELETE FROM JRS_PASSWORD_RESET WHERE account_id = ? AND code_hash = ?', [accountId, codeHash]);
+    async discardReset(accountId, codeHash, link = false) {
+        await this.pool.query(`DELETE FROM JRS_PASSWORD_RESET WHERE account_id = ? AND ${link ? 'token_hash' : 'code_hash'} = ?`, [accountId, codeHash]);
     }
     async verifyCode(accountId, codeHash, tokenHash, tokenExpires, now) {
         return transaction(this.pool, async db => {
             const [[row]] = await db.query('SELECT * FROM JRS_PASSWORD_RESET WHERE account_id = ? FOR UPDATE', [accountId]);
-            if (!row || !row.code_hash || row.attempts >= 5 || new Date(row.expires_at) <= now) return false;
+            if (!row || !row.code_hash || row.attempts >= 5 || sqlDate(row.expires_at) <= now) return false;
             if (row.code_hash !== codeHash) {
                 await db.query('UPDATE JRS_PASSWORD_RESET SET attempts = attempts + 1 WHERE account_id = ?', [accountId]);
                 return false;
@@ -103,9 +114,12 @@ class Repository {
         const [[lookup]] = await this.pool.query('SELECT account_id FROM JRS_PASSWORD_RESET WHERE token_hash = ?', [tokenHash]);
         if (!lookup) return false;
         return transaction(this.pool, async db => {
-            await db.query('SELECT account_id FROM MODULE_ACCOUNT WHERE account_id = ? FOR UPDATE', [lookup.account_id]);
+            const [[account]] = await db.query('SELECT account_id, role FROM MODULE_ACCOUNT WHERE account_id = ? FOR UPDATE', [lookup.account_id]);
+            if (!account || account.role !== 'candidate') return false;
+            const [[candidate]] = await db.query('SELECT candidate_id FROM CANDIDATE WHERE account_id = ?', [lookup.account_id]);
+            if (!candidate) return false;
             const [[row]] = await db.query('SELECT account_id, token_expires_at FROM JRS_PASSWORD_RESET WHERE token_hash = ? FOR UPDATE', [tokenHash]);
-            if (!row || !row.token_expires_at || new Date(row.token_expires_at) <= now) return false;
+            if (!row || !row.token_expires_at || sqlDate(row.token_expires_at) <= now) return false;
             await db.query('UPDATE MODULE_ACCOUNT SET password_hash = ?, updated_at = UTC_TIMESTAMP() WHERE account_id = ?', [passwordHash, row.account_id]);
             await db.query(`DELETE FROM MODULE_SESSION WHERE sid LIKE 'candidate:%' AND
                 JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(data), data, '{}'), '$.account_id')) = ?`, [String(row.account_id)]);
@@ -131,6 +145,7 @@ class Repository {
         return row;
     }
     async updateProfile(candidateId, values) {
+        if(this.integratedRoot && Object.hasOwn(values,'home_location'))values={...values,structured_location:null};
         const columns = Object.keys(values); // All keys originate in server validators.
         await this.pool.query(`UPDATE CANDIDATE SET ${columns.map(k => `${k} = ?`).join(', ')}, updated_at = UTC_TIMESTAMP() WHERE candidate_id = ?`, [...Object.values(values), candidateId]);
     }

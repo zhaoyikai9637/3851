@@ -8,6 +8,8 @@ import files from '../JRS Login and profile/server/services/files.js';
 import { namespacePool } from './sql-namespace.mjs';
 import { httpError } from './security.mjs';
 import { workFacts } from './applicant-facts.mjs';
+import { readApplicantProfile,writeApplicantProfile,contactColumns } from './canonical-applicant-profile.mjs';
+import { locationLabel } from '../JRS Applicant Portal/shared/contactFields.js';
 import { publicationState } from './job-publications.mjs';
 
 // Reuse the applicant module's validators, models and data methods. A shared
@@ -42,9 +44,10 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     const application = await super.getCurrentApplication(userId);
     if (!application) return null;
     const publications = await this.publicationRecords();
-    const [[link]] = await this.repository.pool.execute('SELECT job_snapshot FROM JRS_APPLICATION_LINK WHERE portal_id=? AND account_id=?',[application.id,userId]);
+    const [[link]] = await this.repository.pool.execute('SELECT job_snapshot,applicant_snapshot FROM JRS_APPLICATION_LINK WHERE portal_id=? AND account_id=?',[application.id,userId]);
     const snapshot=typeof link?.job_snapshot==='string'?JSON.parse(link.job_snapshot):link?.job_snapshot;
     application.jobSnapshotAvailable=!!snapshot;
+    application.submittedProfile=typeof link?.applicant_snapshot==='string'?JSON.parse(link.applicant_snapshot):link?.applicant_snapshot||null;
     application.job=this.presentJob(snapshot || application.job,publications.get(application.jobId));
     return application;
   }
@@ -52,32 +55,35 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     const [[account]] = await this.repository.pool.execute("SELECT a.account_id,c.full_name,a.email FROM MODULE_ACCOUNT a JOIN CANDIDATE c ON c.account_id=a.account_id WHERE a.account_id=? AND a.role='candidate'", [id]);
     if (!account) return null;
     const user = { id: account.account_id, fullName: account.full_name, email: account.email, role: 'applicant' };
-    await this.models.User.findOrCreate({ where: { id: user.id }, defaults: user });
+    const [record] = await this.models.User.findOrCreate({ where: { id: user.id }, defaults: user });
+    if(record.fullName!==user.fullName || record.email!==user.email)await record.update(user);
     return user;
   }
   async getProfile(userId) {
-    const [base, canonical] = await Promise.all([super.getProfile(userId), this.repository.profile(userId)]);
-    if (!canonical) throw httpError(404, 'Candidate profile not found.');
-    return { ...base, phone: canonical.contact_number || '', location: canonical.home_location || '',
-      education: canonical.education.map(e => ({ institution: e.institution, qualification: e.qualification, startYear: '', graduationYear: e.finished_year || '' })),
-      languages: canonical.languages.map(l => ({ language: l.language_name, readingLevel: l.can_read ? 'Advanced' : 'Basic', writingLevel: l.can_write ? 'Advanced' : 'Basic' })) };
+    return readApplicantProfile(this.repository.pool,userId);
   }
   async updateProfile(userId, values) {
-    const candidate = await this.repository.candidate(userId);
-    if (!candidate) throw httpError(404, 'Candidate profile not found.');
-    await this.repository.updateProfile(candidate.candidate_id, { contact_number: values.phone || '', home_location: values.location || '' });
-    // List editing is explicit; do not clear education/languages when only contacts change.
-    if (values.education) {
-      const db = await this.repository.pool.getConnection();
-      try { await db.beginTransaction();
-        await db.execute('DELETE FROM EDUCATION WHERE candidate_id=?', [candidate.candidate_id]);
-        for (const e of values.education.filter(e => e.institution || e.qualification)) await db.execute('INSERT INTO EDUCATION(candidate_id,institution,qualification,finished_year) VALUES(?,?,?,?)', [candidate.candidate_id, e.institution || '', e.qualification || '', String(e.graduationYear || '') || null]);
-        await db.commit();
-      } catch (error) { await db.rollback(); throw error; } finally { db.release(); }
-    }
-    if (values.languages) await this.repository.replaceList(candidate.candidate_id, 'languages', values.languages.filter(l => l.language).map(l => ({ language_name: l.language, can_read: l.readingLevel && l.readingLevel !== 'Basic' ? 1 : 0, can_write: l.writingLevel && l.writingLevel !== 'Basic' ? 1 : 0 })));
-    await super.updateProfile(userId, values);
-    return this.getProfile(userId);
+    const connection=await this.repository.pool.getConnection();
+    try { await connection.beginTransaction();
+      const profile=await writeApplicantProfile(connection,userId,values);
+      await connection.commit();return profile;
+    } catch(error) {await connection.rollback();throw error;} finally {connection.release();}
+  }
+  async listResumes(userId) {
+    return this.sequelize.transaction(async transaction=>{
+      await this.sequelize.query('SELECT account_id FROM MODULE_ACCOUNT WHERE account_id=? FOR UPDATE',{replacements:[userId],transaction});
+      const [files]=await this.sequelize.query('SELECT f.*,l.portal_id FROM RESUME_FILE f JOIN CANDIDATE c ON c.candidate_id=f.candidate_id LEFT JOIN JRS_RESUME_LINK l ON l.canonical_id=f.file_id WHERE c.account_id=? ORDER BY f.file_id DESC',{replacements:[userId],transaction});
+      const result=[];
+      for(const file of files){let id=file.portal_id;
+        if(!id){const row=await this.models.Resume.create({userId,originalName:file.file_name,storedName:file.storage_key,mimeType:file.file_type,size:file.file_size},{transaction});id=row.id;
+          await this.sequelize.query('INSERT INTO JRS_RESUME_LINK(portal_id,canonical_id) VALUES(?,?)',{replacements:[id,file.file_id],transaction});}
+        result.push({id,userId,originalName:file.file_name,storedName:file.storage_key,mimeType:file.file_type,size:file.file_size});
+      }return result;
+    });
+  }
+  async resumeFile(userId,resumeId) {
+    const [[file]]=await this.repository.pool.execute('SELECT f.* FROM RESUME_FILE f JOIN CANDIDATE c ON c.candidate_id=f.candidate_id JOIN JRS_RESUME_LINK l ON l.canonical_id=f.file_id WHERE c.account_id=? AND l.portal_id=?',[userId,resumeId]);
+    return file||null;
   }
   async createResume(userId, file) {
     const bytes = await fs.readFile(file.path);
@@ -87,13 +93,14 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     await fs.mkdir(this.uploadDir, { recursive: true });
     await fs.copyFile(file.path, path.join(this.uploadDir, key), fs.constants.COPYFILE_EXCL);
     try {
-      return await this.sequelize.transaction(async transaction => {
-        const resume = await this.models.Resume.create({ userId, originalName: file.originalname, storedName: file.filename, mimeType: mime, size: bytes.length }, { transaction });
+      const created = await this.sequelize.transaction(async transaction => {
+        const resume = await this.models.Resume.create({ userId, originalName: file.originalname, storedName: key, mimeType: mime, size: bytes.length }, { transaction });
         await this.sequelize.query('INSERT INTO RESUME_FILE(candidate_id,file_name,storage_key,file_type,file_size) VALUES(?,?,?,?,?)', { replacements: [canonical.candidate_id, file.originalname, key, mime, bytes.length], transaction });
         const [[inserted]] = await this.sequelize.query('SELECT LAST_INSERT_ID() AS id', { transaction });
         await this.sequelize.query('INSERT INTO JRS_RESUME_LINK(portal_id,canonical_id) VALUES(?,?)', { replacements: [resume.id, inserted.id], transaction });
         return resume.toJSON();
       });
+      await fs.unlink(file.path).catch(()=>{});return created;
     } catch (error) { await fs.unlink(path.join(this.uploadDir, key)); throw error; }
   }
   async deleteResume(userId, resumeId) {
@@ -130,7 +137,7 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       const before = await this.recruitment.load(connection), after = state.clone(before), at = new Date().toISOString();
       const candidateId = `account-${userId}`;
       if (!after.candidates.some(c => c.id === candidateId)) {
-        const c = { name: canonical.full_name, email: canonical.email, phone: values.phone, location: values.location, ...facts,
+        const c = { name: canonical.full_name, email: canonical.email, phone: values.phone, location: locationLabel(values.location), ...facts,
           graduateStatus: 'Not recorded', educationLevel: 'Not recorded', educationMajor: '', graduationDate: null, education: 'Not recorded' };
         after.candidates.push({ ...c, id: candidateId, notes: `${values.coverLetter}\n\n${values.experiences.map(e => `${e.companyName} — ${e.jobTitle} (${e.startDate}–${e.currentRole ? 'Present' : e.endDate})\n${e.responsibilities}`).join('\n\n')}`.slice(0, 6000), createdAt: at });
         await query('INSERT INTO JRS_CANDIDATE_LINK(recruiting_id,canonical_id) VALUES(?,?)', [candidateId, canonical.candidate_id]);
@@ -145,8 +152,11 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       await this.recruitment.save(connection, before, after);
       const [[canonicalApplication]] = await query('SELECT canonical_id FROM JRS_HR_APPLICATION_LINK WHERE recruiting_id=?', [result.application.id]);
       await query('INSERT INTO JRS_APPLICATION_LINK(portal_id,recruiting_id,canonical_id,account_id,job_snapshot) VALUES(?,?,?,?,?)', [application.id, result.application.id, canonicalApplication.canonical_id, userId,JSON.stringify(job.toJSON())]);
-      await query('UPDATE CANDIDATE SET contact_number=?,home_location=?,updated_at=UTC_TIMESTAMP() WHERE account_id=?', [values.phone, values.location, userId]);
+      const profile=await readApplicantProfile({query},userId);
       const [[resumeLink]] = await query('SELECT f.* FROM RESUME_FILE f JOIN JRS_RESUME_LINK l ON l.canonical_id=f.file_id WHERE l.portal_id=?', [resume.id]);
+      if (!resumeLink) throw httpError(409,'The selected resume has not been linked.');
+      await query('UPDATE JRS_APPLICATION_LINK SET applicant_snapshot=? WHERE portal_id=?',[JSON.stringify({...profile,fullName:canonical.full_name,email:canonical.email,...values,resume:{canonicalId:resumeLink.file_id,name:resume.originalName,mimeType:resume.mimeType}}),application.id]);
+      await writeApplicantProfile({query},userId,{phone:values.phone,location:values.location,experiences:values.experiences});
       if (resumeLink?.file_type === 'application/pdf') await connection.execute('INSERT INTO hr_resume(candidate_id,filename,size_bytes,content,uploaded_at) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE filename=VALUES(filename),size_bytes=VALUES(size_bytes),content=VALUES(content),uploaded_at=VALUES(uploaded_at)', [candidateId, resume.originalName.slice(0, 150), resume.size, await fs.readFile(path.join(this.uploadDir, resumeLink.storage_key)), at]);
       return { ...application.toJSON(), job: job.toJSON(), resume: resume.toJSON() };
     });

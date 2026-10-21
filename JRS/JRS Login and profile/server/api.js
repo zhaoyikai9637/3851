@@ -42,21 +42,46 @@ function mountAuthRoutes(app, { repo, config, mailer, now, limit, auth, sessionI
         const email = v.email(req.body.email);
         await limit(req, 'reset-email-minute', 1, 60, email);
         await limit(req, 'reset-email-hour', 5, 3600, email);
+        if (config.integratedRoot) {
+            await limit(req, 'reset-global', 60, 3600, 'account-assistance');
+            const account = await repo.recoveryAccount(email);
+            if (!account) v.fail('Account not found.', 404);
+            if (!account.recovery_eligible) v.fail('Password recovery is unavailable for this account.', 403);
+            if (!mailer.ready) v.fail('Password recovery is not configured. Please try again later.', 503);
+            if (account.role === 'hr') {
+                try { await mailer.sendHrAssistance(account.email); }
+                catch { v.fail('Account assistance email could not be sent. Please try again later.', 503); }
+            } else {
+                const token = random(), digest = hash(token), sentAt = now();
+                if (!await repo.saveReset(account.account_id, digest, new Date(sentAt.getTime() + 600000), sentAt, true)) {
+                    v.fail('Please wait before requesting another email.', 429);
+                }
+                try { await mailer.sendResetLink(account.email, `${config.origin}/pages/set-new-password/set-new-password.html#token=${token}`); }
+                catch {
+                    await repo.discardReset(account.account_id, digest, true);
+                    v.fail('Account assistance email could not be sent. Please try again later.', 503);
+                }
+            }
+            return res.json({valid:true,recoveryMode:'email',message:'Account assistance instructions have been submitted for delivery. Check your inbox.'});
+        }
         if (!mailer.ready) v.fail('Password recovery is not configured. Contact the administrator.', 503);
         const account = await repo.findAccount(email);
-        if (account?.role === 'candidate') {
-            const code = crypto.randomInt(1000, 10000).toString(), sentAt = now();
-            const digest = codeHash(account.account_id, code);
-            if (await repo.saveReset(account.account_id, digest, new Date(sentAt.getTime() + 600000), sentAt)) {
-                try { await mailer.sendCode(account.email, code); }
+        if (account && (account.role === 'candidate' || (config.integratedRoot && account.role === 'hr'))) {
+            const code = crypto.randomInt(1000, 10000).toString(), sentAt = now(), linkToken = config.integratedRoot ? random() : null;
+            const digest = linkToken ? hash(linkToken) : codeHash(account.account_id, code);
+            if (await repo.saveReset(account.account_id, digest, new Date(sentAt.getTime() + 600000), sentAt, Boolean(linkToken))) {
+                try {
+                    if(linkToken) await mailer.sendResetLink(account.email, `${config.origin}/pages/set-new-password/set-new-password.html#token=${linkToken}`);
+                    else await mailer.sendCode(account.email, code);
+                }
                 catch (error) {
-                    await repo.discardReset(account.account_id, digest);
+                    await repo.discardReset(account.account_id, digest, Boolean(linkToken));
                     // Keep account existence private; log delivery failure without addresses or codes.
                     console.error('Password recovery email delivery failed:', error.code || 'SMTP_ERROR');
                 }
             }
         }
-        res.json({ valid: true, message: 'If a candidate account exists, a verification code will be sent.' });
+        res.json({ valid: true, ...(config.integratedRoot ? {recoveryMode:'link',message:'If an eligible account exists, a password reset link will be sent.'} : {message:'If a candidate account exists, a verification code will be sent.'}) });
     });
     app.post('/api/check-email', async (req, res) => {
         await limit(req, 'verify-ip', 30, 900);

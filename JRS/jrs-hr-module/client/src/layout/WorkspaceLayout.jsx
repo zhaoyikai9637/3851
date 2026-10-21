@@ -11,7 +11,7 @@ function SidebarNavigation({ pathname, onNavigate }) {
   return (
     <>
       <div className="brand">
-        <span className="brand-mark">J</span>
+        <span className="brand-mark" aria-hidden="true"><span className="brand-circle brand-circle-dark" /><span className="brand-circle brand-circle-blue" /></span>
         <span>
           JRS<span className="brand-subtitle">HR WORKSPACE</span>
         </span>

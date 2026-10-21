@@ -7,6 +7,10 @@ class MemoryRepository {
     }
     async rateLimit(key, expires, limit) { const n = (this.limits.get(key) || 0) + 1; this.limits.set(key, n); return n <= limit; }
     async findAccount(email) { return this.accounts.find(a => a.email === email); }
+    async recoveryAccount(email) {
+        const account = await this.findAccount(email);
+        return account ? {...account,recovery_eligible:account.recovery_eligible ?? ['candidate','hr'].includes(account.role)} : null;
+    }
     async register(email, hash, first, last) {
         if (await this.findAccount(email)) { const e = new Error(); e.code = 'ER_DUP_ENTRY'; throw e; }
         const id = this.accounts.length + 1;
@@ -29,12 +33,12 @@ class MemoryRepository {
         return a?.role === 'candidate' ? { account_id: a.account_id, email: a.email, role: a.role, csrf: s.csrf } : null;
     }
     async logout(sid) { this.sessions.delete(sid); }
-    async saveReset(id, code_hash, expires_at, sent_at) {
+    async saveReset(id, code_hash, expires_at, sent_at, link = false) {
         const old = this.resets.get(id);
         if (old && sent_at - old.sent_at < 60000) return false;
-        this.resets.set(id, { code_hash, expires_at, sent_at, attempts: 0 }); return true;
+        this.resets.set(id, { code_hash:link?null:code_hash, expires_at, sent_at, attempts: 0, ...(link ? {token_hash:code_hash,token_expires_at:expires_at} : {}) }); return true;
     }
-    async discardReset(id, digest) { if (this.resets.get(id)?.code_hash === digest) this.resets.delete(id); }
+    async discardReset(id, digest, link = false) { if (this.resets.get(id)?.[link?'token_hash':'code_hash'] === digest) this.resets.delete(id); }
     async verifyCode(id, digest, token_hash, token_expires_at, now) {
         const r = this.resets.get(id);
         if (!r || !r.code_hash || r.attempts >= 5 || r.expires_at <= now) return false;
@@ -45,6 +49,7 @@ class MemoryRepository {
         const pair = [...this.resets].find(([, r]) => r.token_hash === digest);
         if (!pair || pair[1].token_expires_at <= now) return false;
         const id = pair[0]; this.resets.delete(id);
+        if (this.accounts.find(a => a.account_id === id)?.role !== 'candidate') return false;
         this.accounts.find(a => a.account_id === id).password_hash = password_hash;
         for (const [sid, s] of this.sessions) if (s.account_id === id) this.sessions.delete(sid);
         return true;

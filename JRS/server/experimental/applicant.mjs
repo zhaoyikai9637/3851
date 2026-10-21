@@ -5,6 +5,7 @@ import { root } from '../config.mjs';
 import { readSharedSession, verifySharedWrite, httpError } from '../security.mjs';
 import { IntegratedApplicantData } from '../applicant-data.mjs';
 import { defineModels as applicantModels } from '../../JRS Applicant Portal/server/models/index.js';
+import optionRoutes from '../../JRS Applicant Portal/server/routes/options.js';
 import jobRoutes from '../../JRS Applicant Portal/server/routes/jobs.js';
 import profileRoutes from '../../JRS Applicant Portal/server/routes/profile.js';
 import resumeRoutes from '../../JRS Applicant Portal/server/routes/resumes.js';
@@ -35,8 +36,15 @@ export async function mountExperimentalApplicant({ app, applicantDb, repository,
   });
   applicants.get('/auth/me', (req, res) => res.json({ user: req.user }));
   applicants.post('/auth/logout', async (req, res) => { await identity.logout(req, res); res.status(204).end(); });
+  applicants.use('/options', optionRoutes);
   applicants.use('/jobs', jobRoutes);
   applicants.use('/profile', profileRoutes);
+  applicants.get('/resumes/:id/download',async(req,res,next)=>{
+    try{const file=await data.resumeFile(req.user.id,req.params.id);
+      if(!file||!/^[a-f0-9]{64}$/.test(file.storage_key))throw httpError(404,'Resume is unavailable.');
+      res.download(path.join(uploadDir,file.storage_key),file.file_name,{dotfiles:'allow'},error=>{if(error)next(error);});
+    }catch(error){next(error);}
+  });
   applicants.use('/resumes', resumeRoutes);
   applicants.use('/applications', applicationRoutes);
   applicants.use(applicantErrors);

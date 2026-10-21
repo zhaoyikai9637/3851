@@ -1,0 +1,28 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import request from 'supertest';
+import bcrypt from 'bcrypt';
+import { createRequire } from 'node:module';
+const require=createRequire(import.meta.url);
+const {createApp}=require('../JRS Login and profile/server/app.js');
+const {MemoryRepository}=require('../JRS Login and profile/tests/memory-repository.js');
+const {hash}=require('../JRS Login and profile/server/utils/tokens.js');
+const config={origin:'http://localhost:3100',production:false,resetSecret:'r'.repeat(64),sessionMs:3600000,uploadDir:'.local/no-uploads',integratedRoot:true};
+for(const role of ['candidate'])test(`integrated ${role} recovery emails an expiring single-use link`,async()=>{
+ let time=new Date('2026-10-21T03:00:00Z');const repo=new MemoryRepository(()=>time);
+ await repo.register('person@example.test',await bcrypt.hash('OldPassword1!',4),'Test','Person');repo.accounts[0].role=role;
+ const sent=[];const app=createApp({repository:repo,config,now:()=>time,mailer:{ready:true,sendResetLink:async(email,url)=>sent.push({email,url})}});
+ const response=await request(app).post('/api/forgot-password').send({email:'person@example.test'}).expect(200);
+ assert.equal(sent.length,1);const url=new URL(sent[0].url);assert.equal(url.origin,config.origin);
+ assert.equal(url.pathname,'/pages/set-new-password/set-new-password.html');assert.equal(url.search,'');
+ const token=new URLSearchParams(url.hash.slice(1)).get('token');assert.match(token,/^[a-f0-9]{64}$/);
+ assert.equal(repo.resets.get(1).token_hash,hash(token));assert.ok(!JSON.stringify(repo.resets.get(1)).includes(token));
+ const unknown=await request(app).post('/api/forgot-password').send({email:'missing@example.test'}).expect(404);assert.equal(unknown.body.error,'Account not found.');
+ const oldHash=repo.accounts[0].password_hash;
+ const reset=await request(app).post('/api/set-new-password').send({resetToken:token,newPassword:'NewPassword2!'}).expect(200);
+ assert.equal(reset.body.valid,true);assert.notEqual(repo.accounts[0].password_hash,oldHash);
+ await request(app).post('/api/set-new-password').send({resetToken:token,newPassword:'AnotherPassword3!'}).expect(400);
+ time=new Date(time.getTime()+61000);await request(app).post('/api/forgot-password').send({email:'person@example.test'}).expect(200);
+ const expired=new URLSearchParams(new URL(sent.at(-1).url).hash.slice(1)).get('token');time=new Date(time.getTime()+600001);
+ await request(app).post('/api/set-new-password').send({resetToken:expired,newPassword:'AnotherPassword3!'}).expect(400);
+});

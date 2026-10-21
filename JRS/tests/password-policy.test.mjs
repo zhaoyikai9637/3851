@@ -11,7 +11,24 @@ const {MemoryRepository} = require('../JRS Login and profile/tests/memory-reposi
 const {hash} = require('../JRS Login and profile/server/utils/tokens.js');
 const config = {origin:'http://localhost:3100', production:false, integratedRoot:true,
   resetSecret:'r'.repeat(64), sessionMs:3600000, uploadDir:'.local/no-uploads'};
-const invalid = ['lowercase1!', 'UPPERCASE1!', 'NoDigitsHere!', 'NoSymbols123', 'Chinese1!\u4e2d\u6587', 'Emoji1!\u{1f600}', 'Hidden1!\n', 'Aa1!', 'Aa1!'+'x'.repeat(69)];
+const invalid = ['lowercase1!', 'UPPERCASE1!', 'NoDigitsHere!', '1111111as', 'Chinese1!\u4e2d\u6587', 'Emoji1!\u{1f600}', 'Hidden1!\n', 'Aa1!', 'Aa1!'+'x'.repeat(69)];
+const {passwordPolicyError} = require('../JRS Login and profile/client/utils/password-policy.js');
+test('creation reports every missing condition and accepts passwords without symbols', () => {
+  assert.equal(passwordPolicyError('1111111as'), 'Add at least one uppercase letter.');
+  assert.equal(passwordPolicyError('abc'), 'Use at least 8 characters. Add at least one uppercase letter. Add at least one number.');
+  assert.equal(passwordPolicyError('NoSymbols123'), '');
+  assert.ok(passwordPolicyError('Aa1'+'x'.repeat(70)));
+});
+test('registration and reset accept a password without a special symbol', async () => {
+  const repo = new MemoryRepository();
+  const app = createApp({repository:repo,config,mailer:{ready:false}});
+  await request(app).post('/api/register').send({email:'plain@example.test',first_name:'Example',password:'NoSymbols123'}).expect(201);
+  const token='b'.repeat(64), instant=new Date(), expiry=new Date(instant.getTime()+600000);
+  await repo.saveReset(1,'fixture',expiry,instant);
+  await repo.verifyCode(1,'fixture',hash(token),expiry,instant);
+  await request(app).post('/api/set-new-password').send({resetToken:token,newPassword:'Updated123'}).expect(200);
+  assert.equal(await bcrypt.compare('Updated123',repo.accounts[0].password_hash),true);
+});
 for (const password of invalid) test('server registration refuses invalid new passwords: '+JSON.stringify(password), async () => {
   const repo = new MemoryRepository();
   const app = createApp({repository:repo,config,mailer:{ready:false}});

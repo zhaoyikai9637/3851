@@ -7,8 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
         error.textContent = ''; button.disabled = true;
         const email = document.getElementById('email').value.trim();
         try {
-            await JRS.request('/forgot-password', { method: 'POST', body: { email } });
+            const result = await JRS.request('/forgot-password', { method: 'POST', body: { email } });
             sessionStorage.setItem('reset_email', email);
+            sessionStorage.setItem('reset_mode',result.recoveryMode || 'code');
             sessionStorage.removeItem('reset_token');
             localStorage.removeItem('reset_email');
             window.location.href = '../check-email/check-email.html';

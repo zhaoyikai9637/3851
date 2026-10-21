@@ -22,7 +22,7 @@ const page = (content) => <PageBoundary>{content}</PageBoundary>;
 
 export function App() {
   return <AuthProvider><Routes><Route element={<WorkspaceLayout />}>
-    <Route index element={<Navigate to="/notifications" replace />} />
+    <Route index element={<Navigate to="/dashboard" replace />} />
     {workspaceLinks.map(([path, name]) => <Route key={path} path={path.slice(1)} element={page(path === '/job-postings' ? <JobPostings/> : <Recruitment key={path} page={path.slice(1)} title={name} />)} />)}
     <Route path="outbox" element={<Navigate to="/applications" replace />} />
     <Route path="notifications" element={page(<Notifications />)} />
