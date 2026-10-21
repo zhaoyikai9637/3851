@@ -5,6 +5,7 @@
 Communication navigation (Notifications, Templates, Logs) now matches the Reports
 selected-tab treatment: pale blue background, rounded corners and a blue bottom
 border. Edge switching and 390px navigation fit were verified; runtime build passed.
+Applications stage links use the same rounded, semibold selected-tab treatment.
 
 Applications, Candidates, Interviews, Reports lists and Job Postings now calculate page sizes
 from real row heights and an independent outer-browser space budget. This reduces
