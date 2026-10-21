@@ -1,0 +1,29 @@
+/* Shared by the HR shell and its embedded recruitment documents. */
+html, body {
+  scrollbar-gutter: stable;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #94a0b2 transparent;
+}
+
+/* Older WebKit/Chromium engines without the standard scrollbar properties. */
+@supports not (scrollbar-width: thin) {
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #94a0b2;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: #66768d; }
+  ::-webkit-scrollbar-button { display: none; }
+  ::-webkit-scrollbar-corner { background: transparent; }
+}
+
+/* Preserve the user's high-contrast scrollbar controls. */
+@media (forced-colors: active) {
+  * { scrollbar-width: auto; scrollbar-color: auto; }
+}

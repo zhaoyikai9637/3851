@@ -13,10 +13,24 @@ export function Recruitment({ page, title }) {
   const { pathname, search, key: locationKey } = useLocation(),
     { setTrail } = useOutletContext();
   const [candidate, setCandidate] = useState("");
+  const [contentHeight, setContentHeight] = useState(600);
+  function reportViewport() {
+    frame.current?.contentWindow?.postMessage({type:'jrs:viewport',height:window.innerHeight},window.location.origin);
+  }
+  useEffect(() => {
+    window.addEventListener('resize',reportViewport);
+    return () => window.removeEventListener('resize',reportViewport);
+  }, []);
   useEffect(() => {
     function receive(event) {
       if (event.origin !== window.location.origin || event.source !== frame.current?.contentWindow)
         return;
+      if (event.data?.type === 'jrs:frame') {
+        const height=event.data.height;
+        if (Number.isFinite(height) && height > 0 && height <= 100000) setContentHeight(Math.ceil(height));
+        reportViewport();
+        return;
+      }
       if (event.data?.type === "jrs:workspace" && event.data.intent === true && validRoute(event.data.route)) {
         const route = event.data.route,
           base = route.split("/")[0];
@@ -62,9 +76,7 @@ export function Recruitment({ page, title }) {
           });
       }
       if (event.data?.type === "jrs:dialog") {
-        const bounds = frame.current.getBoundingClientRect();
-        if (bounds.top < 0 || bounds.top > window.innerHeight / 2)
-          frame.current.scrollIntoView({ block: "start" });
+        frame.current.scrollIntoView({ block: "start" });
       }
       if (
         event.data?.type === "jrs:navigate" &&
@@ -103,9 +115,11 @@ export function Recruitment({ page, title }) {
         ref={frame}
         title={title}
         src={source}
+        scrolling="no"
+        onLoad={reportViewport}
         style={{
           width: "100%",
-          height: "max(600px, calc(100dvh - 200px))",
+          height: contentHeight + "px",
           border: 0,
           display: "block",
           background: "transparent",

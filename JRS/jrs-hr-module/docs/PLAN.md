@@ -2,6 +2,10 @@
 
 ## Current continuation plan - 2026-10-21
 
+- Browser page scrolling now matches Job Postings across the embedded workspace.
+  Interviews wheel scrolling, Reports height stability and desktop/phone layouts
+  were checked. See `../../docs/HR_PAGE_SCROLLING.md` for implementation and scope.
+
 - Matched the public job-page logo to shared login and registration branding.
 
 - Added and verified Back to jobs on login/registration; refreshing login keeps

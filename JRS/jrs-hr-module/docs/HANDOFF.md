@@ -2,6 +2,13 @@
 
 ## Current continuation status - 2026-10-21
 
+Dashboard, Applications, Interviews and Reports now use browser page scrolling,
+matching Job Postings. Intrinsic content height replaces the fixed iframe viewport;
+wheel chaining and width-only responsive rules prevent blocked scrolling and
+Reports resize loops. Phone card overflow and the narrow header were corrected.
+Desktop and 390px/320px Edge checks were performed. This supersedes historical
+fixed-viewport guidance below. See `../../docs/HR_PAGE_SCROLLING.md` for evidence.
+
 Public job pages now use the same overlapping 24px dark/blue circles, 16px JRS
 wordmark and 9px subtitle as shared login/registration. Public navigation and
 the brand's jobs destination are retained. Three visitor DOM/CSS tests and both

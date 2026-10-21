@@ -1347,3 +1347,8 @@ button:disabled {
 .brand-circle {display:block;flex:0 0 31px;height:31px;border-radius:50%;}
 .brand-circle-dark {background:#0f172a;border:1px solid #8293b2;}
 .brand-circle-blue {background:#416be0;margin-left:-12px;}
+@media (max-width:400px) {
+  .topbar.compact-topbar {padding-inline:12px;gap:8px;}
+  .compact-topbar .account-button {gap:6px;padding-inline:4px;}
+  .compact-topbar .account-button .avatar {width:32px;height:32px;}
+}

@@ -172,12 +172,18 @@ describe("authentication and navigation", () => {
     expect(within(path).getByText('Candidates')).toHaveAttribute('aria-current','page');
   });
 
-  it('keeps Reports viewport stable when embedded content alternates between compact and expanded heights', async () => {
+  it('lets the browser scroll the full embedded content and rejects untrusted or invalid sizes', async () => {
     mount('/reports');
     const frame = await screen.findByTitle('Reports');
-    const height = frame.style.height;
-    for (const next of [691, 600, 691, 600]) fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:frame', height: next } }));
-    expect(frame.style.height).toBe(height);
+    for (const next of [1600, 820, 1600]) {
+      fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:frame',height:next}}));
+      await waitFor(()=>expect(frame.style.height).toBe(next+'px'));
+    }
+    for(const [origin,source,height]of [['https://untrusted.example',frame.contentWindow,2000],[window.location.origin,window,2000],[window.location.origin,frame.contentWindow,-1],[window.location.origin,frame.contentWindow,'3000'],[window.location.origin,frame.contentWindow,Infinity]]){
+      fireEvent(window,new MessageEvent('message',{origin,source,data:{type:'jrs:frame',height}}));
+      expect(frame.style.height).toBe('1600px');
+    }
+    expect(frame).toHaveAttribute('scrolling','no');
   });
 
   it('uses the sidebar to return to Dashboard without an artificial breadcrumb parent', async () => {
@@ -187,6 +193,12 @@ describe("authentication and navigation", () => {
     expect(within(path).getByRole('heading',{name:'Interviews',level:1})).toBeVisible();
     await ui.click(within(screen.getByRole('navigation',{name:'Main navigation'})).getByRole('link',{name:'Dashboard'}));
     expect(await screen.findByTitle('Dashboard')).toBeVisible();
+  });
+  it('opens embedded dialogs at the browser viewport top so footer actions remain reachable',async()=>{
+    mount('/interviews');const frame=await screen.findByTitle('Interviews');
+    frame.getBoundingClientRect=()=>({top:120});frame.scrollIntoView=vi.fn();
+    fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:dialog'}}));
+    expect(frame.scrollIntoView).toHaveBeenCalledWith({block:'start'});
   });
 
   it('includes a clickable My Profile parent when editing a profile', async () => {

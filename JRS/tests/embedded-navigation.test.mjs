@@ -11,6 +11,17 @@ async function views() {
   return dom;
 }
 
+test('embedded content hands wheel scrolling to the outer page rather than containing it in the frame',async()=>{
+  const workspace=await readFile(new URL('../JRS HR/dist/workspace.css',import.meta.url),'utf8');
+  const embedded=await readFile(new URL('../JRS HR/dist/embedded.css',import.meta.url),'utf8');
+  const dom=new JSDOM('<style>'+workspace+'\n'+embedded+'</style><div id="app-shell"><div class="workspace"><main id="content"><div class="table-scroll"><table><tr><td>Interview</td></tr></table></div></main></div></div>');
+  try{
+    const w=dom.window;
+    for(const element of w.document.querySelectorAll('html,body,#content,.table-scroll'))assert.equal(w.getComputedStyle(element).overscrollBehavior,'auto');
+    assert.equal(w.getComputedStyle(w.document.querySelector('#content')).overflow,'visible');
+  }finally{dom.window.close();}
+});
+
 test('top-level pages do not repeat their title as a one-item breadcrumb', async () => {
   const dom = await views();
   try {
