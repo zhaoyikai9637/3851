@@ -2,6 +2,8 @@
 
 ## Current continuation plan - 2026-10-21
 
+- Matched the public job-page logo to shared login and registration branding.
+
 - Added and verified Back to jobs on login/registration; refreshing login keeps
   the login URL, while this explicit control returns to public browsing.
 

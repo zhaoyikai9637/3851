@@ -10,7 +10,7 @@ export default function PublicLayout() {
     <div className="public-shell">
       <header className="public-header">
         <Link className="public-brand" to="/jobs" aria-label="JRS open roles">
-          <div className="brand-mark" aria-hidden="true"><span /></div>
+          <div className="public-logo-circles" aria-hidden="true"><span className="public-logo-circle public-logo-dark"/><span className="public-logo-circle public-logo-blue"/></div>
           <div>
             <strong>JRS</strong>
             <small>JOB RECRUITMENT SYSTEM</small>

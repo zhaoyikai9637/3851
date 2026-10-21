@@ -365,26 +365,15 @@ textarea.form-control {
 .public-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: var(--jrs-text);
+  gap: 10px;
+  color: #0f172a;
   text-decoration: none;
 }
 
-.public-brand .brand-mark {
-  width: 44px;
-  height: 34px;
-}
-
-.public-brand .brand-mark::before,
-.public-brand .brand-mark::after,
-.public-brand .brand-mark span {
-  width: 34px;
-  height: 34px;
-}
-
-.public-brand .brand-mark::before {
-  border: 1px solid #c8d4e6;
-}
+.public-logo-circles { display: flex; align-items: center; flex-shrink: 0; }
+.public-logo-circle { display: inline-block; width: 24px; height: 24px; border-radius: 50%; }
+.public-logo-dark { background-color: #0f172a; }
+.public-logo-blue { background-color: #2563eb; margin-left: -8px; }
 
 .public-brand strong,
 .public-brand small {
@@ -392,15 +381,17 @@ textarea.form-control {
 }
 
 .public-brand strong {
-  font-size: 25px;
+  font-size: 16px;
+  font-weight: 800;
   line-height: 1;
 }
 
 .public-brand small {
-  margin-top: 6px;
-  color: var(--jrs-muted);
+  margin-top: 0;
+  color: #64748b;
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 400;
+  letter-spacing: 0.5px;
 }
 
 .public-navigation {

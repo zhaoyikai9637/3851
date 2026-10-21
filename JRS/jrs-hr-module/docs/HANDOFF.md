@@ -2,6 +2,11 @@
 
 ## Current continuation status - 2026-10-21
 
+Public job pages now use the same overlapping 24px dark/blue circles, 16px JRS
+wordmark and 9px subtitle as shared login/registration. Public navigation and
+the brand's jobs destination are retained. Three visitor DOM/CSS tests and both
+production builds passed. Browser visual acceptance was not performed.
+
 Login and registration now expose an arrow-labelled Back to jobs link above the
 form. It opens the public `/jobs` route without submitting credentials. This
 follow-up passed 15 login DOM tests and 69 login Jest tests; the actual running
