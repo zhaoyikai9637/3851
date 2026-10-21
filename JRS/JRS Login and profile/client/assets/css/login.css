@@ -1,0 +1,27 @@
+/* Login layout uses the existing JRS typography and palette. */
+.login-page .login-card { max-width: 560px; padding: 40px; border: 1px solid #e2e8f0; border-radius: 16px; }
+.login-card .auth-title { font-size: 34px; line-height: 1.2; margin-bottom: 30px; }
+.login-card .form-group { margin-bottom: 24px; }
+.login-card .form-group input { height: 50px; border-radius: 8px; }
+.login-card .form-group input:focus { box-shadow: 0 0 0 4px #2563eb26; }
+.login-card .password-label-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 6px; }
+.login-card .password-label-row label { margin: 0; }
+.login-card .forgot-link { font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.login-card .password-wrapper input { padding-right: 50px; }
+.login-card .toggle-password { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; right: 8px; padding: 8px; border: 0; background: transparent; border-radius: 6px; }
+.login-card .toggle-password svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.login-card [hidden] { display: none !important; }
+.login-card .btn-primary { height: 50px; border-radius: 8px; margin-top: 20px; }
+.login-card .login-register { margin-top: 24px; font-size: 14px; }
+.login-card #registerToggle { text-decoration: underline; text-underline-offset: 3px; }
+.login-card .error-message:empty { display: none; }
+.login-card .error-message { margin-top: 8px; }
+.login-card .login-feedback { margin-bottom: 12px; font-size: 13px; color: #ef4444; }
+.login-card .login-feedback.is-success { color: #14532d; }
+.login-card .register-hint { margin: -8px 0 24px; font-size: 13px; color: #64748b; }
+.login-card button:focus-visible, .login-card a:focus-visible { outline: 2px solid #2563eb; outline-offset: 4px; }
+@media (max-width: 520px) { .login-page .page-container { padding: 24px 16px; } .login-page .login-card { padding: 28px 22px; } .login-card .auth-title { font-size: 30px; } }
+
+.login-card #registerNames { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.login-card #registerNames .form-group { min-width: 0; }
+.login-card #passwordHint { margin: 8px 0 0; color: #ef4444; font-size: 13px; }
