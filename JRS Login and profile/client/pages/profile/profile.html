@@ -61,7 +61,6 @@
                 <!-- Personal Summary -->
                 <section class="profile-section">
                     <h3>Personal Summary</h3>
-                    <p class="section-desc">Add a personal summary to your profile as a way to introduce who you are.</p>
                     <div id="summaryContent" class="section-data"></div>
                     <button class="btn-secondary-link" id="addSummaryBtn">Add summary</button>
                 </section>
@@ -69,7 +68,6 @@
                 <!-- Career History -->
                 <section class="profile-section">
                     <h3>Career history</h3>
-                    <p class="section-desc">The more you let employers know about your experience, the more you can stand out.</p>
                     <div id="careerList" class="section-data"></div>
                     <button class="btn-secondary-link" id="addRoleBtn">Add role</button>
                 </section>
@@ -77,7 +75,6 @@
                 <!-- Education -->
                 <section class="profile-section">
                     <h3>Education</h3>
-                    <p class="section-desc">Tell employers about your education.</p>
                     <div id="educationList" class="section-data"></div>
                     <button class="btn-secondary-link" id="addEducationBtn">Add education</button>
                 </section>
@@ -85,7 +82,6 @@
                 <!-- Licences & Certifications -->
                 <section class="profile-section">
                     <h3>Licences & certifications</h3>
-                    <p class="section-desc">Showcase your professional credentials. Add your relevant licences, certificates, memberships and accreditations here.</p>
                     <div id="certList" class="section-data"></div>
                     <button class="btn-secondary-link" id="addCertBtn">Add licence or certification</button>
                 </section>
@@ -96,7 +92,6 @@
                 <!-- Skills -->
                 <section class="profile-section">
                     <h3>Skills</h3>
-                    <p class="section-desc">Let employers know how valuable you can be to them.</p>
                     <div id="skillTags" class="tag-container"></div>
                     <button class="btn-secondary-link" id="addSkillBtn">Add skills</button>
                 </section>
@@ -104,7 +99,6 @@
                 <!-- Language -->
                 <section class="profile-section">
                     <h3>Language</h3>
-                    <p class="section-desc">Add languages to appeal to more companies and employers.</p>
                     <div id="languageList" class="section-data"></div>
                     <button class="btn-secondary-link" id="addLanguageBtn">Add language</button>
                 </section>
@@ -394,7 +388,7 @@
 
             <form id="summaryForm">
                 <div class="form-group">
-                    <textarea id="summaryInput" rows="6" maxlength="2000" placeholder="Input"></textarea>
+                    <textarea id="summaryInput" rows="6" placeholder="Input" maxlength="2000"></textarea>
                 </div>
 
                 <div class="safety-notice">
@@ -429,7 +423,7 @@
 
                 <div class="form-group">
                     <label>Started</label>
-                    <div class="form-row">
+                    <div class="form-row date-fields">
                         <select id="roleStartMonth" class="flex-1">
                             <option value="" disabled selected>Month</option>
                             <option value="January">January</option>
@@ -445,13 +439,13 @@
                             <option value="November">November</option>
                             <option value="December">December</option>
                         </select>
-                        <input type="text" id="roleStartYear" class="flex-1" placeholder="Year">
+                        <select id="roleStartYear" class="date-year" aria-label="Year"><option value="" selected>Year</option></select>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Ended</label>
-                    <div class="form-row align-center">
+                    <div class="form-row date-fields">
                         <select id="roleEndMonth" class="flex-1">
                             <option value="" disabled selected>Month</option>
                             <option value="January">January</option>
@@ -467,7 +461,7 @@
                             <option value="November">November</option>
                             <option value="December">December</option>
                         </select>
-                        <input type="text" id="roleEndYear" class="flex-1" placeholder="Year">
+                        <select id="roleEndYear" class="date-year" aria-label="Year"><option value="" selected>Year</option></select>
                         <label class="checkbox-label">
                             <input type="checkbox" id="roleStillInRole"> Still in role
                         </label>
@@ -477,7 +471,7 @@
                 <div class="form-group">
                     <h3 class="drawer-subtitle">Description (recommended)</h3>
                     <p class="drawer-hint">Summarise your responsibilities, skills and achievements.</p>
-                    <textarea id="roleDescription" rows="5" placeholder="Input"></textarea>
+                    <textarea id="roleDescription" rows="5" placeholder="Input" maxlength="2000"></textarea>
                 </div>
 
                 <div class="safety-notice">
@@ -518,14 +512,14 @@
 
                 <div class="form-group" id="finishedFieldGroup">
                     <label>Finished (optional)</label>
-                    <div class="form-row">
-                        <input type="text" id="eduFinishedYear" style="width: 140px;" placeholder="Year">
+                    <div class="form-row date-fields">
+                        <select id="eduFinishedYear" class="date-year" aria-label="Year"><option value="" selected>Year</option></select>
                     </div>
                 </div>
 
                 <div class="form-group" id="expectedFinishFieldGroup" style="display: none;">
                     <label>Expected finish (optional)</label>
-                    <div class="form-row">
+                    <div class="form-row date-fields">
                         <select id="eduExpectedMonth" class="flex-1">
                             <option value="" disabled selected>Month</option>
                             <option value="January">January</option>
@@ -541,14 +535,14 @@
                             <option value="November">November</option>
                             <option value="December">December</option>
                         </select>
-                        <input type="text" id="eduExpectedYear" class="flex-1" placeholder="Year">
+                        <select id="eduExpectedYear" class="date-year" aria-label="Year"><option value="" selected>Year</option></select>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <h3 class="drawer-subtitle">Course highlights (optional)</h3>
                     <p class="drawer-hint">Add activities, projects, awards or achievements during your study.</p>
-                    <textarea id="eduHighlights" rows="5" placeholder="Input"></textarea>
+                    <textarea id="eduHighlights" rows="5" placeholder="Input" maxlength="2000"></textarea>
                 </div>
 
                 <div class="safety-notice">
@@ -585,7 +579,7 @@
 
                 <div class="form-group">
                     <label>Issue date (optional)</label>
-                    <div class="form-row">
+                    <div class="form-row date-fields">
                         <select id="certIssueMonth" class="flex-1">
                             <option value="" disabled selected>Month</option>
                             <option value="January">January</option>
@@ -601,13 +595,13 @@
                             <option value="November">November</option>
                             <option value="December">December</option>
                         </select>
-                        <input type="text" id="certIssueYear" class="flex-1" placeholder="Year">
+                        <select id="certIssueYear" class="date-year" aria-label="Year"><option value="" selected>Year</option></select>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label id="expiryLabel">Expiry date (recommended)</label>
-                    <div class="form-row align-center">
+                    <div class="form-row date-fields">
                         <select id="certExpiryMonth" class="flex-1">
                             <option value="" disabled selected>Month</option>
                             <option value="January">January</option>
@@ -623,7 +617,7 @@
                             <option value="November">November</option>
                             <option value="December">December</option>
                         </select>
-                        <input type="text" id="certExpiryYear" class="flex-1" placeholder="Year">
+                        <select id="certExpiryYear" class="date-year" aria-label="Year"><option value="" selected>Year</option></select>
                         <label class="checkbox-label">
                             <input type="checkbox" id="certNoExpiry"> No expiry
                         </label>
@@ -633,7 +627,7 @@
                 <div class="form-group">
                     <h3 class="drawer-subtitle">Description (optional)</h3>
                     <p class="drawer-hint">Briefly describe this credential – you can also add a type or URL if applicable.</p>
-                    <textarea id="certDescription" rows="5" placeholder="Input"></textarea>
+                    <textarea id="certDescription" rows="5" placeholder="Input" maxlength="2000"></textarea>
                 </div>
 
                 <div class="safety-notice">
@@ -723,4 +717,5 @@
     <script src="profile.js"></script>
 </body>
 </html>
+
 
