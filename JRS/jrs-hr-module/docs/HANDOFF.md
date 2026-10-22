@@ -1,5 +1,14 @@
 # Engineering handoff
 
+## Shared list presentation - 2026-10-22
+
+The integrated workspace now loads one shared stylesheet in both the React shell
+and the native recruitment document. Applications, Candidates, Job Postings,
+Interviews and Notifications use consistent search controls, buttons, table
+headers, row density and pagination. Notification time grouping remains intact.
+See `../../docs/WORKSPACE_UI_CONSISTENCY.md` for exact checks and existing React
+suite failures. No API or database changes were made.
+
 ## Railway deployment preparation - 2026-10-22
 
 See [RAILWAY_DEPLOYMENT.md](../../docs/RAILWAY_DEPLOYMENT.md). Added Docker/Railway

@@ -1,5 +1,13 @@
 # Delivery plan
 
+## Shared list presentation - 2026-10-22
+
+- Completed shared table, search, filter, button and pagination presentation across
+  the integrated HR screens. Verified desktop measurements and 390px layouts.
+- Retained current workflows and viewport pagination; no schema or API changes.
+- Existing React navigation/heading and old job-editor test expectations remain
+  unresolved. See `../../docs/WORKSPACE_UI_CONSISTENCY.md` for the baseline comparison.
+
 ## Railway preparation - 2026-10-22
 
 - Completed local deployment configuration, production target/storage guards,

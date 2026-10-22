@@ -1,4 +1,5 @@
 import { DateFields } from "../../shared";
+import { Icon } from "../../icons";
 
 export function NotificationToolbar({
   activeFilters,
@@ -39,7 +40,8 @@ export function NotificationToolbar({
           </button>
         </fieldset>
         <div className="notification-tools">
-          <label className="notification-search">
+          <label className="notification-search jrs-search">
+            <Icon name="search" />
             <span className="visually-hidden">Search notifications</span>
             <input
               type="search"

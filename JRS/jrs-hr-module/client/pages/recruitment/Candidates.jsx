@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import {useEffect,useRef,useState} from 'react';
 import {useViewportRows} from '../../src/useViewportRows';
 import { ErrorBox, Loading, Pagination, useLoad } from "../../src/shared";
+import { Icon } from "../../src/icons";
 
 export function Candidates({ onOpen }) {
   const [params, setParams] = useSearchParams();
@@ -33,6 +34,8 @@ export function Candidates({ onOpen }) {
   return (
     <div className="candidate-list-workspace" ref={list}>
       <div className="workspace-toolbar" role="search" aria-label="Candidate filters">
+        <label className="jrs-search">
+        <Icon name="search" />
         <input
           type="search"
           className="form-control"
@@ -41,6 +44,7 @@ export function Candidates({ onOpen }) {
           value={search}
           onChange={(event) => update("q", event.target.value)}
         />
+        </label>
         {search && (
           <button className="btn btn-light" onClick={() => update("q", "")}>
             Clear filters

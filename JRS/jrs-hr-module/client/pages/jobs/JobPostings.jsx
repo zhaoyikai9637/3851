@@ -134,7 +134,7 @@ export function JobPostings() {
                     <th>Salary range</th>
                     <th>Application deadline</th>
                     <th>
-                      <span className="visually-hidden">Actions</span>
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -187,7 +187,7 @@ export function JobPostings() {
                           aria-label={`Open ${job.title} details`}
                           onClick={() => open(job.id)}
                         >
-                          View<span aria-hidden="true"> →</span>
+                          View job
                         </button>
                       </td>
                     </tr>
@@ -228,7 +228,7 @@ export function JobPostings() {
                   Previous
                 </button>
                 <span>
-                  {current} / {pages}
+                  Page {current} of {pages}
                 </span>
                 <button
                   type="button"
