@@ -5,6 +5,7 @@ import mysql from 'mysql2/promise';
 import { Sequelize } from 'sequelize';
 import { root, loadSettings } from './config.mjs';
 import {syncSentMail} from './mail-history-bridge.mjs';
+import {mountReadiness} from './readiness.mjs';
 import {recruitmentMailSettings} from './mail-settings.mjs';
 import { readSharedSession, createSharedIdentity, verifySharedWrite, httpError } from './security.mjs';
 import { namespacePool } from './sql-namespace.mjs';
@@ -47,7 +48,7 @@ export async function createRuntime({mailTransport}={}) {
     recruitment.transaction = (fn, write = false) => transact(async connection => {
       await bridge.templates(connection);
       const result=await fn(connection);
-      if(write)await syncSentMail(connection,{uploadDir:path.join(root,'.local/resumes')});
+      if(write)await syncSentMail(connection,{uploadDir:settings.uploadDir});
       return result;
     }, write);
     const originalSnapshot = recruitment.snapshot;
@@ -56,7 +57,7 @@ export async function createRuntime({mailTransport}={}) {
       return addSubmittedMaterials(pool,await originalSnapshot(userId));
     };
     const models = communicationModels(communicationDb, { integratedMailHistory: true });
-    const uploadDir = path.join(root, '.local/resumes');
+    const uploadDir = settings.uploadDir;
     await fs.mkdir(uploadDir, { recursive: true });
     const config = { production: settings.production, secret: settings.SESSION_SECRET, origin: settings.origin, mode: 'team', companyName: 'JRS', uploadDir, teamLoginUrl: `${settings.origin}/pages/login/login.html`, sessionMs: 8 * 3600000, resetSecret: settings.RESET_SECRET, integratedRoot: true };
     const identity = createSharedIdentity(repository, config);
@@ -89,6 +90,8 @@ export async function createRuntime({mailTransport}={}) {
     const recruiting = recruitmentApp.createApp({ repo: recruitment, cfg: { origin: settings.origin, secure: settings.production, writesEnabled: true, mail: recruitmentMailSettings(settings.smtp), publicDir: path.join(root, 'JRS HR/dist') }, sharedAuth, transport:mailTransport });
     const app = express();
     app.disable('x-powered-by');
+    if(settings.production)app.set('trust proxy',1);
+    mountReadiness(app,{pool,uploadDir});
     app.locals.data = data;
     app.get('/', (req, res) => res.redirect(experimental ? '/jobs' : '/pages/login/login.html'));
     app.get('/api/integration-config', (req, res) => res.json({ experimentalApplicantPortal: experimental }));

@@ -1,5 +1,33 @@
 # Engineering handoff
 
+## Railway deployment preparation - 2026-10-22
+
+See [RAILWAY_DEPLOYMENT.md](../../docs/RAILWAY_DEPLOYMENT.md). Added Docker/Railway
+configuration, private environment template, a production database mode restricted
+to jrs_production/jrs_production_app with verified TLS, external HOST/PORT support,
+durable upload paths, volume-mount checks, liveness/readiness and a sanitized
+preflight CLI. Existing local/team modes remain supported; local setup/tests still
+refuse cloud targets. Railway production cannot point at the integration database.
+
+Schema-only export is limited to an isolated local schema-11 database and copies
+no account or applicant records. A reviewed artifact was generated locally; it
+does not initialize production or provision HR accounts. Root 125, frontend 129,
+backend/API 183, native HR 112 and isolated MySQL 12 tests passed, both clients built,
+and OpenAPI/English checks passed. Local runtime smoke checks returned 200 for
+live/ready, login and HR assets, and 401 for anonymous identity access.
+
+No paid resource, cloud migration or public deployment was performed. Docker is
+not installed on the preparing host: Linux image construction, actual mounted
+volume ownership, cloud TLS, production mail delivery, initial HR provisioning
+and backup restoration remain rollout gates. Do not report the site as live.
+Platform verification found that Railway Hobby blocks outbound SMTP. The owner
+confirmed QQ SMTP was only a test, so Hobby preparation continues with mail off,
+without an upgrade. Infrastructure preflight allows this with an explicit warning;
+`--require-mail` rejects it. HTTPS production mail integration remains queued.
+The default candidate job/resume/status presentation remains a public-launch
+blocker: source inspection confirms the team seed/display scripts and disabled
+editing controls. Complete actual candidate submission acceptance before launch.
+
 ## Supplemental review handoff - 2026-10-22
 
 Teacher feedback and the older troubleshooting release-audit leads are tracked

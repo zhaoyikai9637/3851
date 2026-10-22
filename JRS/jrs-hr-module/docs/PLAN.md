@@ -1,5 +1,21 @@
 # Delivery plan
 
+## Railway preparation - 2026-10-22
+
+- Completed local deployment configuration, production target/storage guards,
+  readiness checks, schema-only export and preflight CLI. See
+  [RAILWAY_DEPLOYMENT.md](../../docs/RAILWAY_DEPLOYMENT.md) for owner steps.
+- Next: owner account/resource selection, verified-TLS production MySQL decision,
+  Linux image/volume trial, reviewed empty-schema import and approved initial HR
+  provisioning. No paid resources or production data were changed.
+- Owner confirmed QQ SMTP is only a test. Continue Hobby preparation with mail
+  disabled; add and accept an HTTPS mail transport before public mail is required.
+  No Pro upgrade is planned to preserve QQ SMTP.
+- Before public invitation: production mail, backup/restore, permissions/revocation,
+  cross-region access and the remaining release audit acceptance.
+- Public recruitment launch also requires replacing/accepting the default candidate
+  job/resume/status demonstration flow; infrastructure readiness does not cover it.
+
 ## Supplemental review queue - 2026-10-22
 
 See [REVIEW_FOLLOW_UP.md](../../docs/REVIEW_FOLLOW_UP.md) for reported teacher

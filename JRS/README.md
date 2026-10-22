@@ -3,6 +3,13 @@
 This is the integrated development project. The repository main branch contains only JRS/.
 After cloning, open JRS/ before running the commands below. Existing standalone local projects are not replaced.
 
+## Deployment preparation
+
+See [Railway deployment runbook](docs/RAILWAY_DEPLOYMENT.md) for the Docker build,
+private production variables, persistent uploads, readiness checks and isolated
+schema preparation. No production resources or public deployment have been created.
+Infrastructure checks do not replace final applicant-module acceptance below.
+
 ## Modules
 
 | Directory | Responsibility | Default runtime |

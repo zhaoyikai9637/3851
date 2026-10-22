@@ -12,7 +12,7 @@ async function databaseListening() {
   });
 }
 try {
-  if (settings.DB_MODE !== 'team' && !await databaseListening()) {
+  if (!['team','production'].includes(settings.DB_MODE) && !await databaseListening()) {
     const binary = settings.MYSQLD_PATH || 'C:/Program Files/MySQL/MySQL Server 26.7/bin/mysqld.exe';
     await fs.access(binary);
     await fs.access(path.join(root, '.local/mysql/auto.cnf'));
