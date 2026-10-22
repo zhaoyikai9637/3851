@@ -1,6 +1,6 @@
 {
   "name": "jrs-hr-fullstack",
-  "version": "2.5.0",
+  "version": "2.6.2",
   "private": true,
   "description": "JRS HR module: JavaScript frontend, Node.js API and MySQL 8",
   "engines": {

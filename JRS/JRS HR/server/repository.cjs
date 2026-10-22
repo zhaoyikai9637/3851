@@ -16,7 +16,7 @@ const maps = [
  ['notifications','hr_email_draft','id applicationId:application_id to:recipient subject body kind status read:is_read:bool templateId:template_id templateName:template_name createdAt:created_at sendingAt:sending_at lastError:last_error'],
  ['activity','hr_audit_log','id applicationId:application_id summary notes from:from_stage to:to_stage actorId:actor_id actor at:at_time notificationId:notification_id'],
  ['systemNotifications','hr_system_notification','id applicationId:application_id title eventType:event_type sourceModule:source_module createdAt:created_at'],
- ['mailLogs','hr_notification_log','id draftId:draft_id applicationId:application_id candidateName:candidate_name jobTitle:job_title to:recipient subject body templateName:template_name triggerEvent:trigger_event sourceModule:source_module messageId:message_id sentAt:sent_at actor actorId:actor_id']
+ ['mailLogs','hr_notification_log','id draftId:draft_id applicationId:application_id candidateName:candidate_name jobTitle:job_title to:recipient subject body templateName:template_name triggerEvent:trigger_event sourceModule:source_module messageId:message_id sentAt:sent_at actor']
 ].map(([key,table,s])=>({key,table,fields:s.split(' ').map(x=>{const [prop,col=prop,type]=x.split(':');return {prop,col,type};})}));
 const parseJSON = v => typeof v === 'string' ? JSON.parse(v) : v;
 const fieldDefaults=Object.freeze({graduateStatus:'Not recorded',educationLevel:'Not recorded',educationMajor:'',graduationDate:null,minimumEducationLevel:'Not configured',acceptedMajors:Object.freeze([])});

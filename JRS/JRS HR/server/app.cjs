@@ -6,8 +6,8 @@ const {createService,text,find,fillTemplate,audit,variables}=require('./service.
 const {createMailer}=require('./mail.cjs');
 const {HttpError,fail}=require('./errors.cjs');
 const M=require('../dist/state.js');
-function createApp({repo,cfg,transport,sharedAuth}) {
-  const app=express(),auth=sharedAuth||createAuth(repo.pool,cfg),service=createService(repo),mailer=createMailer(repo,cfg,transport);
+function createApp({repo,cfg,transport}) {
+  const app=express(),auth=createAuth(repo.pool,cfg),service=createService(repo),mailer=createMailer(repo,cfg,transport);
   app.disable('x-powered-by');
   app.use((req,res,next)=>{
     req.requestId=randomUUID();res.set('X-Request-ID',req.requestId);

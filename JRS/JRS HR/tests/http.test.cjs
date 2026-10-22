@@ -5,6 +5,8 @@ const {randomUUID}=require('node:crypto');
 const {createApp}=require('../server/app.cjs');
 const {config}=require('../server/config.cjs');
 const {memoryRepository}=require('./helpers/memory-repository.cjs');
+const M=require('../dist/state.js');
+const booking=(applicationId,extra={})=>({applicationId,date:M.day(2),time:'10:00',duration:45,format:'On-site',location:'QA Room A',interviewer:'Junye Shen',notify:false,...extra});
 async function fixture(run){
   const repo=await memoryRepository(),cfg=config({PORT:'3000'}),server=createApp({repo,cfg}).listen(0,'127.0.0.1');await once(server,'listening');
   const base='http://127.0.0.1:'+server.address().port;
@@ -23,10 +25,18 @@ test('HTTP rejects anonymous HR data, wrong-origin writes and missing CSRF',asyn
   assert.equal((await request('/api/hr/commands/read-all',{...session,method:'POST',body:{},headers:{Origin:'https://other.invalid','If-Match':'0','Idempotency-Key':randomUUID()}})).status,403);
 }));
 test('HTTP duplicate request returns one saved transition; stale users cannot overwrite',async()=>fixture(async({request,login,repo})=>{
-  const s=await login(),id=repo.inspect().applications[0].id,key=randomUUID(),options={...s,method:'POST',body:{applicationId:id,notes:'Private',notify:true},headers:{'If-Match':'0','Idempotency-Key':key}};
+  const s=await login(),id=repo.inspect().applications[0].id,key=randomUUID(),options={...s,method:'POST',body:booking(id,{notes:'Private',notify:true}),headers:{'If-Match':'0','Idempotency-Key':key}};
   const first=await request('/api/hr/commands/move-interview',options);assert.equal(first.status,200);assert.equal(first.data.result.activity.actor,'Junye Shen');
-  const repeat=await request('/api/hr/commands/move-interview',options);assert.equal(repeat.status,200);assert.equal(repeat.data.result.activity.id,first.data.result.activity.id);assert.equal(repo.inspect().notifications.length,1);
+  const repeat=await request('/api/hr/commands/move-interview',options);assert.equal(repeat.status,200);assert.equal(repeat.data.result.activity.id,first.data.result.activity.id);assert.equal(repo.inspect().notifications.length,1);assert.equal(first.data.result.interview.id,repeat.data.result.interview.id);assert.equal(repo.inspect().interviews.filter(i=>i.applicationId===id).length,1);assert.equal(repo.inspect().revision,1);assert.equal(first.data.result.notification.kind,'Interview schedule');assert.ok(first.data.result.notification.body.includes('QA Room A'));assert.ok(!first.data.result.notification.body.includes('Private'));
   const stale=await request('/api/hr/commands/reject',{...s,method:'POST',body:{applicationId:id,reason:'Mismatch'},headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});assert.equal(stale.status,409);assert.equal(stale.data.error.code,'REVISION_CONFLICT');assert.equal(repo.inspect().applications[0].stage,'Interview');
+}));
+test('HTTP combined booking rejects missing details and collisions without saving a stage, appointment, draft or revision',async()=>fixture(async({request,login,repo})=>{
+  const s=await login(),id=repo.inspect().applications[0].id,before=JSON.stringify(repo.inspect());
+  const invalid=[{applicationId:id},booking(id,{date:M.day(-1)}),booking(id,{time:'25:00'}),booking(id,{duration:25}),booking(id,{location:''}),booking(id,{interviewer:''})];
+  for(const body of invalid){const r=await request('/api/hr/commands/move-interview',{...s,method:'POST',body,headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});assert.equal(r.status,422);assert.equal(JSON.stringify(repo.inspect()),before);}
+  const valid=await request('/api/hr/commands/move-interview',{...s,method:'POST',body:booking(id),headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});assert.equal(valid.status,200);
+  const next=repo.inspect(),second=next.applications.find(a=>a.stage==='Pending Review').id,snapshot=JSON.stringify(next);
+  const collision=await request('/api/hr/commands/move-interview',{...s,method:'POST',body:booking(second,{notify:true}),headers:{'If-Match':'1','Idempotency-Key':randomUUID()}});assert.equal(collision.status,422);assert.match(collision.data.error.message,/overlaps/);assert.equal(JSON.stringify(repo.inspect()),snapshot);
 }));
 test('HTTP validates business errors without saving a partial mutation',async()=>fixture(async({request,login,repo})=>{
   const s=await login(),before=JSON.stringify(repo.inspect());const r=await request('/api/hr/commands/reject',{...s,method:'POST',body:{applicationId:repo.inspect().applications[0].id,reason:' '},headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});
@@ -39,7 +49,7 @@ test('HR profile only changes editable fields, and logout invalidates the sessio
 }));
 test('system notification read status is per user, and staff cannot approve offers',async()=>fixture(async({request,login,repo})=>{
   const m=await login(),s=await login('staff@jrs.local'),d=repo.inspect();
-  const moved=await request('/api/hr/commands/move-interview',{...m,method:'POST',body:{applicationId:d.applications[0].id},headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});
+  const moved=await request('/api/hr/commands/move-interview',{...m,method:'POST',body:booking(d.applications[0].id),headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});
   const n=moved.data.db.systemNotifications[0];await request('/api/hr/commands/system-read',{...m,method:'POST',body:{id:n.id},headers:{'If-Match':'1','Idempotency-Key':randomUUID()}});
   assert.equal((await request('/api/hr/workspace',m)).data.systemNotifications[0].read,true);assert.equal((await request('/api/hr/workspace',s)).data.systemNotifications[0].read,false);
   const offer=d.applications.find(a=>a.stage==='Offer'&&a.offer.approval!=='Approved');
@@ -53,7 +63,7 @@ test('HTTP allows an HR review decision without academic metadata and preserves 
     Object.assign(c,{educationLevel:'Not recorded',educationMajor:'Accounting',graduationDate:null});await repo.save(conn,old,next);
   });
   const before=repo.inspect(),a=before.applications[0],facts=JSON.stringify(before.candidates.find(c=>c.id===a.candidateId));
-  const r=await request('/api/hr/commands/move-interview',{...s,method:'POST',body:{applicationId:a.id,notify:true},headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});
+  const r=await request('/api/hr/commands/move-interview',{...s,method:'POST',body:booking(a.id,{notify:true}),headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});
   assert.equal(r.status,200);assert.equal(r.data.db.applications.find(x=>x.id===a.id).stage,'Interview');
   assert.equal(JSON.stringify(r.data.db.candidates.find(c=>c.id===a.candidateId)),facts);
 }));

@@ -9,26 +9,7 @@ const {templates}=require('../scripts/database.cjs');
 const user={id:'test-hr',name:'Junye Shen',role:'HR_MANAGER'};
 function setup(){return {...M.seed(),templates:templates(),systemNotifications:[],mailLogs:[],currentUser:user};}
 function run(db,cmd,p,u=user){const next=M.clone(db);const result=applyCommand(next,cmd,p,u);return {db:next,result};}
-
-test('interview criteria retain their own scores without replacing the manual overall rating or recommendation',()=>{
-  const db=setup(),a=db.applications[0];a.stage='Interview';
-  db.interviews=[{id:'assessment-meeting',applicationId:a.id,date:M.day(-2),time:'10:00',duration:45,format:'Video',location:'Test meeting',interviewer:user.name,status:'Scheduled',feedback:null}];
-  const assessment=JSON.stringify([{label:'System design',rating:5},{label:'Communication',rating:4}]);
-  const saved=run(db,'feedback',{applicationId:a.id,interviewId:'assessment-meeting',rating:2,recommendation:'Hold',notes:'Explicit human assessment.',assessment}).db;
-  assert.deepEqual(saved.interviews[0].feedback.assessment,[{label:'System design',rating:5},{label:'Communication',rating:4}]);
-  assert.equal(saved.applications[0].feedback.rating,2);
-  assert.equal(saved.applications[0].feedback.recommendation,'Hold');
-});
-
-test('invalid or duplicate assessment criteria fail before changing the application',()=>{
-  for(const assessment of ['not JSON','{}',JSON.stringify([{label:'Communication',rating:4},{label:' communication ',rating:2}]),JSON.stringify([{label:'Skill',rating:6}]),JSON.stringify([{label:'',rating:3}])]){
-    const db=setup(),a=db.applications[0];a.stage='Interview';
-    db.interviews=[{id:'assessment-meeting',applicationId:a.id,date:M.day(-2),time:'10:00',duration:45,status:'Scheduled',feedback:null}];
-    const previous=JSON.stringify(db);
-    assert.throws(()=>applyCommand(db,'feedback',{applicationId:a.id,interviewId:'assessment-meeting',rating:4,recommendation:'Proceed',notes:'Explicit human assessment.',assessment},user));
-    assert.equal(JSON.stringify(db),previous);
-  }
-});
+const booking=(applicationId,extra={})=>({applicationId,date:M.day(2),time:'10:00',duration:45,format:'Video',location:'QA meeting',interviewer:user.name,notify:false,...extra});
 
 test('direct backend job updates enforce requirements and preserve the complete list atomically',()=>{
   const criteria=[...M.requirements.forTitle('Software Developer'),'Ability to review pull requests and explain maintainability trade-offs.','Practical knowledge of diagnosing production errors and implementing recovery fixes.'];
@@ -81,7 +62,7 @@ test('contact edits preserve applicant education and accept unchanged fields fro
   const roundTrip=run(d,'candidate-save',{...fields,...legacyPayload}).db.candidates[0];
   for(const field of educationFields)assert.equal(roundTrip[field],c[field],'Equivalent input must preserve the original '+field);
   assert.equal(M.screening.assess(updated,j).allowed,true,'Changing contact details or experience does not change recorded screening facts');
-  assert.equal(run(d,'move-interview',{applicationId:d.applications[0].id}).db.applications[0].stage,'Interview');
+  assert.equal(run(d,'move-interview',booking(d.applications[0].id)).db.applications[0].stage,'Interview');
 });
 
 test('HR profile updates cannot alter applicant education or graduate status, even through a direct request',()=>{
@@ -111,7 +92,7 @@ test('a new applicant needs no academic form fields to be reviewed and moved to 
   const d=setup(),received=run(d,'application-create',{jobId:d.jobs[0].id,candidate:{name:'Resume Review Applicant',email:'resume-review@example.com',phone:'123456789',location:'Singapore',experience:2,skills:'SQL'}});
   const a=received.result.application,c=received.db.candidates.find(c=>c.id===a.candidateId);
   assert.equal(c.educationLevel,'Not recorded');assert.equal(c.graduationDate,null);
-  assert.equal(run(received.db,'move-interview',{applicationId:a.id}).db.applications.find(x=>x.id===a.id).stage,'Interview');
+  assert.equal(run(received.db,'move-interview',booking(a.id)).db.applications.find(x=>x.id===a.id).stage,'Interview');
 });
 
 test('written job requirements suffice while legacy academic metadata remains compatible',()=>{
@@ -138,7 +119,7 @@ test('stage-appropriate templates work without academic screening but retain wor
 });
 
 test('authenticated actor owns the audit and status notifications omit internal notes',()=>{
-  const d=setup(),id=d.applications[0].id;const {db,result}=run(d,'move-interview',{applicationId:id,notes:'PRIVATE REVIEW',notify:true});
+  const d=setup(),id=d.applications[0].id;const {db,result}=run(d,'move-interview',booking(id,{notes:'PRIVATE REVIEW',notify:true}));
   assert.equal(result.activity.actor,user.name);assert.equal(result.activity.actorId,user.id);assert.equal(db.applications[0].notes[0].actor,user.name);
   assert.equal(db.systemNotifications.length,1);assert.ok(!JSON.stringify(db.systemNotifications).includes('PRIVATE REVIEW'));
   assert.ok(result.notification.body.includes(user.name));assert.ok(!result.notification.body.includes('PRIVATE REVIEW'));
@@ -171,13 +152,13 @@ test('template permissions and archive preserve existing draft references',()=>{
   const {db}=run(d,'template-delete',{id:t.id});assert.equal(db.templates[0].active,false);assert.throws(()=>run(db,'message',{applicationId:d.applications[0].id,templateId:t.id}),/archived/);
 });
 test('feedback waits until the meeting ends, not just its start',()=>{
-  let d=setup(),a=d.applications[0];d=run(d,'move-interview',{applicationId:a.id}).db;
+  let d=setup(),a=d.applications[0];d=run(d,'move-interview',booking(a.id)).db;
   const sg=new Date(Date.now()+8*3600000-60000),date=sg.toISOString().slice(0,10),time=sg.toISOString().slice(11,16);
-  d.interviews.push({id:'ongoing',applicationId:a.id,date,time,duration:60,format:'Video',location:'Link',interviewer:'HR',notes:'',status:'Scheduled',feedback:null});
-  assert.throws(()=>run(d,'feedback',{applicationId:a.id,interviewId:'ongoing',rating:4,recommendation:'Proceed',notes:'Good'}),/after the interview ends/);
+  const interview=d.interviews.find(i=>i.applicationId===a.id);Object.assign(interview,{date,time,duration:60});
+  assert.throws(()=>run(d,'feedback',{applicationId:a.id,interviewId:interview.id,rating:4,recommendation:'Proceed',notes:'Good'}),/after the interview ends/);
 });
 test('sending locks related workflow changes; sent drafts cannot be edited',()=>{
-  let d=setup(),a=d.applications[0];d=run(d,'move-interview',{applicationId:a.id,notify:true}).db;d.notifications[0].status='Sending';
+  let d=setup(),a=d.applications[0];d=run(d,'move-interview',booking(a.id,{notify:true})).db;d.notifications[0].status='Sending';
   assert.throws(()=>run(d,'reject',{applicationId:a.id,reason:'Mismatch'}),/being sent/);
   d.notifications[0].status='Sent';assert.throws(()=>run(d,'message',{applicationId:a.id,notificationId:d.notifications[0].id,subject:'Changed',body:'Changed'}));
 });

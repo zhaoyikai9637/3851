@@ -9,6 +9,7 @@ const {createRepository}=require('../server/repository.cjs');
 const {createService}=require('../server/service.cjs');
 const {createMailer}=require('../server/mail.cjs');
 const M=require('../dist/state.js');
+const booking=(applicationId,extra={})=>({applicationId,date:M.day(2),time:'10:00',duration:60,format:'On-site',location:'Room A',interviewer:'Integration HR',notify:true,...extra});
 test('real MySQL: schema, round-trip, rollback, concurrency, idempotency, mail and attachments',async()=>{
   const cfg=config(),database='jrs_hr_it_'+randomBytes(6).toString('hex')+'_test';cfg.db.database=database;
   assert.ok(!cfg.team&&['127.0.0.1','localhost','::1'].includes(cfg.db.host),'Integration tests are local-only; never use the team database configuration.');
@@ -38,17 +39,19 @@ test('real MySQL: schema, round-trip, rollback, concurrency, idempotency, mail a
     assert.equal(JSON.stringify(await repo.snapshot(user.id)),upgradedSnapshot,'Repeating the upgrade cannot create changes or another audit event');
     d=await repo.snapshot(user.id);
     await assert.rejects(seedDemo(cfg),/already contains/);
-    const id=d.applications[0].id,key=randomUUID(),p={applicationId:id,notify:true,notes:'PRIVATE'};
+    const id=d.applications[0].id,key=randomUUID(),p=booking(id,{notes:'PRIVATE'}),initialSnapshot=JSON.stringify(d);
+    await assert.rejects(service.execute('move-interview',{applicationId:id,notify:true},user,d.revision,randomUUID()),e=>e.status===422);
+    assert.equal(JSON.stringify(await repo.snapshot(user.id)),initialSnapshot,'Missing schedule fields cannot persist a transition, appointment, draft, audit or revision');
     const moved=await service.execute('move-interview',p,user,d.revision,key);const repeat=await service.execute('move-interview',p,user,d.revision,key);assert.equal(moved.result.activity.id,repeat.result.activity.id);
+    assert.equal(moved.result.interview.id,repeat.result.interview.id);assert.equal(moved.result.interview.status,'Scheduled');assert.equal(moved.result.notification.kind,'Interview schedule');
     await assert.rejects(service.execute('reject',{applicationId:id,reason:'Mismatch'},user,d.revision,randomUUID()),e=>e.status===409);
     d=await repo.snapshot(user.id);assert.equal(d.notifications.length,1);const before=JSON.stringify(d);
     await assert.rejects(service.execute('reject',{applicationId:id,reason:''},user,d.revision,randomUUID()));assert.equal(JSON.stringify(await repo.snapshot(user.id)),before);
-    const second=d.applications.find(a=>a.stage==='Pending Review').id;await service.execute('move-interview',{applicationId:second},user,d.revision,randomUUID());
-    d=await repo.snapshot(user.id);const schedule=applicationId=>({applicationId,date:M.day(2),time:'10:00',duration:60,format:'On-site',location:'Room A',interviewer:'Integration HR',notify:true});
-    const race=await Promise.allSettled([service.execute('schedule',schedule(id),user,d.revision,randomUUID()),service.execute('schedule',schedule(second),user,d.revision,randomUUID())]);assert.equal(race.filter(r=>r.status==='fulfilled').length,1);
-    d=await repo.snapshot(user.id);const scheduled=d.interviews.find(i=>i.status==='Scheduled'),other=scheduled.applicationId===id?second:id;
-    await assert.rejects(service.execute('schedule',schedule(other),user,d.revision,randomUUID()),/overlaps/);
-    await service.execute('schedule',{...schedule(other),time:'11:00'},user,d.revision,randomUUID());
+    const contenders=d.applications.filter(a=>a.stage==='Pending Review').slice(0,2).map(a=>a.id);
+    const race=await Promise.allSettled(contenders.map(applicationId=>service.execute('move-interview',booking(applicationId,{time:'11:00'}),user,d.revision,randomUUID())));assert.equal(race.filter(r=>r.status==='fulfilled').length,1);
+    d=await repo.snapshot(user.id);const other=contenders.find(applicationId=>d.applications.find(a=>a.id===applicationId).stage==='Pending Review'),raceSnapshot=JSON.stringify(d);
+    await assert.rejects(service.execute('move-interview',booking(other,{time:'11:00'}),user,d.revision,randomUUID()),/overlaps/);assert.equal(JSON.stringify(await repo.snapshot(user.id)),raceSnapshot,'A rejected collision cannot save half of the combined decision');
+    await service.execute('move-interview',booking(other,{time:'12:00'}),user,d.revision,randomUUID());
     // Real SQL parameterization: apostrophes remain ordinary text.
     d=await repo.snapshot(user.id);const c=d.candidates.find(c=>c.id===d.applications.find(a=>a.id===id).candidateId);
     await service.execute('candidate-save',{id:c.id,name:"O'Connor",email:'recipient@jrs.local',phone:c.phone,location:c.location,experience:c.experience,education:c.education,skills:c.skills.join(', ')},user,d.revision,randomUUID());
@@ -83,8 +86,7 @@ test('real MySQL: schema, round-trip, rollback, concurrency, idempotency, mail a
       const application=received.result.application;
       d=await repo.snapshot(user.id);const saved=d.candidates.find(c=>c.id===application.candidateId);
       for(const [field,value] of Object.entries(facts))assert.equal(saved[field],value,field+' must retain its exact value after SQL reload');
-      const unchanged=JSON.stringify(d);
-      await service.execute('move-interview',{applicationId:application.id},user,d.revision,randomUUID());
+      await service.execute('move-interview',booking(application.id,{time:String(12+screeningCase).padStart(2,'0')+':00',notify:false}),user,d.revision,randomUUID());
       d=await repo.snapshot(user.id);assert.equal(d.applications.find(a=>a.id===application.id).stage,'Interview');assert.deepEqual(d.candidates.find(c=>c.id===saved.id),saved,'HR progression never rewrites academic facts');
     }
     // Simulate an old schema in this disposable database, then upgrade twice without guessing facts.
@@ -104,7 +106,7 @@ test('real MySQL: schema, round-trip, rollback, concurrency, idempotency, mail a
     const S=M.screening;
     for(const c of upgraded.candidates){const inferred=S.inferLegacyEducation(c.education);assert.equal(c.educationLevel,inferred.educationLevel);assert.equal(c.educationMajor,inferred.educationMajor);assert.equal(c.graduationDate,null,'A schema migration must never invent a graduation date');}
     for(const j of upgraded.jobs){const expected=j.education==='Diploma or Degree'?S.defaultJobCriteria(j.title):{minimumEducationLevel:'Not configured',acceptedMajors:[]};assert.equal(j.minimumEducationLevel,expected.minimumEducationLevel);assert.deepEqual(j.acceptedMajors,expected.acceptedMajors);}
-    await service.execute('move-interview',{applicationId:pending.id},user,upgraded.revision,randomUUID());const reviewed=await repo.snapshot(user.id);assert.equal(reviewed.applications.find(a=>a.id===pending.id).stage,'Interview');assert.equal(reviewed.candidates.find(c=>c.id===pending.candidateId).graduationDate,null);
+    await service.execute('move-interview',booking(pending.id,{time:'18:00',notify:false}),user,upgraded.revision,randomUUID());const reviewed=await repo.snapshot(user.id);assert.equal(reviewed.applications.find(a=>a.id===pending.id).stage,'Interview');assert.equal(reviewed.candidates.find(c=>c.id===pending.candidateId).graduationDate,null);
   } finally {
     if(pool)await pool.end();
     if(created){const {database:ignored,...settings}=cfg.db;let admin;try{admin=await mysql.createConnection(settings);await admin.query(`DROP DATABASE IF EXISTS \`${database}\``);}finally{if(admin)await admin.end();}}

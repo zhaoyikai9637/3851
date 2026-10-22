@@ -4,12 +4,7 @@
   root.HRLayout={
     apply(host,page,ui){
       host.dataset.page=page;
-      const heading=host.querySelector(':scope > .page-heading'),controls=heading?.nextElementSibling,actions=heading?.querySelector('.heading-actions');
-      if(controls?.matches('.page-filters,.section-tabs')&&actions?.children.length){
-        const toolbar=document.createElement('div');toolbar.className='workspace-toolbar';
-        heading.after(toolbar);toolbar.append(controls,actions);
-        if(window.parent!==window)heading.remove();
-      }
+      root.HRDateInput?.mount(host);
       host.querySelectorAll('table').forEach(table=>{
         const headings=[...table.querySelectorAll('th')].map(th=>th.textContent);
         table.querySelectorAll('tbody tr').forEach(row=>[...row.children].forEach((cell,i)=>cell.dataset.label=headings[i]||''));
@@ -33,24 +28,14 @@
           grid.classList.add('single-section');
         }
       }
-      // Preserve all next-step actions in a concise success page.
-      if(page==='success'){
-        const columns=host.querySelector('.two-columns');
-        if(columns){
-          const details=document.createElement('details');details.className='update-details';
-          const summary=document.createElement('summary');summary.textContent='Next steps & update details';
-          details.append(summary);columns.before(details);details.append(columns);
-        }
-      }
       host.querySelectorAll('.table-scroll,.requirements-body,.resume-canvas,.profile-grid>.panel,.schedule').forEach(el=>{
         el.tabIndex=0;
       });
-      root.HRDateInputs?.enhance(host);
     },
     form(host){
       const form=host.querySelector('form');
       if(form&&['application-create','candidate-save','job-save'].includes(form.dataset.command))form.classList.add('compact-form');
-      root.HRDateInputs?.enhance(host);
+      root.HRDateInput?.mount(host);
     }
   };
 })(window);

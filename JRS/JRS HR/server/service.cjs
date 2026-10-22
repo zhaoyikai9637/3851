@@ -1,7 +1,6 @@
 'use strict';
 const M=require('../dist/state.js');
 const {fail}=require('./errors.cjs');
-const {parseAssessment}=require('./assessment.cjs');
 const {hash}=require('./auth.cjs');
 const now=()=>new Date().toISOString();
 const text=(v,label,max=500,optional=false)=>{
@@ -13,15 +12,14 @@ const find=(arr,id)=>{const r=arr.find(r=>r.id===id);if(!r)fail(404,'Record not 
 const standard=new Set(['move-interview','reject','schedule','cancel-interview','feedback','offer','approve-offer','offer-message','accept-offer','confirm-rejection','message','read-notification','read-all','task','complete-task','candidate-notes','job-save','job-status']);
 const custom=new Set(['application-create','candidate-save','profile-save','template-save','template-delete','system-read','system-read-all']);
 const managerOnly=new Set(['approve-offer','template-save','template-delete']);
-const variables=['candidateName','jobTitle','companyName','hrName','date','time','interviewer','location','format','salary','currency','startDate','expiry'];
+const variables=['candidateName','jobTitle','hrName','date','time','interviewer','location','format','salary','currency','startDate','expiry'];
 function checkTemplate(value) {
   for(const match of value.matchAll(/{{\s*([^{}]+)\s*}}/g))if(!variables.includes(match[1].trim()))fail(422,`Unknown template variable: ${match[1]}`);
   if(value.replace(/{{\s*[^{}]+\s*}}/g,'').includes('{{'))fail(422,'Template contains an incomplete variable.');
 }
 function fillTemplate(db,a,user,template) {
   const c=find(db.candidates,a.candidateId),j=find(db.jobs,a.jobId),i=db.interviews.find(i=>i.applicationId===a.id&&i.status==='Scheduled');
-  const day=value=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')?value.slice(8,10)+'/'+value.slice(5,7)+'/'+value.slice(0,4):value;
-  const values={candidateName:c.name,jobTitle:j.title,companyName:'JRS',hrName:user.name,date:day(i?.date),time:i?.time,interviewer:i?.interviewer,location:i?.location,format:i?.format,...a.offer,startDate:day(a.offer?.startDate),expiry:day(a.offer?.expiry)};
+  const values={candidateName:c.name,jobTitle:j.title,hrName:user.name,date:i?.date,time:i?.time,interviewer:i?.interviewer,location:i?.location,format:i?.format,...a.offer};
   const render=s=>s.replace(/{{\s*([^{}]+?)\s*}}/g,(_,key)=>{if(values[key]==null)fail(422,`This application has no ${key} yet. Complete its workflow details first.`);return String(values[key]);});
   return {subject:render(template.subject),body:render(template.body)};
 }
@@ -40,8 +38,6 @@ function validatePayload(p) {
 }
 function applyCommand(db,command,p,user) {
   validatePayload(p);if(managerOnly.has(command)&&user.role!=='HR_MANAGER')fail(403,'This action requires an HR Manager.');
-  if (['template-save','template-delete'].includes(command) && typeof p.id === 'string' && p.id.startsWith('canonical-template-')) fail(409,'Manage this shared template in Templates. The recruitment copy is read-only.');
-  const assessment=command==='feedback'&&p.assessment!==undefined?parseAssessment(p.assessment):null;
   if(!standard.has(command)&&!custom.has(command))fail(404,'Unknown HR action.');
   // Never change an application while its exact message is being handed to SMTP.
   const applicationId=p.applicationId||(['complete-task'].includes(command)?find(db.tasks,p.id).applicationId:null);
@@ -52,24 +48,19 @@ function applyCommand(db,command,p,user) {
     if(applicationId&&!db.applications.some(a=>a.id===applicationId))fail(404,'Application not found.');
     if(['move-interview','reject','schedule','cancel-interview','feedback','offer','approve-offer','offer-message','accept-offer','confirm-rejection','message','task','candidate-notes'].includes(command)&&!p.applicationId)fail(422,'Application ID is required.');
     if(command==='message'&&p.templateId){const t=find(db.templates,p.templateId);if(!t.active)fail(409,'This template is archived.');const a=find(db.applications,p.applicationId);
-      const rejectionFrom=db.activity.find(event=>event.applicationId===a.id&&event.to==='Rejected')?.from;
-      const rejectionTypes={'Application Rejection':['Pending Review'],'Interview Rejection':['Interview','Interview Results'],'Offer Withdrawal':['Offer']};
-      if(Object.hasOwn(rejectionTypes,t.kind)&&(a.stage!=='Rejected'||!a.rejectionConfirmed||!rejectionTypes[t.kind].includes(rejectionFrom)))fail(422,'This template does not match the recorded rejection stage.');
-      if(t.kind==='Offer Declined Acknowledgement'&&a.offer?.status!=='Declined')fail(422,'Record the candidate offer decline before using this template.');
       if(t.kind==='Offer Letter'&&(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<M.day()))fail(422,'Approve a valid offer before using an offer template.');
       if(t.kind==='Accepted'&&a.stage!=='Hired')fail(422,'Record offer acceptance before using this template.');
       if(t.kind==='Rejected'&&(a.stage!=='Rejected'||!a.rejectionConfirmed))fail(422,'Confirm the rejection before using this template.');
       if(t.kind==='Interview Invite'&&a.stage!=='Interview')fail(422,'Move this application to Interview first.');
       if(!p.subject||!p.body)p={...p,...fillTemplate(db,a,user,t)};
     }
-    if(command==='schedule'||command==='task')text(p.notes,'Notes',command==='schedule'?500:1000,true);
+    if(['move-interview','schedule','task'].includes(command))text(p.notes,'Notes',command==='task'?1000:500,true);
     if(command==='offer'&&!/^\d+(\.\d{1,2})?$/.test(String(p.salary)))fail(422,'Salary must be a positive amount with at most two decimal places.');
     if(command==='offer'&&db.notifications.some(n=>n.applicationId===p.applicationId&&n.kind==='Offer'&&['Sent','Sending','Uncertain'].includes(n.status)))fail(409,'A communicated offer cannot be edited here. Review the sent terms or close the application.');
     if(command==='feedback') {const i=find(db.interviews,p.interviewId);if(new Date(i.date+'T'+i.time+':00+08:00').getTime()+i.duration*60000>Date.now())fail(422,'Record feedback after the interview ends.');}
     if(command==='message'&&/[\r\n]/.test(String(p.subject)))fail(422,'Email subject cannot contain new lines.');
     if(command==='offer-message'&&db.notifications.some(n=>n.applicationId===p.applicationId&&n.kind==='Offer'&&['Sent','Sending','Uncertain'].includes(n.status)))fail(409,'An offer message has already been submitted. Review its history.');
     try{result=M.apply(db,command,p,{actor:user.name});}catch(e){fail(422,e.message,'WORKFLOW_ERROR');}
-    if(assessment) find(db.interviews,p.interviewId).feedback.assessment=assessment;
     if(['offer','approve-offer'].includes(command)){const a=find(db.applications,p.applicationId),entry=db.activity.find(x=>!activityIds.has(x.id));if(entry)entry.notes=`SGD ${a.offer.salary}/month; starts ${a.offer.startDate}; respond by ${a.offer.expiry}. Terms: ${a.offer.terms}`;}
     if(result.notification&&p.templateId){const t=find(db.templates,p.templateId);result.notification.templateId=t.id;result.notification.templateName=t.name;if(t.kind==='Offer Letter')result.notification.kind='Offer';if(t.kind==='Interview Invite')result.notification.kind='Interview schedule';}
   } else if(command==='application-create') {

@@ -11,27 +11,37 @@ function views(){
 }
 function state(){return {page:1,q:'',job:'',stage:'',priority:'',from:'',to:'',resumePage:1,zoom:90};}
 
-test('assessment rows start unscored and saved summaries escape custom names',()=>{
-  const {HRViews:V}=views();
-  assert.equal(typeof V.assessmentForm,'function');
-  const {JSDOM}=require('jsdom'),dom=new JSDOM(V.assessmentForm());
-  const rows=dom.window.document.querySelectorAll('[data-assessment-row]');
-  assert.equal(rows.length,4);
-  for(const row of rows) assert.equal(row.querySelector('select').value,'');
-  assert.equal(dom.window.document.querySelector('[data-action="assessment-add"]').textContent,'Add criterion');
-  dom.window.document.body.innerHTML=V.assessmentSummary([{label:'<img src=x onerror=alert(1)>',rating:3}]);
-  assert.equal(dom.window.document.querySelector('img'),null);
-  assert.ok(dom.window.document.body.textContent.includes('<img src=x onerror=alert(1)>'));
-  assert.ok(dom.window.document.body.textContent.includes('3 / 5'));
-  dom.window.close();
+test('English date inputs accept strict real ISO dates including leap days without calendar rollover',()=>{
+  const D=require('../dist/date-input.js');
+  for(const iso of ['0001-01-01','2000-02-29','2024-02-29','2026-10-22','9999-12-31']){
+    const [year,month,day]=iso.split('-').map(Number);assert.deepEqual(D.parseISO(iso),{year,month,day});
+  }
+  for(const value of ['',null,undefined,'2026-2-03','22/10/2026','2026-10-22T00:00:00Z','2026-10-22 extra','0000-01-01','10000-01-01','1900-02-29','2026-02-29','2026-04-31','2026-13-01','2026-00-01','2026-01-00','2026-01-32'])assert.equal(D.parseISO(value),null,'Invalid date: '+String(value));
+});
+
+test('calendar date limits are inclusive and never treat an empty value as a selected date',()=>{
+  const D=require('../dist/date-input.js'),min='2024-02-28',max='2024-03-01';
+  for(const iso of [min,'2024-02-29',max])assert.equal(D.isAllowed(iso,min,max),true);
+  for(const iso of ['2024-02-27','2024-03-02','2024-02-30',''])assert.equal(D.isAllowed(iso,min,max),false);
+  assert.equal(D.isAllowed('2026-10-22'),true);assert.equal(D.isAllowed('2026-10-22','2026-10-22','2026-10-22'),true);
+  assert.equal(D.isAllowed('2026-10-21','2026-10-22'),false);assert.equal(D.isAllowed('2026-10-23','','2026-10-22'),false);
+});
+
+test('English calendar grids show real month days and disable dates outside the allowed range',()=>{
+  const D=require('../dist/date-input.js'),grid=D.monthDays(2024,2,'2024-02-28','2024-03-01'),days=grid.filter(Boolean);
+  assert.equal(days.length,29);assert.equal(new Set(days.map(cell=>cell.date)).size,29);
+  assert.deepEqual(days.map(cell=>cell.day),Array.from({length:29},(_,i)=>i+1));
+  for(const cell of days){assert.equal(cell.date,'2024-02-'+String(cell.day).padStart(2,'0'));assert.equal(cell.disabled,cell.day<28);}
+  assert.deepEqual(grid.slice(0,4),[null,null,null,null]);assert.equal(grid[4].date,'2024-02-01','February 2024 begins on Thursday in the Sunday-first calendar');
+  for(const [year,expected] of [[1900,28],[2000,29],[2026,28]])assert.equal(D.monthDays(year,2).filter(Boolean).length,expected);
 });
 
 test('review status filter, avatar resume links and right-hand actions work across statuses',()=>{
   const {HRViews:V}=views(),db=M.seed(),ui=state();
   const html=V.render(['applications','offer'],db,ui);
-  assert.equal(ui.stage,'Offer');assert.ok(html.includes('aria-label="Application stages"'));
+  assert.equal(ui.stage,'Offer');assert.ok(html.includes('data-filter="queue"'));
   assert.ok(V.filtered(db,ui).every(a=>a.stage==='Offer'));
-  const review=V.render(['applications','applications-review'],db,ui);
+  const review=V.render(['applications','pending-review'],db,ui);
   assert.ok(review.includes('class="applicant-resume-link"'));assert.ok(review.includes('Move to Interview'));assert.ok(review.includes('Reject'));assert.ok(review.includes('Details'));
   assert.ok(!review.includes('Applications in this stage.'));
 });
@@ -68,16 +78,25 @@ test('HR reviews resumes against written requirements without academic prompts o
     for(const text of ['screening-status','Awaiting applicant info','Requirements not met','Field of study not accepted','Update education details'])assert.ok(!html.includes(text));
     assert.ok(html.includes('Job Requirements'));assert.ok(!new RegExp('data-action="'+action+'"[^>]*disabled').test(html));
     j.status='Closed';html=V.render([route,application.id],db,state());
-    assert.ok(!new RegExp('data-action="'+action+'"[^>]*disabled').test(html),'Closed intake permits existing applications');
-    j.status='Stopped';html=V.render([route,application.id],db,state());
-    assert.match(html,new RegExp('data-action="'+action+'"[^>]*disabled'),'Stopped processing blocks progression');
+    assert.match(html,new RegExp('data-action="'+action+'"[^>]*disabled'),'A closed job still blocks progression');
+  }
+});
+
+test('review and results keep the resume and decisions without duplicate navigation or activity buttons',()=>{
+  const {HRViews:V}=views(),db=M.seed();
+  for(const [route,stage,action] of [['review','Pending Review','move-interview'],['results','Interview Results','offer-edit']]){
+    const application=db.applications.find(a=>a.stage===stage),html=V.render([route,application.id],db,state());
+    assert.ok(html.includes('aria-label="Applicant resume"'));assert.ok(html.includes('data-action="'+action+'"'));
+    for(const label of ['Back to list','Previous','Next','Applicant details','Application details','View profile','View activity'])assert.ok(!new RegExp('>'+label+'<','i').test(html),'Remove duplicate action: '+label);
+    assert.ok(!html.includes('data-action="activity"'));
+    assert.ok(!html.includes('class="heading-actions"'),'Use the existing breadcrumb instead of a second navigation group');
   }
 });
 
 test('application lists keep ordinary workflow attention and preserve legacy records without academic holds',()=>{
   const {HRViews:V}=views(),db=M.seed(),pending=db.applications.find(a=>a.stage==='Pending Review'),offer=db.applications.find(a=>a.stage==='Offer');
   db.applications=[pending,offer];for(const c of db.candidates)Object.assign(c,{educationLevel:'Not recorded',educationMajor:'Accounting',graduationDate:null});
-  let html=V.render(['applications','applications-review'],db,state());assert.ok(!/data-action="move-interview"[^>]*disabled/.test(html));
+  let html=V.render(['applications','pending-review'],db,state());assert.ok(!/data-action="move-interview"[^>]*disabled/.test(html));
   offer.offer.expiry=M.day(-1);const before=JSON.stringify(db);html=V.render(['applications','offer'],db,state());
   assert.ok(html.includes('Offer expired'));assert.ok(html.includes('Review Offer'));
   assert.ok(html.includes('Review terms or close application'));assert.ok(!html.includes('Ready for candidate response'),'Expired offers cannot be presented as awaiting acceptance');
@@ -127,7 +146,7 @@ test('All Applications preserves Interview and Hired records and their actions',
   db.applications[0].stage='Interview';db.applications[1].stage='Hired';
   const html=V.render(['applications'],db,state());
   assert.ok(html.includes('<th>STATUS</th>'));
-  assert.ok(html.includes('View Interview'));assert.ok(html.includes('View Profile'));
+  assert.ok(html.includes('Schedule Interview'));assert.ok(html.includes('Details'));assert.ok(!/View Profile/i.test(html));
   assert.ok(html.includes('Showing 1–2 of 2 applications'));
 });
 
@@ -143,11 +162,12 @@ test('sidebar keeps one active Applications entry on list and detail pages witho
   assert.ok(!/href="#\/applications" aria-current/.test(V.navigation(['dashboard'],db)));
 });
 
-test('legacy candidate directory redirects to Applications while profile links retain application context',()=>{
+test('legacy routes keep working while Pending Review is the canonical queue',()=>{
   const {HRViews:V}=views(),db=M.seed(),app=db.applications[0];
   assert.equal(V.parseRoute('#/candidates').join('/'),'applications');
-  assert.equal(V.parseRoute('#/applications/pending-review/').join('/'),'applications/applications-review');
-  assert.ok(V.render(['review',app.id],db,state()).includes('href="#/candidate/'+app.candidateId+'/'+app.id+'"'));
+  assert.equal(V.parseRoute('#/applications/pending-review/').join('/'),'applications/pending-review');
+  assert.equal(V.parseRoute('#/applications/applications-review/').join('/'),'applications/pending-review');
+  assert.ok(!V.render(['review',app.id],db,state()).includes('href="#/candidate/'+app.candidateId+'/'+app.id+'"'));
   assert.equal(V.activeApplicationStage(['candidate',app.candidateId,app.id],db),app.stage);
   assert.ok(V.render(['review',app.id],db,state()).includes('Job Requirements'));
   const second={...db.applications[1],id:'SECOND-APPLICATION',candidateId:app.candidateId,stage:'Interview Results'};db.applications.push(second);
@@ -162,10 +182,10 @@ test('top breadcrumbs follow the current application context and provide parent 
   const {HRViews:V}=views(),db=M.seed(),app=db.applications.find(a=>a.stage==='Pending Review');
   const queue=V.secondaryNavigation(['applications','pending-review'],db);
   assert.ok(queue.includes('href="#/applications"'));
-  assert.ok(queue.includes('aria-current="page">Applications Review</span>'));
+  assert.ok(queue.includes('aria-current="page">Pending Review</span>'));
   assert.ok(!queue.includes('Interview Results')&&!queue.includes('Offer'));
   const review=V.secondaryNavigation(['review',app.id],db);
-  assert.ok(review.includes('href="#/applications/applications-review"'));
+  assert.ok(review.includes('href="#/applications/pending-review"'));
   assert.ok(review.includes('aria-current="page">Resume Review</span>'));
   assert.equal((review.match(/aria-current="page"/g)||[]).length,1);
   app.stage='Offer';
@@ -184,22 +204,15 @@ test('unknown or malformed application routes never silently display all records
   assert.equal(V.parseRoute('#/applications/%E0%A4%A')[0],'not-found');
 });
 
-async function controller(hash,{db=M.seed(),search=''}={}){
-  const c=views(),elements=new Map(),events=new Map(),windowEvents=new Map(),storage=new Map();
+async function controller(hash,{db=M.seed(),commit}={}){
+  const c=views(),elements=new Map(),events=new Map(),windowEvents=new Map(),storage=new Map(),commits=[];
   db.systemNotifications=[];db.currentUser={name:'HR User',role:'HR_MANAGER'};
-  const element=selector=>{if(!elements.has(selector))elements.set(selector,{innerHTML:'',textContent:'',hidden:false,open:false,isConnected:true,classList:{toggle(){},remove(){}},showModal(){this.open=true;},close(){this.open=false;},focus(){},addEventListener(){},insertAdjacentHTML(_where,html){this.innerHTML+=html;}});return elements.get(selector);};
-  Object.assign(c,{location:{hash,search},history:{replaceState(_state,_title,url){c.location.hash=url;}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},document:{querySelector:element,querySelectorAll:()=>[],addEventListener:(name,fn)=>{if(!events.has(name))events.set(name,[]);events.get(name).push(fn);}},HRRemote:{boot:async()=>({db,error:''})},HRExtra:{attach:()=>({action:async()=>false})},setTimeout,clearTimeout,FormData:class{entries(){return [][Symbol.iterator]();}},URL});
+  const element=selector=>{if(!elements.has(selector))elements.set(selector,{innerHTML:'',textContent:'',hidden:false,open:false,isConnected:true,classList:{toggle(){},remove(){}},showModal(){this.open=true;},close(){this.open=false;},focus(){},setSelectionRange(){},addEventListener(){},insertAdjacentHTML(_where,html){this.innerHTML+=html;}});return elements.get(selector);};
+  Object.assign(c,{location:{hash},history:{replaceState(_state,_title,url){c.location.hash=url;}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},document:{querySelector:element,querySelectorAll:()=>[],addEventListener:(name,fn)=>{if(!events.has(name))events.set(name,[]);events.get(name).push(fn);}},HRRemote:{boot:async()=>({db,error:'',async commit(command,payload){commits.push({command,payload});return commit?commit(command,payload,db):{activity:{id:'saved-event'},application:{id:'saved-application'}};}})},HRExtra:{attach:()=>({action:async()=>false,submit:async()=>false})},setTimeout(fn,ms){const timer=setTimeout(fn,ms);timer.unref?.();return timer;},clearTimeout,confirm:()=>true,FormData:class{constructor(form){this.values=Object.entries(form?.values||{});}entries(){return this.values[Symbol.iterator]();}[Symbol.iterator](){return this.entries();}},URL});
   c.addEventListener=(name,fn)=>windowEvents.set(name,fn);c.scrollTo=()=>{};
   await vm.runInContext(fs.readFileSync(require.resolve('../dist/app.js'),'utf8'),c);
-  return {c,e:element,storage,db,async selectQueue(value){for(const fn of events.get('change')||[])await fn({target:{dataset:{filter:'queue'},value}});},navigate(path){c.location.hash=path;windowEvents.get('hashchange')();},async action(name,id){const button={disabled:false,isConnected:false,dataset:{action:name,id},closest:()=>null};const event={target:{closest:selector=>selector==='[data-action]'?button:null},preventDefault(){}};for(const fn of events.get('click')||[])await fn(event);}};
+  return {c,e:element,storage,db,commits,async search(value){for(const fn of events.get('input')||[])await fn({target:{matches:selector=>selector==='[data-search]',value,selectionStart:value.length}});},async selectQueue(value){for(const fn of events.get('change')||[])await fn({target:{dataset:{filter:'queue'},value}});},navigate(path){c.location.hash=path;windowEvents.get('hashchange')();},async action(name,id){const button={disabled:false,isConnected:false,dataset:{action:name,id},closest:()=>null};const event={target:{closest:selector=>selector==='[data-action]'?button:null},preventDefault(){}};for(const fn of events.get('click')||[])await fn(event);},async submit(command,id,values={},attributes={}){const error={hidden:true,textContent:'',scrollIntoView(){}};const form={dataset:{command,id,...attributes},values,elements:{notify:{checked:!!values.notify}},matches:selector=>selector==='#modal form',reportValidity:()=>true,querySelectorAll:()=>[],querySelector:()=>error};for(const fn of events.get('submit')||[])await fn({target:form,preventDefault(){}});return error;}};
 }
-
-test('job-specific application links initialize a removable position filter',async()=>{
-  const db=M.seed(),id=db.jobs[0].id,page=await controller('#/applications',{db,search:'?job='+id});
-  assert.ok(page.e('#content').innerHTML.includes('value="'+id+'" selected'));
-  await page.action('clear-filters');
-  assert.ok(!page.e('#content').innerHTML.includes('value="'+id+'" selected'));
-});
 
 test('offer actions depend on approval, expiry and manager permission rather than academic data',async()=>{
   const db=M.seed(),application=db.applications.find(a=>a.stage==='Offer'),applicant=db.candidates.find(c=>c.id===application.candidateId);
@@ -215,42 +228,171 @@ test('offer actions depend on approval, expiry and manager permission rather tha
   assert.match(expired.e('#modal-body').innerHTML,/data-action="offer-accept"[^>]*disabled/);
 });
 
-test('stopped processing disables offer advancement controls',async()=>{
-  const db=M.seed(),a=db.applications.find(a=>a.stage==='Offer');
-  db.jobs.find(j=>j.id===a.jobId).status='Stopped';a.offer.expiry=M.day(7);
-  for(const approval of ['Awaiting approval','Approved']){
-    a.offer.approval=approval;const page=await controller('#/applications/offer',{db});await page.action('application',a.id);
-    for(const action of ['offer-edit',approval==='Approved'?'offer-message':'offer-approve','offer-accept'])assert.match(page.e('#modal-body').innerHTML,new RegExp('data-action="'+action+'"[^>]*disabled'));
+test('rejection asks for a reason without a status diagram and opening or cancelling preserves records',async()=>{
+  const db=M.seed(),application=db.applications.find(a=>a.stage==='Pending Review'),applicant=db.candidates.find(c=>c.id===application.candidateId);
+  Object.assign(applicant,{educationLevel:'Secondary school',graduationDate:null});
+  const page=await controller('#/review/'+application.id,{db}),before=JSON.stringify(db);await page.action('reject',application.id);const html=page.e('#modal-body').innerHTML;
+  assert.match(html,/<select\b[^>]*name="reason"/);assert.ok(html.includes('Qualifications do not meet the job requirements'));
+  assert.ok(!/<input\b[^>]*type="hidden"[^>]*name="reason"/.test(html));assert.equal(application.stage,'Pending Review');
+  for(const text of ['Status Change','CURRENT STATUS','NEW STATUS','status-change','status-box'])assert.ok(!html.includes(text),'Remove redundant rejection status diagram: '+text);
+  assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
+  await page.action('close');assert.equal(page.e('#modal').open,false);assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
+});
+
+test('new interview forms start with blank date, time, venue and interviewer without changing applicant records',async()=>{
+  for(const [action,stage,command] of [['move-interview','Pending Review','move-interview'],['schedule','Interview','schedule']]){
+    const db=M.seed(),application=db.applications[0];application.stage=stage;db.interviews=[];db.jobs.find(j=>j.id===application.jobId).status='Active';
+    const page=await controller('#/review/'+application.id,{db}),before=JSON.stringify(db);await page.action(action,application.id);
+    const html=page.e('#modal-body').innerHTML;assert.ok(html.includes('data-command="'+command+'"'));
+    for(const name of ['date','time','location','interviewer']){
+      const input=html.match(new RegExp('<input\\b(?=[^>]*\\bname="'+name+'")[^>]*>'))?.[0];
+      assert.ok(input,'Booking contains '+name);assert.match(input,/\bvalue=""/,'New '+name+' must be deliberately provided');assert.match(input,/\brequired\b/);
+    }
+    assert.ok(html.includes('More options'));assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
+    await page.action('close');assert.equal(page.e('#modal').open,false);assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
   }
 });
 
-test('HR explicitly chooses a rejection reason without an automatic academic decision',async()=>{
-  const db=M.seed(),application=db.applications.find(a=>a.stage==='Pending Review'),applicant=db.candidates.find(c=>c.id===application.candidateId);
-  Object.assign(applicant,{educationLevel:'Secondary school',graduationDate:null});
-  const page=await controller('#/review/'+application.id,{db});await page.action('reject',application.id);const html=page.e('#modal-body').innerHTML;
-  assert.match(html,/<select\b[^>]*name="reason"/);assert.ok(html.includes('Qualifications do not meet the job requirements'));
-  assert.ok(!/<input\b[^>]*type="hidden"[^>]*name="reason"/.test(html));assert.equal(application.stage,'Pending Review');
+test('rescheduling preserves saved meeting values rather than using the blank new-interview form',async()=>{
+  const db=M.seed(),application=db.applications[0];application.stage='Interview';
+  const interview={id:'booking-to-reschedule',applicationId:application.id,date:M.day(5),time:'16:15',duration:90,format:'Phone',location:'+65 12345678',interviewer:'Existing Interviewer',notes:'Keep the saved interview brief.',status:'Scheduled'};db.interviews=[interview];
+  const page=await controller('#/applications/interview',{db}),before=JSON.stringify(db);await page.action('interview-reschedule',interview.id);
+  const html=page.e('#modal-body').innerHTML;assert.equal(page.e('#modal-title').textContent,'Reschedule Interview');assert.ok(html.includes('data-interview-id="'+interview.id+'"'));
+  for(const name of ['date','time','location','interviewer']){
+    const input=html.match(new RegExp('<input\\b(?=[^>]*\\bname="'+name+'")[^>]*>'))?.[0];assert.ok(input);assert.ok(input.includes('value="'+interview[name]+'"'),'Reschedule retains '+name);
+  }
+  for(const [name,value] of [['duration','90'],['format','Phone']]){
+    const select=html.match(new RegExp('<select\\b[^>]*name="'+name+'"[^>]*>([\\s\\S]*?)<\\/select>'))?.[1];assert.ok(select);
+    assert.match(select,new RegExp('<option\\b(?=[^>]*\\bvalue="'+value+'")[^>]*\\bselected\\b'));
+  }
+  assert.ok(html.includes(interview.notes));assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
+  await page.action('close');assert.equal(page.e('#modal').open,false);assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
 });
 
-test('controller supports direct links, Back/Forward route changes and clearing filters without leaving the selected stage',async()=>{
+test('Move to Interview collects the booking once and opening or cancelling never changes records',async()=>{
+  const db=M.seed(),application=db.applications.find(a=>a.stage==='Pending Review');db.jobs.find(j=>j.id===application.jobId).status='Active';
+  const page=await controller('#/review/'+application.id,{db}),afterBoot=JSON.stringify(db);
+  await page.action('move-interview',application.id);const html=page.e('#modal-body').innerHTML;
+  assert.equal((html.match(/<form\b/g)||[]).length,1);assert.match(html,/data-command="move-interview"/);
+  for(const name of ['date','time','location'])assert.match(html,new RegExp('<input\\b(?=[^>]*\\bname="'+name+'")[^>]*\\brequired\\b'),'A confirmed interview must include '+name);
+  for(const name of ['duration','format','interviewer','notes','notify'])assert.match(html,new RegExp('<(?:input|select|textarea)\\b[^>]*name="'+name+'"'),'One form includes '+name);
+  assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),afterBoot);
+  await page.action('close');assert.equal(page.e('#modal').open,false);assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),afterBoot);
+  assert.equal(application.stage,'Pending Review');
+  await page.action('move-interview',application.id);
+  const values={date:M.day(2),time:'14:30',duration:'45',format:'On-site',location:'Meeting Room B',interviewer:'HR User',notes:'Bring the role brief',notify:true};
+  const error=await page.submit('move-interview',application.id,values);assert.equal(error.hidden,true);
+  assert.equal(page.commits.length,1);assert.equal(page.commits[0].command,'move-interview');
+  for(const [name,value] of Object.entries(values))assert.equal(page.commits[0].payload[name],value);
+  assert.equal(page.commits[0].payload.applicationId,application.id);
+  assert.equal(page.e('#modal').open,false);assert.equal(page.c.location.hash,'#/review/'+application.id);
+});
+
+test('application and rejection dialogs omit profile and activity detours',async()=>{
+  const db=M.seed();db.applications[0].stage='Interview';db.applications[1].stage='Hired';
+  for(const stage of ['Interview','Hired','Rejected']){
+    const application=db.applications.find(a=>a.stage===stage),page=await controller('#/applications',{db});
+    await page.action('application',application.id);const html=page.e('#modal-body').innerHTML;
+    assert.ok(!/View profile|View activity|View Candidate Profile/i.test(html));assert.ok(!html.includes('data-action="activity"'));
+    assert.ok(!html.includes('href="#/candidate/'));
+  }
+});
+
+test('Interview actions open an existing booking or schedule a legacy unbooked application directly',async()=>{
+  const db=M.seed(),application=db.applications[0],V=views().HRViews;application.stage='Interview';db.applications=[application];db.interviews=[];db.jobs.find(j=>j.id===application.jobId).status='Active';
+  let html=V.render(['applications','interview'],db,state());
+  assert.match(html,/data-action="schedule"[^>]*data-id="[^"]+"[^>]*>Schedule Interview<\/button>/);assert.ok(!html.includes('>View Interview</button>'));
+  let page=await controller('#/applications/interview',{db});await page.action('schedule',application.id);
+  assert.equal(page.e('#modal-title').textContent,'Schedule Interview');assert.match(page.e('#modal-body').innerHTML,/data-command="schedule"/);assert.equal(page.commits.length,0);
+  page=await controller('#/review/'+application.id,{db});await page.action('application',application.id);
+  assert.equal(page.e('#modal-title').textContent,'Schedule Interview','A legacy application link should skip the application-details wrapper');assert.match(page.e('#modal-body').innerHTML,/data-command="schedule"/);
+  assert.match(V.render(['review',application.id],db,state()),/data-action="schedule"[^>]*>Schedule Interview<\/button>/);
+  const interview={id:'existing-booking',applicationId:application.id,date:M.day(2),time:'14:30',duration:45,format:'On-site',location:'Room B',interviewer:'HR User',notes:'',status:'Scheduled'};db.interviews.push(interview);
+  html=V.render(['applications','interview'],db,state());
+  const action=html.match(/data-action="([^"]+)"[^>]*data-id="([^"]+)"[^>]*>View Interview<\/button>/);assert.ok(action);assert.ok(!html.includes('>Schedule Interview</button>'));
+  page=await controller('#/applications/interview',{db});await page.action(action[1],action[2]);
+  assert.equal(page.e('#modal-title').textContent,'Interview details');assert.ok(page.e('#modal-body').innerHTML.includes('Room B'));assert.ok(!page.e('#modal-body').innerHTML.includes('data-command="schedule"'));assert.equal(page.commits.length,0);
+  assert.match(V.render(['review',application.id],db,state()),/data-action="interview"[^>]*data-id="existing-booking"[^>]*>View Interview<\/button>/);
+});
+
+test('saving recruitment decisions keeps the current workspace instead of jumping to success, results or another module',async()=>{
+  const db=M.seed(),pending=db.applications.find(a=>a.stage==='Pending Review'),result=db.applications.find(a=>a.stage==='Interview Results'),offer=db.applications.find(a=>a.stage==='Offer'),interview=db.interviews[0];interview.status='Scheduled';
+  const scenarios=[
+    ['#/applications/pending-review','move-interview',pending.id,{date:M.day(2),time:'14:00',duration:'60',format:'Video',location:'https://meet.example.test/hr',interviewer:'HR User',notes:'',notify:false},{}],
+    ['#/review/'+pending.id,'reject',pending.id,{reason:'Insufficient relevant experience',notes:'',notify:false},{}],
+    ['#/results/'+result.id,'offer',result.id,{salary:'5200',startDate:M.day(30),expiry:M.day(7),terms:'Standard benefits'},{}],
+    ['#/applications/offer','accept-offer',offer.id,{notes:'Candidate accepted by phone.'},{}],
+    ['#/interviews','feedback',interview.applicationId,{rating:'4',recommendation:'Proceed',notes:'Strong technical discussion.'},{interviewId:interview.id}],
+    ['#/applications/interview','schedule',interview.applicationId,{date:M.day(2),time:'15:00',duration:'60',format:'Video',location:'https://meet.example.test/hr',interviewer:'HR User',notes:'',notify:false},{interviewId:interview.id}],
+    ['#/applications/offer','message',offer.id,{to:'applicant@example.test',subject:'Next steps',body:'Please review the attached details.'},{}]
+  ];
+  for(const [hash,command,id,values,attributes] of scenarios){
+    const page=await controller(hash,{db}),error=await page.submit(command,id,values,attributes);
+    assert.equal(error.hidden,true,command+': '+error.textContent);assert.equal(page.commits.length,1,command);
+    assert.equal(page.c.location.hash,hash,command+' should stay where the user was working');
+    assert.ok(page.e('#toast').textContent,command+' should show save feedback in place');
+  }
+});
+
+test('receiving a new application opens that applicant directly so existing list filters cannot hide the new record',async()=>{
+  const db=M.seed(),page=await controller('#/applications/offer',{db});
+  const error=await page.submit('application-create','',{jobId:db.jobs[0].id,name:'Test Applicant',email:'new-applicant@example.test',phone:'12345678',location:'Singapore',experience:'3 years',skills:'JavaScript'});
+  assert.equal(error.hidden,true);assert.equal(page.commits.length,1);assert.equal(page.commits[0].command,'application-create');
+  assert.equal(page.c.location.hash,'/review/saved-application');
+});
+
+test('returning from a resume through Applications restores the originating queue, search, filters and page',async()=>{
+  const db=M.seed(),page=await controller('#/applications/pending-review',{db});
+  page.c.innerHeight=620;
+  await page.search('example.com');
+  await page.submit('filters','',{job:db.jobs[0].id,priority:'Normal',from:M.day(-400),to:M.day(1)});
+  await page.action('page','2');const before=page.e('#content').innerHTML;
+  assert.ok(before.includes('Page 2 of'));
+  const application=db.applications.find(a=>a.stage==='Pending Review'&&a.jobId===db.jobs[0].id&&a.priority==='Normal');
+  page.navigate('#/review/'+application.id);
+  assert.match(page.e('#secondary-navigation').innerHTML,/href="#\/applications\/pending-review"[^>]*>Applications<\/a>/);
+  page.navigate('#/applications/pending-review');assert.equal(page.e('#content').innerHTML,before);
+});
+
+test('feedback saved from a resume stays on that route and reveals the result without stale review decisions',async()=>{
+  const db=M.seed(),interview=db.interviews[0],application=db.applications.find(a=>a.id===interview.applicationId);application.stage='Interview';interview.status='Scheduled';
+  const hash='#/review/'+application.id,page=await controller(hash,{db,commit(command,payload){assert.equal(command,'feedback');application.stage='Interview Results';application.feedback={rating:Number(payload.rating),recommendation:payload.recommendation,notes:payload.notes,recordedAt:new Date().toISOString()};interview.status='Completed';return {activity:{id:'saved-feedback'}};}});
+  const error=await page.submit('feedback',application.id,{rating:'4',recommendation:'Proceed',notes:'Evidence based feedback.'},{interviewId:interview.id});
+  assert.equal(error.hidden,true);assert.equal(page.c.location.hash,hash);
+  const html=page.e('#content').innerHTML;assert.ok(html.includes('Interview feedback'));assert.ok(html.includes('Evidence based feedback.'));assert.ok(html.includes('Prepare Offer'));
+  assert.ok(!html.includes('data-action="move-interview"'));assert.ok(!html.includes('data-action="schedule"'));
+});
+
+test('old success links open the current application detail without recreating a separate next-step screen',async()=>{
+  for(const stage of ['Interview','Interview Results']){
+    const db=M.seed(),application=db.applications[0];application.stage=stage;db.activity.unshift({id:'legacy-save',applicationId:application.id,to:stage,from:'Pending Review',actor:'HR User',at:new Date().toISOString(),summary:'Old saved event'});
+    const page=await controller('#/success/legacy-save',{db});
+    assert.equal(page.c.location.hash,'#/'+(stage==='Interview Results'?'results':'review')+'/'+application.id);
+    assert.ok(page.e('#content').innerHTML.includes('aria-label="Applicant resume"'));
+    assert.ok(!page.e('#content').innerHTML.includes('success-panel'));assert.ok(!page.e('#content').innerHTML.includes('Review next candidate'));
+  }
+});
+
+test('controller supports direct links, legacy review URLs, Back/Forward and clearing filters without leaving the selected stage',async()=>{
   const page=await controller('#/applications/pending-review');
-  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications Review</span>'));
+  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Pending Review</span>'));
   await page.action('clear-filters');
-  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications Review</span>'));
+  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Pending Review</span>'));
   assert.ok(!page.e('#content').innerHTML.includes('<th>WORKFLOW</th>'));
   page.navigate('#/applications/offer');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Offer</span>'));
   assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Offer</span>'));
-  page.navigate('#/applications/pending-review');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications Review</span>'));
-  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications Review</span>'));
-  page.navigate('#/applications');assert.equal(page.e('#secondary-navigation').innerHTML,'');
+  page.navigate('#/applications/pending-review');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Pending Review</span>'));
+  page.navigate('#/applications/applications-review');assert.equal(page.c.location.hash,'#/applications/pending-review');
+  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Pending Review</span>'));
+  page.navigate('#/applications');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications</span>'));
 });
 
 test('status selector reaches review, results, rejected, offer and all applications without a sidebar submenu',async()=>{
   const page=await controller('#/applications/offer');
-  assert.ok(page.e('#content').innerHTML.includes('aria-label="Application stages"'));
-  for(const [value,path] of [['Pending Review','applications/applications-review'],['Interview Results','applications/interview-results'],['Rejected','applications/rejected'],['Offer','applications/offer'],['','applications']]){
+  assert.ok(page.e('#content').innerHTML.includes('data-filter="queue"'));
+  for(const [value,path] of [['Pending Review','applications/pending-review'],['Interview Results','applications/interview-results'],['Rejected','applications/rejected'],['Offer','applications/offer'],['','applications']]){
     await page.selectQueue(value);assert.equal(page.c.location.hash,'/'+path);
-    page.navigate('#/'+path);assert.ok(page.e('#content').innerHTML.includes('aria-label="Application stages"'));
+    page.navigate('#/'+path);assert.ok(page.e('#content').innerHTML.includes('data-filter="queue"'));
     assert.ok(!page.e('#navigation').innerHTML.includes('nav-child'));
   }
 });
@@ -260,7 +402,7 @@ test('application pagination reaches every result and clamps the last page after
   const total=db.applications.filter(a=>a.stage==='Pending Review').length;
   for(let page=1;page<=Math.ceil(total/4);page++){
     ui.page=page;const html=V.render(['applications','pending-review'],db,ui);
-    const matches=[...new Map([...html.matchAll(/href="#\/review\/([^"]+)"/g)].map(m=>[m[1],m])).values()];assert.ok(matches.length<=4);
+    const matches=[...html.matchAll(/href="#\/review\/([^"]+)"/g)];assert.ok(matches.length<=4);
     matches.forEach(m=>{assert.ok(!ids.has(m[1]));ids.add(m[1]);});
   }
   assert.equal(ids.size,total);
@@ -270,13 +412,15 @@ test('application pagination reaches every result and clamps the last page after
   assert.equal(ui.page,1);assert.ok(empty.includes('Showing 0–0 of 0 applications'));
 });
 
-test('dashboard prioritizes actionable work queues rather than a decorative welcome header',()=>{
-  const {HRViews:V}=views(),db=M.seed();db.currentUser={name:'Example HR'};
+test('dashboard uses the signed-in name and sorts recent applications newest first before slicing',()=>{
+  const {HRViews:V}=views(),db=M.seed();db.currentUser={name:'Junye Shen'};
+  db.applications[0].createdAt='2020-01-01T00:00:00.000Z';
+  db.applications.at(-1).createdAt='2090-01-01T00:00:00.000Z';
   const html=V.render(['dashboard'],db,{...state(),page:900,pageSize:6});
-  assert.ok(html.includes('aria-label="Work queue"'));
-  assert.ok(html.includes('Applications to review'));
-  assert.ok(html.includes('Offers awaiting approval'));
-  assert.ok(!html.includes('View Full Calendar'));
+  assert.ok(html.includes('Welcome, Junye Shen'));assert.ok(!html.includes('Good morning, Sarah'));
+  const first=V.render(['dashboard'],db,{...state(),pageSize:6});
+  assert.ok(first.includes('data-id="'+db.applications.at(-1).id+'"'));
+  assert.ok(!first.includes('data-id="'+db.applications[0].id+'"'));
 });
 
 test('rejected application attention distinguishes historical, draft, uncertain and sent messages',()=>{
@@ -298,11 +442,10 @@ test('notifications respect Singapore date boundaries and communication lists pa
   assert.equal((html.match(/class="notification-item/g)||[]).length,4);
   assert.ok(html.includes('of 13 records'));assert.ok(html.includes('data-action="application"'));
   assert.equal(c.HRViews.localDay('2026-10-04T17:00:00Z'),'2026-10-05');
-  db.notifications=[{id:'draft',applicationId:db.applications[0].id,subject:'Subject',to:'test@example.com',createdAt:'2026-10-04T17:00:00Z',status:'Draft'}];
-  const emails=c.HRViews.applicationMessages(db,db.applications[0].id);
-  assert.ok(emails.includes('Drafts are saved for later'));
-  assert.match(emails,/data-action="mail-send"/);
-  assert.ok(!c.HRViews.render(['outbox'],db,state()).includes('Search messages'));
+  db.notifications=[{id:'draft',subject:'Subject',to:'test@example.com',createdAt:'2026-10-04T17:00:00Z',status:'Draft'}];
+  const outbox=c.HRViews.render(['outbox'],db,{...state(),pageSize:4});
+  assert.ok(outbox.includes('Email delivery is off'));
+  assert.match(outbox,/data-action="mail-send"[^>]+disabled/);
 });
 
 test('resume upload refreshes a stale revision so the same selected file can be retried',async()=>{

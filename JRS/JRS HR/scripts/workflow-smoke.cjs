@@ -30,8 +30,10 @@ const M=require('../dist/state.js');
     const pdf=Buffer.from('%PDF-1.4\nQA fixture PDF data\n%%EOF\n');
     let r=await fetch(origin+'/api/hr/candidates/'+c.id+'/resume',{method:'PUT',headers:{...auth,Origin:origin,'Content-Type':'application/pdf','X-Filename':'qa-resume.pdf','If-Match':String(db.revision)},body:pdf});assert.equal(r.status,200);db=(await r.json()).db;
     r=await fetch(origin+'/api/hr/candidates/'+c.id+'/resume',{headers:auth});assert.equal(r.status,200);assert.ok(Buffer.from(await r.arrayBuffer()).equals(pdf));
-    await command('move-interview',{applicationId:a.id,notify:true,notes:'Local QA only'});
-    const booking=await command('schedule',{applicationId:a.id,date:M.day(2),time:'10:00',duration:45,format:'Video',location:'QA meeting',interviewer:'Junye Shen',notes:'QA',notify:true});
+    const beforeMove=db.revision;
+    await command('move-interview',{applicationId:a.id,notify:true},422);assert.equal(db.revision,beforeMove);assert.equal(db.applications.find(x=>x.id===a.id).stage,'Pending Review');
+    const booking=await command('move-interview',{applicationId:a.id,date:M.day(2),time:'10:00',duration:45,format:'Video',location:'QA meeting',interviewer:'Junye Shen',notes:'Local QA only',notify:true});
+    assert.equal(db.applications.find(x=>x.id===a.id).stage,'Interview');assert.equal(booking.interview.status,'Scheduled');assert.equal(db.notifications.filter(n=>n.applicationId===a.id&&n.status==='Draft').length,1);assert.equal(booking.notification.kind,'Interview schedule');
     const feedback={applicationId:a.id,interviewId:booking.interview.id,rating:4,recommendation:'Proceed',notes:'QA feedback'};
     await command('feedback',feedback,422);
     // Only this disposable test database is moved into the past to test post-interview feedback.
