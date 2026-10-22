@@ -1,5 +1,15 @@
 # Delivery plan
 
+## Supplemental review queue - 2026-10-22
+
+See [REVIEW_FOLLOW_UP.md](../../docs/REVIEW_FOLLOW_UP.md) for reported teacher
+feedback, current source evidence and the P0/P1/P2 release-audit queue. Prioritize
+terminology, Department meaning, button conventions, date semantics, assessment
+flexibility and table layout agreement before broad UI changes. Before production,
+verify identity/revocation, deploy/migration isolation, persistent storage,
+rate-limit coverage, readiness, mail operations, CI and restore acceptance. These
+are audit tasks, not confirmed defects or authorization to deploy/change cloud data.
+
 ## User waiting queue - 2026-10-21
 
 The following request remains queued for later implementation.

@@ -1,5 +1,16 @@
 # Engineering handoff
 
+## Supplemental review handoff - 2026-10-22
+
+Teacher feedback and the older troubleshooting release-audit leads are tracked
+in [REVIEW_FOLLOW_UP.md](../../docs/REVIEW_FOLLOW_UP.md). Source inspection confirms
+that full-page job editing, account-menu Logout, configurable assessment rows,
+job-date ordering and shared runtime identity/logout integration already exist.
+Their presence is not a production-readiness claim. Remaining UI decisions and
+P0/P1/P2 operational checks are queued with provenance and verification limits;
+no older snapshot, private environment file or cloud database was used to replace
+the current implementation.
+
 ## Job editing update - 2026-10-22
 
 Job Postings now opens details and editing in the normal full-width workspace,
