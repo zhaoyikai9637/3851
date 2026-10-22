@@ -19,7 +19,8 @@ for (const name of ['forgot-password','check-email','set-new-password']) {
       assert.equal(computed(d.body).display,'block','recovery must not retain the split grid');
       assert.equal(computed(d.querySelector('.auth-card')).maxWidth,'440px');
       assert.equal(computed(d.querySelector('.auth-card')).boxShadow,'none');
-      assert.equal(computed(d.querySelector('button[type="submit"]')).height,'44px');
+      assert.equal(computed(d.querySelector('button[type="submit"]')).height,'auto','shared buttons can grow when their label wraps');
+      assert.equal(computed(d.documentElement).getPropertyValue('--jrs-button-height').trim(),'40px');
       assert.ok(d.querySelector('a[href="../login/login.html"]'),'return to sign-in remains available');
       assert.equal(d.querySelectorAll('.logo-circles .circle').length,2);
     } finally {dom.window.close();}

@@ -1,0 +1,74 @@
+/* Shared applicant buttons: the same scale and hierarchy as the HR workspace. */
+:root {
+  --jrs-button-primary: #315fd2;
+  --jrs-button-primary-hover: #244daf;
+  --jrs-button-text: #24344e;
+  --jrs-button-border: #dfe7f0;
+  --jrs-button-soft: #f8fafd;
+  --jrs-button-radius: 8px;
+  --jrs-button-height: 40px;
+}
+
+body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text) {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--jrs-button-height);
+  height: auto;
+  padding: 8px 14px;
+  border: 1px solid var(--jrs-button-border);
+  border-radius: var(--jrs-button-radius);
+  background: #fff;
+  color: var(--jrs-button-text);
+  font-family: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: normal;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text):hover:not(:disabled):not(.disabled) {
+  background: var(--jrs-button-soft);
+  border-color: #b8c7dd;
+  color: var(--jrs-button-text);
+  box-shadow: none;
+  transform: none;
+}
+body :is(.btn-primary, .btn-primary-small, .btn-success):not(.btn-link) {
+  background: var(--jrs-button-primary);
+  border-color: var(--jrs-button-primary);
+  color: #fff;
+}
+body :is(.btn-primary, .btn-primary-small, .btn-success):not(.btn-link):hover:not(:disabled):not(.disabled) {
+  background: var(--jrs-button-primary-hover);
+  border-color: var(--jrs-button-primary-hover);
+  color: #fff;
+}
+body :is(.btn-danger, .btn-outline-danger):not(.btn-link) { background:#fff; border-color:#e8b8c0; color:#b22f42; }
+body :is(.btn-danger, .btn-outline-danger):not(.btn-link):hover:not(:disabled):not(.disabled) { background:#fff1f3; border-color:#c13d4d; color:#a92e3e; }
+body .btn-link { min-height:40px; padding:8px 14px; color:var(--jrs-button-primary); font-size:13px; font-weight:600; }
+body :is(.btn, .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text):is(:disabled, .disabled, [aria-disabled="true"]) {
+  opacity:.45; cursor:not-allowed; box-shadow:none; pointer-events:none;
+}
+body :is(.btn, .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text):focus-visible {
+  outline:2px solid var(--jrs-button-primary); outline-offset:3px; box-shadow:none;
+}
+body :is(.btn, .btn-primary-small, .btn-outline, .btn-secondary-link) > svg { width:17px; height:17px; flex-shrink:0; }
+body :is(.icon-button, .drawer-close, .card-edit-btn) {
+  box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:40px; min-height:40px; padding:8px;
+  border-radius:8px; box-shadow:none;
+}
+body :is(.icon-button, .drawer-close, .card-edit-btn):focus-visible { outline:2px solid var(--jrs-button-primary); outline-offset:3px; }
+
+@media(max-width:600px) {
+  body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text) { white-space:normal; overflow-wrap:anywhere; }
+}
