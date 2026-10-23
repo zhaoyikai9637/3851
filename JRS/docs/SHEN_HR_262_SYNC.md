@@ -42,7 +42,9 @@ schemas. No real email or public deployment was performed.
 
 ## Verification
 
-- Integrated root: npm test - 132 passed.
+- Clean Git checkout root: npm test - 127 passed.
+- Local runtime root: npm test - 132 passed, including the existing local-only
+  scrollbar checks. Those unrelated local test files were not added to this sync.
 - React client: npm test -- --reporter=json - 129 passed.
 - Native HR: npm test - 125 passed.
 - Communication server unit/API: npm test - 183 passed.
