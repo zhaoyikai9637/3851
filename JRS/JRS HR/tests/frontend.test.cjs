@@ -444,8 +444,8 @@ test('notifications respect Singapore date boundaries and communication lists pa
   assert.equal(c.HRViews.localDay('2026-10-04T17:00:00Z'),'2026-10-05');
   db.notifications=[{id:'draft',subject:'Subject',to:'test@example.com',createdAt:'2026-10-04T17:00:00Z',status:'Draft'}];
   const outbox=c.HRViews.render(['outbox'],db,{...state(),pageSize:4});
-  assert.ok(outbox.includes('Email delivery is off'));
-  assert.match(outbox,/data-action="mail-send"[^>]+disabled/);
+  assert.ok(outbox.includes('APPLICANT'));
+  assert.ok(!outbox.includes('Email Outbox'));
 });
 
 test('resume upload refreshes a stale revision so the same selected file can be retried',async()=>{

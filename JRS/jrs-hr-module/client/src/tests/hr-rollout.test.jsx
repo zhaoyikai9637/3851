@@ -8,7 +8,7 @@ import { Recruitment } from "../../pages/recruitment/Recruitment";
 import { historicalDateRange } from "../shared";
 
 function Dates() {
-  const [value, setValue] = useState("21/10/2026");
+  const [value, setValue] = useState("2026-10-21");
   return (
     <DateField
       label="Meeting date"
@@ -27,10 +27,10 @@ it("navigates English days to months to years and back without committing until 
   await ui.click(screen.getByRole("button", { name: "Choose year" }));
   expect(screen.getByText("2020–2029")).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "2024", exact: true }));
-  expect(screen.getByLabelText("Meeting date")).toHaveValue("21/10/2026");
+  expect(screen.getByLabelText("Meeting date")).toHaveValue("2026-10-21");
   await ui.click(screen.getByRole("button", { name: "February", exact: true }));
   await ui.click(screen.getByRole("button", { name: "29 February 2024" }));
-  expect(screen.getByLabelText("Meeting date")).toHaveValue("29/02/2024");
+  expect(screen.getByLabelText("Meeting date")).toHaveValue("2024-02-29");
   await ui.click(screen.getByRole("button", { name: "Open Meeting date calendar" }));
   await ui.click(screen.getByRole("button", { name: "Choose month" }));
   await ui.click(screen.getByRole("button", { name: "Choose year" }));
@@ -39,13 +39,13 @@ it("navigates English days to months to years and back without committing until 
   await ui.click(screen.getByRole("button", { name: "January", exact: true }));
   expect(screen.getByRole("button", { name: "1 January 2031" })).toBeDisabled();
 });
-it("parses history dates day-first while keeping ISO and no-future rules", () => {
-  expect(historicalDateRange("13/10/2026", "21/10/2026", "2026-10-21")).toEqual({
+it("parses ISO history dates while keeping ISO and no-future rules", () => {
+  expect(historicalDateRange("2026-10-13", "2026-10-21", "2026-10-21")).toEqual({
     from: "2026-10-13",
     to: "2026-10-21",
     error: null,
   });
-  expect(historicalDateRange("", "22/10/2026", "2026-10-21").error).toMatch(/Future/);
+  expect(historicalDateRange("", "2026-10-22", "2026-10-21").error).toMatch(/Future/);
 });
 it("finds candidates beyond the old first-100 cap and retains the list after profile return", async () => {
   const records = Array.from({ length: 121 }, (_, index) => ({

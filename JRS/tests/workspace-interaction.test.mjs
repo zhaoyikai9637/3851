@@ -59,6 +59,7 @@ test('interview and report lists use the same host pagination budget',async()=>{
  for(const page of ['interviews','reports']){
   const dom=await workspace(page),w=dom.window;
   try{
+   if(page==='interviews'){const filter=w.document.querySelector('[data-filter="interviewStatus"]');filter.value='';filter.dispatchEvent(new w.Event('change',{bubbles:true}));}
    if(page==='reports'){w.document.querySelector('[data-action="section"][data-id="jobs"]').click();await settled();}
    await settled();
    w.HRPagination={measure:()=>({size:3,rowHeight:80})};

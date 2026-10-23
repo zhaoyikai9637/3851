@@ -30,6 +30,9 @@ async function workspace(mailEnabled = false) {
   };
   w.eval(await readFile(new URL('../JRS HR/dist/app.js', import.meta.url), 'utf8'));
   await new Promise(resolve => setImmediate(resolve));
+  const appId=db.applications[0].id;
+  w.location.hash="#/review/"+appId;
+  await new Promise(resolve=>setTimeout(resolve,20));
   async function click(selector) {
     const button = w.document.querySelector(selector);
     assert.ok(button, 'Missing control: ' + selector);
@@ -43,8 +46,8 @@ test('application emails retain drafts, reopen edits and preview without leaving
   const t = await workspace();
   try {
     const app = t.db.applications[0];
-    await t.click(`[data-action="application-messages"][data-id="${app.id}"]`);
-    await t.click('#modal [data-action="message"]');
+
+    await t.click('#content [data-action="message"]');
     let form = t.w.document.querySelector('#modal form');
     assert.ok(form, t.w.document.querySelector('#toast').textContent);
     form.elements.subject.value = 'Application update';
@@ -54,8 +57,8 @@ test('application emails retain drafts, reopen edits and preview without leaving
     assert.equal(t.db.notifications.length, 1);
     const draft = t.db.notifications[0];
     assert.equal(draft.status, 'Draft');
-    assert.equal(t.w.location.hash, '#/applications');
-    await t.click(`#modal [data-action="message-edit"][data-id="${draft.id}"]`);
+    assert.equal(t.w.location.hash, '#/review/'+app.id);
+    await t.click(`#content [data-action="message-edit"][data-id="${draft.id}"]`);
     form = t.w.document.querySelector('#modal form');
     assert.equal(form.elements.body.value, 'A saved candidate message.');
     form.elements.subject.value = 'Updated subject';
@@ -63,7 +66,7 @@ test('application emails retain drafts, reopen edits and preview without leaving
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(t.db.notifications.length, 1);
     assert.equal(draft.subject, 'Updated subject');
-    await t.click(`#modal [data-action="mail-send"][data-id="${draft.id}"]`);
+    await t.click(`#content [data-action="mail-send"][data-id="${draft.id}"]`);
     assert.match(t.w.document.querySelector('#modal-body').textContent, /Updated subject/);
     assert.equal(t.w.document.querySelector('#modal [type="submit"]').disabled, true);
     assert.equal(t.sends, 0);
@@ -75,15 +78,16 @@ test('email history is scoped to its application and sending requires explicit c
   try {
     const app = t.db.applications[0], other = t.db.applications[1];
     t.db.notifications.push({ id: 'mine', applicationId: app.id, to: 'candidate@example.test', subject: 'Current candidate', body: 'Reviewed body', status: 'Draft', createdAt: new Date().toISOString() }, { id: 'other', applicationId: other.id, subject: 'Other candidate private draft', status: 'Draft' });
-    await t.click(`[data-action="application-messages"][data-id="${app.id}"]`);
-    assert.ok(!t.w.document.querySelector('#modal-body').textContent.includes('Other candidate private draft'));
-    await t.click('#modal [data-action="mail-send"]');
+
+    t.w.dispatchEvent(new t.w.HashChangeEvent('hashchange'));
+    assert.ok(!t.w.document.querySelector('#content').textContent.includes('Other candidate private draft'));
+    await t.click('#content [data-action="mail-send"]');
     assert.equal(t.sends, 0);
     const form = t.w.document.querySelector('#modal form');
     form.dispatchEvent(new t.w.Event('submit', { bubbles: true, cancelable: true }));
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(t.sends, 1);
     assert.equal(t.db.notifications[0].status, 'Sent');
-    assert.equal(t.w.location.hash, '#/applications');
+    assert.equal(t.w.location.hash, '#/review/'+app.id);
   } finally { t.dom.window.close(); }
 });

@@ -5,6 +5,7 @@ import { JSDOM } from 'jsdom';
 
 async function views() {
   const dom = new JSDOM('', { runScripts: 'outside-only' });
+  Object.defineProperty(dom.window,'parent',{value:{}});
   dom.window.icon = () => '';
   dom.window.eval(await readFile(new URL('../JRS HR/dist/state.js', import.meta.url), 'utf8'));
   dom.window.eval(await readFile(new URL('../JRS HR/dist/views.js', import.meta.url), 'utf8'));

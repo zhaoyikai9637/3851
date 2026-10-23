@@ -6,6 +6,21 @@
   const defaults=()=>({page:1,q:'',job:'',stage:'',priority:'',from:'',to:'',full:false,period:'today',resumePage:1,zoom:100,resumeFit:true,jobStatus:'',interviewStatus:'Scheduled',interviewDate:'',noticeTab:'all'});
   const queueStates=new Map();let listOrigin='';
   let pendingJob='',ui=defaults(),route=['dashboard'],modalTrigger=null,formSnapshot='',busy=false,toastTimer;
+  let listBudget=window.innerHeight-180,fitTimer,rowHeight=0,fitKey='';
+  function fitList(){
+    if(composingSearch)return;
+    if(!['applications','interviews','reports','jobs'].includes(route[0]))return;
+    const key=route.join('/')+':'+(ui.section||'')+':'+window.innerWidth;
+    if(key!==fitKey){fitKey=key;rowHeight=0;}
+    const result=window.HRPagination?.measure($('#content'),listBudget,rowHeight);
+    if(!result)return;
+    rowHeight=result.rowHeight;
+    if(result.size!==ui.pageSize){
+      const offset=(ui.page-1)*ui.pageSize;
+      ui.pageSize=result.size;ui.page=Math.floor(offset/result.size)+1;render();
+    }
+  }
+  function scheduleFit(){clearTimeout(fitTimer);fitTimer=setTimeout(fitList,0);}
   function renderNavigation(){
     $('#navigation').innerHTML=V.navigation(route,store.db);
     const secondary=V.secondaryNavigation(route,store.db,ui),nav=$('#secondary-navigation');
@@ -14,18 +29,23 @@
   }
 
   const app=id=>{const a=store.db.applications.find(a=>a.id===id);if(!a)throw Error('Application not found.');return a;};
-  function go(path){if(location.hash==='#/'+path){route=path.split('/');render();}else location.hash='/'+path;}
+  function go(path){if(window.parent&&window.parent!==window)window.parent.postMessage({type:"jrs:workspace",route:path,intent:true},location.origin);if(location.hash==='#/'+path){route=path.split('/');render();}else location.hash='/'+path;}
   function notify(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,5500);}
   function render(){
-    const db=store.db,page=route[0];ui.pageSize=Math.max(4,Math.min(10,Math.floor(((window.innerHeight||768)-365)/58)));ui.compact=(window.innerHeight||768)<850;if(page==='applications'){const width=window.innerWidth||1300,height=window.innerHeight||768;ui.pageSize=width>1000&&height>=620?Math.max(3,Math.min(10,Math.floor((height-(width<1250?340:280))/(width<1250?120:92)))):4;}
+    const focused=document.activeElement?.matches("[data-search]")?document.activeElement:null;
+    const selection=focused?[focused.selectionStart,focused.selectionEnd]:null;
+    const db=store.db,page=route[0],embedded=window.parent&&window.parent!==window;ui.pageSize=embedded?(ui.pageSize||10):Math.max(4,Math.min(10,Math.floor(((window.innerHeight||768)-365)/58)));ui.compact=(window.innerHeight||768)<850;if(!embedded&&page==='applications'){const width=window.innerWidth||1300,height=window.innerHeight||768;ui.pageSize=width>1000&&height>=620?Math.max(3,Math.min(10,Math.floor((height-(width<1250?340:280))/(width<1250?120:92)))):4;}
     const names={dashboard:'Dashboard',applications:'Applications',review:'Resume Review',results:'Interview Results',success:'Status Update',candidate:'Candidate Profile',jobs:'Job Postings',interviews:'Interviews',reports:'Reports',notifications:'Notification Center',outbox:'Email Outbox',templates:'Email Templates','mail-log':'Notification Log','hr-profile':'My Profile'};
     const label=page==='applications'&&V.stageForRoute(route)?'Applications / '+V.stageLabel(V.stageForRoute(route)):names[page]||'HR Workspace';document.title='JRS | '+label;$('#page-label').textContent=label;
     renderNavigation();
     $('#content').innerHTML=V.render(route,db,ui);window.HRLayout?.apply($('#content'),page,ui);$('#storage-warning').hidden=!store.error;$('#storage-warning').textContent=store.error;
     $('#user-name').textContent=db.currentUser.name;$('#user-role').textContent=db.currentUser.role==='HR_MANAGER'?'HR Manager':'HR Officer';
     if(page==='applications')$('#content .heading-actions')?.insertAdjacentHTML('beforeend',button('application-new',icon('plus')+'Receive Application','','primary'));
+    if(['candidate','review','results'].includes(page)){const a=page==='candidate'?db.applications.find(a=>a.candidateId===route[1]&&(!route[2]||a.id===route[2])):db.applications.find(a=>a.id===route[1]);if(a&&V.applicationMessages)$('#content').insertAdjacentHTML('beforeend','<section class="panel padded spaced">'+V.applicationMessages(db,a.id)+'</section>');}
     if(page==='candidate'){const c=db.candidates.find(c=>c.id===route[1]);if(c)$('#content .heading-actions')?.insertAdjacentHTML('beforeend',button('candidate-edit','Edit Contact Details',c.id)+button('resume-upload','Upload Resume',c.id));if(c){const applications=db.applications.filter(a=>a.candidateId===c.id);if(applications.length>1)$('#content .page-heading')?.insertAdjacentHTML('afterend','<nav class="module-tabs" aria-label="Candidate applications">'+applications.map(a=>V.link('candidate/'+c.id+'/'+a.id,e(job(db,a).title)+' · '+e(V.stageLabel(a.stage)),ui.profileApplicationId===a.id?'active':'')).join('')+'</nav>');}}
 
+    if(selection){const input=$("[data-search]");input?.focus({preventScroll:true});input?.setSelectionRange(...selection);}
+    scheduleFit();
   }
   function routeChanged(){
     if(route[0]==='applications'){listOrigin=route.join('/');queueStates.set(listOrigin,{...ui});}
@@ -46,7 +66,7 @@
   function open(title,subtitle,html,ic='file',tone='blue',wide=false){
     const modal=$('#modal');if(!modal.open)modalTrigger=document.activeElement;
     $('#modal-title').textContent=title;$('#modal-subtitle').textContent=subtitle;$('#modal-icon').innerHTML=`<span class="icon-disc ${tone}">${icon(ic)}</span>`;
-    $('#modal-body').innerHTML=html;window.HRLayout?.form($('#modal-body'));modal.classList.toggle('wide',wide);if(!modal.open)modal.showModal();formSnapshot=snapshot();
+    $('#modal-body').innerHTML=html;window.HRLayout?.form($('#modal-body'));modal.classList.toggle('wide',wide);if(!modal.open)modal.showModal();formSnapshot=snapshot();if(window.parent!==window)window.parent.postMessage({type:"jrs:dialog"},location.origin);
     setTimeout(()=>$('#modal [autofocus]')?.focus(),0);
   }
   function dirty(){return !!formSnapshot&&snapshot()!==formSnapshot;}
@@ -59,7 +79,7 @@
   const actions=(submit='Save',danger=false)=>`<footer class="form-footer">${button('close','Cancel','','secondary')}<button type="submit" class="button ${danger?'danger':'primary'}">${icon('arrow')}${submit}</button></footer>`;
   const form=(action,id,fields,submit='Save',danger=false,extra='')=>`<form class="form" data-command="${action}" data-id="${e(id)}" ${extra}><div class="modal-content"><div class="form-error" role="alert" hidden></div>${fields}</div>${actions(submit,danger)}</form>`;
   const candidateCard=a=>{const c=candidate(store.db,a),j=job(store.db,a);return `<span class="field-label">APPLICANT</span><div class="modal-candidate"><div class="person">${V.avatar(c)}<div><strong>${e(c.name)}</strong><small>${e(j.title)} · ${e(c.email)}</small></div></div><div class="candidate-id"><small>APPLICATION ID</small><strong>${e(a.id)}</strong></div></div>`;};
-  const notifySwitch=(title,subtitle,tone='blue',checked=true)=>`<label class="notification-toggle"><span><span class="icon-disc ${tone}">${icon('mail')}</span><span><strong>${title}</strong><small>${subtitle}</small></span></span><input class="switch" type="checkbox" name="notify" ${checked?'checked':''} aria-label="${title}"><small>Notification is saved to the outbox as a draft. Review and send it from Email Outbox.</small></label>`;
+  const notifySwitch=(title,subtitle,tone='blue',checked=true)=>`<label class="notification-toggle"><span><span class="icon-disc ${tone}">${icon('mail')}</span><span><strong>${title}</strong><small>${subtitle}</small></span></span><input class="switch" type="checkbox" name="notify" ${checked?'checked':''} aria-label="${title}"><small>Notification is saved as an application draft. Review and send it from the application.</small></label>`;
   function interviewFields(a,i){
     return candidateCard(a)+`<div class="form-grid">${field('Interview date','date',i?.date||'','date',`required min="${HRModel.day()}"`)}${field('Interview time','time',i?.time||'','time','required')}</div>`+field('Interview venue or meeting link','location',i?.location||'','text','required maxlength="300" placeholder="Room, address or video meeting link"')+field('Interviewer','interviewer',i?.interviewer||'','text','required maxlength="100" placeholder="Enter interviewer"')+`<details class="interview-options"><summary>More options</summary><div class="form-grid">${choice('Duration','duration',[['15','15 minutes'],['30','30 minutes'],['45','45 minutes'],['60','60 minutes'],['90','90 minutes'],['120','120 minutes']],String(i?.duration||45))}${choice('Meeting format','format',['Video','On-site','Phone'],i?.format||'Video')}</div>${area('Internal notes (optional)','notes',i?.notes||'','maxlength="500"')}</details><label class="interview-draft"><input type="checkbox" name="notify" checked><span>Prepare interview email draft</span></label><p class="field-help">No email is sent automatically.</p>`;
   }
@@ -107,7 +127,25 @@
   function exportApplications(){const items=V.filtered(store.db,ui);csv(['Application ID','Candidate','Email','Position','Stage','Priority','Applied Date'],items.map(a=>[a.id,candidate(store.db,a).name,candidate(store.db,a).email,job(store.db,a).title,V.stageLabel(a.stage),a.priority,a.appliedDate]),'JRS-Applications.csv');notify('Exported '+items.length+' matching applications.');}
   function dataSettings(){open('Workspace Data','Recruitment records are stored in MySQL.',`<div class="modal-content"><p>${store.db.applications.length} applications · ${store.db.jobs.length} jobs</p><p class="muted spaced">Use database backup tools to include uploaded resumes and account settings.</p><div class="modal-actions spaced">${button('backup','Export HR records (JSON)')}${button('workspace-refresh','Refresh Workspace')}</div></div>`,'file');}
   function commit(command,p){return store.commit(command,p);}
-  const extra=HRExtra.attach({store,open,form,field,area,choice,render,go,notify,close});
+  function applicationMessages(id){app(id);open('Candidate Emails','', '<div class="modal-content">'+V.applicationMessages(store.db,id,false)+'</div>','mail','blue',true);}
+  function messageForm(id,notificationId){const a=app(id),c=candidate(store.db,a),j=job(store.db,a),n=notificationId?store.db.notifications.find(n=>n.id===notificationId):null;const rejected=a.stage==='Rejected';open('Candidate Message','',form('message',id,candidateCard(a)+choice('Email template','templateId',[['','Custom message'],...store.db.templates.filter(t=>t.active).map(t=>[t.id,t.name])],n?.templateId||'')+field('To','to',c.email,'email','readonly')+field('Subject','subject',n?.subject||(rejected?'Application update — ':'Next steps — ')+j.title,'text','required maxlength="200"')+area('Message','body',n?.body||('Hello '+c.name+',\n\n'+(rejected?'Thank you for your interest in '+j.title+'. After careful consideration, we will not be progressing your application for this position. We wish you the best in your job search.':'Thank you for your application for '+j.title+'. We will follow up with the next steps shortly.')+'\n\nBest regards,\n'+store.db.currentUser.name),'required maxlength="6000" rows="9"')+(n?button('email-download',icon('download')+'Download saved draft (.eml)',n.id,'secondary'):'')+'<p class="privacy-note">Private rejection reasons and internal notes are not added to the candidate email.</p>','Save Email Draft',false,`data-notification-id="${e(n?.id||'')}"`),'mail','blue');}
+  function taskForm(id){open('Create Follow-up Task','Record preparation work for the hiring team.',form('task',id,candidateCard(app(id))+field('Task title','title','','text','required maxlength="150" placeholder="e.g. Prepare technical interview questions"')+`<div class="form-grid">${field('Assigned to','assignee',store.db.currentUser.name,'text','required maxlength="100"')}${field('Due date','due',HRModel.day(1),'date',`required min="${HRModel.day()}"`)}</div>`+area('Task notes','notes','','maxlength="1000"'),'Create Task'),'briefcase','green');}
+  function requirementsEditor(j){
+    const R=HRModel.requirements,value=(j?.requirements||[]).join('\n');
+    return `<div class="job-requirements-editor">${area('Job Requirements (one item per line)','requirements',value,'required maxlength="3000" rows="10" aria-describedby="requirements-count requirements-help"')}<p id="requirements-count" class="requirements-count" data-requirements-count aria-live="polite">${R.parse(value).length} / 8–12 requirements</p><div class="requirements-template-controls">${choice('Role template (optional)','requirementsRole',[['','Choose a role'],...R.titles],R.forTitle(j?.title).length?j.title:'')}${button('requirements-template','Use role template','','secondary compact')}</div><p id="requirements-help" class="field-help">Write 8–12 distinct qualification, skill or experience requirements. Review templates before saving; keep location and work arrangements in their own fields.</p></div>`;
+  }
+  function refreshRequirements(form){
+    const input=form?.elements?.requirements,counter=form?.querySelector('[data-requirements-count]');if(!input||!counter)return;
+    let issue='';try{HRModel.requirements.validate(input.value);}catch(error){issue=error.message;}
+    counter.textContent=HRModel.requirements.parse(input.value).length+' / 8–12 requirements';counter.classList.toggle('danger-text',!!issue);input.setAttribute('aria-invalid',String(!!issue));
+  }
+  function jobForm(id){const j=id?store.db.jobs.find(j=>j.id===id):null;open(j?'Edit Job Posting':'Create Job Posting','Set the role requirements and posting status.',form('job-save',id||'',field('Job title','title',j?.title||'','text','required maxlength="100"')+`<div class="form-grid">${field('Department','department',j?.department||'Engineering','text','required maxlength="100"')}${choice('Employment type','type',['Full-time','Part-time','Contract','Internship'],j?.type||'Full-time')}</div><div class="form-grid">${field('Location','location',j?.location||'Singapore','text','required maxlength="100"')}${choice('Work mode','mode',['On-site','Hybrid','Remote'],j?.mode||'On-site')}</div>${field('Experience','experience',j?.experience||'2+ years','text','required maxlength="100"')}`+field('Required skills (comma separated)','skills',j?.skills.join(', ')||'','text','required maxlength="500"')+requirementsEditor(j)+area('Job Description','description',j?.description||'','required maxlength="3000"')+choice('Posting status','status',['Active','Draft','Closed','Stopped'],j?.status||'Active'),'Save Job Posting'),'briefcase','blue',true);refreshRequirements($('#modal form'));}
+  function download(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+  function csv(headers,rows,name){const cell=x=>'"'+String(x??'').replace(/^[=+@-]/,"'  const extra=").replaceAll('"','""')+'"';download(new Blob(['\ufeff'+[headers,...rows].map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),name);}
+  function exportApplications(){const items=V.filtered(store.db,ui);csv(['Application ID','Candidate','Email','Position','Stage','Priority','Applied Date'],items.map(a=>[a.id,candidate(store.db,a).name,candidate(store.db,a).email,job(store.db,a).title,V.stageLabel(a.stage),a.priority,a.appliedDate]),'JRS-Applications.csv');notify('Exported '+items.length+' matching applications.');}
+  function dataSettings(){open('Workspace Data','Recruitment records are stored in MySQL.',`<div class="modal-content"><p>${store.db.applications.length} applications · ${store.db.jobs.length} jobs</p><p class="muted spaced">Use database backup tools to include uploaded resumes and account settings.</p><div class="modal-actions spaced">${button('backup','Export HR records (JSON)')}${button('workspace-refresh','Refresh Workspace')}</div></div>`,'file');}
+  function commit(command,p){return store.commit(command,p);}
+  const extra=HRExtra.attach({store,open,form,field,area,choice,render,go,notify,close,applicationMessages});
   function formError(form,error){const target=form.querySelector('.form-error');target.hidden=false;target.textContent=error.message;target.scrollIntoView({block:'nearest'});}
 
   document.addEventListener('submit',async ev=>{
@@ -119,6 +157,10 @@
       if(f.elements.notify)data.notify=!!f.elements.notify.checked;
       if(cmd==='filters'){if(data.from&&data.to&&data.from>data.to)throw Error('Start date must be before end date.');Object.assign(ui,data,{full:true,page:1});close(true);render();return;}
       const p={...data,applicationId:id};
+      if(cmd==='feedback'&&typeof f.querySelectorAll==='function'){
+        p.assessment=JSON.stringify([...f.querySelectorAll('[data-assessment-row]')].map(row=>({label:row.querySelector('[data-assessment-label]').value,rating:Number(row.querySelector('[data-assessment-score]').value)})));
+        for(const key of Object.keys(p))if(/^assessment(Label|Score)_/.test(key))delete p[key];
+      }
       if(cmd==='reject'&&p.reason==='Other'){if(!String(data.reasonDetail||'').trim())throw Error('Specify the rejection reason.');p.reason='Other: '+String(data.reasonDetail).trim();}
       if(cmd==='schedule')p.interviewId=f.dataset.interviewId||undefined;
       if(cmd==='feedback'||cmd==='cancel-interview')p.interviewId=f.dataset.interviewId;
@@ -156,6 +198,13 @@
         case 'queue':go(V.applicationPath(id));break;
         case 'full-queue':go('applications');break;
         case 'clear-filters':ui=defaults();ui.interviewStatus='';render();break;
+        case 'assessment-add':{
+          const rows=$('#modal .assessment-rows');
+          if(rows.children.length>=20)throw Error('Use up to 20 assessment criteria.');
+          const index=Number(rows.dataset.nextAssessmentId||0);rows.dataset.nextAssessmentId=String(index+1);
+          rows.insertAdjacentHTML('beforeend',V.assessmentRow(index));rows.lastElementChild.querySelector('input').focus();break;
+        }
+        case 'assessment-remove':b.closest('[data-assessment-row]').remove();break;
         case 'section':ui.section=id;ui.page=1;render();document.querySelector('[data-action=section][data-id="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});break;
         case 'page':ui.page=Math.max(1,Number(id));render();break;
         case 'period':ui.period=id;render();break;
@@ -169,14 +218,14 @@
         case 'resume-actual':ui.resumeFit=false;ui.zoom=100;render();break;
         case 'zoom':ui.resumeFit=false;ui.zoom=Math.max(50,Math.min(200,ui.zoom+Number(id)));render();break;
         case 'fullscreen':if(document.fullscreenElement)document.exitFullscreen().catch(()=>notify('Fullscreen is unavailable.'));else $('#resume-viewer').requestFullscreen?.().catch(()=>notify('Fullscreen is unavailable.'));break;
-        case 'resume-download':{const a=app(id),c=candidate(store.db,a);if(c.resume){const link=document.createElement('a');link.href='/api/hr/candidates/'+encodeURIComponent(c.id)+'/resume?download=1';link.click();break;}if(!/^candidate-\d+$/.test(c.id))throw Error('No resume has been uploaded.');download(HRResume.pdf(c,job(store.db,a)),c.name.replaceAll(' ','_')+'_Resume.pdf');break;}
-        case 'resume-print':{const a=app(id),c=candidate(store.db,a),j=job(store.db,a);if(c.resume){window.open('/api/hr/candidates/'+encodeURIComponent(c.id)+'/resume','_blank','noopener');break;}if(!/^candidate-\d+$/.test(c.id))throw Error('No resume has been uploaded.');const w=window.open('','_blank');if(!w)throw Error('Allow pop-ups to print the resume.');w.document.write('<!doctype html><html><head><title>'+e(c.name)+' Resume</title><link rel="stylesheet" href="'+new URL('styles.css',location.href).href+'"><style>body{background:white}.resume-paper{width:190mm;min-height:270mm;margin:0 auto;break-after:page}.resume-paper:last-child{break-after:auto}@page{size:A4;margin:10mm}</style></head><body>'+HRResume.html(c,j,1)+HRResume.html(c,j,2)+'</body></html>');w.document.close();w.addEventListener('load',()=>{w.focus();w.print();},{once:true});break;}
+        case 'resume-download':{const a=app(id),c=candidate(store.db,a);if(a.submission?.resumeUrl){const link=document.createElement('a');link.href=a.submission.resumeUrl+'?download=1';link.click();break;}if(c.resume){const link=document.createElement('a');link.href='/api/hr/candidates/'+encodeURIComponent(c.id)+'/resume?download=1';link.click();break;}if(!/^candidate-\d+$/.test(c.id))throw Error('No resume has been uploaded.');download(HRResume.pdf(c,job(store.db,a)),c.name.replaceAll(' ','_')+'_Resume.pdf');break;}
+        case 'resume-print':{const a=app(id),c=candidate(store.db,a),j=job(store.db,a);if(a.submission?.resumeUrl){window.open(a.submission.resumeUrl,'_blank','noopener');break;}if(c.resume){window.open('/api/hr/candidates/'+encodeURIComponent(c.id)+'/resume','_blank','noopener');break;}if(!/^candidate-\d+$/.test(c.id))throw Error('No resume has been uploaded.');const w=window.open('','_blank');if(!w)throw Error('Allow pop-ups to print the resume.');w.document.write('<!doctype html><html><head><title>'+e(c.name)+' Resume</title><link rel="stylesheet" href="'+new URL('styles.css',location.href).href+'"><style>body{background:white}.resume-paper{width:190mm;min-height:270mm;margin:0 auto;break-after:page}.resume-paper:last-child{break-after:auto}@page{size:A4;margin:10mm}</style></head><body>'+HRResume.html(c,j,1)+HRResume.html(c,j,2)+'</body></html>');w.document.close();w.addEventListener('load',()=>{w.focus();w.print();},{once:true});break;}
         case 'schedule':schedule(id);break;
         case 'schedule-select':{const eligible=store.db.applications.filter(a=>a.stage==='Interview'&&job(store.db,a).status==='Active'&&!store.db.interviews.some(i=>i.applicationId===a.id&&i.status==='Scheduled'));open('Choose Candidate','Choose an application in the Interview stage with an active job.',`<div class="modal-content">${eligible.length?eligible.map(a=>`<div class="task-item">${person(store.db,a)}${button('schedule','Schedule',a.id,'secondary compact')}</div>`).join(''):V.empty('No applicants awaiting scheduling','Move an application to Interview under an active job to schedule a meeting.')}</div>`,'calendar','purple');break;}
         case 'interview':interviewDetails(id);break;
         case 'interview-reschedule':{const i=store.db.interviews.find(i=>i.id===id);schedule(i.applicationId,id);break;}
         case 'interview-cancel':{const i=store.db.interviews.find(i=>i.id===id);open('Cancel Interview','The candidate remains in Interview and can be rescheduled.',form('cancel-interview',i.applicationId,candidateCard(app(i.applicationId))+area('Cancellation reason','reason','','required maxlength="500"'),'Cancel Interview',true,`data-interview-id="${id}"`),'x','red');break;}
-        case 'interview-feedback':{const i=store.db.interviews.find(i=>i.id===id);open('Record Interview Feedback','Completing feedback moves the application to Interview Results.',form('feedback',i.applicationId,candidateCard(app(i.applicationId))+choice('Rating','rating',[['1','1 — Poor'],['2','2 — Below expectations'],['3','3 — Meets expectations'],['4','4 — Strong'],['5','5 — Excellent']],'4')+choice('Recommendation','recommendation',['Proceed','Hold','Reject'],'Proceed')+area('Interview feedback','notes','','required maxlength="3000"'),'Complete Interview',false,`data-interview-id="${id}"`),'results','purple');break;}
+        case 'interview-feedback':{const i=store.db.interviews.find(i=>i.id===id);open('Record Interview Feedback','Completing feedback moves the application to Interview Results.',form('feedback',i.applicationId,candidateCard(app(i.applicationId))+V.assessmentForm()+choice('Overall rating','rating',[['','Choose overall rating'],['1','1 — Poor'],['2','2 — Below expectations'],['3','3 — Meets expectations'],['4','4 — Strong'],['5','5 — Excellent']],'')+choice('Recommendation','recommendation',[['','Choose recommendation'],'Proceed','Hold','Reject'],'')+area('Interview feedback','notes','','required maxlength="3000"'),'Complete Interview',false,`data-interview-id="${id}"`),'results','purple');break;}
         case 'calendar-download':{const i=store.db.interviews.find(i=>i.id===id),a=app(i.applicationId),d=new Date(i.date+'T'+i.time+':00+08:00'),end=new Date(d.getTime()+i.duration*60000),fmt=x=>x.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');const clean=x=>String(x).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');const content=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//JRS//HR Workspace//EN','BEGIN:VEVENT','UID:'+id+'@jrs.local','DTSTAMP:'+fmt(new Date()),'DTSTART:'+fmt(d),'DTEND:'+fmt(end),'SUMMARY:'+clean('Interview: '+candidate(store.db,a).name+' — '+job(store.db,a).title),'LOCATION:'+clean(i.location),'DESCRIPTION:'+clean('Interviewer: '+i.interviewer+'\n'+i.notes),'STATUS:'+(i.status==='Cancelled'?'CANCELLED':'CONFIRMED'),'END:VEVENT','END:VCALENDAR'].join('\r\n');download(new Blob([content],{type:'text/calendar;charset=utf-8'}),'JRS-Interview.ics');break;}
         case 'offer-edit':offerEdit(id);break;
         case 'offer-approve':if(confirm('Approve these offer terms?')){await commit('approve-offer',{applicationId:id});render();offerDetails(id);}break;
@@ -202,8 +251,16 @@
   });
   // Close a detail dialog when a route link inside it is followed.
   document.addEventListener('click',ev=>{const a=ev.target.closest('a[href^="#/"]');if(a&&$('#modal').open){if(dirty()&&!confirm('Discard unsaved form changes?')){ev.preventDefault();return;}close(true);}});
+  function searchInput(input){
+    const start=input.selectionStart,end=input.selectionEnd;
+    ui.q=input.value;ui.page=1;render();
+    const next=$('[data-search]');next?.focus({preventScroll:true});next?.setSelectionRange(start,end);
+  }
+  let composingSearch=false;
+  document.addEventListener('compositionstart',ev=>{if(ev.target.matches('[data-search]'))composingSearch=true;});
+  document.addEventListener('compositionend',ev=>{if(ev.target.matches('[data-search]')){composingSearch=false;searchInput(ev.target);}});
   document.addEventListener('input',ev=>{
-    if(ev.target.matches('[data-search]')){const input=ev.target,position=input.selectionStart;ui.q=input.value;ui.page=1;render();const next=$('[data-search]');next?.focus();next?.setSelectionRange(position,position);}
+    if(ev.target.matches('[data-search]')&&!ev.isComposing&&!composingSearch)searchInput(ev.target);
     if(ev.target.name==='requirements')refreshRequirements(ev.target.closest('form'));
     if(ev.target.name==='notes'&&$('#modal [data-note-count]'))$('#modal [data-note-count]').textContent=ev.target.value.length;
   });
@@ -215,8 +272,28 @@
     if(target.dataset.filter){ui[target.dataset.filter]=target.value;ui.page=1;render();}
     if(target.name==='reason'&&$('[data-other-reason]')){const other=$('[data-other-reason]');other.hidden=target.value!=='Other';other.querySelector('input').required=!other.hidden;}
   });
-  let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>render(),180);});
+  // The host fits this iframe to its content. Height changes must not replace
+  // focused inputs or collapse native details. Real standalone viewport changes
+  // and host capacity messages can still update pagination.
+  window.addEventListener('message',event=>{
+    if(window.parent===window||event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='jrs:viewport')return;
+    const value=event.data.availableHeight;
+    if(!Number.isFinite(value)||value<80||value>10000||value===listBudget)return;
+    listBudget=value;scheduleFit();
+  });
+  window.addEventListener('load',scheduleFit);
+  if(typeof ResizeObserver==='function')new ResizeObserver(scheduleFit).observe($('#content'));
+  let resizeTimer,layoutWidth=window.innerWidth,layoutHeight=window.innerHeight;
+  window.addEventListener('resize',()=>{
+    if(window.innerWidth===layoutWidth&&(window.parent!==window||window.innerHeight===layoutHeight))return;
+    if(window.parent===window)listBudget=window.innerHeight-180;
+    layoutHeight=window.innerHeight;
+    layoutWidth=window.innerWidth;clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(()=>render(),180);
+  });
   window.addEventListener('hashchange',routeChanged);
   document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));
   routeChanged();
+  const requestedJob=/[?&]job=([A-Za-z0-9_-]+)(?:&|$)/.exec(location.search||'')?.[1];
+  if(route[0]==='applications'&&requestedJob&&store.db.jobs.some(job=>job.id===requestedJob)){ui.job=requestedJob;render();}
 })().catch(error=>{const host=document.querySelector('#login-screen');host.hidden=false;host.innerHTML='<div class="login-card"><h1>Unable to open HR workspace</h1><p id="boot-error"></p><a class="button primary" href="/">Try again</a></div>';document.querySelector('#boot-error').textContent=error.message;});

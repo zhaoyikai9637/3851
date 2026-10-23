@@ -216,9 +216,9 @@ export function Avatar({ user, large = false }) {
 export function parseDisplayDate(value) {
   const text = value.trim();
   if (!text) return "";
-  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
   if (!match) return null;
-  const [, day, month, year] = match;
+  const [, year, month, day] = match;
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   if (
     date.getUTCFullYear() !== Number(year) ||
@@ -241,7 +241,7 @@ export function businessToday(now = new Date()) {
 export function historicalDateRange(fromValue, toValue, today = businessToday()) {
   const from = parseDisplayDate(fromValue);
   const to = parseDisplayDate(toValue);
-  if (from === null || to === null) return { error: "Enter dates as DD/MM/YYYY." };
+  if (from === null || to === null) return { error: "Enter dates as YYYY-MM-DD." };
   if ((from && from > today) || (to && to > today))
     return { error: "Future dates are not available for activity history." };
   if (from && to && from > to) return { error: "From date must not be after To date." };

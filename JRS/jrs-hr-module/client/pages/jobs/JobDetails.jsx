@@ -180,7 +180,7 @@ export function JobDetails({
                 ? "Your unsaved edits will be discarded."
                 : ["Closed", "Stopped"].includes(job.status)
                   ? "New applications and existing application processing will resume. Publication dates still control candidate visibility."
-                  : "New applications will stop. Existing applications can still progress through interviews and offers. Select Stopped when editing to stop both intake and application progression."}
+                  : "New applications and advancement through interviews and offers will stop. Existing records remain available."}
             </p>
             <div className="job-confirmation-actions">
               <button
@@ -259,11 +259,11 @@ export function JobDetails({
                     <Select
                       label="Recruitment status"
                       value={draft.status}
-                      options={["Draft", "Active", "Closed", "Stopped"]}
+                      options={["Draft", "Active", "Closed"]}
                       onChange={change("status")}
                     />
                     <p className="job-field-hint" role="status">
-                      {{Active:'Active: new applications and application processing are enabled.',Closed:'Closed: new applications are stopped; existing applications can continue.',Stopped:'Stopped: new applications and application progression are stopped.',Draft:'Draft: new applications and application progression are not enabled.'}[draft.status]}
+                      {{Active:'Active: new applications and application processing are enabled.',Closed:'Closed: new applications and application progression are stopped.',Draft:'Draft: new applications and application progression are not enabled.'}[draft.status]}
                     </p>
                   </div>
                 </section>

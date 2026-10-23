@@ -1,5 +1,16 @@
 # Engineering handoff
 
+## Shen Junye HR 2.6.2 sync - 2026-10-23
+
+Integrated the teacher-review workflow from d575dee, including removed shortcuts,
+combined interview booking, in-place saves, ISO dates and Closed-only lifecycle.
+Retained shared authentication, actual submitted resumes, assessment persistence
+and canonical mail integration. Earlier test-expectation failures below are now
+resolved: React 129, root 132, native HR 125, server 183, MySQL 12, default workflow
+2 and experimental workflow 2 passed; production builds passed. See
+[SHEN_HR_262_SYNC.md](../../docs/SHEN_HR_262_SYNC.md) for scope and verification limits.
+No live records/schema or production deployment were changed.
+
 ## Shared list presentation - 2026-10-22
 
 The integrated workspace now loads one shared stylesheet in both the React shell

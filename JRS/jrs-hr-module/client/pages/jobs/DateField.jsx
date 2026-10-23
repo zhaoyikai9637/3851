@@ -59,7 +59,7 @@ export function DateField({ label, value, onChange, disabled, min, max }) {
     days = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 0, 12)).getUTCDate();
   function choose(day) {
     onChange(
-      `${String(day).padStart(2, "0")}/${String(month.getUTCMonth() + 1).padStart(2, "0")}/${month.getUTCFullYear()}`,
+      `${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
     );
     setOpen(false);
     trigger.current?.focus();
@@ -71,7 +71,7 @@ export function DateField({ label, value, onChange, disabled, min, max }) {
         <input
           id={id}
           type="text"
-          placeholder="DD/MM/YYYY"
+          placeholder="YYYY-MM-DD"
           inputMode="numeric"
           maxLength={10}
           value={value}

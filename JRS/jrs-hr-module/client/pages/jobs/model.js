@@ -1,18 +1,18 @@
 export function displayDate(value) {
   if (!value) return "";
   const [year, month, day] = String(value).slice(0, 10).split("-");
-  return `${day}/${month}/${year}`;
+  return `${year}-${month}-${day}`;
 }
 
 export function isoDate(value) {
   if (!value.trim()) return "";
-  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim());
-  if (!match) throw new Error("Enter a valid date using DD/MM/YYYY.");
-  const [, day, month, year] = match,
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) throw new Error("Enter a valid date using YYYY-MM-DD.");
+  const [, year, month, day] = match,
     iso = `${year}-${month}-${day}`;
   const date = new Date(`${iso}T12:00:00Z`);
   if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== iso)
-    throw new Error("Enter a valid date using DD/MM/YYYY.");
+    throw new Error("Enter a valid date using YYYY-MM-DD.");
   return iso;
 }
 
@@ -31,7 +31,7 @@ export function jobDraft(job = {}) {
     requirements: Array.isArray(job.requirements)
       ? job.requirements.join("\n")
       : job.requirements || "",
-    status: job.status || "Draft",
+    status: job.status === "Stopped" ? "Closed" : job.status || "Draft",
     salaryRange: job.salaryRange || "",
     closingDate: displayDate(job.closingDate),
     publishDate: displayDate(job.publishDate),

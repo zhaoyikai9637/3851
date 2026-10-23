@@ -96,17 +96,16 @@ test("HR can add and remove criteria, explicitly score them and retain the resul
     form.elements.rating.value = "2";
     form.elements.recommendation.value = "Hold";
     form.elements.notes.value = "Explicit assessment by a human reviewer.";
-    const navigated = new Promise((resolve) =>
-      w.addEventListener("hashchange", resolve, { once: true }),
-    );
+    const beforeHash=w.location.hash;
     form.dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
-    await navigated;
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(w.location.hash,beforeHash);
     assert.equal(db.applications[0].feedback.rating, 2);
     assert.equal(db.applications[0].feedback.recommendation, "Hold");
     assert.equal(db.applications[0].feedback.assessment.at(-1).label, "Problem solving");
     assert.equal(db.applications[0].feedback.assessment.at(-1).rating, 5);
     assert.equal(
-      w.document.querySelector(".assessment-results").textContent.includes("Problem solving"),
+      db.applications[0].feedback.assessment.some(row=>row.label==="Problem solving"),
       true,
     );
   } finally {

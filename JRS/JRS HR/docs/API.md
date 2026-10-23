@@ -1,123 +1,72 @@
-# JRS HR API 与小组对接
+# HR API Contract
 
-版本 2.6.0 · 2026-10-22
+Standalone paths below begin with /api. Shared-login standalone mode adds /hr.
+The integrated main application mounts recruitment APIs under /recruitment/api and
+communication/profile APIs under /api/hr. Use the correct runtime prefix.
 
-当前界面和 API 均使用 `Pending Review` 阶段。列表规范路径是 `#/applications/pending-review`；旧的 `#/applications/applications-review` 兼容并统一到新路径。
+## Identity and requests
 
-`move-interview` 现在必须同时提交完整预约资料，在同一事务中将 Pending Review 转为 Interview 并创建预约；不再只改变阶段后另发一次预约请求。HR 表单不要求填写学历、专业或毕业日期，旧学历字段也不参与面试或 Offer 拦截。学历等岗位条件以 Job Requirements 文字为准，由 HR 对照简历判断。本页说明取代 2.3–2.4 中自动学历筛选、补录和暂停 Offer 的接口约定。
+Authenticated HR access is required except for health and the configured sign-in entry.
+Roles are HR_MANAGER and HR_STAFF. The server resolves the actor, never the request body.
+Writes require X-CSRF-Token. Workspace mutations also require If-Match with the latest revision.
+Commands use a unique Idempotency-Key (16-80 letters, digits or hyphens).
+Keep the same key and payload when retrying one uncertain request; use a new key for a new operation.
 
-本地基础地址：`http://localhost:3000/api`；随附团队配置使用 `http://localhost:3001/api`。浏览器前端和 API 由同一个 Node 进程提供；路径、端口可通过 `.env` 调整。
+GET /api/auth/me returns user and csrfToken.
+POST /api/auth/logout ends the session.
+POST /api/auth/password accepts currentPassword and newPassword.
+The shared-login integration disables separate HR login and directs users to /api/login.
 
-## 调用约定
+## Read endpoints
 
-1. `POST /auth/login`，JSON：`{"email":"你的HR账号","password":"你的密码"}`。成功返回 `user` 和 `csrfToken`，并设置 HttpOnly 会话 Cookie。
-2. `GET /hr/workspace` 获取一致的工作区快照，其中 `revision` 是当前版本。
-3. 修改请求携带会话 Cookie、`X-CSRF-Token`、`If-Match: 当前revision`、`Idempotency-Key: 新UUID`，请求体是 JSON。
-4. 网络中断后重试同一个操作时复用同一个 key。已提交的操作返回之前的结果；同一个 key 不能配不同的内容。去重记录保留 7 天。
-5. 普通业务操作成功返回 `{result, revision, db}`。用 `db` 更新界面，它可能比操作结果的版本更新。收到 `409 REVISION_CONFLICT` 时先刷新、检查新数据，再决定是否重试。
+| Method | Path | Response |
+| --- | --- | --- |
+| GET | /api/health | Health and database status |
+| GET | /api/hr/workspace | Full workspace with revision and currentUser |
+| GET | /api/hr/{resource} | items, total, page, limit, revision |
+| GET | /api/hr/templates/variables | Supported template variables |
+| GET | /api/hr/candidates/{id}/resume | Authorized PDF stream; download=1 requests attachment |
+| GET | /api/hr/mailLogs/{id}/attachments | Attachment metadata |
+| GET | /api/hr/attachments/{id} | Authorized attachment download |
 
-浏览器内调用例子（已完成登录）：
+Resources include applications, candidates, jobs, interviews, tasks, notifications,
+systemNotifications and mailLogs. Templates are returned through workspace.templates.
+List filters include q, stage, status and jobId. page starts at 1; limit defaults to 20 and is capped at 100.
 
-```js
-const db = await fetch('/api/hr/workspace').then(r => r.json());
-const response = await fetch('/api/hr/commands/move-interview', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-CSRF-Token': csrfToken,
-    'If-Match': String(db.revision),
-    'Idempotency-Key': crypto.randomUUID()
-  },
-  body: JSON.stringify({
-    applicationId,
-    date: '2026-10-26', // 替换为实际的未来预约日期；时间按新加坡时区。
-    time: '10:00',
-    location: 'Meeting Room A',
-    interviewer: 'Junye Shen',
-    duration: 60,
-    format: 'On-site',
-    notes: 'Review completed',
-    notify: true
-  })
-});
-const result = await response.json();
-if (!response.ok) throw new Error(result.error.message);
-```
+## Writes
 
-所有命令使用 `POST /hr/commands/{命令名}`。采用明确的业务命令，避免直接把任意 `stage` 写进数据库。
+POST /api/hr/commands/{command} returns result, revision and the updated db workspace.
+POST /api/hr/templates/{id}/preview accepts applicationId and returns subject/body.
+POST /api/hr/notifications/{id}/send accepts attachResume and the current revision.
+PUT /api/hr/candidates/{id}/resume accepts raw application/pdf bytes, not multipart;
+include If-Match and an encoded X-Filename. Maximum size is 5 MiB.
 
-| 命令 | 主要字段 | 业务限制 |
-|---|---|---|
-| application-create | jobId, candidateId；或 candidate 对象；priority | 职位必须 Active；同一候选人和职位不可重复申请 |
-| candidate-save | id, name, email, phone, location, experience, skills | 邮箱唯一；skills 为逗号分隔字符串；学历资料只读 |
-| move-interview | applicationId, date, time, location, interviewer, duration, format, notes?, notify? | Pending Review → Interview，同时创建 Scheduled 预约；职位 Active；未来时间和冲突校验；失败时全部回滚 |
-| reject | applicationId, reason, notes?, notify? | 原因必填；取消预约；未发送旧草稿失效 |
-| confirm-rejection | applicationId, reason | 仅 Rejected |
-| schedule | applicationId, date, time, duration, format, location, interviewer, notes?, notify?, interviewId? | Interview；将来时间；冲突校验；带 interviewId 为改期 |
-| cancel-interview | applicationId, interviewId, reason | 仅 Scheduled |
-| feedback | applicationId, interviewId, rating, recommendation, notes | 面试结束后；评分 1–5；转 Interview Results |
-| offer | applicationId, salary, startDate, expiry, terms | 来自 Results 或修改未发送的 Offer；薪资最多两位小数；开始日期晚于截止日期 |
-| approve-offer | applicationId | 仅 HR_MANAGER；审批有效草稿 |
-| offer-message | applicationId | 有效且批准的 Offer；生成草稿 |
-| accept-offer | applicationId, notes | 有效且批准的 Offer；接受证据必填；转 Hired |
-| message | applicationId, subject, body, notificationId?, templateId? | 创建/编辑草稿；保留模板名称与文本快照 |
-| task | applicationId, title, assignee, due, notes? | 截止日不早于今天 |
-| complete-task | id | Open → Completed，不可重复 |
-| candidate-notes | applicationId, notes | 仅内部可见 |
-| job-save | id?, title, department, type, mode, location, experience, description, skills, requirements, status | skills 用逗号；requirements 为换行分隔的 8–12 条实质岗位要求；学历等条件写在要求文字中 |
-| job-status | id, status | Active / Closed；保留全部申请 |
-| profile-save | phone, officeLocation | 只修改当前账号；其他系统字段不接受写入 |
-| template-save | id?, name, kind, subject, body | 仅经理；变量白名单 |
-| template-delete | id | 仅经理；归档而非删历史 |
-| system-read / system-read-all | id / 空对象 | 当前 HR 个人的已读状态 |
-| read-notification / read-all | id / 空对象 | 兼容原草稿页面的阅读标记；不改变发送状态 |
+Commands cover profile-save, job-save, job-status, application-create, candidate-save,
+move-interview, reject, schedule, cancel-interview, feedback, offer, approve-offer,
+offer-message, accept-offer, confirm-rejection, message, read-notification, read-all,
+task, complete-task, candidate-notes, template-save, template-delete, system-read and system-read-all.
+See the adjacent login/profile API.md for the full shared-login command payload table.
+The source of truth for branch-specific fields is server/service.cjs and dist/state.js.
 
-当前 `candidate` 必填资料为 `name,email,phone,location,experience,skills`；学历信息无需填写。旧字段可兼容读取保存，但不决定能否推进；`skills` 为逗号分隔字符串。
+Only managers may approve offers or manage templates. A notify flag prepares a draft; it never sends automatically.
+Interview schedules use Asia/Singapore dates and must avoid candidate, interviewer and room conflicts.
+Feedback requires a completed interview. Offers require valid dates and the appropriate approval state.
 
-## 面试预约的事务与兼容处理
+## Errors and consistency
 
-- `move-interview` 必填 `date`（YYYY-MM-DD）、`time`（HH:mm）、`location`（地点、会议链接或电话信息）、`interviewer`、`duration` 和 `format`。`duration` 可取 15、30、45、60、90、120 分钟；`format` 可取 Video、On-site、Phone。界面为 More options 中的时长和方式提供默认值，但 API 调用仍须提交这些字段。
-- 服务端先检查完整预约，再修改阶段和记录。缺少字段、时间已过、面试官冲突、同一申请人冲突、现场会议室冲突或重复预约都会使整笔操作失败，不会留下已经推进但没有预约的申请。
-- 成功响应的 `result` 包含阶段变更的 `activity` 和新增的 `interview`；`notify:true` 时另含一份 `notification`，状态为 Draft，正文包含预约详情。不额外生成一份通用 Interview invitation；`notify:false` 不生成邮件。
-- 客户端必须通过一个 `move-interview` 命令完成推进及排期，不应先推进再另行调用 `schedule`。网络中断后使用相同请求体和 Idempotency-Key 重试，可返回已提交的预约与结果，避免第二次推进、重复预约或重复草稿。
-- `schedule` 继续用于旧的 Interview 申请补排，以及携带 `interviewId` 修改已存在的 Scheduled 预约；不能为同一申请重复新建一份有效预约。改期会使旧的预约草稿失效，可选择生成一份新的草稿。
-- 保存操作后页面保留原位置并显示结果提示。跳转属于界面行为，API 不要求进入成功页或邮件草稿箱；新申请创建成功后可有目的地打开新申请简历页。
+Errors use {error:{code,message,requestId}}.
+401 means authentication is missing; 403 means role, origin or CSRF rejection.
+409 includes REVISION_CONFLICT and invalid business transitions; reload before a user-confirmed retry.
+410 RETENTION_EXPIRED means an associated record was purged.
+422 indicates invalid fields; 428 indicates a missing revision; 429 indicates rate limiting.
+503 TEAM_READ_ONLY blocks writes when shared-database confirmation is absent, including session writes.
+Do not interpret connectivity or a read-only diagnostic endpoint as permission to mutate data.
 
-## 其他接口
 
-| 方法与路径 | 用途 |
-|---|---|
-| GET /health | 数据库连接是否可用；不暴露账号和表数据 |
-| GET /auth/me | 当前账号、CSRF token |
-| POST /auth/logout | 注销当前会话 |
-| POST /auth/password | currentPassword,newPassword；成功后注销该账号所有会话 |
-| GET /hr/workspace | 前端所有页面使用的快照，不含密码、会话、PDF 二进制 |
-| GET /hr/applications / candidates / jobs / interviews / tasks / notifications / systemNotifications / mailLogs | 分页列表；page,limit,q,stage,status,jobId；limit 最大 100 |
-| GET /hr/templates/variables | 模板变量白名单 |
-| POST /hr/templates/:id/preview | applicationId；填充模板，缺少业务字段时拒绝 |
-| POST /hr/notifications/:id/send | attachResume:boolean；带 CSRF 与 If-Match；草稿 ID 防重复发送 |
-| PUT /hr/candidates/:id/resume | 原始 PDF body；Content-Type: application/pdf；X-Filename: encodeURIComponent(文件名)；带 CSRF 与 If-Match |
-| GET /hr/candidates/:id/resume | 预览 PDF；加 ?download=1 下载；需要登录 |
-| GET /hr/mailLogs/:id/attachments | 历史附件清单 |
-| GET /hr/attachments/:id | 下载历史附件；需要登录 |
+## Integrated 2.6.2 update
 
-模板类型：Interview Invite、Offer Letter、Accepted、Rejected、In Progress。变量以 API 返回的白名单为准，内部备注与拒绝原因不作为邮件变量。
-
-错误结构：`{error:{code,message,requestId}}`。常见状态：400 格式错误；401 未登录；403 权限/CSRF；404 不存在；409 冲突；413 文件过大；422 业务验证失败；428 缺少版本；429 登录次数过多；502 邮件状态无法确认；503 服务未准备好。
-
-## 小组集成边界
-
-- 此包实现本轮已确认的整个 HR 页面流程。Employee、Manager、Finance 的页面、薪资发放和入职后的员工管理不在本包范围。
-- 当前 `hr_user` 是可独立运行的账号模块。小组已有统一登录时，在 `server/auth.cjs` 对接实际用户与角色；业务层使用 `req.user`，不要让客户端自行提交操作者或权限。
-- 当前候选人、职位、申请作为 HR 自足运行所需的关联实体。小组已有同类表时，应根据统一 ERD 对齐主外键，并调整 `repository.cjs` 映射；不要再维护两套独立申请状态。
-- 新申请可由已授权的集成端调用 `application-create`，在一个事务中生成申请和 HR 内部通知。录用交给其他模块时，以数据库中已成功提交的 Hired 状态为依据。
-- Notifications 负责展示系统事件、模板及邮件记录；修改申请状态的规则集中在 Applications 命令中。没有把 Employee、Finance 的权限混入 HR。
-- 本轮没有原始 `jrs_hr_system.sql` 和统一后端合同，当前表结构是根据现有 HR 页面建立的独立实现，不是对旧 SQL 的直接迁移。
-
-技术资料：[MySQL2 参数化查询与连接池](https://sidorares.github.io/node-mysql2/docs)；接口中提交给 SQL 的值使用参数绑定，表名和字段名来自代码内的固定映射。
-
-## v2.1 保留期与团队写入策略
-
-申请快照增加 retentionStartedAt，由服务端管理。Offer / Rejected 满五年后可被后台清理，旧版本提交返回版本冲突；已清理申请的缓存请求返回 410 RETENTION_EXPIRED。
-
-团队模式未完成写入配置时，所有修改请求（包括登录、注销）返回 503 TEAM_READ_ONLY。db:check 与 health 可用于只读诊断。统一登录适配并未由环境文件自动完成，具体见 TEAM_SETUP.md。
+See [SIMPLE_WORKFLOW_v2.6.md](SIMPLE_WORKFLOW_v2.6.md). The combined
+`move-interview` command now requires date, time, interviewer and location, with
+duration and format supplied by the form. Stage, appointment and optional draft
+are saved atomically. Closed jobs block progression. ISO date values and trusted
+shared sessions remain mandatory. No schema or existing business row is reset.

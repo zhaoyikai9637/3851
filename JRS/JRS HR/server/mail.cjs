@@ -14,6 +14,7 @@ function createMailer(repo,cfg,transport) {
       if(n.status!=='Draft')fail(409,'This message is not a current draft. Check its status before sending.');
       if(!Number.isInteger(revision)||revision!==before.revision)fail(409,'Refresh the workspace before sending.','REVISION_CONFLICT');
       const a=find(after.applications,n.applicationId),c=find(after.candidates,a.candidateId),j=find(after.jobs,a.jobId);
+      if(options.mode==='sandbox'&&!(options.allowlist||[]).some(address=>address.toLowerCase()===n.to.toLowerCase()))fail(403,'Recipient is outside the sandbox allowlist.');
       if(n.to.toLowerCase()!==c.email.toLowerCase())fail(409,'The candidate email changed. Review the draft first.');
       if(c.email.endsWith('@example.com'))fail(409,'Example candidates cannot receive email. Update the candidate to an address you control before testing SMTP.');
       if(n.kind==='Offer'&&(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<M.day()))fail(409,'This offer is no longer valid for sending.');
@@ -41,6 +42,7 @@ function createMailer(repo,cfg,transport) {
       const before=await repo.load(conn),after=M.clone(before),current=find(after.notifications,id),sentAt=new Date().toISOString();
       current.status='Sent';current.lastError=null;
       const log={id:M.uid('sent'),draftId:id,applicationId:n.applicationId,candidateName:c.name,jobTitle:j.title,to:n.to,subject:n.subject,body:n.body,templateName:n.templateName||null,triggerEvent:n.kind||'Message',sourceModule:'Applications',messageId:info.messageId||`<${id}@jrs.local>`,sentAt,actor:user.name};after.mailLogs.unshift(log);
+      log.actorId=user.id;
       audit(after,user,'Candidate email accepted by mail server',n.applicationId);
       after.revision++;after.updatedAt=sentAt;await repo.save(conn,before,after);
       if(attachment)await conn.execute('INSERT INTO hr_notification_attachment(id,log_id,filename,content,size_bytes,mime_type) VALUES (?,?,?,?,?,?)',[M.uid('attachment'),log.id,attachment.filename,attachment.content,attachment.size_bytes,'application/pdf']);

@@ -17,6 +17,7 @@ export function jobEditorRouter({ recruitment, pool, requireUser }) {
       revision: state.revision,
       items: state.jobs.map((job) => ({
         ...job,
+        status:job.status === "Stopped" ? "Closed" : job.status,
         salaryRange: "",
         closingDate: null,
         publishDate: null,

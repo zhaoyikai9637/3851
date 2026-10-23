@@ -33,7 +33,7 @@
     if(!db||db.schemaVersion!==2||!Number.isInteger(db.revision))throw Error('Unsupported workspace data.');
     for(const key of ['jobs','candidates','applications','interviews','tasks','notifications','activity'])if(!Array.isArray(db[key])||db[key].some(x=>!x||typeof x.id!=='string')||new Set(db[key].map(x=>x.id)).size!==db[key].length)throw Error('Invalid '+key+' data.');
     for(const c of db.candidates)if(typeof c.name!=='string'||typeof c.email!=='string'||!Array.isArray(c.skills))throw Error('Invalid candidate data.');
-    for(const j of db.jobs)if(typeof j.title!=='string'||!Array.isArray(j.skills)||!Array.isArray(j.requirements)||!['Active','Draft','Closed'].includes(j.status))throw Error('Invalid job data.');
+    for(const j of db.jobs)if(typeof j.title!=='string'||!Array.isArray(j.skills)||!Array.isArray(j.requirements)||!['Active','Draft','Closed','Stopped'].includes(j.status))throw Error('Invalid job data.');
     for(const c of db.candidates){
       if(c.educationLevel!=null&&![...screening.LEVELS,screening.UNKNOWN].includes(c.educationLevel))throw Error('Invalid education level.');
       if(c.educationMajor!=null&&typeof c.educationMajor!=='string')throw Error('Invalid field of study.');

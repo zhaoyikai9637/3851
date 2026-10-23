@@ -17,23 +17,24 @@ async function setup() {
   db.mailLogs = [];
   return { dom, db, doc: dom.window.document };
 }
-test("HR dashboard prioritizes linked work queues and application stages expose one primary action", async () => {
+test("HR dashboard keeps application and interview links while Applications uses one status selector", async () => {
   const { dom, db, doc } = await setup();
   try {
     const V = dom.window.HRViews,
       ui = { page: 1, pageSize: 10, period: "today" };
     doc.querySelector("main").innerHTML = V.render(["dashboard"], db, ui);
-    assert.ok(doc.querySelector('[aria-label="Work queue"]'));
-    assert.ok(doc.querySelector('a[href="#/applications/applications-review"]'));
-    assert.ok(!doc.body.textContent.includes("View Full Calendar"));
+    assert.ok(doc.querySelector('a[href="#/interviews"]'));
+    assert.ok(doc.querySelector('a[href="#/applications"]'));
+
     doc.querySelector("main").innerHTML = V.render(["applications"], db, ui);
-    assert.equal(doc.querySelectorAll('[aria-label="Application stages"] a').length, 7);
-    assert.ok(doc.querySelector("details.row-menu summary"));
+    assert.equal(doc.querySelectorAll('[aria-label="Application stages"] a').length, 0);
+    assert.ok(doc.querySelector('select[aria-label="Filter application status"]'));
+    assert.ok(doc.querySelector('[data-action="move-interview"]'));
   } finally {
     dom.window.close();
   }
 });
-test("interview shortcuts separate upcoming meetings and meetings awaiting feedback", async () => {
+test("interview status filtering shows only the selected meeting status", async () => {
   const { dom, db, doc } = await setup();
   try {
     const application = db.applications[0];
@@ -47,7 +48,7 @@ test("interview shortcuts separate upcoming meetings and meetings awaiting feedb
         duration: 45,
         format: "Video",
         interviewer: "Example HR",
-        status: "Scheduled",
+        status: "Completed",
       },
       {
         id: "future",
@@ -64,16 +65,16 @@ test("interview shortcuts separate upcoming meetings and meetings awaiting feedb
     doc.querySelector("main").innerHTML = V.render(["interviews"], db, {
       page: 1,
       pageSize: 10,
-      interviewScope: "awaiting",
+      interviewStatus: "Completed",
       q: "",
     });
-    assert.ok(doc.querySelector('[aria-label="Interview queues"]'));
+    assert.ok(doc.querySelector('select[aria-label="Filter interview status"]'));
     assert.ok(doc.body.textContent.includes("2020"));
     assert.ok(!doc.body.textContent.includes("2090"));
     doc.querySelector("main").innerHTML = V.render(["interviews"], db, {
       page: 1,
       pageSize: 10,
-      interviewScope: "upcoming",
+      interviewStatus: "Scheduled",
       q: "",
     });
     assert.ok(doc.body.textContent.includes("2090"));
@@ -83,7 +84,7 @@ test("interview shortcuts separate upcoming meetings and meetings awaiting feedb
   }
 });
 
-test("a confirmed application transition returns to its working queue rather than a success page", async () => {
+test("a single complete review confirmation books the interview while keeping the current queue", async () => {
   const dom = new JSDOM(
       await readFile(new URL("../JRS HR/dist/index.html", import.meta.url), "utf8"),
       {
@@ -141,13 +142,16 @@ test("a confirmed application transition returns to its working queue rather tha
     await new Promise((resolve) => setImmediate(resolve));
     const form = w.document.querySelector("#modal form");
     form.elements.notify.checked = false;
-    const navigated = new Promise((resolve) =>
-      w.addEventListener("hashchange", resolve, { once: true }),
-    );
+    form.elements.date.value=w.HRModel.day(300);
+    form.elements.time.value="10:00";
+    form.elements.location.value="Integration room";
+    form.elements.interviewer.value="Integration panel";
+
     form.dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
-    await navigated;
+    await new Promise(resolve=>setImmediate(resolve));
     assert.equal(db.applications.find((row) => row.id === id).stage, "Interview");
-    assert.equal(w.location.hash, "#/applications/interview");
+    assert.equal(w.location.hash, "#/applications/pending-review");
+    assert.equal(db.interviews.filter(row=>row.applicationId===id&&row.status==="Scheduled").length,1);
     assert.ok(!w.document.body.textContent.includes("Application status updated successfully"));
   } finally {
     w.close();

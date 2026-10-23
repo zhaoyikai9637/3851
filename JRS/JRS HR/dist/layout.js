@@ -4,6 +4,12 @@
   root.HRLayout={
     apply(host,page,ui){
       host.dataset.page=page;
+      const heading=host.querySelector(':scope > .page-heading'),controls=heading?.nextElementSibling,actions=heading?.querySelector('.heading-actions');
+      if(controls?.matches('.page-filters,.section-tabs')&&actions?.children.length){
+        const toolbar=document.createElement('div');toolbar.className='workspace-toolbar';
+        heading.after(toolbar);toolbar.append(controls,actions);
+        if(window.parent!==window)heading.remove();
+      }
       root.HRDateInput?.mount(host);
       host.querySelectorAll('table').forEach(table=>{
         const headings=[...table.querySelectorAll('th')].map(th=>th.textContent);

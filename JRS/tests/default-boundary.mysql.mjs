@@ -40,9 +40,8 @@ test('job editor saves job details and publishing together while retaining authe
     await hr.post(endpoint).set('If-Match',String(created.body.revision)).set('Idempotency-Key',randomUUID()).send(body).expect(403);
     const status=await hr.post(endpoint+'/'+encodeURIComponent(saved.id)+'/status').set('X-CSRF-Token',login.body.csrfToken).set('If-Match',String(created.body.revision)).set('Idempotency-Key',randomUUID()).send({status:'Closed'}).expect(200);
     assert.equal(status.body.items.find(row=>row.id===saved.id).status,'Closed');
-    const stopped=await hr.post(endpoint+'/'+encodeURIComponent(saved.id)+'/status').set('X-CSRF-Token',login.body.csrfToken).set('If-Match',String(status.body.revision)).set('Idempotency-Key',randomUUID()).send({status:'Stopped'}).expect(200);
-    assert.equal(stopped.body.items.find(row=>row.id===saved.id).status,'Stopped');
-    assert.equal((await hr.get(endpoint).expect(200)).body.items.find(row=>row.id===saved.id).status,'Stopped');
+    await hr.post(endpoint+'/'+encodeURIComponent(saved.id)+'/status').set('X-CSRF-Token',login.body.csrfToken).set('If-Match',String(status.body.revision)).set('Idempotency-Key',randomUUID()).send({status:'Stopped'}).expect(422);
+    assert.equal((await hr.get(endpoint).expect(200)).body.items.find(row=>row.id===saved.id).status,'Closed');
   } finally { await site.close(); }
 });
 

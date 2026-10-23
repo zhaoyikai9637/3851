@@ -142,14 +142,17 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
     const readyForTransition=await manager.get('/recruitment/api/hr/workspace').expect(200);
     await manager.post('/recruitment/api/hr/commands/move-interview').set('X-CSRF-Token', sharedCsrf)
       .set('If-Match', String(readyForTransition.body.revision)).set('Idempotency-Key', randomUUID())
-      .send({ applicationId: hrApplication.id, notify: false, notes: 'Integration verification.' }).expect(200);
+      .send({ applicationId: hrApplication.id, date:M.day(30), time:'10:00', duration:45, format:'Video', location:'Isolated integration meeting', interviewer:'Integration '+randomUUID(), notify:false, notes:'Integration verification.' }).expect(200);
+    const booked=await manager.get('/recruitment/api/hr/workspace').expect(200);
+    assert.equal(booked.body.applications.find(row=>row.id===hrApplication.id).stage,'Interview');
+    assert.equal(booked.body.interviews.filter(row=>row.applicationId===hrApplication.id&&row.status==='Scheduled').length,1,'The transition must persist exactly one appointment atomically');
     const status = await applicant.get('/applicant-api/applications/me').expect(200);
     assert.equal(status.body.application.id, application.body.application.id);
     assert.equal(status.body.application.status, 'Interview');
-    const interviewId='assessment-'+randomUUID();
+    const interviewId=booked.body.interviews.find(row=>row.applicationId===hrApplication.id&&row.status==='Scheduled').id;
     await site.recruitment.transaction(async connection=>{
       const previous=await site.recruitment.load(connection),next=M.clone(previous);
-      next.interviews.push({id:interviewId,applicationId:hrApplication.id,date:M.day(-2),time:'10:00',duration:45,format:'Video',location:'Isolated feedback fixture',interviewer:accounts[0].name,notes:'',status:'Scheduled',feedback:null});
+      next.interviews.find(row=>row.id===interviewId).date=M.day(-2);
       next.revision++;
       await site.recruitment.save(connection,previous,next);
     },true);
