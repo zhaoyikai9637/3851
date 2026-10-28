@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 
 export async function checkReadiness({pool,uploadDir}) {
  const [[row]]=await pool.query({sql:'SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1',timeout:3000});
- if(row?.version!==11)throw new Error('Unsupported database schema.');
+ if(row?.version!==12)throw new Error('Unsupported database schema.');
  const probe=path.join(uploadDir,`.readiness-${randomUUID()}`);
  const handle=await fs.open(probe,'wx',0o600);
  try{await handle.writeFile('ready');}finally{await handle.close();await fs.unlink(probe);}

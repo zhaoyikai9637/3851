@@ -1,3 +1,4 @@
+import {applicationQuestions} from './applicant-questions.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -27,8 +28,8 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     const [rows] = await this.repository.pool.query('SELECT l.portal_id AS id,r.status,p.publish_date AS publishDate,p.closing_date AS closingDate,p.unpublish_date AS unpublishDate FROM JRS_JOB_LINK l JOIN recruiting_job_position r ON r.id=l.recruiting_id LEFT JOIN JRS_JOB_PUBLICATION p ON p.recruiting_id=r.id WHERE l.portal_id IS NOT NULL');
     return new Map(rows.map(row => [row.id,publicationState(row.status,row)]));
   }
-  presentJob(job, state) {
-    return {...job,isOpen:!!state?.accepting,isVisible:!!state?.visible,applicationAvailability:state?.accepting?'Accepting applications':'No longer accepting applications'};
+  presentJob(job, state, intake=true) {
+    return {...job,...(intake?{roleQuestions:applicationQuestions(job.roleQuestions)}:{}),isOpen:!!state?.accepting,isVisible:!!state?.visible,applicationAvailability:state?.accepting?'Accepting applications':'No longer accepting applications'};
   }
   async listJobs(filters) {
     const [records, publications] = await Promise.all([this.models.Job.findAll({order:[['closingDate','ASC']]}),this.publicationRecords()]);
@@ -48,7 +49,7 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     const snapshot=typeof link?.job_snapshot==='string'?JSON.parse(link.job_snapshot):link?.job_snapshot;
     application.jobSnapshotAvailable=!!snapshot;
     application.submittedProfile=typeof link?.applicant_snapshot==='string'?JSON.parse(link.applicant_snapshot):link?.applicant_snapshot||null;
-    application.job=this.presentJob(snapshot || application.job,publications.get(application.jobId));
+    application.job=this.presentJob(snapshot || application.job,publications.get(application.jobId),false);
     return application;
   }
   async getUserById(id) {
@@ -113,6 +114,7 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     return result;
   }
   async createApplication(userId, values) {
+    if(values.declarationAccepted!==true)throw httpError(422,'Accept the applicant declaration before submitting.');
     const facts = workFacts(values.experiences);
     await this.refreshPublicationStatus();
     return this.sequelize.transaction(async transaction => {
@@ -128,7 +130,7 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       ]);
       if (!job) throw httpError(404, 'This role is not available for applications.');
       if (!resume) throw httpError(400, 'Choose a resume belonging to your account.');
-      if (job.roleQuestions.some(q => q.required && !String(values.roleAnswers[q.id] || '').trim())) throw httpError(400, 'Answer every required question.');
+      if (applicationQuestions(job.roleQuestions).some(q => q.required && !String(values.roleAnswers[q.id] || '').trim())) throw httpError(400, 'Answer every required question.');
       const [[canonical]] = await query('SELECT * FROM CANDIDATE WHERE account_id=?', [userId]);
       const [[jobLink]] = await query('SELECT * FROM JRS_JOB_LINK WHERE portal_id=?', [job.id]);
       if (!jobLink || !canonical) throw httpError(409, 'This job or candidate has not been linked.');
@@ -147,18 +149,19 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       const result = hrService.applyCommand(after, 'application-create', { candidateId, jobId: jobLink.recruiting_id }, manager);
       result.activity.actor = `Applicant: ${canonical.full_name}`.slice(0, 100);
       result.activity.actorId = null;
-      const application = await this.models.Application.create({ userId, ...values }, { transaction });
+      const submittedJob={...job.toJSON(),roleQuestions:applicationQuestions(job.roleQuestions)};
+      const application = await this.models.Application.create({ userId, ...values,declarationAccepted:true,declarationAcceptedAt:new Date(at) }, { transaction });
       after.revision++; after.updatedAt = at;
       await this.recruitment.save(connection, before, after);
       const [[canonicalApplication]] = await query('SELECT canonical_id FROM JRS_HR_APPLICATION_LINK WHERE recruiting_id=?', [result.application.id]);
-      await query('INSERT INTO JRS_APPLICATION_LINK(portal_id,recruiting_id,canonical_id,account_id,job_snapshot) VALUES(?,?,?,?,?)', [application.id, result.application.id, canonicalApplication.canonical_id, userId,JSON.stringify(job.toJSON())]);
+      await query('INSERT INTO JRS_APPLICATION_LINK(portal_id,recruiting_id,canonical_id,account_id,job_snapshot) VALUES(?,?,?,?,?)', [application.id, result.application.id, canonicalApplication.canonical_id, userId,JSON.stringify(submittedJob)]);
       const profile=await readApplicantProfile({query},userId);
       const [[resumeLink]] = await query('SELECT f.* FROM RESUME_FILE f JOIN JRS_RESUME_LINK l ON l.canonical_id=f.file_id WHERE l.portal_id=?', [resume.id]);
       if (!resumeLink) throw httpError(409,'The selected resume has not been linked.');
-      await query('UPDATE JRS_APPLICATION_LINK SET applicant_snapshot=? WHERE portal_id=?',[JSON.stringify({...profile,fullName:canonical.full_name,email:canonical.email,...values,resume:{canonicalId:resumeLink.file_id,name:resume.originalName,mimeType:resume.mimeType}}),application.id]);
+      await query('UPDATE JRS_APPLICATION_LINK SET applicant_snapshot=? WHERE portal_id=?',[JSON.stringify({...profile,fullName:canonical.full_name,email:canonical.email,...values,declarationAcceptedAt:at,resume:{canonicalId:resumeLink.file_id,name:resume.originalName,mimeType:resume.mimeType}}),application.id]);
       await writeApplicantProfile({query},userId,{phone:values.phone,location:values.location,experiences:values.experiences});
       if (resumeLink?.file_type === 'application/pdf') await connection.execute('INSERT INTO hr_resume(candidate_id,filename,size_bytes,content,uploaded_at) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE filename=VALUES(filename),size_bytes=VALUES(size_bytes),content=VALUES(content),uploaded_at=VALUES(uploaded_at)', [candidateId, resume.originalName.slice(0, 150), resume.size, await fs.readFile(path.join(this.uploadDir, resumeLink.storage_key)), at]);
-      return { ...application.toJSON(), job: job.toJSON(), resume: resume.toJSON() };
+      return { ...application.toJSON(), job: submittedJob, resume: resume.toJSON() };
     });
   }
   async withdrawApplication(userId, applicationId) {

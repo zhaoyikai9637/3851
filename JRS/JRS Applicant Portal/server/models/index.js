@@ -36,7 +36,7 @@ export function defineModels(sequelize) {
     department: { type: DataTypes.STRING(80), allowNull: false },
     location: { type: DataTypes.STRING(100), allowNull: false },
     workMode: codedField("workMode", ["HYBRID", "REMOTE", "ON_SITE"], workModeCode),
-    employmentType: codedField("employmentType", ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP"], employmentCode),
+    employmentType: codedField("employmentType", ["FULL_TIME", "PART_TIME"], employmentCode),
     experienceLevel: codedField("experienceLevel", ["YEARS_1_3", "YEARS_3_5", "YEARS_5_7"], experienceCode),
     salaryRange: { type: DataTypes.STRING(80), allowNull: false },
     summary: { type: DataTypes.STRING(500), allowNull: false },
@@ -64,6 +64,8 @@ export function defineModels(sequelize) {
     coverLetter: { type: DataTypes.TEXT, allowNull: false, defaultValue: "" },
     experiences: { type: DataTypes.JSON, allowNull: false },
     roleAnswers: { type: DataTypes.JSON, allowNull: false },
+    declarationAccepted: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    declarationAcceptedAt: { type: DataTypes.DATE, allowNull: true },
     status: {
       type: DataTypes.ENUM("Submitted", "In Review", "Interview", "Decision", "Accepted", "Rejected", "Withdrawn"),
       allowNull: false,

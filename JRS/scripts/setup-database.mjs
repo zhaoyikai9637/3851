@@ -16,6 +16,7 @@ import { migrateInterviewAssessments } from '../server/migrations/008-interview-
 import { migrateApplicantProfile } from '../server/migrations/009-applicant-profile.mjs';
 import {migrateJobLifecycle} from '../server/migrations/011-job-lifecycle.mjs';
 import {migrateMailHistory} from '../server/migrations/010-mail-history.mjs';
+import {migrateApplicantDeclaration} from '../server/migrations/012-applicant-declaration.mjs';
 const settings = loadSettings();
 assertLocalDatabase(settings);
 let admin, pool, sequelize;
@@ -71,6 +72,7 @@ try {
     await migrateApplicantProfile(pool);
     await migrateMailHistory(pool);
     await migrateJobLifecycle(pool);
+    await migrateApplicantDeclaration(pool);
     console.log('Existing integrated database retained; no reseeding.');
   } else {
     sequelize = new Sequelize(settings.DB_NAME, settings.DB_USER, settings.DB_PASSWORD, { dialect: 'mysql', host: settings.DB_HOST, port: 3307, logging: false, define: { underscored: true } });
@@ -127,6 +129,7 @@ try {
     await migrateApplicantProfile(pool);
     await migrateMailHistory(pool);
     await migrateJobLifecycle(pool);
+    await migrateApplicantDeclaration(pool);
     console.log(`Local login credentials: .local/${accountsFile} (never commit this file).`);
   }
 } catch (error) {

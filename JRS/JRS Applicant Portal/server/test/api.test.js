@@ -53,6 +53,13 @@ test("jobs API supports the applicant search flow", async () => {
   assert.equal(response.body.jobs[0].department, "Engineering");
 });
 
+test("start availability is a controlled role option instead of free text", async () => {
+  const response = await request(app).get("/api/jobs/1");
+  const availability = response.body.job.roleQuestions.find((question) => question.id === "availability");
+  assert.equal(availability.type, "select");
+  assert.deepEqual(availability.options, ["Immediately", "Within 2 weeks", "Within 1 month", "Within 2 months", "More than 2 months"]);
+});
+
 test("applicant can upload a resume and submit one focused application", async () => {
   const uploadResponse = await agent
     .post("/api/resumes")
@@ -77,13 +84,14 @@ test("applicant can upload a resume and submit one focused application", async (
       currentRole: true,
       responsibilities: "Built and maintained responsive web applications for business users.",
       achievements: "Improved release quality through code review and automated testing.",
-      skills: ["REACT", "JAVASCRIPT", "NODE_JS", "MYSQL"],
+      skills: ["React", "JavaScript", "Node.js", "MySQL", "Stakeholder engagement"],
     }],
     roleAnswers: {
-      availability: "Four weeks after accepting an offer.",
+      availability: "Within 1 month",
       technical_project: "I led a recruitment portal prototype and connected the interface to REST APIs.",
       work_authorisation: "Yes",
     },
+    declarationAccepted: true,
   };
 
   const response = await agent.post("/api/applications").send(application);
@@ -92,7 +100,8 @@ test("applicant can upload a resume and submit one focused application", async (
   assert.equal(response.body.application.job.title, "Senior Software Engineer");
   assert.equal(response.body.application.phone, "+6581234567");
   assert.equal(response.body.application.location, '["SG","",""]');
-  assert.deepEqual(response.body.application.experiences[0].skills, ["JAVASCRIPT", "MYSQL", "NODE_JS", "REACT"]);
+  assert.deepEqual(response.body.application.experiences[0].skills, ["JavaScript", "MySQL", "Node.js", "React", "Stakeholder engagement"]);
+  assert.equal(response.body.application.declarationAccepted, true);
 
   const nextJob = await agent.get("/api/jobs/2");
   const nextAnswers = Object.fromEntries(nextJob.body.job.roleQuestions.map((question) => [question.id, question.type === "select" ? question.options[0] : "Test answer"]));
@@ -102,9 +111,33 @@ test("applicant can upload a resume and submit one focused application", async (
   assert.equal(invalidAnswer.status, 422);
   const invalidSkill = await agent.post("/api/applications").send({
     ...application,
-    experiences: [{ ...application.experiences[0], skills: ["react developer"] }],
+    experiences: [{ ...application.experiences[0], skills: ["invalid<script>"] }],
   });
   assert.equal(invalidSkill.status, 422);
+});
+
+test("application submission requires the applicant declaration", async () => {
+  const response = await agent.post("/api/applications").send({
+    jobId: 1,
+    resumeId: 1,
+    phone: "+6581234567",
+    location: "Singapore",
+    coverLetter: "",
+    experiences: [{
+      companyName: "Example",
+      jobTitle: "Developer",
+      startDate: "2023-01",
+      endDate: "2024-01",
+      currentRole: false,
+      responsibilities: "Developed business applications",
+      achievements: "",
+      skills: [],
+    }],
+    roleAnswers: {},
+    declarationAccepted: false,
+  });
+  assert.equal(response.status, 422);
+  assert.ok(response.body.errors.some((error) => /declaration/i.test(error.msg)));
 });
 
 test("current application status is available to the signed-in applicant", async () => {

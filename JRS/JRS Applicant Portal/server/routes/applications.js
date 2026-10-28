@@ -40,6 +40,7 @@ const applicationValidators = [
     if (tooLong) throw new Error("Each role-specific answer must be 600 characters or fewer.");
     return true;
   }),
+  body("declarationAccepted").custom((value) => value === true).withMessage("Accept the applicant declaration before submitting."),
 ];
 
 router.get("/me", async (req, res, next) => {
@@ -61,7 +62,7 @@ router.post("/", applicationValidators, validateRequest, async (req, res, next) 
       return (question.required && !answer.trim()) || answer.length > question.maxLength
         || (question.type === "select" && answer !== "" && !question.options.includes(answer));
     });
-    if (unknown || invalid) return res.status(422).json({ message: "Select valid role-specific answers and respect each question's length limit." });
+    if (unknown || invalid) return res.status(422).json({ message: "A required role answer is missing or invalid. Check the highlighted question." });
     const application = await req.app.locals.data.createApplication(req.user.id, {
       jobId: Number(req.body.jobId),
       resumeId: Number(req.body.resumeId),
@@ -75,6 +76,7 @@ router.post("/", applicationValidators, validateRequest, async (req, res, next) 
         achievements: row.achievements || "", skills: canonicalSkills(row.skills),
       })),
       roleAnswers: req.body.roleAnswers,
+      declarationAccepted: true,
     });
     res.status(201).json({ application });
   } catch (error) {

@@ -1,5 +1,13 @@
 import { normaliseJobStorage } from "./jobOptions.js";
 
+const startAvailabilityOptions = [
+  "Immediately",
+  "Within 2 weeks",
+  "Within 1 month",
+  "Within 2 months",
+  "More than 2 months",
+];
+
 export const demoJobs = [
   {
     id: 1,
@@ -34,7 +42,7 @@ export const demoJobs = [
       "Expected hiring decision within two weeks of the final interview.",
     ],
     roleQuestions: [
-      { id: "availability", label: "When could you start this role?", type: "short", maxLength: 120, required: true, placeholder: "Example: Four weeks after accepting an offer." },
+      { id: "availability", label: "When could you start this role?", type: "select", options: startAvailabilityOptions, maxLength: 40, required: true },
       { id: "technical_project", label: "Describe one software project that best demonstrates your suitability.", type: "long", maxLength: 600, required: true, placeholder: "Explain your responsibility, technical decisions, and measurable result." },
       { id: "work_authorisation", label: "Do you currently have the right to work in Singapore?", type: "select", options: ["Yes", "No", "I require sponsorship"], maxLength: 40, required: true },
     ],
@@ -71,7 +79,7 @@ export const demoJobs = [
       "Professional development budget and flexible working hours.",
     ],
     roleQuestions: [
-      { id: "availability", label: "When could you start this role?", type: "short", maxLength: 120, required: true, placeholder: "State your notice period or available date." },
+      { id: "availability", label: "When could you start this role?", type: "select", options: startAvailabilityOptions, maxLength: 40, required: true },
       { id: "analysis_example", label: "Give an example of a recommendation you made using data.", type: "long", maxLength: 600, required: true, placeholder: "Describe the data, your analysis, recommendation, and outcome." },
       { id: "sql_level", label: "How would you describe your SQL skill level?", type: "select", options: ["Basic", "Intermediate", "Advanced"], maxLength: 40, required: true },
     ],
@@ -110,7 +118,7 @@ export const demoJobs = [
     roleQuestions: [
       { id: "portfolio", label: "Provide your portfolio link and access password if required.", type: "short", maxLength: 240, required: true, placeholder: "https://..." },
       { id: "design_case", label: "Which portfolio project is most relevant to this role, and why?", type: "long", maxLength: 600, required: true, placeholder: "Describe the problem, your contribution, and the result." },
-      { id: "availability", label: "When could you start this role?", type: "short", maxLength: 120, required: true, placeholder: "State your notice period or available date." },
+      { id: "availability", label: "When could you start this role?", type: "select", options: startAvailabilityOptions, maxLength: 40, required: true },
     ],
     closingDate: "2026-12-05",
     isOpen: true,

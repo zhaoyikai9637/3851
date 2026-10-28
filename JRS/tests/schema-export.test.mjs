@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {productionSchema} from '../server/production-schema.mjs';
 test('production bootstrap exports table definitions and empty workspace metadata, never accounts or job records',async()=>{
- let version=11;
+ let version=12;
  const queries=[];
  const pool={query:async sql=>{
   queries.push(sql);
@@ -15,7 +15,7 @@ test('production bootstrap exports table definitions and empty workspace metadat
  const sql=await productionSchema(pool);
  assert.match(sql,/CREATE TABLE `MODULE_ACCOUNT`/);
  assert.doesNotMatch(sql,/AUTO_INCREMENT=234|DROP TABLE|INSERT INTO.*MODULE_ACCOUNT/);
- assert.match(sql,/INSERT INTO JRS_INTEGRATION_VERSION.*11/);
+ assert.match(sql,/INSERT INTO JRS_INTEGRATION_VERSION.*12/);
  assert.ok(queries.every(q=>q.startsWith('SELECT version')||q.startsWith('SELECT TABLE_NAME')||q.startsWith('SHOW CREATE TABLE')));
- version=10;await assert.rejects(()=>productionSchema(pool),/schema 11/);
+ version=10;await assert.rejects(()=>productionSchema(pool),/schema 12/);
 });

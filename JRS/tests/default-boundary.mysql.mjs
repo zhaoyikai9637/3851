@@ -1,3 +1,4 @@
+import {JSDOM} from 'jsdom';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import fs from 'node:fs/promises';
@@ -55,7 +56,14 @@ test('default site keeps shared login/profile and HR available but does not expo
     await request(site.app).get('/hr/templates').expect(200);
     await request(site.app).get('/applicant/jobs').expect(404);
     await request(site.app).get('/applicant-api/jobs').expect(404);
-    await request(site.app).get('/api/integration-config').expect(200).expect({ experimentalApplicantPortal: false });
+    await request(site.app).get('/api/integration-config').expect(200).expect({ valid:true,experimentalApplicantPortal: false });
+    const browser=new JSDOM('',{url:'http://localhost',runScripts:'outside-only'});
+    try{
+      browser.window.fetch=async url=>{const response=await request(site.app).get(url);return {ok:response.status<400,status:response.status,json:async()=>response.body};};
+      browser.window.eval(await fs.readFile(new URL('../JRS Login and profile/client/utils/api.js',import.meta.url),'utf8'));
+      const config=await browser.window.JRS.request('/integration-config');assert.equal(config.experimentalApplicantPortal,false);
+    }finally{browser.window.close();}
+
     const accounts = JSON.parse(await fs.readFile(new URL('../.local/accounts-test.json', import.meta.url)));
     const hr = request.agent(site.app);
     const login = await hr.post('/api/login').send({ email: accounts[0].email, password: accounts[0].password }).expect(200);

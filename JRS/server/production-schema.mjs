@@ -1,6 +1,6 @@
 export async function productionSchema(pool) {
  const [[row]]=await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
- if(row?.version!==11)throw new Error('Export requires reviewed schema 11.');
+ if(row?.version!==12)throw new Error('Export requires reviewed schema 12.');
  const [tables]=await pool.query("SELECT TABLE_NAME AS name FROM information_schema.tables WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME");
  if(!['hr_user','module_account','jrs_integration_version','recruiting_workspace'].every(name=>tables.some(t=>t.name.toLowerCase()===name)))throw new Error('Required integration tables are missing.');
  // Windows MySQL folds names to lowercase. Linux must retain canonical module
@@ -19,6 +19,6 @@ export async function productionSchema(pool) {
  }
  statements.push('SET FOREIGN_KEY_CHECKS=1;',
    "INSERT INTO recruiting_workspace(id,revision,created_at,updated_at) VALUES(1,0,UTC_TIMESTAMP(),UTC_TIMESTAMP());",
-   'INSERT INTO JRS_INTEGRATION_VERSION(id,version) VALUES(1,11);');
+   'INSERT INTO JRS_INTEGRATION_VERSION(id,version) VALUES(1,12);');
  return statements.join('\n\n')+'\n';
 }

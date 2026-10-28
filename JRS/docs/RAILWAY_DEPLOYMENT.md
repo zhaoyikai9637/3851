@@ -102,8 +102,9 @@ no runtime environment file. Container runtime variables are supplied privately.
 This is an explicit migration operation, not an application startup command.
 
 1. Keep the export source on a named isolated local database at port 3307, schema
-   version 11. Load only that local environment and run `npm run deploy:export-schema`.
-   The command refuses cloud targets before opening a connection.
+   version 12. Load only that local environment and run `npm run deploy:export-schema`.
+   The command refuses cloud targets before opening a connection. Regenerate older
+   schema-11 exports; they do not contain the current declaration columns.
 2. Review the generated ignored `.local/deployment/jrs-production-schema.sql`
    and its printed SHA256. It includes table definitions plus empty workspace and
    version metadata only. It does not copy account rows/passwords, candidate data,
@@ -115,7 +116,7 @@ This is an explicit migration operation, not an application startup command.
    The script has no DROP or IF-NOT-EXISTS fallback and is not an upgrade script.
    MySQL DDL auto-commits: if import fails, stop and inspect; do not blindly rerun,
    drop tables or merge a partial schema into an existing database.
-5. Verify table names and foreign keys on Linux, schema version 11 and the empty
+5. Verify table names and foreign keys on Linux, schema version 12 and the empty
    workspace row. Windows-folded table names are normalized by the exporter to
    the current canonical module names. Test the schema on a disposable database
    before importing a production instance.
@@ -184,7 +185,7 @@ non-production mail configuration; it still does not prove delivery. Hobby's
 future HTTPS transport will need its own adapter tests and acceptance.
 
 - `/health/live`: process endpoint, 200 while the app responds.
-- `/health/ready`: 200 only when schema version 11 and writable upload storage are
+- `/health/ready`: 200 only when schema version 12 and writable upload storage are
   available; otherwise 503 with a generic response. It exposes no database details.
 - Railway uses readiness during deployment, not as ongoing uptime monitoring.
 - The database itself must be initialized before app startup; startup also checks

@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Check, FileText, FileUp, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, FileText, FileUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
@@ -45,6 +45,9 @@ export default function ApplicationPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [roleErrors, setRoleErrors] = useState({});
+  const [declarationAccepted, setDeclarationAccepted] = useState(false);
+  const [declarationError, setDeclarationError] = useState("");
 
   useEffect(() => {
     Promise.all([api.get("/jobs/" + jobId), api.get("/profile"), api.get("/resumes")])
@@ -54,7 +57,6 @@ export default function ApplicationPage() {
         setForm((current) => ({
           ...current,
           phone: profileResponse.data.profile.phone || "",
-          experiences:profileResponse.data.profile.experiences?.length ? profileResponse.data.profile.experiences : current.experiences,
           location: profileResponse.data.profile.location || "",
           resumeId: resumeResponse.data.resumes[0]?.id || "",
         }));
@@ -103,6 +105,7 @@ export default function ApplicationPage() {
       ...current,
       roleAnswers: { ...current.roleAnswers, [questionId]: value },
     }));
+    setRoleErrors((current) => ({ ...current, [questionId]: "" }));
   }
 
   function validateCurrentStep() {
@@ -125,8 +128,11 @@ export default function ApplicationPage() {
       if (dateError) return dateError;
     }
     if (step === 2) {
-      const unanswered = job.roleQuestions.some((question) => question.required && !String(form.roleAnswers[question.id] || "").trim());
-      if (unanswered) return "Answer all required questions for this role.";
+      const missing = Object.fromEntries(job.roleQuestions
+        .filter((question) => question.required && !String(form.roleAnswers[question.id] || "").trim())
+        .map((question) => [question.id, "This answer is required."]));
+      setRoleErrors(missing);
+      if (Object.keys(missing).length) return "Please complete the highlighted role question.";
     }
     return "";
   }
@@ -143,7 +149,17 @@ export default function ApplicationPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function goToStep(nextStep) {
+    setError("");
+    setStep(nextStep);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   async function submitApplication() {
+    if (!declarationAccepted) {
+      setDeclarationError("You must accept the declaration before submitting your application.");
+      return;
+    }
     setSubmitting(true);
     setError("");
     try {
@@ -155,6 +171,7 @@ export default function ApplicationPage() {
         coverLetter: form.coverLetter,
         experiences: form.experiences,
         roleAnswers: form.roleAnswers,
+        declarationAccepted,
       });
       navigate("/applicant/status", { replace: true, state: { submitted: true } });
     } catch (requestError) {
@@ -183,7 +200,7 @@ export default function ApplicationPage() {
 
       <nav className="application-steps surface" aria-label="Application progress">
         {steps.map((label, index) => (
-          <button key={label} className={"application-step " + (index === step ? "active" : "") + (index < step ? " complete" : "")} type="button" onClick={() => index < step && setStep(index)}>
+          <button key={label} className={"application-step " + (index === step ? "active" : "") + (index < step ? " complete" : "")} type="button" onClick={() => index < step && goToStep(index)}>
             <span>{index < step ? <Check size={18} /> : index + 1}</span>
             {label}
           </button>
@@ -307,16 +324,17 @@ export default function ApplicationPage() {
               <label className="form-label-group" key={question.id}>
                 <span>{question.label} {question.required && <b>*</b>}</span>
                 {question.type === "select" ? (
-                  <select className="form-select form-select-lg" value={form.roleAnswers[question.id] || ""} onChange={(event) => updateAnswer(question.id, event.target.value)} required={question.required}>
+                  <select className={"form-select form-select-lg " + (roleErrors[question.id] ? "is-invalid" : "")} value={form.roleAnswers[question.id] || ""} onChange={(event) => updateAnswer(question.id, event.target.value)} required={question.required} aria-invalid={Boolean(roleErrors[question.id])}>
                     <option value="">Select an answer</option>
                     {question.options.map((option) => <option key={option} value={option}>{option}</option>)}
                   </select>
                 ) : (
                   <>
-                    <textarea className="form-control" rows={question.type === "short" ? 3 : 6} value={form.roleAnswers[question.id] || ""} onChange={(event) => updateAnswer(question.id, event.target.value)} maxLength={question.maxLength} placeholder={question.placeholder} required={question.required} />
+                    <textarea className={"form-control " + (roleErrors[question.id] ? "is-invalid" : "")} rows={question.type === "short" ? 3 : 6} value={form.roleAnswers[question.id] || ""} onChange={(event) => updateAnswer(question.id, event.target.value)} maxLength={question.maxLength} placeholder={question.placeholder} required={question.required} aria-invalid={Boolean(roleErrors[question.id])} />
                     <CharacterCount value={form.roleAnswers[question.id] || ""} limit={question.maxLength} />
                   </>
                 )}
+                {roleErrors[question.id] && <span className="invalid-feedback d-block" role="alert">{roleErrors[question.id]}</span>}
               </label>
             ))}
           </div>
@@ -338,9 +356,23 @@ export default function ApplicationPage() {
             <div><dt>Experience (calendar months, overlaps excluded)</dt><dd>{experienceError(form.experiences) ? "Check dates" : experienceMonths(form.experiences)}</dd></div>
             <div><dt>Role questions</dt><dd>{job.roleQuestions.length} completed</dd></div>
           </dl>
+          <div className="review-edit-actions" aria-label="Edit application sections">
+            <button className="btn btn-outline-primary" type="button" onClick={() => goToStep(0)}><Pencil size={17} />Edit basic information</button>
+            <button className="btn btn-outline-primary" type="button" onClick={() => goToStep(1)}><Pencil size={17} />Edit work experience</button>
+            <button className="btn btn-outline-primary" type="button" onClick={() => goToStep(2)}><Pencil size={17} />Edit role questions</button>
+          </div>
+          <label className={"declaration-box " + (declarationError ? "has-error" : "")}>
+            <input className="form-check-input" type="checkbox" checked={declarationAccepted} onChange={(event) => { setDeclarationAccepted(event.target.checked); setDeclarationError(""); }} />
+            <AlertTriangle size={22} aria-hidden="true" />
+            <span>
+              <strong>Applicant declaration</strong>
+              I confirm that the information in this application is complete and accurate. I understand that false, misleading, or omitted information may result in withdrawal of an offer or termination of employment, even after I have been hired. I accept responsibility for the information I submit.
+            </span>
+          </label>
+          {declarationError && <div className="invalid-feedback d-block" role="alert">{declarationError}</div>}
           <div className="submission-note">
             <Check size={21} />
-            <p>By submitting, you confirm that the information is accurate and may be reviewed by the company recruitment team.</p>
+            <p>Your application will only be submitted after you review the information and accept the declaration.</p>
           </div>
         </section>
       )}

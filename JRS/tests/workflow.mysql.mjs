@@ -87,10 +87,15 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
     await site.repository.pool.execute('DELETE FROM RESUME_FILE WHERE file_id=?',[reserved.insertId]);
     const resume = await applicant.post('/applicant-api/resumes').set('X-CSRF-Token', csrf)
       .attach('resume', Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'), { filename: 'integration-resume.pdf', contentType: 'application/pdf' }).expect(201);
-    const application = await applicant.post('/applicant-api/applications').set('X-CSRF-Token', csrf).send({
+    const submissionPayload={
       jobId: job.id, resumeId: resume.body.resume.id, phone: '+65 8123 4567', location: '["SG","",""]', coverLetter: 'Local integration verification only.',
-      experiences: [{ companyName: 'Example Test Company', jobTitle: 'Developer', startDate: '2024-01', endDate: '', currentRole: true, responsibilities: 'Implemented and tested recruitment software.', achievements: '', skills: ['JAVASCRIPT'] }], roleAnswers: {},
-    }).expect(response => assert.equal(response.status, 201, JSON.stringify(response.body)));
+      experiences: [{ companyName: 'Example Test Company', jobTitle: 'Developer', startDate: '2024-01', endDate: '', currentRole: true, responsibilities: 'Implemented and tested recruitment software.', achievements: '', skills: ['JAVASCRIPT'] }], roleAnswers: {availability:"Within 1 month"}, declarationAccepted:true,
+    };
+    await applicant.post('/applicant-api/applications').set('X-CSRF-Token',csrf).send({...submissionPayload,declarationAccepted:false}).expect(422);
+    const application=await applicant.post('/applicant-api/applications').set('X-CSRF-Token',csrf).send(submissionPayload).expect(201);
+    assert.equal(application.body.application.declarationAccepted,true);
+    const [[declaration]]=await site.repository.pool.execute('SELECT declaration_accepted,declaration_accepted_at FROM applications WHERE id=?',[application.body.application.id]);
+    assert.equal(declaration.declaration_accepted,1);assert.ok(declaration.declaration_accepted_at);
     const [[submittedFile]]=await site.repository.pool.execute('SELECT l.canonical_id,a.applicant_snapshot FROM JRS_RESUME_LINK l JOIN JRS_APPLICATION_LINK a ON a.portal_id=? WHERE l.portal_id=?',[application.body.application.id,resume.body.resume.id]);
     const submission=typeof submittedFile.applicant_snapshot==='string'?JSON.parse(submittedFile.applicant_snapshot):submittedFile.applicant_snapshot;
     assert.notEqual(resume.body.resume.id,submittedFile.canonical_id,'Fixture exercises independent file IDs');
@@ -135,7 +140,7 @@ test('a real applicant submission reaches HR, a real HR decision reaches applica
       .attach('resume',Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'),{filename:'unpublish-test.pdf',contentType:'application/pdf'}).expect(201);
     await newApplicant.post('/applicant-api/applications').set('X-CSRF-Token',newLogin.body.csrfToken).send({
       jobId:job.id,resumeId:newResume.body.resume.id,phone:'+65 8123 4567',location:'["SG","",""]',coverLetter:'Isolated test only.',
-      experiences:[{companyName:'Example Test Company',jobTitle:'Developer',startDate:'2024-01',endDate:'',currentRole:true,responsibilities:'Implemented and tested recruitment software.',achievements:'',skills:['JAVASCRIPT']}],roleAnswers:{},
+      experiences:[{companyName:'Example Test Company',jobTitle:'Developer',startDate:'2024-01',endDate:'',currentRole:true,responsibilities:'Implemented and tested recruitment software.',achievements:'',skills:['JAVASCRIPT']}],roleAnswers:{availability:"Within 1 month"},declarationAccepted:true,
     }).expect(404);
     const notices = await manager.get('/api/hr/notifications').expect(200);
     assert.ok(notices.body.items.some(row => row.title.includes('Integration Applicant')), 'Original Notification Center must receive the application event');

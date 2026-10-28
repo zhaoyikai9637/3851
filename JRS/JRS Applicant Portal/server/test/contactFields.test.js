@@ -14,8 +14,9 @@ test("location rejects incompatible country/state/city tuples", () => {
   assert.throws(() => canonicalLocation('["SG","CA","Los Angeles"]'));
   assert.throws(() => canonicalLocation('["US","CA","Invented city"]'));
 });
-test("skills store a deduplicated code array, never comma-separated text", () => {
-  assert.deepEqual(canonicalSkills(["REACT", "SQL", "REACT"]), ["REACT", "SQL"]);
+test("skills accept applicant-entered names and deduplicate them case-insensitively", () => {
+  assert.deepEqual(canonicalSkills(["React", "SQL", "react", "Stakeholder engagement"]), ["React", "SQL", "Stakeholder engagement"]);
   assert.throws(() => canonicalSkills("react, sql"));
-  assert.throws(() => canonicalSkills(["anything"]));
+  assert.throws(() => canonicalSkills(["invalid<script>"]));
+  assert.throws(() => canonicalSkills(Array.from({ length: 51 }, (_, index) => `Skill ${index + 1}`)));
 });

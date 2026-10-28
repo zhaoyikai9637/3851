@@ -1,5 +1,14 @@
 # Delivery plan
 
+## Team applicant update - 2026-10-28
+
+Imported the latest SiHuanjia archive: free skills, controlled availability, inline
+question errors, review edit actions and declaration. Deleted the old sign-in
+prompt. Shared dates/buttons/auth remain integrated; fixed the shared login config
+response discovered during browser checks. Local schemas are now version 12 with
+additive declaration columns and historical application values preserved. See
+[TEAM_UPDATE_20261028.md](../../docs/TEAM_UPDATE_20261028.md) for tests and limits.
+
 ## Date presentation - 2026-10-28
 
 Full visible/input dates now use DD MM YYYY at the owner's request. API, calendar

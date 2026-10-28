@@ -34,7 +34,7 @@ export async function createRuntime({mailTransport}={}) {
   const close = async () => { await Promise.all([pool.end(), communicationDb.close(), applicantDb?.close()]); };
   try {
     const [[version]] = await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-    if (version?.version !== 11) throw new Error('The database requires the approved integration schema version 11. Local setup is not a cloud migration command.');
+    if (version?.version !== 12) throw new Error('The database requires the approved integration schema version 12. Local setup is not a cloud migration command.');
     const experimental = settings.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL !== 'false';
     const repository = new candidateRepository.Repository(pool,{integratedRoot:true}), bridge = createRecruitmentBridge(pool, { experimentalApplicantPortal: experimental });
     const recruitment = recruitmentRepository.createRepository(namespacePool(pool));
@@ -94,7 +94,7 @@ export async function createRuntime({mailTransport}={}) {
     mountReadiness(app,{pool,uploadDir});
     app.locals.data = data;
     app.get('/', (req, res) => res.redirect(experimental ? '/jobs' : '/pages/login/login.html'));
-    app.get('/api/integration-config', (req, res) => res.json({ experimentalApplicantPortal: experimental }));
+    app.get('/api/integration-config', (req, res) => res.json({ valid:true, experimentalApplicantPortal: experimental }));
     app.get('/login', (req, res) => res.redirect('/pages/login/login.html'));
     for (const feature of ['job-management', 'create-job', 'edit-job', 'interview-schedule', 'interview-feedback']) {
       app.get(`/pages/${feature}/${feature}.html`, (req, res) => res.redirect(feature.startsWith('interview-') ? '/hr/interviews' : '/hr/job-postings'));

@@ -1,4 +1,4 @@
-import { skillOptions } from '../JRS Applicant Portal/shared/contactFields.js';
+import { normaliseSkill } from '../JRS Applicant Portal/shared/contactFields.js';
 import { currentMonth as businessMonth } from '../JRS Applicant Portal/shared/applicantFields.js';
 import { httpError } from './security.mjs';
 export function workFacts(experiences, currentMonth = businessMonth()) {
@@ -11,7 +11,7 @@ export function workFacts(experiences, currentMonth = businessMonth()) {
     const start = month(row.startDate), end = row.currentRole ? now : month(row.endDate);
     if (start > end || end > now) throw httpError(400, 'Employment date range is invalid.');
     intervals.push([start, end]);
-    for (const text of (Array.isArray(row.skills)?row.skills.map(code=>skillOptions[code]||code):String(row.skills || '').split(','))) { const skill = text.trim(); if (skill && !skills.has(skill.toLowerCase())) skills.set(skill.toLowerCase(), skill); }
+    for (const text of (Array.isArray(row.skills)?row.skills.map(normaliseSkill):String(row.skills || '').split(','))) { const skill = text.trim(); if (skill && !skills.has(skill.toLowerCase())) skills.set(skill.toLowerCase(), skill); }
   }
   intervals.sort((a, b) => a[0] - b[0]);
   let total = 0, previous = null;

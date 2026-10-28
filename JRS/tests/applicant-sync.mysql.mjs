@@ -12,7 +12,7 @@ test('repeating an older additive migration never lowers the schema version',asy
  try{
   await migrateMailHistory(pool);await migrateApplicantProfile(pool);
   const [[version]]=await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-  assert.equal(version.version,11);
+  assert.equal(version.version,12);
  }finally{await migrateMailHistory(pool);await pool.end();}
 });
 test('structured profile edits retain legacy detail, synchronize contacts, and keep submitted material immutable',async()=>{

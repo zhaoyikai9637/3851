@@ -1,3 +1,4 @@
+import {applicationQuestions} from './applicant-questions.mjs';
 import { httpError } from './security.mjs';
 import { publicationState } from './job-publications.mjs';
 import templateVariables from '../jrs-hr-module/shared/template-variables.json' with {type:'json'};
@@ -24,6 +25,8 @@ export function createRecruitmentBridge(pool, { experimentalApplicantPortal = fa
       const fields = [job.title, job.department, job.location, job.mode, job.type, job.experience, publication?.salary_range || '', job.description.slice(0, 500), JSON.stringify([job.description]), JSON.stringify(job.requirements), '[]', '[]', '[]', publication?.closing_date || null, open];
       let portalId = link?.portal_id ?? null;
       if (experimentalApplicantPortal) {
+        const [[storedJob]]=portalId!==null?await connection.execute('SELECT role_questions FROM jobs WHERE id=?',[portalId]):[[]];
+        fields[12]=JSON.stringify(applicationQuestions(storedJob?.role_questions));
         if (portalId !== null) {
           await connection.execute('UPDATE jobs SET title=?,department=?,location=?,work_mode=?,employment_type=?,experience_level=?,salary_range=?,summary=?,responsibilities=?,requirements=?,preferred_qualifications=?,benefits=?,role_questions=?,closing_date=?,is_open=?,updated_at=UTC_TIMESTAMP() WHERE id=?', [...fields, portalId]);
         } else {

@@ -1,6 +1,6 @@
 # JRS Recruitment Workspace
 
-This is the integrated development project. The repository main branch contains only JRS/.
+This is the integrated development project. The integrated source lives in JRS/; teammate source archives may also be present at repository root.
 After cloning, open JRS/ before running the commands below. Existing standalone local projects are not replaced.
 
 ## Deployment preparation
@@ -17,11 +17,11 @@ Infrastructure checks do not replace final applicant-module acceptance below.
 | JRS Login and profile | Shared candidate/HR sign-in and candidate personal profile | Enabled |
 | jrs-hr-module | Existing HR shell, notifications, templates, email history and HR profile | Enabled |
 | JRS HR | HR recruitment business embedded inside the existing HR shell | Enabled |
-| JRS Applicant Portal | SiHuanjia's unfinished applicant module | Disabled; retained separately |
+| JRS Applicant Portal | SiHuanjia's updated applicant module | Explicit feature switch; local preview enabled |
 
-Candidates sign in to Personal Profile. HR users enter /hr/.
+Candidates use the shared sign-in and Personal Profile; the enabled applicant preview adds application routes. HR users enter /hr/.
 Jobs, My Resume and Application Status in the login/profile module remain static demonstrations.
-Do not treat them or the unfinished applicant module as an accepted production application flow.
+The updated applicant workflow is integrated locally; public-launch acceptance is a separate step.
 
 ## Local development
 
@@ -49,13 +49,13 @@ Cloud profile access is read-only with verified TLS; no cloud credentials, sessi
 
 ## Experimental applicant module
 
-JRS Applicant Portal is not final. Its source and experimental adapters are preserved separately.
+The 2026-10-28 teacher-review update is integrated. See [team synchronization](docs/TEAM_UPDATE_20261028.md).
 The default server does not import or mount its service, /applicant-api or /applicant/*.
 Default HR writes do not update its business tables. Earlier isolated development data is retained.
 
 Experimental routes live in server/experimental/applicant.mjs and use server/applicant-data.mjs.
 Only explicitly setting ENABLE_EXPERIMENTAL_APPLICANT_PORTAL=true and running
-npm.cmd run build:experimental enables the experimental flow. Recheck all interfaces against the final source before acceptance.
+npm.cmd run build:experimental enables the applicant flow. The root build compiles both clients; routing and database synchronization remain controlled by that explicit switch.
 
 ## Checks
 
@@ -68,7 +68,7 @@ npm.cmd run build
 ```
 
 test:workflow checks the default login/profile/HR boundaries and prevents HR writes from entering applicant tables.
-test:experimental explicitly enables the unfinished module for adapter regression tests; it is not final-module acceptance.
+test:experimental enables the current applicant workflow for isolated end-to-end adapter checks; it is not public deployment acceptance.
 MySQL checks require the dedicated local test schema and private local configuration.
 Production SMTP, actual email delivery, final applicant acceptance and deployment remain pending.
 

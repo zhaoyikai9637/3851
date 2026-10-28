@@ -168,7 +168,7 @@ class DemoDataLayer {
 
     const unanswered = job.roleQuestions.find((question) => question.required && !String(values.roleAnswers[question.id] || "").trim());
     if (unanswered) {
-      const error = new Error("Please answer every required question for this role.");
+      const error = new Error(`Please answer: ${unanswered.label}`);
       error.status = 400;
       throw error;
     }
@@ -182,6 +182,8 @@ class DemoDataLayer {
       resumeId: Number(values.resumeId),
       status: "Submitted",
       statusMessage: "Your application has been received by the recruitment team.",
+      declarationAccepted: true,
+      declarationAcceptedAt: now,
       submittedAt: now,
       createdAt: now,
       updatedAt: now,
@@ -344,12 +346,12 @@ export class MySqlDataLayer {
     const jobValue = plain(job);
     const unanswered = jobValue.roleQuestions.find((question) => question.required && !String(values.roleAnswers[question.id] || "").trim());
     if (unanswered) {
-      const error = new Error("Please answer every required question for this role.");
+      const error = new Error(`Please answer: ${unanswered.label}`);
       error.status = 400;
       throw error;
     }
 
-    const application = await this.models.Application.create({ userId, ...values });
+    const application = await this.models.Application.create({ userId, ...values, declarationAccepted: true, declarationAcceptedAt: new Date() });
     await this.updateProfile(userId, { phone: values.phone, location: values.location });
     return this.getCurrentApplication(userId);
   }

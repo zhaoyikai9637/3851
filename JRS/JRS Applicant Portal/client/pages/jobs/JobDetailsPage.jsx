@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
 import { jobLabel } from "../../utils/jobLabels";
-import ApplicationSignInPrompt from '../../components/ApplicationSignInPrompt';
 
 export default function JobDetailsPage({ authenticated = false }) {
   const { jobId } = useParams();
@@ -12,7 +11,6 @@ export default function JobDetailsPage({ authenticated = false }) {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [signInPrompt,setSignInPrompt]=useState(false);
 
   useEffect(() => {
     api
@@ -45,14 +43,13 @@ export default function JobDetailsPage({ authenticated = false }) {
           <button className="btn btn-primary btn-lg" type="button" disabled={!job.isOpen} onClick={() => navigate("/applicant/apply/" + job.id)}>
             {job.isOpen ? "Apply for this role" : "Applications closed"}
           </button>
-        ) : (
-          <button type="button" className="btn btn-primary btn-lg" disabled={!job.isOpen} onClick={()=>setSignInPrompt(true)}>
+        ) : job.isOpen ? (
+          <Link className="btn btn-primary btn-lg" to={"/connect?returnTo=" + encodeURIComponent("/applicant/jobs/" + job.id)}>
             <LogIn size={20} />
-            {job.isOpen ? "Apply for this role" : "Applications closed"}
-          </button>
-        )}
+            {job.isOpen ? "Sign in to apply" : "Applications closed"}
+          </Link>
+        ) : <button className="btn btn-primary btn-lg" type="button" disabled>Applications closed</button>}
       </section>
-      {signInPrompt ? <ApplicationSignInPrompt jobId={job.id} onClose={()=>setSignInPrompt(false)}/> : null}
 
       <div>
         <div className="role-information surface">

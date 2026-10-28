@@ -1,9 +1,11 @@
-# Unfinished Applicant Module
+# Applicant module integration status
 
-This module belongs to SiHuanjia and is not the final version.
-The integrated JRS application excludes it from default builds, routes and database synchronization.
-Existing source and experimental adapters are preserved, not accepted as final functionality.
+The 2026-10-28 teacher-review update has been integrated into the shared project.
+See ../docs/TEAM_UPDATE_20261028.md for source provenance, adopted removals,
+schema 12, authentication compatibility and verification results.
 
-See the integrated root README for the explicit experimental switch and regression commands.
-Review the final source and API contract before reconnecting it.
-Shared sign-in and candidate personal information belong to the adjacent JRS Login and profile module.
+The integrated server uses the existing explicit applicant feature switch. Local
+preview enables it; production remains gated separately. Shared sign-in, personal
+profile, resume ownership, CSRF and HR synchronization stay authoritative. Use the
+parent build/start commands and root dependency lockfile for the total project.
+Standalone module SQL must not be run on the integrated database.

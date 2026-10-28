@@ -21,7 +21,7 @@ export async function readApplicantProfile(db,accountId) {
  return {userId:accountId,phone:contact?(contact.startsWith('+')?contact:(c.country_code||'')+contact):'',location:c.structured_location||c.home_location||'',availabilityStatus:c.availability_status||'AVAILABLE',
   education:education.map(e=>({id:e.education_id,institution:e.institution,qualification:e.qualification,qualificationLevel:e.qualification_level||'',startYear:e.start_year||'',graduationYear:e.finished_year||'',isCurrentStudy:Boolean(e.is_current_study),description:e.description||'',endMonth:e.end_month_year||''})),
   languages:spoken.map(l=>({language:l.language_code||languageCode(l.language_name),readingLevel:l.reading_level||'',writingLevel:l.writing_level||'',...(!Object.hasOwn(languages,languageCode(l.language_name))?{language:'other',otherLanguage:l.language_name}:{})})),
-  experiences:career.map(e=>({id:e.role_id,companyName:e.company_name,jobTitle:e.job_title,startDate:e.start_month_year||'',endDate:e.is_current_role?null:e.end_month_year,currentRole:Boolean(e.is_current_role),responsibilities:e.description||'',achievements:e.achievements||'',skills:array(e.skill_codes)}))};
+  experiences:career.map(e=>({id:e.role_id,companyName:e.company_name,jobTitle:e.job_title,startDate:e.start_month_year||'',endDate:e.is_current_role?null:e.end_month_year,currentRole:Boolean(e.is_current_role),responsibilities:e.description||'',achievements:e.achievements||'',skills:canonicalSkills(array(e.skill_codes))}))};
 }
 // The caller owns the transaction, so contact/list edits and application snapshots
 // share the same authorization and commit boundary.
