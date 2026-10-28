@@ -1,3 +1,4 @@
+import {formatDate,formatDateTime} from '../../../../jrs-hr-module/shared/date-format.mjs';
 import { ArrowRight, BriefcaseBusiness, CalendarDays, Check, EyeOff, FileText, MapPin, MessageSquareText, UserRoundPen, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -89,7 +90,7 @@ export default function ApplicationStatusPage() {
           <div className="job-meta-list prominent">
             <span><BriefcaseBusiness size={19} />{application.job.department}</span>
             <span><MapPin size={19} />{application.job.location}</span>
-            <span><CalendarDays size={19} />Submitted {new Date(application.submittedAt).toLocaleDateString("en-SG", { day: "numeric", month: "long", year: "numeric" })}</span>
+            <span><CalendarDays size={19} />Submitted {formatDate(application.submittedAt)}</span>
           </div>
         </div>
         <span className={"status-badge status-" + application.status.toLowerCase().replaceAll(" ", "-")}>{application.status}</span>
@@ -125,7 +126,7 @@ export default function ApplicationStatusPage() {
                 <MessageSquareText size={28} />
               </div>
               <p className="status-message">{application.statusMessage}</p>
-              <small>Last updated {new Date(application.updatedAt).toLocaleString("en-SG", { dateStyle: "medium", timeStyle: "short" })}</small>
+              <small>Last updated {formatDateTime(application.updatedAt)}</small>
             </section>
 
             <section className="surface application-summary">

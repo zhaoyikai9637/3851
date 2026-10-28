@@ -1,19 +1,9 @@
-export function displayDate(value) {
-  if (!value) return "";
-  const [year, month, day] = String(value).slice(0, 10).split("-");
-  return `${year}-${month}-${day}`;
-}
-
+import {formatDate,parseDisplayDate} from '../../../shared/date-format.mjs';
+export const displayDate = formatDate;
 export function isoDate(value) {
-  if (!value.trim()) return "";
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
-  if (!match) throw new Error("Enter a valid date using YYYY-MM-DD.");
-  const [, year, month, day] = match,
-    iso = `${year}-${month}-${day}`;
-  const date = new Date(`${iso}T12:00:00Z`);
-  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== iso)
-    throw new Error("Enter a valid date using YYYY-MM-DD.");
-  return iso;
+  const result=parseDisplayDate(value);
+  if(result===null)throw new Error('Enter a valid date using DD MM YYYY.');
+  return result;
 }
 
 export function jobDraft(job = {}) {

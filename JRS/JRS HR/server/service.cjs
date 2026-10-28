@@ -20,7 +20,7 @@ function checkTemplate(value) {
 }
 function fillTemplate(db,a,user,template) {
   const c=find(db.candidates,a.candidateId),j=find(db.jobs,a.jobId),i=db.interviews.find(i=>i.applicationId===a.id&&i.status==='Scheduled');
-  const day=value=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')?value.slice(8,10)+'/'+value.slice(5,7)+'/'+value.slice(0,4):value;
+  const day=value=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')?value.slice(8,10)+' '+value.slice(5,7)+' '+value.slice(0,4):value;
   const values={candidateName:c.name,jobTitle:j.title,companyName:'JRS',hrName:user.name,date:day(i?.date),time:i?.time,interviewer:i?.interviewer,location:i?.location,format:i?.format,...a.offer,startDate:day(a.offer?.startDate),expiry:day(a.offer?.expiry)};
   const render=s=>s.replace(/{{\s*([^{}]+?)\s*}}/g,(_,key)=>{if(values[key]==null)fail(422,`This application has no ${key} yet. Complete its workflow details first.`);return String(values[key]);});
   return {subject:render(template.subject),body:render(template.body)};

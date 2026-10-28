@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { api } from "./api";
+import { formatDateTime, parseDisplayDate } from "../../shared/date-format.mjs";
+export { parseDisplayDate } from "../../shared/date-format.mjs";
 import { DateField } from "../pages/jobs/DateField";
 
 export function useLoad(url) {
@@ -21,14 +23,7 @@ export function useLoad(url) {
   }, [url, revision]);
   return { ...state, reload: () => setRevision((v) => v + 1) };
 }
-export const dateTime = (value) =>
-  value
-    ? new Intl.DateTimeFormat("en-SG", {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: "Asia/Singapore",
-      }).format(new Date(value))
-    : "—";
+export const dateTime = formatDateTime;
 export { default as usageTypes } from "../../shared/template-types.json";
 export function ErrorBox({ error, retry }) {
   if (!error) return null;
@@ -213,21 +208,6 @@ export function Avatar({ user, large = false }) {
     </span>
   );
 }
-export function parseDisplayDate(value) {
-  const text = value.trim();
-  if (!text) return "";
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
-  if (!match) return null;
-  const [, year, month, day] = match;
-  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
-  if (
-    date.getUTCFullYear() !== Number(year) ||
-    date.getUTCMonth() + 1 !== Number(month) ||
-    date.getUTCDate() !== Number(day)
-  )
-    return null;
-  return `${year}-${month}-${day}`;
-}
 export function businessToday(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Singapore",
@@ -241,7 +221,7 @@ export function businessToday(now = new Date()) {
 export function historicalDateRange(fromValue, toValue, today = businessToday()) {
   const from = parseDisplayDate(fromValue);
   const to = parseDisplayDate(toValue);
-  if (from === null || to === null) return { error: "Enter dates as YYYY-MM-DD." };
+  if (from === null || to === null) return { error: "Enter dates as DD MM YYYY." };
   if ((from && from > today) || (to && to > today))
     return { error: "Future dates are not available for activity history." };
   if (from && to && from > to) return { error: "From date must not be after To date." };

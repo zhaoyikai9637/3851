@@ -2,6 +2,7 @@
  * Fixtures never call job/application APIs or change the real candidate profile.
  */
 document.addEventListener('DOMContentLoaded', async () => {
+    const displayDate=value=>value?value.slice(8,10)+' '+value.slice(5,7)+' '+value.slice(0,4):'';
     const $ = id => document.getElementById(id);
     const root = $('displayContent');
     const page = document.body.dataset.page;
@@ -25,11 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             for (const job of matches) {
                 const card = document.createElement('article'); card.className = 'job-card surface';
                 // All interpolated fields below are fixed local fixtures, never account data.
-                card.innerHTML = `<div><div class="job-title-row"><div><span class="department-badge">${job.department}</span><h3>${job.title}</h3></div><span class="job-type">${job.type}</span></div><p class="job-summary">${job.summary}</p><div class="job-meta-list"><span>${job.location}</span><span>${job.mode}</span><span>${job.level}</span><span>Closes ${job.closingDate}</span></div></div><div class="job-card-action"><button class="btn" type="button">View details</button></div>`;
+                card.innerHTML = `<div><div class="job-title-row"><div><span class="department-badge">${job.department}</span><h3>${job.title}</h3></div><span class="job-type">${job.type}</span></div><p class="job-summary">${job.summary}</p><div class="job-meta-list"><span>${job.location}</span><span>${job.mode}</span><span>${job.level}</span><span>Closes ${displayDate(job.closingDate)}</span></div></div><div class="job-card-action"><button class="btn" type="button">View details</button></div>`;
                 card.querySelector('button').addEventListener('click', () => {
                     $('detailTitle').textContent = job.title;
                     $('detailSummary').textContent = job.summary;
-                    $('detailMeta').textContent = `${job.department} · ${job.location} · ${job.workMode} · ${job.salaryRange} · Closes ${job.closingDate}`;
+                    $('detailMeta').textContent = `${job.department} · ${job.location} · ${job.workMode} · ${job.salaryRange} · Closes ${displayDate(job.closingDate)}`;
                     $('detailSections').replaceChildren();
                     for (const [key, title] of [['responsibilities', 'Responsibilities'], ['requirements', 'Essential requirements'], ['preferredQualifications', 'Preferred qualifications'], ['benefits', 'Benefits and hiring process']]) {
                         const heading = document.createElement('h3'); heading.textContent = title;

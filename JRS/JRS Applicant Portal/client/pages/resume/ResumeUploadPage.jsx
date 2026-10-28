@@ -1,3 +1,4 @@
+import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
 import { ArrowLeft, CheckCircle2, FileText, FolderOpen, Trash2, UploadCloud, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -214,7 +215,7 @@ export default function ResumeUploadPage() {
                 <FileText size={24} aria-hidden="true" />
                 <div>
                   <strong>{resume.originalName}</strong>
-                  <small>Uploaded {new Date(resume.createdAt).toLocaleDateString("en-SG")}</small>
+                  <small>Uploaded {formatDate(resume.createdAt)}</small>
                 </div>
                 {index === 0 && <span className="latest-file-label"><CheckCircle2 size={16} />Latest</span>}
                 <button className="icon-button danger" type="button" onClick={() => deleteResume(resume)} aria-label={`Delete ${resume.originalName}`}>

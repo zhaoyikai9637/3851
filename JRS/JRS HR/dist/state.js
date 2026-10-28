@@ -74,7 +74,7 @@
       if(existing)Object.assign(existing,value);else db.interviews.push(value);
       db.notifications.filter(n=>n.applicationId===a.id&&['Interview schedule','Interview invitation'].includes(n.kind)&&n.status==='Draft').forEach(n=>n.status='Superseded');
       let notification;
-      if(p.notify){notification=message('Interview schedule — '+j.title,'Hello '+c.name+',\n\nYour interview for '+j.title+' is scheduled for '+value.date+' at '+value.time+' (Singapore time, UTC+08:00), for '+value.duration+' minutes.\nFormat: '+value.format+'\nDetails: '+value.location+'\nInterviewer: '+value.interviewer+'\n\nBest regards,\n'+actor);notification.kind='Interview schedule';}
+      if(p.notify){notification=message('Interview schedule — '+j.title,'Hello '+c.name+',\n\nYour interview for '+j.title+' is scheduled for '+value.date.slice(8,10)+' '+value.date.slice(5,7)+' '+value.date.slice(0,4)+' at '+value.time+' (Singapore time, UTC+08:00), for '+value.duration+' minutes.\nFormat: '+value.format+'\nDetails: '+value.location+'\nInterviewer: '+value.interviewer+'\n\nBest regards,\n'+actor);notification.kind='Interview schedule';}
       return {interview:value,...(notification?{notification}:{})};
     };
     let result={};
@@ -104,7 +104,7 @@
       }
       case 'approve-offer':if(a.stage!=='Offer'||a.offer?.status!=='Draft'||a.offer.approval==='Approved'||a.offer.expiry<day())throw Error('Only an unapproved, unexpired draft offer can be approved.');a.offer.approval='Approved';activity('Offer approved');break;
       case 'offer-message':{
-        if(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<day())throw Error('Approve a valid offer before preparing email.');if(db.notifications.some(n=>n.applicationId===a.id&&n.kind==='Offer'&&n.status==='Draft'))throw Error('An offer email is already in the outbox.');const n=message('Employment offer — '+j.title,'Hello '+c.name+',\n\nWe are pleased to offer you the role of '+j.title+'.\nMonthly salary: SGD '+a.offer.salary+'\nStart date: '+a.offer.startDate+'\nPlease respond by: '+a.offer.expiry+'\n\n'+a.offer.terms+'\n\nBest regards,\n'+actor);n.kind='Offer';activity('Offer email prepared');break;
+        if(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<day())throw Error('Approve a valid offer before preparing email.');if(db.notifications.some(n=>n.applicationId===a.id&&n.kind==='Offer'&&n.status==='Draft'))throw Error('An offer email is already in the outbox.');const n=message('Employment offer — '+j.title,'Hello '+c.name+',\n\nWe are pleased to offer you the role of '+j.title+'.\nMonthly salary: SGD '+a.offer.salary+'\nStart date: '+a.offer.startDate.slice(8,10)+' '+a.offer.startDate.slice(5,7)+' '+a.offer.startDate.slice(0,4)+'\nPlease respond by: '+a.offer.expiry.slice(8,10)+' '+a.offer.expiry.slice(5,7)+' '+a.offer.expiry.slice(0,4)+'\n\n'+a.offer.terms+'\n\nBest regards,\n'+actor);n.kind='Offer';activity('Offer email prepared');break;
       }
       case 'accept-offer':if(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<day())throw Error('Only an approved, unexpired offer can be accepted.');a.offer.status='Accepted';result.activity=transition('Hired',['Offer'],'Offer acceptance recorded',required(p.notes,'Acceptance record',1000));break;
       case 'confirm-rejection':if(a.stage!=='Rejected')throw Error('This application is not rejected.');a.rejectionReason=required(p.reason,'Reason');a.rejectionConfirmed=true;activity('Rejection reason confirmed');break;

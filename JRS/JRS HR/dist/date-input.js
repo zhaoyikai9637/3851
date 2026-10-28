@@ -4,6 +4,9 @@
   const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const weekdays=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   let sequence=0,active=null;
+  const mirrors=new WeakMap();
+  const display=value=>parseISO(value)?value.slice(8,10)+' '+value.slice(5,7)+' '+value.slice(0,4):'';
+  function parseDisplay(value){if(!value)return '';const m=/^(\d{2}) (\d{2}) (\d{4})$/.exec(value);if(!m)return null;const iso=m[3]+'-'+m[2]+'-'+m[1];return parseISO(iso)?iso:null;}
   const pad=n=>String(n).padStart(2,'0');
   const iso=(year,month,day)=>String(year).padStart(4,'0')+'-'+pad(month)+'-'+pad(day);
   const count=(year,month)=>[31,year%4===0&&(year%100!==0||year%400===0)?29:28,31,30,31,30,31,31,30,31,30,31][month-1];
@@ -28,12 +31,13 @@
     return part('year').padStart(4,'0')+'-'+part('month')+'-'+part('day');
   }
   function validate(input){
-    const value=input.value,min=input.getAttribute('min')||'',max=input.getAttribute('max')||'';
+    const value=parseDisplay(input.value),min=input.getAttribute('min')||'',max=input.getAttribute('max')||'';
     let message='';
-    if(!value){if(input.required)message='Enter a date in YYYY-MM-DD format.';}
-    else if(!parseISO(value))message='Enter a valid date in YYYY-MM-DD format.';
-    else if(parseISO(min)&&value<min)message='Choose a date on or after '+min+'.';
-    else if(parseISO(max)&&value>max)message='Choose a date on or before '+max+'.';
+    if(!input.value){if(input.required)message='Enter a date in DD MM YYYY format.';}
+    else if(value===null)message='Enter a valid date in DD MM YYYY format.';
+    else if(parseISO(min)&&value<min)message='Choose a date on or after '+display(min)+'.';
+    else if(parseISO(max)&&value>max)message='Choose a date on or before '+display(max)+'.';
+    const mirror=mirrors.get(input);if(mirror)mirror.value=!message&&value?value:'';
     input.setCustomValidity(message);input.setAttribute('aria-invalid',String(!!message));
     return !message;
   }
@@ -44,9 +48,8 @@
     if(restore&&state.trigger.isConnected)state.trigger.focus({preventScroll:true});
   }
   function pick(state,value){
-    const input=state.input;input.value=value;validate(input);hide(false);
+    const input=state.input;input.value=display(value);validate(input);hide(false);
     const EventType=input.ownerDocument.defaultView.Event;
-    input.dispatchEvent(new EventType('input',{bubbles:true}));
     input.dispatchEvent(new EventType('change',{bubbles:true}));
     if(input.isConnected)input.focus({preventScroll:true});
   }
@@ -55,8 +58,8 @@
     const doc=input.ownerDocument,view=doc.defaultView,popup=doc.createElement('div');
     popup.className='english-date-picker';popup.id=trigger.getAttribute('aria-controls');
     popup.setAttribute('role','dialog');popup.setAttribute('aria-label','Choose date');
-    const current=today(),initial=parseISO(input.value)||parseISO(input.getAttribute('min'))||parseISO(current);
-    const state={input,trigger,popup,year:initial.year,month:initial.month,focusDate:input.value||current,cleanup:()=>{}};active=state;
+    const current=today(),initial=parseISO(parseDisplay(input.value))||parseISO(input.getAttribute('min'))||parseISO(current);
+    const state={input,trigger,popup,year:initial.year,month:initial.month,focusDate:parseDisplay(input.value)||current,cleanup:()=>{}};active=state;
     const dialog=input.closest('dialog[open]');(dialog||doc.body).append(popup);
     // The popover top layer avoids clipping by the form's scroll container.
     if(typeof popup.showPopover==='function'){popup.setAttribute('popover','manual');popup.showPopover();}
@@ -82,7 +85,7 @@
       monthDays(state.year,state.month,min,max).forEach(cell=>{
         if(!cell){const pad=doc.createElement('span');pad.setAttribute('aria-hidden','true');grid.append(pad);return;}
         const button=control(String(cell.day),months[state.month-1]+' '+cell.day+', '+state.year,'pick',cell.disabled);button.dataset.date=cell.date;
-        button.className=cell.date===input.value?'is-selected':'';button.setAttribute('aria-pressed',String(cell.date===input.value));
+        button.className=cell.date===parseDisplay(input.value)?'is-selected':'';button.setAttribute('aria-pressed',String(cell.date===parseDisplay(input.value)));
         if(cell.date===current)button.setAttribute('aria-current','date');grid.append(button);
       });popup.append(grid);
       const footer=doc.createElement('div');footer.className='english-calendar-footer';footer.append(control('Today','Choose today','today',!isAllowed(current,min,max)),control('Clear','Clear date','clear'));popup.append(footer);position();
@@ -118,7 +121,10 @@
     if(active&&!active.input.isConnected)hide(false);
     host.querySelectorAll('input[type="date"]').forEach(input=>{
       const doc=input.ownerDocument,value=input.value;
-      input.type='text';input.value=value;input.dataset.englishDate='true';input.placeholder='YYYY-MM-DD';input.inputMode='numeric';input.autocomplete='off';input.spellcheck=false;input.maxLength=10;input.pattern='\\d{4}-\\d{2}-\\d{2}';
+      const mirror=doc.createElement('input');mirror.type='hidden';mirror.hidden=true;mirror.name=input.name;mirror.value=value;
+      if(input.dataset.filter){mirror.dataset.filter=input.dataset.filter;delete input.dataset.filter;}
+      input.removeAttribute('name');(input.closest('label')||input).before(mirror);mirrors.set(input,mirror);
+      input.type='text';input.value=display(value);input.dataset.englishDate='true';input.placeholder='DD MM YYYY';input.inputMode='numeric';input.autocomplete='off';input.spellcheck=false;input.maxLength=10;input.pattern='\\d{2} \\d{2} \\d{4}';
       if(!input.id)input.id='english-date-'+(++sequence);
       const trigger=doc.createElement('button');trigger.type='button';trigger.className='english-date-trigger';trigger.setAttribute('aria-label','Choose date');trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls',input.id+'-calendar');trigger.textContent='▦';
       const wrapper=doc.createElement('div');wrapper.className='english-date-control';
@@ -129,13 +135,15 @@
       trigger.addEventListener('click',event=>{event.preventDefault();open(input,trigger);});
       input.addEventListener('input',()=>validate(input));
       input.addEventListener('change',event=>{
-        if(!validate(input)&&input.dataset.filter){event.stopImmediatePropagation();input.reportValidity();return;}
-        lastAccepted=input.value;
+        event.stopImmediatePropagation();
+        if(!validate(input)){event.stopImmediatePropagation();input.reportValidity();return;}
+        lastAccepted=mirror.value;
+        mirror.dispatchEvent(new doc.defaultView.Event('change',{bubbles:true}));
       },true);
       // Some embedded browsers do not emit native change after text editing.
       // Accept a complete filter on blur once, including clearing an old value.
       input.addEventListener('blur',()=>{
-        if(input.dataset.filter&&input.isConnected&&validate(input)&&input.value!==lastAccepted){
+        if(mirror.dataset.filter&&input.isConnected&&validate(input)&&mirror.value!==lastAccepted){
           input.dispatchEvent(new doc.defaultView.Event('change',{bubbles:true}));
         }
       });
@@ -143,5 +151,5 @@
       validate(input);
     });
   }
-  const api={mount,parseISO,isAllowed,monthDays};root.HRDateInput=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+  const api={mount,parseISO,parseDisplay,display,isAllowed,monthDays};root.HRDateInput=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

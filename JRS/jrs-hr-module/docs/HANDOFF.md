@@ -1,5 +1,13 @@
 # Engineering handoff
 
+## Date presentation - 2026-10-28
+
+Full visible/input dates now use DD MM YYYY at the owner's request. API, calendar
+bounds and database dates remain ISO; no existing records or sent mail were
+rewritten. Native/React filters, job editing, shared communication dates and
+applicant labels are updated. See [DATE_PRESENTATION.md](../../docs/DATE_PRESENTATION.md)
+for verification and browser coverage. This supersedes earlier ISO UI notes below.
+
 ## Shen Junye HR 2.6.2 sync - 2026-10-23
 
 Integrated the teacher-review workflow from d575dee, including removed shortcuts,

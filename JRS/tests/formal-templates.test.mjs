@@ -19,9 +19,9 @@ test('formal scheduling and offer messages require actual workflow values before
  const db=M.seed(),a=db.applications[0];db.templates=native;a.stage='Interview';
  const schedule=native.find(t=>t.name==='Interview Schedule');assert.throws(()=>S.fillTemplate(db,a,user,schedule),/no date/);
  db.interviews=[{applicationId:a.id,status:'Scheduled',date:'2031-01-12',time:'09:30',format:'Video',location:'https://meeting.example.test/room',interviewer:'Test panel'}];
- const interview=S.fillTemplate(db,a,user,schedule).body;assert.ok(interview.includes('12/01/2031'));assert.ok(interview.includes('09:30'));assert.ok(interview.includes('https://meeting.example.test/room'));
+ const interview=S.fillTemplate(db,a,user,schedule).body;assert.ok(interview.includes('12 01 2031'));assert.ok(interview.includes('09:30'));assert.ok(interview.includes('https://meeting.example.test/room'));
  const offer=native.find(t=>t.kind==='Offer Letter');assert.throws(()=>S.fillTemplate(db,a,user,offer),/no (currency|salary)/);
  a.offer={salary:6200,currency:'SGD',startDate:'2031-02-01',expiry:'2031-01-20',status:'Pending',approval:'Approved'};a.stage='Offer';
- const body=S.fillTemplate(db,a,user,offer).body;assert.ok(body.includes('SGD 6200'));assert.ok(body.includes('01/02/2031'));assert.ok(body.includes('20/01/2031'));
+ const body=S.fillTemplate(db,a,user,offer).body;assert.ok(body.includes('SGD 6200'));assert.ok(body.includes('01 02 2031'));assert.ok(body.includes('20 01 2031'));
  const declined=native.find(t=>t.kind==='Offer Declined Acknowledgement');assert.throws(()=>S.applyCommand(db,'message',{applicationId:a.id,templateId:declined.id},user),/decline/i);
 });

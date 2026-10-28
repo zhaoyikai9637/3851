@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { isoDate } from "./model";
+import { displayDate, isoDate } from "./model";
 import { Icon } from "../../src/icons";
 
 const businessDate = () => new Date(new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Singapore",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())+"T12:00:00Z");
@@ -59,7 +59,7 @@ export function DateField({ label, value, onChange, disabled, min, max }) {
     days = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 0, 12)).getUTCDate();
   function choose(day) {
     onChange(
-      `${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+      displayDate(`${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`),
     );
     setOpen(false);
     trigger.current?.focus();
@@ -71,7 +71,7 @@ export function DateField({ label, value, onChange, disabled, min, max }) {
         <input
           id={id}
           type="text"
-          placeholder="YYYY-MM-DD"
+          placeholder="DD MM YYYY"
           inputMode="numeric"
           maxLength={10}
           value={value}

@@ -592,10 +592,10 @@ describe("notification workflow", () => {
     );
     await ui.click(screen.getByRole("button", { name: "Date" }));
     fireEvent.change(screen.getByLabelText("From date"), {
-      target: { value: "2026-09-01" },
+      target: { value: "01 09 2026" },
     });
     fireEvent.change(screen.getByLabelText("To date"), {
-      target: { value: "2026-09-09" },
+      target: { value: "09 09 2026" },
     });
     await waitFor(() =>
       expect(
@@ -624,16 +624,16 @@ describe("notification workflow", () => {
     ).toBeVisible();
     expect(screen.queryByText("No notifications yet")).not.toBeInTheDocument();
   });
-  it("uses an English YYYY-MM-DD date format and rejects invalid dates", async () => {
+  it("uses an English DD MM YYYY date format and rejects invalid dates", async () => {
     const ui = mount();
     await screen.findByText("New application received");
     await ui.click(screen.getByRole("button", { name: "Date" }));
-    expect(screen.getByLabelText("From date")).toHaveAttribute("placeholder", "YYYY-MM-DD");
-    expect(screen.getByLabelText("To date")).toHaveAttribute("placeholder", "YYYY-MM-DD");
+    expect(screen.getByLabelText("From date")).toHaveAttribute("placeholder", "DD MM YYYY");
+    expect(screen.getByLabelText("To date")).toHaveAttribute("placeholder", "DD MM YYYY");
     fireEvent.change(screen.getByLabelText("From date"), {
-      target: { value: "2026-40-13" },
+      target: { value: "13 40 2026" },
     });
-    expect(await screen.findByRole("alert")).toHaveTextContent("YYYY-MM-DD");
+    expect(await screen.findByRole("alert")).toHaveTextContent("DD MM YYYY");
   });
   it("restores English calendar selection and sends ISO history bounds",async()=>{
     const ui=mount();await screen.findByText("New application received");await ui.click(screen.getByRole("button",{name:"Date"}));
@@ -645,14 +645,14 @@ describe("notification workflow", () => {
       await ui.click(screen.getByRole("button",{name:"September",exact:true}));
       await ui.click(screen.getByRole("button",{name:`${day} September 2026`}));
     }
-    expect(screen.getByLabelText("From date")).toHaveValue("2026-09-01");
-    expect(screen.getByLabelText("To date")).toHaveValue("2026-09-09");
+    expect(screen.getByLabelText("From date")).toHaveValue("01 09 2026");
+    expect(screen.getByLabelText("To date")).toHaveValue("09 09 2026");
     await waitFor(()=>expect(fetcher.mock.calls.some(([url])=>url.includes("from=2026-09-01&to=2026-09-09"))).toBe(true));
   });
   it("rejects future manual history dates without native localized inputs",async()=>{
     const ui=mount();await screen.findByText("New application received");await ui.click(screen.getByRole("button",{name:"Date"}));
     expect(document.querySelector('input[type="date"]')).toBeNull();
-    fireEvent.change(screen.getByLabelText("To date"),{target:{value:"9999-12-31"}});
+    fireEvent.change(screen.getByLabelText("To date"),{target:{value:"31 12 9999"}});
     expect(await screen.findByRole("alert")).toHaveTextContent("Future dates");
     expect(fetcher.mock.calls.some(([url])=>url.includes("to=9999-12-31"))).toBe(false);
   });

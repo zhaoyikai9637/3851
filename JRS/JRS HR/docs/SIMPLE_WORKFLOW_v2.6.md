@@ -8,7 +8,7 @@ Version 2.6.2 - 2026-10-22
 2. Compare the actual resume with Job Description and Job Requirements.
 3. Select Move to Interview. Date, time, location/meeting link and interviewer
    start blank and are required. More options retains a 45-minute Video default
-   and optional private notes. Dates use YYYY-MM-DD and an English calendar.
+   and optional private notes. Visible dates use DD MM YYYY and an English calendar; storage remains ISO.
 4. Confirm once to move the stage, create the appointment and optionally prepare
    one unsent schedule draft. Validation checks the full appointment first; any
    failure leaves the stage, history and drafts unchanged.

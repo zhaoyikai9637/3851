@@ -11,7 +11,7 @@ schedule it in one transaction. New appointments begin with blank date, time,
 interviewer and location fields. More options contains duration, format and notes.
 Review/result shortcuts and rejection status diagrams are removed. Saves remain
 on the current page, with inline confirmation and existing records preserved.
-Dates use YYYY-MM-DD and an English calendar.
+Visible dates use DD MM YYYY and an English calendar; storage remains ISO.
 
 See [workflow changes](docs/SIMPLE_WORKFLOW_v2.6.md), [API](docs/API.md) and
 [team setup](docs/TEAM_SETUP.md). Standalone scripts remain available for the

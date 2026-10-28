@@ -1,3 +1,4 @@
+import { formatDate } from "../../../../shared/date-format.mjs";
 export const initialLogFilters = { search: "", trigger: "", from: "", to: "", page: 1, pageSize: 10 };
 
 export function logDayLabel(value, now = new Date()) {
@@ -6,7 +7,7 @@ export function logDayLabel(value, now = new Date()) {
   const yesterday = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Singapore", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now.getTime() - 86400000));
   if (localDate === today) return "Today";
   if (localDate === yesterday) return "Yesterday";
-  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Singapore" }).format(new Date(value));
+  return formatDate(value);
 }
 
 export function groupLogs(items) {

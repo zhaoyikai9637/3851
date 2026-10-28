@@ -125,7 +125,7 @@ it("presents a table-first jobs workspace without the standalone publishing form
   const table = await screen.findByRole("table", { name: "Job postings" });
   for (const name of ["Position", "Status", "Applications", "Salary range", "Application deadline"])
     expect(within(table).getByRole("columnheader", { name })).toBeVisible();
-  expect(within(table).getByText("2030-12-31")).toBeVisible();
+  expect(within(table).getByText("31 12 2030")).toBeVisible();
   expect(screen.queryByText("Publishing settings")).not.toBeInTheDocument();
   expect(screen.queryByTitle("Job Postings")).not.toBeInTheDocument();
   expect(screen.getAllByRole("heading", { name: "Job Postings", level: 1 })).toHaveLength(1);
@@ -151,10 +151,10 @@ it("edits basic and publishing fields together and sends ISO dates with the exis
   await edit(ui);
   await ui.clear(screen.getByLabelText("Job title"));
   await ui.type(screen.getByLabelText("Job title"), "Senior Developer");
-  expect(screen.getByLabelText("Application deadline")).toHaveValue("2030-12-31");
+  expect(screen.getByLabelText("Application deadline")).toHaveValue("31 12 2030");
   expect(document.querySelector('input[type="date"]')).toBeNull();
   await ui.clear(screen.getByLabelText("Application deadline"));
-  await ui.type(screen.getByLabelText("Application deadline"), "2030-11-30");
+  await ui.type(screen.getByLabelText("Application deadline"), "30 11 2030");
   await ui.click(screen.getByRole("button", { name: "Save job" }));
   expect(await screen.findByRole("button", { name: "View Senior Developer" })).toBeVisible();
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
@@ -216,7 +216,7 @@ it("rejects impossible day-first dates without sending a save request", async ()
   const ui = mount();
   await edit(ui);
   await ui.clear(screen.getByLabelText("Application deadline"));
-  await ui.type(screen.getByLabelText("Application deadline"), "2030-02-31");
+  await ui.type(screen.getByLabelText("Application deadline"), "31 02 2030");
   await ui.click(screen.getByRole("button", { name: "Save job" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("valid date");
   expect(
@@ -224,14 +224,14 @@ it("rejects impossible day-first dates without sending a save request", async ()
   ).toHaveLength(0);
 });
 
-it("uses an English calendar and writes the chosen date in year-month-day order", async () => {
+it("uses an English calendar and writes the chosen date in day-month-year order", async () => {
   const ui = mount();
   await edit(ui);
   await ui.click(screen.getByRole("button", { name: "Open Application deadline calendar" }));
   expect(screen.getByText("December 2030")).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Next month" }));
   await ui.click(screen.getByRole("button", { name: "15 January 2031" }));
-  expect(screen.getByLabelText("Application deadline")).toHaveValue("2031-01-15");
+  expect(screen.getByLabelText("Application deadline")).toHaveValue("15 01 2031");
 });
 
 it("preserves edits and displays server conflicts instead of claiming a successful save", async () => {
@@ -300,10 +300,10 @@ it("opens applications filtered to the selected job", async () => {
 it("blocks an unpublish date that ends before the deadline day has finished", async () => {
   const ui = mount();
   await edit(ui);
-  await ui.type(screen.getByLabelText("Unpublish date"), "2030-12-31");
+  await ui.type(screen.getByLabelText("Unpublish date"), "31 12 2030");
   await ui.click(screen.getByRole("button", { name: "Save job" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("after the application deadline");
-  expect(screen.getByLabelText("Unpublish date")).toHaveValue("2030-12-31");
+  expect(screen.getByLabelText("Unpublish date")).toHaveValue("31 12 2030");
 });
 
 it("keeps 100 jobs usable across paging, filtering and returning from edits", async () => {

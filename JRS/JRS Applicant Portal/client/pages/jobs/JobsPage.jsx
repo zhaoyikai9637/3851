@@ -1,3 +1,4 @@
+import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
 import { BriefcaseBusiness, Clock3, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -131,7 +132,7 @@ export default function JobsPage({ authenticated = false }) {
                   <div className="job-meta-list">
                     <span><MapPin size={18} />{job.location}</span>
                     <span><BriefcaseBusiness size={18} />{jobLabel(job.experienceLevel)}</span>
-                    {job.closingDate && <span><Clock3 size={18} />Closes {new Date(job.closingDate + "T00:00:00").toLocaleDateString("en-SG", { day: "numeric", month: "short" })}</span>}
+                    {job.closingDate && <span><Clock3 size={18} />Closes {formatDate(job.closingDate)}</span>}
                   </div>
                 </div>
                 <div className="job-card-action">

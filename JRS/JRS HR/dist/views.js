@@ -10,9 +10,9 @@
   const link=(path,label,cls='')=>`<a class="${cls}" href="#/${path}">${label}</a>`;
   const candidate=(db,a)=>db.candidates.find(c=>c.id===a.candidateId);
   const job=(db,a)=>db.jobs.find(j=>j.id===a.jobId);
-  const date=d=>new Date(d.length===10?d+'T12:00:00+08:00':d).toLocaleDateString('en-SG',{timeZone:'Asia/Singapore',day:'numeric',month:'short',year:'numeric'});
+  const date=d=>{if(!d)return '';const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Singapore',day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(new Date(d.length===10?d+'T12:00:00+08:00':d));const part=t=>parts.find(p=>p.type===t).value;return part('day')+' '+part('month')+' '+part('year');};
   const localDay=d=>new Date(d).toLocaleDateString('en-CA',{timeZone:'Asia/Singapore',year:'numeric',month:'2-digit',day:'2-digit'});
-  const datetime=d=>new Date(d).toLocaleString('en-SG',{timeZone:'Asia/Singapore',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const datetime=d=>date(d)+', '+new Date(d).toLocaleTimeString('en-SG',{timeZone:'Asia/Singapore',hour:'2-digit',minute:'2-digit'});
   const person=(db,a)=>{const c=candidate(db,a);return `<div class="person">${avatar(c)}<div><strong>${e(c.name)}</strong><small>${e(c.email)}</small></div></div>`;};
   const empty=(title,detail='Try changing your filters.')=>`<div class="empty">${icon('file')}<h3>${e(title)}</h3><p>${e(detail)}</p></div>`;
   const header=(title,sub='',actions='')=>`<div class="page-heading"><div><h2>${title}</h2></div><div class="heading-actions">${actions}</div></div>`;

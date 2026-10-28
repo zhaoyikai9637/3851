@@ -16,7 +16,7 @@ test('the template editor accepts real interview and offer variables while nativ
  assert.equal(templateSchema.safeParse(template).success,true);
  const db=M.seed(),a=db.applications[0];a.stage='Interview';db.interviews=[{applicationId:a.id,status:'Scheduled',date:'2031-01-12',time:'09:30',location:'Room 2',format:'On-site',interviewer:'Panel'}];
  const rendered=S.fillTemplate(db,a,user,{subject:'Interview',body:'{{date}} {{time}} {{location}}'});
- assert.equal(rendered.body,'12/01/2031 09:30 Room 2');
+ assert.equal(rendered.body,'12 01 2031 09:30 Room 2');
  assert.throws(()=>S.fillTemplate(db,a,user,{subject:'Offer',body:'{{expiry}}'}));
 });
 test('stage-specific rejection templates reject the wrong source stage',()=>{

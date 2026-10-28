@@ -5,11 +5,11 @@ import {JSDOM} from 'jsdom';
 import {displayDate,isoDate} from '../jrs-hr-module/client/pages/jobs/model.js';
 import model from '../JRS HR/dist/state.js';
 
-test('integrated job dates use the same ISO input contract as Shen 2.6.2',()=>{
-  assert.equal(displayDate('2031-02-28'),'2031-02-28');
-  assert.equal(isoDate('2032-02-29'),'2032-02-29');
-  assert.throws(()=>isoDate('2031-02-29'),/valid date/);
-  assert.throws(()=>isoDate('28/02/2031'),/YYYY-MM-DD/);
+test('job dates display day month year while preserving ISO payloads',()=>{
+  assert.equal(displayDate('2031-02-28'),'28 02 2031');
+  assert.equal(isoDate('29 02 2032'),'2032-02-29');
+  assert.throws(()=>isoDate('29 02 2031'),/valid date/);
+  assert.throws(()=>isoDate('28/02/2031'),/DD MM YYYY/);
 });
 
 test('review and results omit removed shortcuts while retaining documents and decisions',async()=>{
@@ -34,4 +34,12 @@ test('combined review booking rejects closed jobs and leaves all records untouch
   const before=JSON.stringify(db);
   assert.throws(()=>model.apply(db,'move-interview',{applicationId:a.id,date:model.day(3),time:'10:00',location:'Room A',interviewer:'Example HR',format:'Video',duration:45,notify:true}),/Activate|active/);
   assert.equal(JSON.stringify(db),before);
+});
+
+test('interview drafts display the chosen day while appointment records retain ISO',()=>{
+ const db=model.seed(),a=db.applications.find(row=>row.stage==='Pending Review');
+ db.jobs.find(row=>row.id===a.jobId).status='Active';
+ const result=model.apply(db,'move-interview',{applicationId:a.id,date:'2031-02-28',time:'10:00',location:'Example meeting',interviewer:'Example interviewer',format:'Video',duration:45,notify:true});
+ assert.equal(result.interview.date,'2031-02-28');
+ assert.ok(result.notification.body.includes('28 02 2031'));
 });
