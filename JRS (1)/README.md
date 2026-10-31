@@ -1,0 +1,39 @@
+# JRS Recruitment Workspace - Render release copy
+
+This is the reviewed release published as **JRS (1)** beside the preserved **JRS** directory. Original repository files are retained unchanged. Open this directory when building or running the new version.
+
+## Hosting
+
+Follow [Render deployment](docs/RENDER_DEPLOYMENT.md). Use branch main, Root Directory JRS (1), Docker runtime, Dockerfile Path ./Dockerfile, Docker Context . and health path /health/ready. Keep automatic deployment disabled until configuration is complete. Render supplies PORT; retain the Dockerfile startup command.
+
+Aiven MySQL stores accounts and business data; schema 12 is required. Private Supabase Storage holds resumes, HR avatars and archived attachments. Candidate recovery uses Mailjet HTTPS. HR assistance policy and recruitment mail configuration are unchanged. No demo login or role switch is enabled by this release.
+
+## Build and start
+
+Use Node.js 24. From this directory:
+
+    npm ci
+    npm run build
+    npm start
+
+Keep credentials in ignored local files or Render Variables. Copy .env.example only for an explicitly configured local database. Do not run setup, migrations or seeds at deployment/startup.
+
+## Modules
+
+- JRS Login and profile: shared login/registration, candidate code recovery and the original personal profile.
+- JRS Applicant Portal: jobs, resumes, applications and status through the shared backend.
+- JRS HR and jrs-hr-module: integrated HR workflow and communication workspace.
+
+Profile is accessed from the header identity. Legacy display addresses forward to live applicant routes when enabled. My Resume retains its existing form and layout.
+
+## Verification and limits
+
+On 31 October 2026 the isolated schema-12 QA workflow passed real Aiven/Supabase checks for private resumes, declarations, shared HR access, interview status synchronization, withdrawal and immutable submitted materials. Production was backed up, upgraded to schema 12 and accepted by a local readiness smoke check. Render build, public acceptance and post-restart checks remain separate.
+
+    npm test
+    npm run check:english
+    npm run build
+
+The standalone applicant test command is cross-platform and uses demo data. Root MySQL tests require their dedicated local test schemas; never point them at production. See docs/TEAM_UPDATE_20261028.md, docs/APPLICANT_ADAPTATION.md and docs/CANDIDATE_CODE_RECOVERY.md.
+
+The old JRS directory is a source recovery reference. Reverting source also requires reviewing database, environment and file-storage compatibility. This release does not create HR identities, publish vacancies, copy old uploads or deploy automatically.

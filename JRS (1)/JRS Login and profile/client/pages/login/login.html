@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JRS - Login / Register</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/login-original.css">
+</head>
+<body class="login-page">
+    <!-- Header -->
+    <header class="top-header">
+        <div class="logo-container">
+            <div class="logo-circles">
+                <span class="circle circle-dark"></span>
+                <span class="circle circle-blue"></span>
+            </div>
+            <div class="logo-text">
+                <span class="logo-title">JRS</span>
+                <span class="logo-subtitle">JOB RECRUITMENT SYSTEM</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="page-container">
+        <div class="auth-card login-card">
+            <a id="guestBrowseLink" class="login-guest-back" href="/jobs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h14"/></svg><span>Back to guest page</span></a>
+            <h1 class="auth-title" id="authTitle">Log in</h1>
+            <form id="loginForm" novalidate>
+                <div id="registerNames" hidden>
+                    <div class="form-group"><label for="registerFirstName">First name</label><input id="registerFirstName" type="text" maxlength="50" autocomplete="given-name" aria-describedby="registerNameError"><div class="error-message" id="registerNameError" aria-live="polite"></div></div>
+                    <div class="form-group"><label for="registerLastName">Last name</label><input id="registerLastName" type="text" maxlength="49" autocomplete="family-name"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" placeholder="Input your email address" autocomplete="username" aria-describedby="emailError" required>
+                    <div class="error-message" id="emailError" aria-live="polite"></div>
+                </div>
+                <div class="form-group">
+                    <div class="password-label-row">
+                        <label for="password">Password</label>
+                        <a id="forgotPasswordLink" href="../forgot-password/forgot-password.html" class="forgot-link">Forgot password?</a>
+                    </div>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Input your password" autocomplete="current-password" aria-describedby="passwordError" required>
+                        <button type="button" id="togglePassword" class="toggle-password" aria-label="Show password" aria-pressed="false" aria-controls="password">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path id="passwordSlash" d="m3 3 18 18" hidden/></svg>
+                        </button>
+                    </div>
+                    <div class="error-message" id="passwordError" aria-live="polite"></div>
+                </div>
+                <div id="formMessage" class="login-feedback" role="status" aria-live="polite" hidden></div>
+                <button type="submit" id="loginBtn" class="btn-primary">Log in</button>
+                <p class="login-register"><span id="registerPrompt">Don’t have an account?</span> <button type="button" id="registerToggle" class="btn-text">Register</button></p>
+            </form>
+        </div>
+    </main>
+
+    <script src="../../utils/api.js"></script>
+    <script src="../../utils/login_utils.js"></script>
+    <script src="../../utils/password-policy.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+node_modules/
+.npm-cache/
+dist/
+.env
+uploads/*
+!uploads/.gitkeep
+.DS_Store
+npm-debug.log*

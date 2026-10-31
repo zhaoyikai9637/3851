@@ -1,0 +1,169 @@
+/* Shared by the React shell and the native recruitment document. */
+:root {
+  --jrs-accent: #315fd2;
+  --jrs-accent-hover: #244daf;
+  --jrs-ink: #24344e;
+  --jrs-muted: #5b6b82;
+  --jrs-line: #dfe7f0;
+  --jrs-soft: #f8fafd;
+  --jrs-control-height: 40px;
+  --jrs-control-radius: 8px;
+  --jrs-panel-radius: 14px;
+}
+
+/* One control scale; links, tabs and destructive actions keep their semantics. */
+:is(#content, .workspace-body) :is(.button, .btn:not(.btn-link), .job-primary, .job-secondary, .job-row-open, .row-menu summary, .notification-cta) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--jrs-control-height);
+  padding: 8px 14px;
+  border: 1px solid var(--jrs-line);
+  border-radius: var(--jrs-control-radius);
+  background: #fff;
+  color: var(--jrs-ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: none;
+}
+:is(#content, .workspace-body) :is(.button, .btn:not(.btn-link), .job-secondary, .job-row-open, .row-menu summary):hover:not(:disabled) {
+  background: var(--jrs-soft);
+  border-color: #b8c7dd;
+  color: var(--jrs-ink);
+  transform: none;
+}
+:is(#content, .workspace-body) :is(.button.primary, .btn-primary, .job-primary) {
+  background: var(--jrs-accent);
+  border-color: var(--jrs-accent);
+  color: #fff;
+}
+:is(#content, .workspace-body) :is(.button.primary, .btn-primary, .job-primary):hover:not(:disabled) {
+  background: var(--jrs-accent-hover);
+  border-color: var(--jrs-accent-hover);
+  color: #fff;
+}
+:is(#content, .workspace-body) .button.danger { background:#c13d4d; border-color:#c13d4d; color:#fff; }
+:is(#content, .workspace-body) .button.danger:hover:not(:disabled) { background:#a92e3e; border-color:#a92e3e; color:#fff; }
+:is(#content, .workspace-body) :is(.button, .btn, .job-primary, .job-secondary):disabled { opacity:.45; cursor:not-allowed; }
+:is(#content, .workspace-body) :is(.button, .btn, .job-primary, .job-secondary, .job-row-open, .row-menu summary):focus-visible {
+  outline: 2px solid var(--jrs-accent);
+  outline-offset: 3px;
+}
+/* Viewing a row always uses a secondary action, regardless of its workflow stage. */
+#content .row-actions > .button, #content [data-action="filters"] {
+  background:#fff; border-color:var(--jrs-line); color:var(--jrs-ink);
+}
+#content .row-menu summary { list-style:none; }
+#content .row-menu summary::after { content:"\2026"; font-size:16px; line-height:1; }
+#content .row-menu summary::-webkit-details-marker { display:none; }
+#content .section-tabs .button { border:0; border-bottom:3px solid transparent; background:transparent; color:var(--jrs-muted); }
+#content .section-tabs .button.selected { border-bottom-color:var(--jrs-accent); background:#ebf1ff; color:var(--jrs-accent); }
+:is(#content, .workspace-body) :is(.notification-filter-toggle, .log-date-toggle)[aria-expanded="true"] { background:#ebf1ff; border-color:#b5c8ef; color:var(--jrs-accent); }
+
+/* Search wrappers reuse the existing search icon in each renderer. */
+:is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search) {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 1 280px;
+  width:280px;
+  min-width:180px;
+  max-width:100%;
+  height:var(--jrs-control-height);
+  min-height:var(--jrs-control-height);
+  margin:0;
+  padding:0 12px;
+  background:#fff;
+  border:1px solid var(--jrs-line);
+  border-radius:var(--jrs-control-radius);
+  box-shadow:none;
+  font-size:13px;
+}
+:is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search) input {
+  width:100%; min-width:0; max-width:none;
+  height:38px; min-height:0;
+  padding:0; margin:0; border:0; border-radius:0;
+  background:transparent; color:var(--jrs-ink);
+  font-size:13px; line-height:1.4;
+  box-shadow:none; outline:none;
+}
+:is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search) svg {
+  width:17px; height:17px; flex-shrink:0; color:#7b8da7;
+}
+:is(#content, .workspace-body) input::placeholder { color:#7b8da7; opacity:1; }
+:is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search):focus-within {
+  border-color:var(--jrs-accent); outline:2px solid #315fd233; outline-offset:1px;
+}
+:is(#content, .workspace-body) :is(.queue-filters, .page-filters, .jobs-filter, .notification-type) select,
+:is(#content, .workspace-body) .hr-date-control > input {
+  height:var(--jrs-control-height); min-height:var(--jrs-control-height);
+  border:1px solid var(--jrs-line); border-radius:var(--jrs-control-radius);
+  padding:8px 32px 8px 12px; background-color:#fff;
+  color:var(--jrs-ink); font-size:13px; line-height:1.4;
+}
+:is(#content, .workspace-body) :is(.workspace-toolbar, .jobs-toolbar, .notification-toolbar, .queue-toolbar, .page-filters) {
+  gap:12px; align-items:center;
+}
+:is(#content, .workspace-body) :is(.workspace-toolbar, .jobs-toolbar, .page-filters) { margin-bottom:18px; }
+:is(#content, .workspace-body) .notification-tools { flex-wrap:wrap; gap:8px; }
+:is(#content, .workspace-body) .notification-toolbar { flex-wrap:wrap; padding:16px 20px; }
+:is(#content, .workspace-body) .notification-type { width:160px; }
+:is(#content, .workspace-body) .filter-tabs { min-height:40px; margin:0; }
+:is(#content, .workspace-body) .filter-tabs button { min-height:32px; font-size:13px; }
+
+/* Tables have the same edge, header, density and quiet hover treatment. */
+:is(#content, .workspace-body) :is(.panel, .candidate-surface, .jobs-table-panel, .notification-surface) {
+  border-color:var(--jrs-line); border-radius:var(--jrs-panel-radius); box-shadow:none;
+}
+:is(#content, .workspace-body) :is(.table-scroll, .table-responsive, .jobs-table-scroll) > table {
+  width:100%; margin:0; border-collapse:collapse; color:var(--jrs-ink); font-size:13px;
+}
+:is(#content, .workspace-body) table thead { background:var(--jrs-soft); box-shadow:none; }
+:is(#content, .workspace-body) table th {
+  height:44px; padding:12px 20px; background:var(--jrs-soft);
+  color:var(--jrs-muted); font-size:11px; font-weight:600; line-height:1.4;
+  text-transform:uppercase; letter-spacing:.025em;
+  border-bottom:1px solid var(--jrs-line); vertical-align:middle;
+}
+:is(#content, .workspace-body) table td {
+  height:80px; padding:16px 20px; border-bottom:1px solid var(--jrs-line);
+  background:#fff; color:var(--jrs-ink); font-size:13px; line-height:1.5; vertical-align:middle;
+  box-shadow:none;
+}
+:is(#content, .workspace-body) table tbody tr:hover > td { background:var(--jrs-soft); }
+:is(#content, .workspace-body) table tbody tr:last-child > td { border-bottom:0; }
+:is(#content, .workspace-body) table th:first-child { border-top-left-radius:var(--jrs-panel-radius); }
+:is(#content, .workspace-body) table th:last-child { border-top-right-radius:var(--jrs-panel-radius); }
+:is(#content, .workspace-body) table th:last-child,
+:is(#content, .workspace-body) table td:last-child { text-align:right; }
+:is(#content, .workspace-body) :is(.candidate-name, .job-title-button, .person strong) { font-size:14px; font-weight:600; color:var(--jrs-ink); }
+:is(#content, .workspace-body) :is(.job-row-meta, .person small, td > small) { font-size:12px; color:var(--jrs-muted); margin-top:4px; }
+:is(#content, .workspace-body) :is(.badge, .job-status) { border-radius:20px; padding:5px 9px; font-size:11px; font-weight:600; line-height:1.4; }
+
+/* All list pagers use the same footer and text navigation. */
+:is(#content, .workspace-body) :is(.table-footer, .pagination-row, .jobs-table-footer) {
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;
+  gap:12px; min-height:64px; margin:0; padding:12px 20px;
+  border-top:1px solid var(--jrs-line); background:#fff;
+  color:var(--jrs-muted); font-size:12px;
+  border-radius:0 0 var(--jrs-panel-radius) var(--jrs-panel-radius);
+}
+:is(#content, .workspace-body) .table-footer p { margin:0; font-size:12px; color:var(--jrs-muted); }
+:is(#content, .workspace-body) :is(.pagination, .jobs-table-footer nav) { display:flex; align-items:center; gap:10px; color:var(--jrs-muted); font-size:12px; }
+:is(#content, .workspace-body) :is(.pagination, .pagination-row, .jobs-table-footer) button { min-height:36px; padding:7px 12px; font-size:12px; }
+:is(#content, .workspace-body) .notification-cta { pointer-events:none; }
+
+@media(max-width:700px) {
+  :is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search) { flex:1 1 220px; width:100%; min-width:0; }
+  :is(#content, .workspace-body) .notification-tools { width:100%; justify-content:flex-start; }
+  :is(#content, .workspace-body) .notification-type { flex:1 1 140px; }
+  :is(#content, .workspace-body) table th { padding:12px; }
+  :is(#content, .workspace-body) table td { padding:14px 12px; height:auto; }
+  #content .table-scroll td { min-height:0; height:auto; padding:10px 12px; border:0; text-align:left; }
+  :is(#content, .workspace-body) :is(.table-footer, .pagination-row, .jobs-table-footer) { padding:12px; gap:10px; }
+  :is(#content, .workspace-body) .notification-cta { min-height:36px; padding:7px 10px; font-size:12px; }
+}

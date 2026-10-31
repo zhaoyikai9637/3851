@@ -1,0 +1,70 @@
+-- Run with scripts/migrate.js after a backup and review; never at server startup.
+-- MySQL DDL auto-commits. The runner records and validates individual steps for resumption.
+-- Existing account/candidate IDs, HR relations and MODULE_SESSION schema are retained.
+
+ALTER TABLE CANDIDATE ADD COLUMN account_id INT NULL;
+ALTER TABLE CANDIDATE ADD COLUMN first_name VARCHAR(50) NOT NULL DEFAULT '';
+ALTER TABLE CANDIDATE ADD COLUMN last_name VARCHAR(49) NOT NULL DEFAULT '';
+ALTER TABLE CANDIDATE ADD COLUMN country_code VARCHAR(10) NOT NULL DEFAULT '+65';
+ALTER TABLE CANDIDATE ADD COLUMN contact_number VARCHAR(20) NOT NULL DEFAULT '';
+ALTER TABLE CANDIDATE ADD COLUMN home_location VARCHAR(200) NOT NULL DEFAULT '';
+ALTER TABLE CANDIDATE ADD COLUMN personal_summary TEXT NULL;
+ALTER TABLE CANDIDATE ADD CONSTRAINT uq_candidate_account UNIQUE (account_id);
+ALTER TABLE CANDIDATE ADD CONSTRAINT fk_candidate_account FOREIGN KEY (account_id) REFERENCES MODULE_ACCOUNT(account_id) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+CREATE TABLE CAREER_HISTORY (
+ role_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, candidate_id INT NOT NULL,
+ job_title VARCHAR(150) NOT NULL, company_name VARCHAR(150) NOT NULL,
+ start_month_year CHAR(7) NULL, end_month_year CHAR(7) NULL,
+ is_current_role BOOLEAN NOT NULL DEFAULT FALSE, description TEXT NULL,
+ FOREIGN KEY (candidate_id) REFERENCES CANDIDATE(candidate_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE EDUCATION (
+ education_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, candidate_id INT NOT NULL,
+ institution VARCHAR(150) NOT NULL, qualification VARCHAR(150) NOT NULL,
+ finished_year CHAR(4) NULL, end_month_year CHAR(7) NULL,
+ is_current_study BOOLEAN NOT NULL DEFAULT FALSE, description TEXT NULL,
+ FOREIGN KEY (candidate_id) REFERENCES CANDIDATE(candidate_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE CERTIFICATION (
+ cert_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, candidate_id INT NOT NULL,
+ cert_name VARCHAR(150) NOT NULL, issuing_org VARCHAR(150) NOT NULL DEFAULT '',
+ issue_month_year CHAR(7) NULL, expiry_month_year CHAR(7) NULL,
+ no_expiry BOOLEAN NOT NULL DEFAULT FALSE, description TEXT NULL,
+ FOREIGN KEY (candidate_id) REFERENCES CANDIDATE(candidate_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE SKILL (
+ skill_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, candidate_id INT NOT NULL,
+ skill_name VARCHAR(50) NOT NULL, UNIQUE KEY uq_candidate_skill (candidate_id, skill_name),
+ FOREIGN KEY (candidate_id) REFERENCES CANDIDATE(candidate_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE LANGUAGE (
+ language_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, candidate_id INT NOT NULL,
+ language_name VARCHAR(80) NOT NULL, can_read BOOLEAN NOT NULL DEFAULT FALSE,
+ can_write BOOLEAN NOT NULL DEFAULT FALSE, UNIQUE KEY uq_candidate_language (candidate_id, language_name),
+ FOREIGN KEY (candidate_id) REFERENCES CANDIDATE(candidate_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE RESUME_FILE (
+ file_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, candidate_id INT NOT NULL,
+ file_name VARCHAR(255) NOT NULL, storage_key CHAR(64) NOT NULL UNIQUE,
+ file_type VARCHAR(100) NOT NULL, file_size INT UNSIGNED NOT NULL,
+ uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (candidate_id) REFERENCES CANDIDATE(candidate_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE JRS_PASSWORD_RESET (
+ account_id INT NOT NULL PRIMARY KEY, code_hash CHAR(64) NULL,
+ expires_at DATETIME NOT NULL, attempts INT NOT NULL DEFAULT 0, sent_at DATETIME NOT NULL,
+ token_hash CHAR(64) NULL UNIQUE, token_expires_at DATETIME NULL,
+ FOREIGN KEY (account_id) REFERENCES MODULE_ACCOUNT(account_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE JRS_RATE_LIMIT (
+ bucket_key CHAR(64) NOT NULL PRIMARY KEY, hits INT UNSIGNED NOT NULL,
+ expires_at DATETIME NOT NULL, INDEX idx_rate_expiry (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

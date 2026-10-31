@@ -1,0 +1,78 @@
+{
+  "provenance": {
+    "createdFor": "Zhao Yikai — HR notification and profile module",
+    "date": "2026-10-07",
+    "type": "Original project content prepared with AI assistance",
+    "fictionalExamples": true
+  },
+  "templates": [
+    {
+      "templateName": "JRS — Application Rejection",
+      "usageType": "APPLICATION_REJECTION",
+      "subject": "Application Update – [JobTitle]",
+      "body": "Dear [CandidateName],\n\nThank you for applying for [JobTitle] at [CompanyName]. After reviewing your application, we will not be progressing it to the interview stage for this vacancy.\n\nWe appreciate your interest and wish you well in your job search.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Interview Rejection",
+      "usageType": "INTERVIEW_REJECTION",
+      "subject": "Interview Outcome – [JobTitle]",
+      "body": "Dear [CandidateName],\n\nThank you for taking the time to interview for [JobTitle] at [CompanyName]. We appreciated the opportunity to hear about your experience and discuss the role with you.\n\nFollowing the interview review, we will not be moving forward with your application for this position. We recognise the preparation and time you invested in the process and appreciate your participation.\n\nThank you again, and we wish you success in your next opportunity.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Offer Withdrawal",
+      "usageType": "OFFER_WITHDRAWAL",
+      "subject": "Offer Withdrawal – [JobTitle]",
+      "body": "Dear [CandidateName],\n\nWe are writing to inform you that [CompanyName] is withdrawing its offer for [JobTitle]. We understand that this update may affect your plans and apologise for the disruption.\n\nPlease contact your HR representative to discuss the specific circumstances and any arrangements that need clarification.\n\nThank you for the time you have invested in the recruitment process.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Offer Declined Acknowledgement",
+      "usageType": "OFFER_DECLINED_ACKNOWLEDGEMENT",
+      "subject": "Your Offer Decision – [JobTitle]",
+      "body": "Dear [CandidateName],\n\nThank you for letting us know that you have decided not to accept the offer for [JobTitle] at [CompanyName]. We acknowledge your decision and will close this offer in our recruitment records.\n\nWe appreciate the time you spent speaking with our team and considering the opportunity. Thank you for keeping us informed, and we wish you well in your next steps.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Interview invitation",
+      "usageType": "INTERVIEW_INVITE",
+      "subject": "Next step for your [JobTitle] application",
+      "body": "Dear [CandidateName],\n\nThank you for sharing your experience with [CompanyName]. We would like to invite you to an interview for [JobTitle].\n\nOur recruitment team will send the proposed time, meeting format and joining details separately. Please wait for those details before making travel arrangements. If you need an adjustment to take part comfortably, you may let the team know when confirming your availability.\n\nWe look forward to learning more about your work and answering your questions.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Offer review",
+      "usageType": "OFFER_LETTER",
+      "subject": "Your [JobTitle] offer from [CompanyName]",
+      "body": "Dear [CandidateName],\n\nWe are pleased to share the next step in your application for [JobTitle] at [CompanyName].\n\nThe hiring team will provide the formal offer with the role details, remuneration, proposed start date and response deadline. Please review that document carefully and contact the team if any information needs clarification. This notification does not replace the formal offer or confirm your acceptance.\n\nThank you for the time and care you have put into the recruitment process.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Acceptance recorded",
+      "usageType": "ACCEPTED",
+      "subject": "Confirmation for your [JobTitle] application",
+      "body": "Dear [CandidateName],\n\nThe recruitment team has recorded an accepted outcome for your application for [JobTitle] at [CompanyName].\n\nYour designated contact will confirm any remaining documents and the next arrangements. Please follow the details in the formal offer and the team's subsequent instructions; this automated update does not introduce new employment terms.\n\nThank you for staying in touch throughout the process.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Application outcome",
+      "usageType": "REJECTED",
+      "subject": "An update on [JobTitle] at [CompanyName]",
+      "body": "Dear [CandidateName],\n\nThank you for your interest in [JobTitle] at [CompanyName] and for the time you spent preparing your application.\n\nAfter reviewing this recruitment round, we will not be progressing your application for this position. This decision relates to the requirements of the current vacancy and is not a judgement of your potential.\n\nWe appreciate the opportunity to learn about your experience and wish you well with your next application.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    },
+    {
+      "templateName": "JRS — Review in progress",
+      "usageType": "IN_PROGRESS",
+      "subject": "We are reviewing your [JobTitle] application",
+      "body": "Dear [CandidateName],\n\nYour application for [JobTitle] at [CompanyName] is currently under review. The recruitment team is considering the information you submitted against the role requirements.\n\nThere is no additional action for you to take at this stage unless the team contacts you. We will share the next update when a decision is available; this message does not guarantee an interview or offer.\n\nThank you for your patience and your interest in joining us.\n\nKind regards,\n[HRName]\n[CompanyName]"
+    }
+  ],
+  "notificationExamples": [
+    { "notificationType": "NEW_APPLICATION", "title": "A new application is ready for review", "message": "Avery Chen submitted an application for Junior Web Developer. Open the application summary to check the current status.", "sourceModule": "Applications", "fictional": true },
+    { "notificationType": "STATUS_UPDATED", "title": "Application moved to interview", "message": "Morgan Lee's application for QA Analyst has moved to the interview stage. Scheduling is managed by the recruitment team.", "sourceModule": "Applications", "fictional": true }
+  ],
+  "profileExample": {
+    "fullName": "Jordan Lin",
+    "employeeId": "EXAMPLE-HR-001",
+    "email": "jordan.lin@example.test",
+    "role": "HR Manager",
+    "department": "People and Recruitment",
+    "officeLocation": "Demonstration office",
+    "accountStatus": "ACTIVE",
+    "fictional": true
+  }
+}

@@ -1,0 +1,15 @@
+**/node_modules/
+**/coverage/
+**/.env
+**/.env.*
+!**/.env.example
+**/uploads/
+**/*.log
+**/Test Log/
+JRS_TEAM_DATABASE_CREDENTIALS.txt
+**/*.pem
+**/.vscode/
+**/test-results/
+.local-backup/
+docs/HANDOFF-*.md
+docs/archive/
