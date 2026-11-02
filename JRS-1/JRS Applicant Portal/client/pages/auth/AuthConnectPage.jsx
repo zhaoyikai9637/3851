@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, LogIn, MonitorPlay } from "lucide-react";
+import { ArrowLeft, LogIn, MonitorPlay } from "lucide-react";
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { getApiError } from "../../api/client";
@@ -43,11 +43,9 @@ export default function AuthConnectPage() {
   return (
     <div className="auth-connect-page">
       <section className="auth-connect-panel surface">
-        <p className="eyebrow text-primary">AUTHENTICATION HANDOFF</p>
-        <h1>Sign in to continue your application</h1>
+        <h1>Log in to continue</h1>
         <p className="auth-connect-intro">
-          Account registration and password verification are provided by the team's shared login module.
-          After authentication, the applicant returns here and enters the detailed workspace.
+          Log in or create an account to apply for jobs and track your applications.
         </p>
 
         {error && <div className="alert alert-danger" role="alert">{error}</div>}
@@ -55,8 +53,7 @@ export default function AuthConnectPage() {
         <div className="auth-connect-actions">
           <a className="btn btn-primary btn-lg" href={teamLoginUrl(returnTo)}>
             <LogIn size={20} />
-            Continue to team sign-in
-            <ExternalLink size={17} />
+            Log in / Register
           </a>
           {import.meta.env.VITE_ENABLE_DEMO_AUTH !== "false" && (
             <button className="btn btn-outline-secondary btn-lg" type="button" onClick={previewAuthenticatedPages} disabled={startingPreview}>
@@ -68,7 +65,7 @@ export default function AuthConnectPage() {
 
         <Link className="back-link" to="/jobs">
           <ArrowLeft size={19} />
-          Return to public jobs
+          Back to jobs
         </Link>
       </section>
     </div>
