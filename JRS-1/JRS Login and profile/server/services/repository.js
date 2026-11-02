@@ -134,14 +134,19 @@ class Repository {
     async profile(accountId) {
         const row = await this.candidate(accountId);
         if (!row) return null;
-        for (const [section, schema] of Object.entries(sections)) {
-            const [records] = await this.pool.query(`SELECT * FROM ${schema.table} WHERE candidate_id = ? ORDER BY ${schema.key}`, [row.candidate_id]);
-            row[section] = records;
-        }
-        const [skills] = await this.pool.query('SELECT skill_name FROM SKILL WHERE candidate_id = ? ORDER BY skill_id', [row.candidate_id]);
-        row.skills = skills.map(s => s.skill_name);
-        [row.languages] = await this.pool.query('SELECT language_name, can_read, can_write FROM LANGUAGE WHERE candidate_id = ? ORDER BY language_id', [row.candidate_id]);
-        [row.resumes] = await this.pool.query('SELECT file_id, file_name, file_type, file_size, uploaded_at FROM RESUME_FILE WHERE candidate_id = ? ORDER BY file_id DESC', [row.candidate_id]);
+        // These owner-scoped reads are independent; do not serialize network waits.
+        await Promise.all([
+            ...Object.entries(sections).map(async ([section, schema]) => {
+                const [records] = await this.pool.query(`SELECT * FROM ${schema.table} WHERE candidate_id = ? ORDER BY ${schema.key}`, [row.candidate_id]);
+                row[section] = records;
+            }),
+            (async () => {
+                const [skills] = await this.pool.query('SELECT skill_name FROM SKILL WHERE candidate_id = ? ORDER BY skill_id', [row.candidate_id]);
+                row.skills = skills.map(s => s.skill_name);
+            })(),
+            (async () => { [row.languages] = await this.pool.query('SELECT language_name, can_read, can_write FROM LANGUAGE WHERE candidate_id = ? ORDER BY language_id', [row.candidate_id]); })(),
+            (async () => { [row.resumes] = await this.pool.query('SELECT file_id, file_name, file_type, file_size, uploaded_at FROM RESUME_FILE WHERE candidate_id = ? ORDER BY file_id DESC', [row.candidate_id]); })(),
+        ]);
         return row;
     }
     async updateProfile(candidateId, values) {

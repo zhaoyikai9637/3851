@@ -339,10 +339,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Keep controls disabled until identity/profile loading succeeds.
     const initialControls = [...document.querySelectorAll('button')];
     initialControls.forEach(button => { button.disabled = true; });
+    $('profileRetryBtn').addEventListener('click', () => window.location.reload());
     try {
-        await JRS.request('/me'); await load(); initialControls.forEach(button => { button.disabled = false; });
+        await Promise.all([JRS.request('/me'), load()]);
+        document.body.classList.remove('profile-loading');
+        $('profileMain').setAttribute('aria-busy', 'false');
+        $('profileLoading').hidden = true;
+        initialControls.forEach(button => { button.disabled = false; });
     } catch (err) {
         if (err.status === 401) window.location.replace('../login/login.html');
-        else message(`Unable to load your profile: ${err.message} Reload to retry.`, true);
+        else {
+            document.body.classList.remove('profile-loading');
+            $('profileMain').setAttribute('aria-busy', 'false');
+            $('profileLoading').hidden = true;
+            document.querySelector('.profile-grid').hidden = true;
+            $('profileRetryBtn').hidden = false;
+            $('profileRetryBtn').disabled = false;
+            message('Unable to load your profile. Please try again.', true);
+        }
     }
 });

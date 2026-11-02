@@ -214,3 +214,13 @@
 
 /* Explicit component display rules must respect the hidden attribute. */
 .dashboard-body [hidden] { display: none !important; }
+
+/* Profile loading never presents example identity data as the signed-in user. */
+.profile-loading-note { margin: 0 0 16px; color: #475569; font-size: 14px; }
+#profileLoading[hidden], #profileRetryBtn[hidden], .profile-grid[hidden] { display: none !important; }
+#profileRetryBtn { margin-bottom: 16px; }
+.profile-loading #avatarCircle { background: #e2e8f0; }
+.profile-loading #userName::before { content: ''; display: block; width: 180px; max-width: 100%; height: 28px; border-radius: 6px; background: #e2e8f0; }
+.profile-loading .user-contact { visibility: hidden; }
+.profile-loading .profile-grid button { visibility: hidden; }
+.profile-loading .section-data::before { content: ''; display: block; width: 65%; max-width: 420px; height: 14px; margin-top: 14px; border-radius: 4px; background: #e2e8f0; }

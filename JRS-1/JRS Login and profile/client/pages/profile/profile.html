@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="../../assets/css/profile-layout.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body class="dashboard-body">
+<body class="dashboard-body profile-loading">
 
     <!-- Left Navigation Sidebar -->
     <aside class="sidebar applicant-sidebar" id="applicantNavigation" aria-label="Applicant navigation">
@@ -34,48 +34,50 @@
     <button type="button" id="navigationBackdrop" class="navigation-backdrop" aria-label="Close navigation" hidden></button>
 
     <!-- Main Content Area -->
-    <main class="dashboard-main">
+    <main class="dashboard-main" id="profileMain" aria-busy="true">
         <div class="profile-toolbar">
             <button type="button" class="navigation-icon" id="openNavigation" aria-controls="applicantNavigation" aria-expanded="false" aria-label="Open navigation">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button><span>Profile</span>
         </div>
+        <p id="profileLoading" class="profile-loading-note" role="status">Loading your profile...</p>
+        <button id="profileRetryBtn" type="button" class="btn-outline" hidden>Retry loading profile</button>
         <div id="profileMessage" class="profile-message" role="status" aria-live="polite" hidden></div>
         <div class="profile-grid">
             <section class="user-info-card" aria-label="Personal information">
-                    <div class="avatar-circle" id="avatarCircle">X</div>
+                    <div class="avatar-circle" id="avatarCircle"></div>
                     <div class="user-info-details">
-<h2 class="user-name" id="userName">XXX XXXXXXX</h2>
+<h2 class="user-name" id="userName"></h2>
                     <div class="user-contact">
-                        <p><i class="fa-regular fa-envelope"></i> <span id="userEmail">xxx@example.com</span></p>
-                        <p><i class="fa-solid fa-phone"></i> <span id="userPhone">+65| xxxxxxxx</span></p>
+                        <p><i class="fa-regular fa-envelope"></i> <span id="userEmail"></span></p>
+                        <p><i class="fa-solid fa-phone"></i> <span id="userPhone"></span></p>
                     </div>
                     </div>
-<button class="btn-outline" id="editMaterialsBtn">Edit Profile</button>
+<button disabled class="btn-outline" id="editMaterialsBtn">Edit Profile</button>
                 </section>
             <section class="profile-section profile-section-wide">
                     <h3>Personal Summary</h3>                    <div id="summaryContent" class="section-data"></div>
-                    <button class="btn-secondary-link" id="addSummaryBtn">Add summary</button>
+                    <button disabled class="btn-secondary-link" id="addSummaryBtn">Add summary</button>
                 </section>
             <section class="profile-section profile-section-wide">
                     <h3>Career History</h3>                    <div id="careerList" class="section-data"></div>
-                    <button class="btn-secondary-link" id="addRoleBtn">Add role</button>
+                    <button disabled class="btn-secondary-link" id="addRoleBtn">Add role</button>
                 </section>
             <section class="profile-section">
                     <h3>Education</h3>                    <div id="educationList" class="section-data"></div>
-                    <button class="btn-secondary-link" id="addEducationBtn">Add education</button>
+                    <button disabled class="btn-secondary-link" id="addEducationBtn">Add education</button>
                 </section>
             <section class="profile-section">
                     <h3>Licences & Certifications</h3>                    <div id="certList" class="section-data"></div>
-                    <button class="btn-secondary-link" id="addCertBtn">Add licence or certification</button>
+                    <button disabled class="btn-secondary-link" id="addCertBtn">Add licence or certification</button>
                 </section>
             <section class="profile-section profile-section-wide">
                     <h3>Skills</h3>                    <div id="skillTags" class="tag-container"></div>
-                    <button class="btn-secondary-link" id="addSkillBtn">Add skills</button>
+                    <button disabled class="btn-secondary-link" id="addSkillBtn">Add skills</button>
                 </section>
             <section class="profile-section profile-section-wide">
                     <h3>Languages</h3>                    <div id="languageList" class="section-data"></div>
-                    <button class="btn-secondary-link" id="addLanguageBtn">Add language</button>
+                    <button disabled class="btn-secondary-link" id="addLanguageBtn">Add language</button>
                 </section>
         </div>
     </main>
