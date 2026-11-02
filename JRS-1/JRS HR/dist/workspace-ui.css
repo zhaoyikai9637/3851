@@ -167,3 +167,22 @@
   :is(#content, .workspace-body) :is(.table-footer, .pagination-row, .jobs-table-footer) { padding:12px; gap:10px; }
   :is(#content, .workspace-body) .notification-cta { min-height:36px; padding:7px 10px; font-size:12px; }
 }
+
+/* Match applicant navigation typography without changing HR content panels. */
+.workspace > .sidebar { font-family:Inter,"Segoe UI",Arial,sans-serif; background:#14233b; overflow-y:auto; }
+.workspace > .sidebar nav, .mobile-navigation nav { display:grid; gap:10px; }
+.workspace > .sidebar nav a, .mobile-navigation nav a {
+  min-height:54px;
+  gap:14px;
+  padding:0 15px;
+  margin:0;
+  border-radius:7px;
+  color:#c6d2e2;
+  font-size:16px;
+  font-weight:700;
+  line-height:1.55;
+}
+.workspace > .sidebar nav a svg, .mobile-navigation nav a svg { width:22px; height:22px; flex-shrink:0; }
+.workspace > .sidebar nav a:hover, .mobile-navigation nav a:hover { background:#203553; color:#fff; }
+.workspace > .sidebar nav a.active, .mobile-navigation nav a.active { background:#2563eb; color:#fff; box-shadow:none; }
+.workspace > .sidebar .sidebar-label, .mobile-navigation .sidebar-label { font-size:12px; font-weight:800; letter-spacing:0; color:#8ea0ba; }
