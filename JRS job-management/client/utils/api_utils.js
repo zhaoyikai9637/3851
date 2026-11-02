@@ -84,12 +84,13 @@ if (typeof document !== 'undefined') document.addEventListener('DOMContentLoaded
 });
 
 const jobForm = {
-    fields: { jobTitle: 'title', department: 'department', location: 'location', employmentType: 'type', salaryRange: 'salary_range', closingDate: 'closing_date', publishDate: 'publish_date', unpublishDate: 'unpublish_date', jobDescription: 'description', requirements: 'requirements' },
+    fields: { jobTitle: 'title', department: 'department', location: 'location', employmentType: 'type', salaryRange: 'salary_range', closingDate: 'closing_date', publishDate: 'publish_date', jobDescription: 'description', requirements: 'requirements' },
     read(status) {
         const value = id => document.getElementById(id).value.trim();
-        return { title: value('jobTitle'), department: value('department'), location: value('location'), type: value('employmentType'), salaryRange: value('salaryRange'), closingDate: value('closingDate'), publishDate: value('publishDate'), unpublishDate: value('unpublishDate'), description: value('jobDescription'), requirements: value('requirements'), status };
+        return { title: value('jobTitle'), department: value('department'), location: value('location'), type: value('employmentType'), salaryRange: value('salaryRange'), closingDate: value('closingDate'), publishDate: value('publishDate'), unpublishDate: this.unpublishDate || '', description: value('jobDescription'), requirements: value('requirements'), status };
     },
     fill(job) {
+        this.unpublishDate = job.unpublish_date || '';
         for (const [id, field] of Object.entries(this.fields)) {
             const element = document.getElementById(id);
             const value = job[field] || '';
