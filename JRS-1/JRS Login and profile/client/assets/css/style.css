@@ -708,3 +708,8 @@ body {
  .auth-page .page-container {min-height:0;padding:32px 16px;}
  .auth-page .auth-card {padding:12px;width:100%;}
 }
+
+/* Authentication uses the same two-circle JRS mark as the HR workspace. */
+.circle-dark { background-color:#0f172a; border:1px solid #8293b2; box-sizing:border-box; }
+.circle-blue { background-color:#416be0; margin-left:-9px; }
+.auth-page .circle-blue { margin-left:-12px; }

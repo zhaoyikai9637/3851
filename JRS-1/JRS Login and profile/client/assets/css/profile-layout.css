@@ -224,3 +224,16 @@
 .profile-loading .user-contact { visibility: hidden; }
 .profile-loading .profile-grid button { visibility: hidden; }
 .profile-loading .section-data::before { content: ''; display: block; width: 65%; max-width: 420px; height: 14px; margin-top: 14px; border-radius: 4px; background: #e2e8f0; }
+
+/* Shared JRS mark matches the HR workspace: two overlapping circles. */
+.brand-mark { width:61px; height:38px; }
+.brand-mark::before { background:#0f172a; border:1px solid #8293b2; box-sizing:border-box; }
+.brand-mark::after { left:23px; right:auto; background:#416be0; }
+.brand-mark span { display:none; }
+.brand-mark.large { width:84px; height:52px; }
+.brand-mark.large::after { left:32px; }
+.public-brand .brand-mark { width:39px; height:24px; }
+.public-brand .brand-mark::before, .public-brand .brand-mark::after { width:24px; height:24px; }
+.public-brand .brand-mark::before { background:#0f172a; border:1px solid #8293b2; }
+.public-brand .brand-mark::after { left:15px; background:#416be0; }
+.public-brand .brand-mark span { display:none; }

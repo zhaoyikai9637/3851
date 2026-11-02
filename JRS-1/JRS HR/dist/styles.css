@@ -2424,3 +2424,9 @@ dialog::backdrop{
 .page-filters>label:not(.search) { display: flex; gap: 6px; align-items: center; font-size: 14px; }
 .page-filters input[type=date] { padding: 8px; border: 1px solid #dfe6ef; border-radius: 6px; }
 @media(max-width:600px){.login-card{padding:28px}.uploaded-resume{min-height:560px}.module-tabs{gap:0}}
+
+/* Match the shared HR workspace mark in standalone navigation. */
+.brand-mark { width:61px; }
+.brand-mark:before { background:#0f172a; border:1px solid #8293b2; box-sizing:border-box; }
+.brand-mark:after { left:23px; background:#416be0; }
+@media (max-width:640px) { .brand-mark { width:61px; } }
