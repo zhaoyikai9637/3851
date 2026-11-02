@@ -15,6 +15,7 @@ const initialFilters = {
 export default function JobsPage({ authenticated = false }) {
   const [filters, setFilters] = useState(initialFilters);
   const [jobs, setJobs] = useState([]);
+  const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
   const [options, setOptions] = useState({ departments: [], locations: [], workModes: [], experienceLevels: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,6 +27,7 @@ export default function JobsPage({ authenticated = false }) {
       const params = Object.fromEntries(Object.entries(values).filter(([, value]) => value));
       const { data } = await api.get("/jobs", { params });
       setJobs(data.jobs);
+      setHasAppliedFilters(Object.values(values).some(Boolean));
       setOptions(data.filters);
     } catch (requestError) {
       setError(getApiError(requestError, "Unable to load current company openings."));
@@ -112,9 +114,9 @@ export default function JobsPage({ authenticated = false }) {
           {!loading && !error && jobs.length === 0 && (
             <div className="empty-state surface">
               <Search size={34} aria-hidden="true" />
-              <h3>No matching roles</h3>
-              <p>Try a broader search or reset the filters.</p>
-              <button className="btn btn-outline-primary" type="button" onClick={handleReset}>Reset filters</button>
+              <h3>{hasAppliedFilters ? "No matching roles" : "No open roles yet"}</h3>
+              <p>{hasAppliedFilters ? "Try a broader search or reset the filters." : "There are currently no published vacancies. Please check back later."}</p>
+              {hasAppliedFilters && <button className="btn btn-outline-primary" type="button" onClick={handleReset}>Reset filters</button>}
             </div>
           )}
 

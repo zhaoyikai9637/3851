@@ -371,19 +371,27 @@ textarea.form-control {
 }
 
 .public-brand .brand-mark {
-  width: 44px;
-  height: 34px;
+  width: 40px;
+  height: 24px;
 }
 
 .public-brand .brand-mark::before,
 .public-brand .brand-mark::after,
 .public-brand .brand-mark span {
-  width: 34px;
-  height: 34px;
+  width: 24px;
+  height: 24px;
 }
 
 .public-brand .brand-mark::before {
-  border: 1px solid #c8d4e6;
+  background: #0f172a;
+}
+
+.public-brand .brand-mark::after {
+  background: #2563eb;
+}
+
+.public-brand .brand-mark span {
+  display: none;
 }
 
 .public-brand strong,
