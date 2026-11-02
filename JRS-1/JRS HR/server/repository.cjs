@@ -5,11 +5,11 @@ const M = require('../dist/state.js');
 // Array-valued skills/requirements use JSON; entities and relations use real tables/FKs.
 const maps = [
  ['jobs','hr_job_position','id title department type:employment_type location mode:work_mode experience education minimumEducationLevel:minimum_education_level acceptedMajors:accepted_majors:json status description skills:skills:json requirements:requirements:json createdAt:created_at'],
- ['candidates','hr_candidate','id name email phone location experience graduateStatus:graduate_status education educationLevel:education_level educationMajor:education_major graduationDate:graduation_date skills:skills:json notes createdAt:created_at'],
+ ['candidates','hr_candidate','id name email phone location experience:experience:decimal graduateStatus:graduate_status education educationLevel:education_level educationMajor:education_major graduationDate:graduation_date skills:skills:json notes createdAt:created_at'],
  ['applications','hr_application','id candidateId:candidate_id jobId:job_id stage appliedDate:applied_date priority rejectionReason:rejection_reason rejectionConfirmed:rejection_confirmed:bool createdAt:created_at retentionStartedAt:retention_started_at'],
  ['interviews','hr_interview','id applicationId:application_id date:interview_date time:interview_time:time duration format location interviewer notes status'],
  ['feedbackRows','hr_interview_feedback','id rating recommendation notes recordedAt:recorded_at'],
- ['offerRows','hr_offer','id salary currency startDate:start_date expiry approval status terms createdAt:created_at'],
+ ['offerRows','hr_offer','id salary:salary:decimal currency startDate:start_date expiry approval status terms createdAt:created_at'],
  ['noteRows','hr_application_note','id applicationId:application_id text:body actor at:at_time sequence:sequence_no'],
  ['tasks','hr_task','id applicationId:application_id title assignee due notes status createdAt:created_at'],
  ['templates','hr_email_template','id name kind subject body active:active:bool updatedAt:updated_at'],
@@ -33,9 +33,15 @@ async function load(conn) {
   if(!heads.length) fail(503,'Database has not been initialized. Run npm run db:init.');
   const h=heads[0], db={schemaVersion:2,revision:h.revision,createdAt:h.created_at,updatedAt:h.updated_at};
   // A connection stays inside one repeatable-read transaction for a coherent snapshot.
-  for(const m of maps) {
-    const [rows]=await conn.query(`SELECT ${m.fields.map(f=>'`'+f.col+'`').join(',')} FROM ${m.table}`);
-    db[m.key]=rows.map(row=>Object.fromEntries(m.fields.map(({prop,col,type})=>[prop,type==='json'?parseJSON(row[col]):type==='bool'?!!row[col]:type==='time'?row[col].slice(0,5):row[col]])));
+  // A single fixed UNION statement avoids one network round trip per table.
+  // Identifiers and JSON keys come only from the trusted repository mappings.
+  const sql=maps.map(m=>"SELECT '"+m.key+"' AS entity,JSON_OBJECT("+m.fields.map(f=>"'"+f.col+"',"+(f.type==='decimal'?"CAST(`"+f.col+"` AS CHAR)":"`"+f.col+"`")).join(',')+") AS record FROM "+m.table).join(' UNION ALL ');
+  const [records]=await conn.query(sql);
+  const mapping=new Map(maps.map(m=>[m.key,m]));
+  for(const m of maps)db[m.key]=[];
+  for(const record of records) {
+    const m=mapping.get(record.entity),row=parseJSON(record.record);
+    db[m.key].push(Object.fromEntries(m.fields.map(({prop,col,type})=>[prop,type==='json'?parseJSON(row[col]):type==='bool'?!!row[col]:type==='decimal'&&conn.connection?.config?.decimalNumbers?Number(row[col]):type==='time'?row[col].slice(0,5):row[col]])));
   }
   db.interviews.forEach(i=>{i.feedback=db.feedbackRows.find(f=>f.id===i.id)||null;if(i.feedback)delete i.feedback.id;});
   db.applications.forEach(a=>{a.notes=db.noteRows.filter(n=>n.applicationId===a.id).sort((a,b)=>a.sequence-b.sequence).map(n=>({text:n.text,actor:n.actor,at:n.at}));a.offer=db.offerRows.find(o=>o.id===a.id)||null;if(a.offer)delete a.offer.id;a.feedback=db.interviews.filter(i=>i.applicationId===a.id&&i.feedback).sort((a,b)=>b.feedback.recordedAt.localeCompare(a.feedback.recordedAt))[0]?.feedback||null;});

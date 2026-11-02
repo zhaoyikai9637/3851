@@ -9,7 +9,8 @@ import {createFileStore} from './file-storage.mjs';
 import {syncSentMail} from './mail-history-bridge.mjs';
 import {mountReadiness} from './readiness.mjs';
 import {recruitmentMailSettings} from './mail-settings.mjs';
-import { readSharedSession, createSharedIdentity, verifySharedWrite, httpError } from './security.mjs';
+import { createSharedIdentity, httpError } from './security.mjs';
+import {requireRecruitmentUser} from './recruitment-auth.mjs';
 import { namespacePool } from './sql-namespace.mjs';
 import { createRecruitmentBridge } from './recruitment-bridge.mjs';
 import { jobPublicationServices } from './job-publications.mjs';
@@ -22,7 +23,6 @@ import candidateApp from '../JRS Login and profile/server/app.js';
 import candidateMailer from '../JRS Login and profile/server/services/mailer.js';
 import recruitmentRepository from '../JRS HR/server/repository.cjs';
 import recruitmentApp from '../JRS HR/server/app.cjs';
-import recruitmentAuth from '../JRS HR/server/auth.cjs';
 import { defineModels as communicationModels } from '../jrs-hr-module/server/src/models.js';
 import { createServices } from '../jrs-hr-module/server/src/services.js';
 import { createApp as communicationApp } from '../jrs-hr-module/server/src/app.js';
@@ -47,14 +47,18 @@ export async function createRuntime({mailTransport}={}) {
     // The original repository closes over its private load/save. Wrap its transaction
     // callbacks too, so original HR command code crosses the same integration boundary.
     const transact = recruitment.transaction;
-    recruitment.transaction = (fn, write = false) => transact(async connection => {
-      await bridge.templates(connection);
+    recruitment.transaction = async (fn, write = false) => {
+      if(write)await refreshCanonicalPeople(pool);
+      return transact(async connection => {
+      if(write)await bridge.templates(connection);
       const result=await fn(connection);
       if(write)await syncSentMail(connection,{uploadDir:settings.uploadDir,fileStore});
       return result;
-    }, write);
+      }, write);
+    };
     const originalSnapshot = recruitment.snapshot;
     recruitment.snapshot = async userId => {
+      await refreshCanonicalPeople(pool);
       await bridge.templates(pool);
       return addSubmittedMaterials(pool,await originalSnapshot(userId));
     };
@@ -68,20 +72,7 @@ export async function createRuntime({mailTransport}={}) {
     const sharedAuth = {
       async login() { throw httpError(409, 'Use the shared JRS sign-in page.'); },
       async requireUser(req, res, next) {
-        const account = await readSharedSession(req, repository);
-        if (!account) throw httpError(401, 'Please sign in.');
-        if (account.role !== 'hr') throw httpError(403, 'HR access only.');
-        const canonical = await repository.hrIdentity(account.account_id);
-        if (!canonical) throw httpError(403, 'HR profile is inactive.');
-        verifySharedWrite(req, account, settings.origin);
-        const id = `team-hr-${canonical.user_id}`;
-        const [[row]] = await pool.execute("SELECT * FROM recruiting_user WHERE id=? AND status='Active'", [id]);
-        if (!row || row.role !== canonical.role) throw httpError(403, 'HR workspace identity does not match.');
-        await pool.execute('UPDATE recruiting_user SET name=?,email=?,department=?,phone=?,office_location=? WHERE id=?', [canonical.full_name, canonical.email, canonical.department, canonical.phone || '', canonical.office_location || '', id]);
-        await refreshCanonicalPeople(pool);
-        req.sharedAccount = account;
-        req.user = recruitmentAuth.publicUser({ ...row, name: canonical.full_name, email: canonical.email });
-        req.session = { csrf: account.csrf };
+        await requireRecruitmentUser(req,pool,settings.origin);
         next();
       },
       async logout(req, res) { await identity.logout(req, res); res.json({ ok: true }); },

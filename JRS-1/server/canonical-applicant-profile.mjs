@@ -11,17 +11,20 @@ export function contactColumns(phone,location) {
  if(location!==undefined){result.structured_location=location?canonicalLocation(location):null;result.home_location=location?locationLabel(result.structured_location):'';}
  return result;
 }
+function profileFromRecords(c,accountId,education,spoken,career) {
+ const contact=c.contact_number||'';
+ return {userId:accountId,phone:contact?(contact.startsWith('+')?contact:(c.country_code||'')+contact):'',location:c.structured_location||c.home_location||'',availabilityStatus:c.availability_status||'AVAILABLE',
+  education:education.map(e=>({id:e.education_id,institution:e.institution,qualification:e.qualification,qualificationLevel:e.qualification_level||'',startYear:e.start_year||'',graduationYear:e.finished_year||'',isCurrentStudy:Boolean(e.is_current_study),description:e.description||'',endMonth:e.end_month_year||''})),
+  languages:spoken.map(l=>({language:l.language_code||languageCode(l.language_name),readingLevel:l.reading_level||'',writingLevel:l.writing_level||'',...(!Object.hasOwn(languages,languageCode(l.language_name))?{language:'other',otherLanguage:l.language_name}:{})})),
+  experiences:career.map(e=>({id:e.role_id,companyName:e.company_name,jobTitle:e.job_title,startDate:e.start_month_year||'',endDate:e.is_current_role?null:e.end_month_year,currentRole:Boolean(e.is_current_role),responsibilities:e.description||'',achievements:e.achievements||'',skills:canonicalSkills(array(e.skill_codes))}))};
+}
 export async function readApplicantProfile(db,accountId) {
  const [[c]]=await db.query('SELECT * FROM CANDIDATE WHERE account_id=?',[accountId]);
  if(!c)throw httpError(404,'Candidate profile not found.');
  const [education]=await db.query('SELECT * FROM EDUCATION WHERE candidate_id=? ORDER BY education_id',[c.candidate_id]);
  const [spoken]=await db.query('SELECT * FROM LANGUAGE WHERE candidate_id=? ORDER BY language_id',[c.candidate_id]);
  const [career]=await db.query('SELECT * FROM CAREER_HISTORY WHERE candidate_id=? ORDER BY role_id',[c.candidate_id]);
- const contact=c.contact_number||'';
- return {userId:accountId,phone:contact?(contact.startsWith('+')?contact:(c.country_code||'')+contact):'',location:c.structured_location||c.home_location||'',availabilityStatus:c.availability_status||'AVAILABLE',
-  education:education.map(e=>({id:e.education_id,institution:e.institution,qualification:e.qualification,qualificationLevel:e.qualification_level||'',startYear:e.start_year||'',graduationYear:e.finished_year||'',isCurrentStudy:Boolean(e.is_current_study),description:e.description||'',endMonth:e.end_month_year||''})),
-  languages:spoken.map(l=>({language:l.language_code||languageCode(l.language_name),readingLevel:l.reading_level||'',writingLevel:l.writing_level||'',...(!Object.hasOwn(languages,languageCode(l.language_name))?{language:'other',otherLanguage:l.language_name}:{})})),
-  experiences:career.map(e=>({id:e.role_id,companyName:e.company_name,jobTitle:e.job_title,startDate:e.start_month_year||'',endDate:e.is_current_role?null:e.end_month_year,currentRole:Boolean(e.is_current_role),responsibilities:e.description||'',achievements:e.achievements||'',skills:canonicalSkills(array(e.skill_codes))}))};
+ return profileFromRecords(c,accountId,education,spoken,career);
 }
 // The caller owns the transaction, so contact/list edits and application snapshots
 // share the same authorization and commit boundary.
@@ -69,6 +72,11 @@ export async function syncRecruitmentPerson(db,accountId,profile) {
  const id=link?.recruiting_id||`account-${accountId}`;
  const [[old]]=await db.query('SELECT * FROM recruiting_candidate WHERE id=?',[id]);
  profile ||= await readApplicantProfile(db,accountId);
+ return storeRecruitmentPerson(db,c,profile,id,link,old);
+}
+
+async function storeRecruitmentPerson(db,c,profile,id,link,old) {
+ const accountId=c.account_id;
  let facts={experience:0,skills:[]};
  try{facts=workFacts(profile.experiences);}catch{/* Unknown legacy months remain unknown, never inferred. */}
  const values=[c.full_name||'Name not recorded',c.email||c.account_email,profile.phone,locationLabel(profile.location).slice(0,100),facts.experience,profile.education.map(e=>[e.qualification,e.institution].filter(Boolean).join(' · ')).join('; ').slice(0,150)||'Not recorded',JSON.stringify(facts.skills)];
@@ -84,9 +92,27 @@ export async function syncRecruitmentPerson(db,accountId,profile) {
 
 export async function refreshCanonicalPeople(pool) {
  const db=await pool.getConnection();
- try{await db.beginTransaction();await db.query('SELECT revision FROM recruiting_workspace WHERE id=1 FOR UPDATE');
-  const [people]=await db.query("SELECT c.account_id FROM CANDIDATE c JOIN MODULE_ACCOUNT a ON a.account_id=c.account_id WHERE a.role='candidate'");
-  let changed=false;for(const person of people)changed=await syncRecruitmentPerson(db,person.account_id)||changed;
-  if(changed)await db.query('UPDATE recruiting_workspace SET revision=revision+1 WHERE id=1');await db.commit();
+ try {
+  await db.beginTransaction();
+  await db.query('SELECT revision FROM recruiting_workspace WHERE id=1 FOR UPDATE');
+  // Read shared profiles once per workspace refresh, never once per authentication.
+  const [people]=await db.query("SELECT c.*,a.email AS account_email FROM CANDIDATE c JOIN MODULE_ACCOUNT a ON a.account_id=c.account_id WHERE a.role='candidate'");
+  if (!people.length) { await db.commit(); return; }
+  const [education]=await db.query('SELECT * FROM EDUCATION ORDER BY education_id');
+  const [career]=await db.query('SELECT * FROM CAREER_HISTORY ORDER BY role_id');
+  const [links]=await db.query('SELECT canonical_id,recruiting_id FROM JRS_CANDIDATE_LINK');
+  const [stored]=await db.query('SELECT * FROM recruiting_candidate');
+  const grouped=rows=>{const groups=new Map();for(const row of rows){const list=groups.get(row.candidate_id)||[];list.push(row);groups.set(row.candidate_id,list);}return groups;};
+  const schools=grouped(education),roles=grouped(career),linkMap=new Map(links.map(r=>[r.canonical_id,r])),oldMap=new Map(stored.map(r=>[r.id,r]));
+  let changed=false;
+  for(const c of people) {
+   const link=linkMap.get(c.candidate_id);
+   if(!link&&c.availability_status==='CLOSED')continue;
+   const id=link?.recruiting_id||'account-'+c.account_id;
+   const profile=profileFromRecords(c,c.account_id,schools.get(c.candidate_id)||[],[],roles.get(c.candidate_id)||[]);
+   changed=await storeRecruitmentPerson(db,c,profile,id,link,oldMap.get(id))||changed;
+  }
+  if(changed)await db.query('UPDATE recruiting_workspace SET revision=revision+1 WHERE id=1');
+  await db.commit();
  }catch(error){await db.rollback();throw error;}finally{db.release();}
 }
