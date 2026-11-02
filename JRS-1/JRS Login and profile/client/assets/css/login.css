@@ -45,3 +45,15 @@
 /* Avoid a second password eye supplied by Edge beside the custom control. */
 .login-card input::-ms-reveal, .login-card input::-ms-clear { display: none; }
 @media (max-width: 360px) { .login-card #registerNames { grid-template-columns: 1fr; } }
+
+/* Keep password recovery forms inside the same white card as sign-in. */
+.login-page.recovery-page .login-card {
+    max-width: 560px;
+    padding: 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+}
+@media (max-width: 520px) {
+    .login-page.recovery-page .login-card { padding: 28px 20px; }
+}
