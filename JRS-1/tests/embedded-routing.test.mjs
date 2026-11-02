@@ -35,3 +35,22 @@ test('embedded navigation and content height use independent trusted messages an
     assert.equal(w.document.documentElement.style.getPropertyValue('--host-viewport-height'),'844px');
   } finally { w.close(); }
 });
+
+test('embedded dialogs reserve host capacity and restore a short list without resize loops', async () => {
+  const dom=new JSDOM('<main id="content"></main><dialog id="modal"></dialog>',{url:'https://jrs.example/recruitment/#/applications',runScripts:'outside-only'}),w=dom.window,messages=[];
+  const parent={postMessage:data=>messages.push(structuredClone(data))};Object.defineProperty(w,'parent',{value:parent});w.ResizeObserver=class{observe(){}};
+  w.document.querySelector('#content').getBoundingClientRect=()=>({height:280});
+  const tick=()=>new Promise(resolve=>setImmediate(resolve));
+  try {
+    w.eval(await readFile(new URL('../JRS HR/dist/embedded.js',import.meta.url),'utf8'));
+    w.dispatchEvent(new w.Event('load'));await tick();
+    const viewport=availableHeight=>w.dispatchEvent(new w.MessageEvent('message',{origin:w.location.origin,source:parent,data:{type:'jrs:viewport',height:900,availableHeight}}));
+    viewport(650);const modal=w.document.querySelector('#modal');modal.setAttribute('open','');await tick();
+    assert.equal(messages.filter(m=>m.type==='jrs:frame').at(-1).height,650);
+    assert.equal(w.document.documentElement.style.getPropertyValue('--host-available-height'),'650px');
+    const count=messages.length;viewport(650);await tick();assert.equal(messages.length,count,'Same dialog capacity must not create a resize loop');
+    viewport(480);await tick();assert.equal(messages.filter(m=>m.type==='jrs:frame').at(-1).height,480);
+    w.dispatchEvent(new w.MessageEvent('message',{origin:'https://evil.example',source:parent,data:{type:'jrs:viewport',height:900,availableHeight:5000}}));assert.equal(w.document.documentElement.style.getPropertyValue('--host-available-height'),'480px');
+    modal.removeAttribute('open');await tick();assert.equal(messages.filter(m=>m.type==='jrs:frame').at(-1).height,280);
+  } finally {w.close();}
+});

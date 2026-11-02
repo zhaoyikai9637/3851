@@ -12,6 +12,7 @@
   }
   let previousPath = '';
   let previousHeight = 0;
+  let availableHeight = 0;
   let previousSections='',mountedSections='';
   const sectionControls=()=>[...document.querySelectorAll('#content .section-tabs a,#content .section-tabs button')].filter(element=>
     element.matches('a')?/^#\/applications(?:\/(?:applications-review|pending-review|interview|interview-results|offer|rejected|hired))?$/.test(element.getAttribute('href')||''):['section','interview-queue','period'].includes(element.dataset.action));
@@ -29,7 +30,9 @@
     const content = document.querySelector('#content');
     if (!content) return;
     // Measure intrinsic content; root scrollHeight includes the iframe viewport.
-    const height = Math.ceil(content.getBoundingClientRect().height);
+    const modalOpen = Boolean(document.querySelector('dialog[open]'));
+    const minimum = modalOpen ? Math.max(240, availableHeight || window.innerHeight) : 0;
+    const height = Math.ceil(Math.max(content.getBoundingClientRect().height, minimum));
     if (height < 1) return; // The authenticated shell is still hidden during loading.
     if (height === previousHeight) return;
     previousHeight = height;
@@ -62,6 +65,12 @@
     if(event.data?.type === 'jrs:viewport') {
       const height=event.data.height;
       if(Number.isFinite(height)&&height>=200&&height<=10000)document.documentElement.style.setProperty('--host-viewport-height',height+'px');
+      const capacity=event.data.availableHeight;
+      if(Number.isFinite(capacity)&&capacity>=80&&capacity<=10000){
+        availableHeight=capacity;
+        document.documentElement.style.setProperty('--host-available-height',Math.max(240,capacity)+'px');
+      }
+      reportHeight();
       return;
     }
     if(event.data?.type !== 'jrs:open') return;
@@ -72,4 +81,6 @@
   const content=document.querySelector('#content');
   if(content)new MutationObserver(reportSections).observe(content,{childList:true,subtree:true});
   if(content)new ResizeObserver(reportHeight).observe(content);
+  const modal=document.querySelector('#modal');
+  if(modal)new MutationObserver(reportHeight).observe(modal,{attributes:true,attributeFilter:['open']});
 })();
