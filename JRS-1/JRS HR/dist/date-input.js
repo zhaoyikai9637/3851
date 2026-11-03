@@ -126,7 +126,7 @@
       input.removeAttribute('name');(input.closest('label')||input).before(mirror);mirrors.set(input,mirror);
       input.type='text';input.value=display(value);input.dataset.englishDate='true';input.placeholder='DD MM YYYY';input.inputMode='numeric';input.autocomplete='off';input.spellcheck=false;input.maxLength=10;input.pattern='\\d{2} \\d{2} \\d{4}';
       if(!input.id)input.id='english-date-'+(++sequence);
-      const trigger=doc.createElement('button');trigger.type='button';trigger.className='english-date-trigger';trigger.setAttribute('aria-label','Choose date');trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls',input.id+'-calendar');trigger.textContent='▦';
+      const trigger=doc.createElement('button');trigger.type='button';trigger.className='english-date-trigger';trigger.setAttribute('aria-label','Choose date');trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls',input.id+'-calendar');trigger.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 11h18"></path></svg>';
       const wrapper=doc.createElement('div');wrapper.className='english-date-control';
       const label=input.closest('label');
       if(label&&label.querySelectorAll('input,select,textarea').length===1){label.before(wrapper);wrapper.append(label,trigger);label.htmlFor=input.id;}

@@ -1,3 +1,7 @@
+## Interview date filter - 2026-11-03
+
+Restore the converted text date filter to the shared 40px control style, align the label and contain its calendar icon. Edge desktop/mobile geometry and calendar checks passed; 734 project tests and both frontend builds passed. Candidate edit/upload controls already exist in the original module and remain unchanged; a separate ownership decision is documented in ../../docs/INTERVIEW_DATE_FILTER.md.
+
 ## Unified project tests - 2026-11-03
 
 The root npm test/test:unit entry now runs all six active unit/API suites sequentially and saves a combined report. test:all also builds both React frontends and checks English; test:root preserves the old command. Keep real MySQL workflows explicit through review:verify. The login resource test now distinguishes the POST login API action from static files. The English source scan also supports downloaded ZIPs without Git while retaining strict ref checks. Verified test:all: 734 tests across six active modules, both frontend builds and the English scan passed; isolated review:verify passed separately. See ../../docs/PROJECT_TESTS.md.

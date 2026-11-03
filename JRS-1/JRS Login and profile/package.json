@@ -38,6 +38,9 @@
   "jest": {
     "roots": [
       "<rootDir>/tests"
-    ]
+    ],
+    "testEnvironmentOptions": {
+      "globalsCleanup": "off"
+    }
   }
 }

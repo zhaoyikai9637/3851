@@ -99,7 +99,8 @@
   border-color:var(--jrs-accent); outline:2px solid #315fd233; outline-offset:1px;
 }
 :is(#content, .workspace-body) :is(.queue-filters, .page-filters, .jobs-filter, .notification-type) select,
-:is(#content, .workspace-body) .hr-date-control > input {
+:is(#content, .workspace-body) .hr-date-control > input,
+:is(#content, .workspace-body) .page-filters .english-date-control input[data-english-date] {
   height:var(--jrs-control-height); min-height:var(--jrs-control-height);
   border:1px solid var(--jrs-line); border-radius:var(--jrs-control-radius);
   padding:8px 32px 8px 12px; background-color:#fff;
@@ -186,3 +187,6 @@
 .workspace > .sidebar nav a:hover, .mobile-navigation nav a:hover { background:#203553; color:#fff; }
 .workspace > .sidebar nav a.active, .mobile-navigation nav a.active { background:#2563eb; color:#fff; box-shadow:none; }
 .workspace > .sidebar .sidebar-label, .mobile-navigation .sidebar-label { font-size:12px; font-weight:800; letter-spacing:0; color:#8ea0ba; }
+
+/* Calendar triggers stay inside converted text date fields. */
+:is(#content, .workspace-body) .page-filters .english-date-control input[data-english-date]{padding-right:40px}
