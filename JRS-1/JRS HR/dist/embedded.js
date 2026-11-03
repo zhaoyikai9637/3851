@@ -48,6 +48,16 @@
     previousPath = path;
     window.parent.postMessage({ type: 'jrs:location', items }, location.origin);
   }
+  // Every integrated job entry opens the authenticated full-page editor.
+  document.addEventListener('click', event => {
+    const control=event.target.closest('[data-action="job-new"],[data-action="job-edit"]');
+    if(!control)return;
+    const id=control.dataset.action==='job-edit'?control.dataset.id:null;
+    if(id!==null&&(typeof id!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(id)))return;
+    event.preventDefault();event.stopImmediatePropagation();
+    if(window.parent===window)location.assign('/hr/job-postings?'+(id===null?'create=1':'edit='+encodeURIComponent(id)));
+    else window.parent.postMessage({type:'jrs:job-editor',id},location.origin);
+  },true);
   document.addEventListener('click', event => {
     const anchor = event.target.closest('a[href^="#/"]');
     if (anchor && navigate(anchor.getAttribute('href').slice(2),true)) event.preventDefault();

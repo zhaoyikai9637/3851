@@ -1,3 +1,17 @@
+## Job management teacher-review adaptation - 2026-11-03
+
+Adapt the teammate's standalone job-management changes into the existing authenticated
+React/MySQL editor. Keep the full-page editor, remove work-arrangement and unpublish-date
+controls and read labels, and add explicit Save draft, Publish job and Save & publish
+actions. Existing hidden work modes and historical publication windows remain intact;
+current editor writes no longer validate or overwrite the omitted unpublish date.
+Legacy API clients keep their original contract. Display description and requirement
+paragraphs as semantic bullet lists in HR and applicant details without rewriting data.
+Shared identity, CSRF, revisions, idempotency, application snapshots and interviews stay
+on the existing integrated services. Original repository backup directories are untouched.
+Validation is recorded in the private release acceptance report; no production test data
+or real emails are part of this change.
+
 ## Additive Render release - 2026-10-31
 
 The owner requested publication to main under JRS (1), preserving the original JRS and archive unchanged. Render must build from JRS (1). Schema-12 isolated cloud acceptance and the production database upgrade/local startup checks passed; public Render acceptance remains pending. Candidate recovery uses Mailjet HTTPS with an initial recipient allowlist; HR mail policy is unchanged. No private variables, acceptance data or temporary preview accounts are included. See ../../docs/RENDER_DEPLOYMENT.md.

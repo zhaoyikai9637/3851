@@ -691,3 +691,7 @@
     gap: 24px 16px;
   }
 }
+
+.job-read-details .job-bullet-list { list-style:disc outside; padding-left:22px; margin:0 0 30px; }
+.job-read-details .job-bullet-list li { overflow-wrap:anywhere; }
+.job-page-footer > div { flex-wrap:wrap; }

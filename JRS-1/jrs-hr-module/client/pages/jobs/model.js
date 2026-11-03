@@ -25,7 +25,6 @@ export function jobDraft(job = {}) {
     salaryRange: job.salaryRange || "",
     closingDate: displayDate(job.closingDate),
     publishDate: displayDate(job.publishDate),
-    unpublishDate: displayDate(job.unpublishDate),
   };
 }
 
@@ -55,16 +54,12 @@ export function jobPayload(draft) {
     fail("Job requirements must not contain duplicate criteria.", "Requirements");
   const payload = { ...draft, requirements: requirements.join("\n") };
   try {
-    for (const key of ["closingDate", "publishDate", "unpublishDate"])
+    for (const key of ["closingDate", "publishDate"])
       payload[key] = isoDate(draft[key]);
   } catch (error) {
     fail(error.message, "Publishing");
   }
   if (payload.publishDate && payload.closingDate && payload.closingDate < payload.publishDate)
     fail("Application deadline must not be before publication.", "Publishing");
-  if (payload.publishDate && payload.unpublishDate && payload.unpublishDate < payload.publishDate)
-    fail("Unpublish date must not be before publication.", "Publishing");
-  if (payload.closingDate && payload.unpublishDate && payload.unpublishDate <= payload.closingDate)
-    fail("Unpublish date must be after the application deadline.", "Publishing");
   return payload;
 }

@@ -1,9 +1,10 @@
 import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
-import { ArrowLeft, BriefcaseBusiness, CalendarDays, CheckCircle2, CircleDollarSign, LogIn, MapPin } from "lucide-react";
+import { ArrowLeft, BriefcaseBusiness, CalendarDays, CircleDollarSign, LogIn, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
 import { jobLabel } from "../../utils/jobLabels";
+import { jobBulletPoints } from "../../../../jrs-hr-module/shared/job-text.mjs";
 
 export default function JobDetailsPage({ authenticated = false }) {
   const { jobId } = useParams();
@@ -56,13 +57,13 @@ export default function JobDetailsPage({ authenticated = false }) {
           <section>
             <h3>Job Description</h3>
             <ul className="detail-list">
-              {job.responsibilities.map((item) => <li key={item}>{item}</li>)}
+              {jobBulletPoints(job.responsibilities).map((item, index) => <li key={index}>{item}</li>)}
             </ul>
           </section>
           <section>
             <h3>Job Requirements</h3>
-            <ul className="detail-list check-list">
-              {job.requirements.map((item) => <li key={item}><CheckCircle2 size={20} />{item}</li>)}
+            <ul className="detail-list">
+              {jobBulletPoints(job.requirements).map((item, index) => <li key={index}>{item}</li>)}
             </ul>
           </section>
         </div>

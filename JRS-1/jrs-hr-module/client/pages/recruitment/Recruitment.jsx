@@ -43,6 +43,12 @@ export function Recruitment({ page, title }) {
     function receive(event) {
       if (event.origin !== window.location.origin || event.source !== frame.current?.contentWindow)
         return;
+      if(event.data?.type==='jrs:job-editor') {
+        const id=event.data.id;
+        if(id===null)navigate('/job-postings?create=1');
+        else if(typeof id==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(id))navigate('/job-postings?edit='+encodeURIComponent(id));
+        return;
+      }
       if(event.data?.type==='jrs:sections'){
         const {items,label,key}=event.data;
         if(typeof key!=='string'||key.length>5000||typeof label!=='string'||label.length>100||!Array.isArray(items)||items.length>12||items.some(item=>typeof item?.label!=='string'||!item.label.trim()||item.label.length>100||typeof item.selected!=='boolean'))return;

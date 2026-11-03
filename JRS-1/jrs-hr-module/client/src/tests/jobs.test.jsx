@@ -261,7 +261,7 @@ it("creates a job from the full-page form with requirement templates and publish
   await ui.type(screen.getByLabelText("Job description"), "Develop reliable applications.");
   await ui.selectOptions(screen.getByLabelText("Requirement template"), "Software Developer");
   await ui.click(screen.getByRole("button", { name: "Use template" }));
-  await ui.click(screen.getByRole("button", { name: "Save job" }));
+  await ui.click(screen.getByRole("button", { name: "Save draft" }));
   expect(await screen.findByRole("button", { name: "View New Developer" })).toBeVisible();
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
   expect(data.items.find((row) => row.id === "job-new")).toMatchObject({
@@ -297,13 +297,32 @@ it("opens applications filtered to the selected job", async () => {
   );
 });
 
-it("blocks an unpublish date that ends before the deadline day has finished", async () => {
-  const ui = mount();
+it("removes retired fields and retains the original hidden work mode when editing", async () => {
+  data.items[0].unpublishDate="2030-01-01";
+  const ui=mount();
   await edit(ui);
-  await ui.type(screen.getByLabelText("Unpublish date"), "31 12 2030");
-  await ui.click(screen.getByRole("button", { name: "Save job" }));
-  expect(await screen.findByRole("alert")).toHaveTextContent("after the application deadline");
-  expect(screen.getByLabelText("Unpublish date")).toHaveValue("31 12 2030");
+  expect(screen.queryByLabelText("Work arrangement")).not.toBeInTheDocument();
+  expect(screen.queryByLabelText("Unpublish date")).not.toBeInTheDocument();
+  await ui.click(screen.getByRole("button",{name:"Save job",exact:true}));
+  await screen.findByRole("button",{name:"View Software Developer"});
+  const [,options]=fetcher.mock.calls.find(([url,o])=>url===endpoint&&o.method==="POST");
+  expect(JSON.parse(options.body)).toMatchObject({mode:"Hybrid",status:"Active"});
+  expect(JSON.parse(options.body)).not.toHaveProperty("unpublishDate");
+});
+
+it("publishes directly from the editor and retains literal bullet-list text", async()=>{
+  data.items[0].status="Draft";
+  data.items[0].description="• First responsibility\n- Second responsibility";
+  const ui=mount();
+  await ui.click(await screen.findByRole("button",{name:"View Software Developer"}));
+  expect(screen.getByText("First responsibility").closest("ul")).toHaveClass("job-bullet-list");
+  expect(screen.getByText("Second responsibility").closest("ul")).toHaveClass("job-bullet-list");
+  expect(screen.queryByText("Work arrangement")).not.toBeInTheDocument();
+  expect(screen.queryByText("Unpublish date")).not.toBeInTheDocument();
+  await ui.click(screen.getByRole("button",{name:"Edit job"}));
+  await ui.click(screen.getByRole("button",{name:"Save & publish"}));
+  await screen.findByRole("button",{name:"View Software Developer"});
+  expect(data.items[0].status).toBe("Active");
 });
 
 it("keeps 100 jobs usable across paging, filtering and returning from edits", async () => {

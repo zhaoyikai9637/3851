@@ -1,7 +1,7 @@
 import express from "express";
 import service from "../JRS HR/server/service.cjs";
 import model from "../JRS HR/dist/state.js";
-import { publicationSchema } from "./job-publications.mjs";
+import { publicationSchema, editorPublicationSchema } from "./job-publications.mjs";
 
 // Adapt the existing command transaction; do not duplicate recruitment rules.
 export function jobEditorRouter({ recruitment, pool, requireUser }) {
@@ -33,9 +33,10 @@ export function jobEditorRouter({ recruitment, pool, requireUser }) {
   }
   router.get("/", async (req, res) => res.json(await listing(req.user)));
   router.post("/", async (req, res) => {
-    const publication = publicationSchema.parse(
+    const legacyPublication = Object.hasOwn(req.body, "unpublishDate");
+    const publication = (legacyPublication ? publicationSchema : editorPublicationSchema).parse(
       Object.fromEntries(
-        ["salaryRange", "closingDate", "publishDate", "unpublishDate"].map((key) => [
+        (legacyPublication ? ["salaryRange", "closingDate", "publishDate", "unpublishDate"] : ["salaryRange", "closingDate", "publishDate"]).map((key) => [
           key,
           req.body[key] ?? "",
         ]),
@@ -49,13 +50,15 @@ export function jobEditorRouter({ recruitment, pool, requireUser }) {
           ? after.jobs.find((job) => job.id === req.body.id)
           : after.jobs.find((job) => !previous.has(job.id));
         await connection.execute(
-          "INSERT INTO JRS_JOB_PUBLICATION(recruiting_id,salary_range,closing_date,publish_date,unpublish_date) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE salary_range=VALUES(salary_range),closing_date=VALUES(closing_date),publish_date=VALUES(publish_date),unpublish_date=VALUES(unpublish_date)",
+          legacyPublication
+            ? "INSERT INTO JRS_JOB_PUBLICATION(recruiting_id,salary_range,closing_date,publish_date,unpublish_date) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE salary_range=VALUES(salary_range),closing_date=VALUES(closing_date),publish_date=VALUES(publish_date),unpublish_date=VALUES(unpublish_date)"
+            : "INSERT INTO JRS_JOB_PUBLICATION(recruiting_id,salary_range,closing_date,publish_date) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE salary_range=VALUES(salary_range),closing_date=VALUES(closing_date),publish_date=VALUES(publish_date)",
           [
             job.id,
             publication.salaryRange,
             publication.closingDate || null,
             publication.publishDate || null,
-            publication.unpublishDate || null,
+            ...(legacyPublication ? [publication.unpublishDate || null] : []),
           ],
         );
         await recruitment.save(connection, before, after);

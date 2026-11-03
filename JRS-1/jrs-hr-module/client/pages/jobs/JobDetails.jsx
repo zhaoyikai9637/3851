@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { ErrorBox } from "../../src/shared";
 import { DateField } from "./DateField";
 import { displayDate, jobDraft, jobPayload } from "./model";
+import { jobBulletPoints } from "../../../shared/job-text.mjs";
 
 function Field({ label, value, onChange, multiline = false, ...props }) {
   const id = useId(),
@@ -88,7 +89,8 @@ export function JobDetails({
     if (busy) return;
     setError(null);
     try {
-      const payload = jobPayload(draft);
+      const requestedStatus = event.nativeEvent?.submitter?.dataset.status;
+      const payload = jobPayload(["Draft", "Active"].includes(requestedStatus) ? { ...draft, status: requestedStatus } : draft);
       setBusy(true);
       await onSave(payload);
       onClose();
@@ -232,12 +234,6 @@ export function JobDetails({
                       options={["Full-time", "Part-time", "Contract", "Internship"]}
                       onChange={change("type")}
                     />
-                    <Select
-                      label="Work arrangement"
-                      value={draft.mode}
-                      options={["On-site", "Hybrid", "Remote"]}
-                      onChange={change("mode")}
-                    />
                     <Field
                       label="Location"
                       value={draft.location}
@@ -329,9 +325,9 @@ export function JobDetails({
                       maxLength={80}
                       placeholder="e.g. SGD 5,000 - 6,000"
                     />
-                    {["Application deadline", "Publish date", "Unpublish date"].map(
+                    {["Application deadline", "Publish date"].map(
                       (label, index) => {
-                        const key = ["closingDate", "publishDate", "unpublishDate"][index];
+                        const key = ["closingDate", "publishDate"][index];
                         return (
                           <DateField
                             key={key}
@@ -355,7 +351,6 @@ export function JobDetails({
                   {[
                     ["Department", job.department],
                     ["Employment type", job.type],
-                    ["Work arrangement", job.mode],
                     ["Location", job.location],
                     ["Experience", job.experience],
                     ["Applications", job.applications],
@@ -375,13 +370,13 @@ export function JobDetails({
               </>
               <>
                 <h3>Job description</h3>
-                <p className="job-description">{job.description}</p>
+                <ul className="job-bullet-list">{jobBulletPoints(job.description).map((item, index) => <li key={index}>{item}</li>)}</ul>
                 <h3>Job requirements</h3>
-                <ol>
-                  {job.requirements.map((item, index) => (
+                <ul className="job-bullet-list">
+                  {jobBulletPoints(job.requirements).map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
-                </ol>
+                </ul>
               </>
               <>
                 <h3>Compensation & publishing</h3>
@@ -390,7 +385,6 @@ export function JobDetails({
                     ["Salary range", job.salaryRange],
                     ["Application deadline", displayDate(job.closingDate)],
                     ["Publish date", displayDate(job.publishDate)],
-                    ["Unpublish date", displayDate(job.unpublishDate)],
                   ].map(([label, value]) => (
                     <div key={label}>
                       <dt>{label}</dt>
@@ -412,14 +406,14 @@ export function JobDetails({
               <button type="button" className="job-secondary" disabled={busy} onClick={close}>
                 Cancel editing
               </button>
-              <button
-                key="save-job"
-                form={formId}
-                className="job-primary"
-                type="submit"
-                disabled={busy || !!confirmation}
-              >
+              {job && <button key="save-job" form={formId} className="job-secondary" type="submit" disabled={busy || !!confirmation}>
                 {busy ? "Saving…" : "Save job"}
+              </button>}
+              <button form={formId} className="job-secondary" type="submit" data-status="Draft" disabled={busy || !!confirmation}>
+                Save draft
+              </button>
+              <button form={formId} className="job-primary" type="submit" data-status="Active" disabled={busy || !!confirmation}>
+                {busy ? "Saving…" : job ? "Save & publish" : "Publish job"}
               </button>
             </div>
           </>

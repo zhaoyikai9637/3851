@@ -233,8 +233,10 @@ describe("authentication and navigation", () => {
   it('opens embedded dialogs at the browser viewport top so footer actions remain reachable',async()=>{
     mount('/interviews');const frame=await screen.findByTitle('Interviews');
     frame.getBoundingClientRect=()=>({top:120});frame.scrollIntoView=vi.fn();
-    fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:dialog'}}));
-    expect(frame.scrollIntoView).toHaveBeenCalledWith({block:'start'});
+    await waitFor(()=>{
+      fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:dialog'}}));
+      expect(frame.scrollIntoView).toHaveBeenCalledWith({block:'start'});
+    });
   });
 
   it('includes a clickable My Profile parent when editing a profile', async () => {
@@ -1120,4 +1122,15 @@ it("leaves the candidate profile when switching to another HR workspace", async 
   expect(screen.queryByRole("button",{name:"Back to candidates"})).not.toBeInTheDocument();
   await ui.click(screen.getByRole("link", {name:"Candidates",exact:true}));
   expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
+});
+
+it("opens the full-page job creator only for a trusted embedded job action",async()=>{
+  mount('/dashboard');
+  const frame=await screen.findByTitle('Dashboard');
+  fireEvent(window,new MessageEvent('message',{origin:'https://untrusted.example',source:frame.contentWindow,data:{type:'jrs:job-editor',id:null}}));
+  expect(frame).toBeInTheDocument();
+  fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:job-editor',id:null}}));
+  expect(await screen.findByRole('region',{name:'Create job'})).toBeVisible();
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.getByRole('button',{name:'Publish job',exact:true})).toBeVisible();
 });

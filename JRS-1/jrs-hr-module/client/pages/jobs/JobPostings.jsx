@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorBox, Loading } from "../../src/shared";
 import { Icon } from "../../src/icons";
 import { createJobsClient } from "./api";
@@ -10,7 +10,7 @@ import "./jobs.css";
 
 export function JobPostings() {
   const [client] = useState(() => createJobsClient()),
-    navigate = useNavigate();
+    navigate = useNavigate(), location = useLocation();
   const [data, setData] = useState(null),
     [error, setError] = useState(null),
     [details, setDetails] = useState(null);
@@ -30,6 +30,13 @@ export function JobPostings() {
       });
     return () => controller.abort();
   }, [client]);
+  const loaded=Boolean(data);
+  useEffect(()=>{
+    if(!loaded)return;
+    const query=new URLSearchParams(location.search),id=query.get('edit');
+    if(query.get('create')==='1')open(null);
+    else if(id&&data.items.some(job=>job.id===id))open(id);
+  },[loaded,location.search]);
   const items = data?.items || [],
     departments = [
       ...new Set([...items.map((job) => job.department), department].filter(Boolean)),

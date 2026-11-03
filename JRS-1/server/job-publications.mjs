@@ -12,6 +12,10 @@ export const publicationSchema = z.object({ salaryRange: z.string().trim().max(8
   if (data.publishDate && data.unpublishDate && data.unpublishDate < data.publishDate) context.addIssue({ code: 'custom', message: 'Unpublish date must not be before publication.', path: ['unpublishDate'] });
   if (data.closingDate && data.unpublishDate && data.unpublishDate <= data.closingDate) context.addIssue({code:'custom',message:'Unpublish date must be after the application deadline.',path:['unpublishDate']});
 });
+// The current editor omits the retired unpublish control; legacy API clients retain their contract.
+export const editorPublicationSchema = z.object({ salaryRange:z.string().trim().max(80), closingDate:date, publishDate:date }).strict().superRefine((data, context) => {
+  if (data.publishDate && data.closingDate && data.closingDate < data.publishDate) context.addIssue({code:'custom',message:'Application deadline must not be before publication.',path:['closingDate']});
+});
 export function jobPublicationServices(pool, recruitment, bridge) {
   return {
     async jobPublications() {
