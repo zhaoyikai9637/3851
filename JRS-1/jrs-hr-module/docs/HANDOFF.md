@@ -392,3 +392,8 @@ Verification: the overwrite transaction checked exact equality of all local/clou
 5. Final phase task added by the user: complete Notification email templates, then remove verified test templates whose names begin with JRS. Inventory content and references first; a prefix alone does not prove a template is disposable. Back up before cleanup, preserve sent-email snapshots, and archive referenced test templates rather than break references.
 
 Current status: shared target and local dev have schema 10 and ten active formal templates. Core reviewed integration is synchronized and verified; see the current continuation section above. The user confirmed receipt of the earlier SMTP test. Candidate recovery and real recruitment inbox acceptance, deployment selection and visual acceptance remain pending.
+
+
+## Independent reviewer environment (2026-11-03)
+
+Added an opt-in review mode using its own loopback MySQL instance on port 33307, schema 12, generated fictional accounts/jobs, local private uploads and captured email. No production handoff or cloud credentials are required. See ../../docs/LOCAL_REVIEW.md and ../../docs/REVIEW_CHECKLIST.md. Existing cloud runtime and deployment policies remain in place.

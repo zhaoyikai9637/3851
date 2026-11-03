@@ -1,3 +1,4 @@
+import {findMysqlBinary} from './review/environment.mjs';
 import fs from 'node:fs/promises';
 import net from 'node:net';
 import path from 'node:path';
@@ -12,8 +13,9 @@ async function databaseListening() {
   });
 }
 try {
+  if(settings.DB_MODE==='review')throw Error('Use npm run review:start for the isolated local reviewer environment.');
   if (!['team','production'].includes(settings.DB_MODE) && !await databaseListening()) {
-    const binary = settings.MYSQLD_PATH || 'C:/Program Files/MySQL/MySQL Server 26.7/bin/mysqld.exe';
+    const binary = settings.MYSQLD_PATH || await findMysqlBinary();
     await fs.access(binary);
     await fs.access(path.join(root, '.local/mysql/auto.cnf'));
     const child = spawn(binary, ['--no-defaults', `--basedir=${path.dirname(path.dirname(binary))}`, `--datadir=${path.join(root, '.local/mysql')}`, '--port=3307', '--bind-address=127.0.0.1', '--mysqlx=0', `--log-error=${path.join(root, '.local/mysql.log')}`], { detached: true, windowsHide: true, stdio: 'ignore' });

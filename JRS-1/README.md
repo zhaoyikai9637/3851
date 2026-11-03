@@ -1,10 +1,20 @@
 # JRS Recruitment Workspace - Render release copy
 
-This is the reviewed release published as **JRS (1)** beside the preserved **JRS** directory. Original repository files are retained unchanged. Open this directory when building or running the new version.
+This is the reviewed release published as **JRS-1** beside the preserved **JRS** directory. Original repository files are retained unchanged. Open this directory when building or running the new version.
+
+## Independent local review
+
+To inspect the code and test applicant/HR integration without cloud credentials, use [Local review setup](docs/LOCAL_REVIEW.md) and the [Review checklist](docs/REVIEW_CHECKLIST.md). Requires Node.js 24 and an installed MySQL server. From this directory run:
+
+    npm ci
+    npm run review:setup
+    npm run review:start
+
+Open http://localhost:3200. Use npm run review:accounts for the generated local accounts and npm run review:mailbox for captured verification codes. These commands use an independent local database and never send real mail.
 
 ## Hosting
 
-Follow [Render deployment](docs/RENDER_DEPLOYMENT.md). Use branch main, Root Directory JRS (1), Docker runtime, Dockerfile Path ./Dockerfile, Docker Context . and health path /health/ready. Keep automatic deployment disabled until configuration is complete. Render supplies PORT; retain the Dockerfile startup command.
+Follow [Render deployment](docs/RENDER_DEPLOYMENT.md). Use branch main, Root Directory JRS-1, Docker runtime, Dockerfile Path ./Dockerfile, Docker Context . and health path /health/ready. Keep automatic deployment disabled until configuration is complete. Render supplies PORT; retain the Dockerfile startup command.
 
 Aiven MySQL stores accounts and business data; schema 12 is required. Private Supabase Storage holds resumes, HR avatars and archived attachments. Candidate recovery uses Mailjet HTTPS. HR assistance policy and recruitment mail configuration are unchanged. No demo login or role switch is enabled by this release.
 

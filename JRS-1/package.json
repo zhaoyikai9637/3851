@@ -17,7 +17,14 @@
     "db:setup": "node scripts/setup-database.mjs",
     "test:workflow": "node --test tests/default-boundary.mysql.mjs",
     "test:experimental": "node --test tests/workflow.mysql.mjs",
-    "build:experimental": "node scripts/build.mjs --experimental-applicant"
+    "build:experimental": "node scripts/build.mjs --experimental-applicant",
+    "review:setup": "node scripts/review.mjs setup",
+    "review:start": "node scripts/review.mjs start",
+    "review:stop": "node scripts/review.mjs stop",
+    "review:check": "node scripts/review.mjs check",
+    "review:accounts": "node scripts/review.mjs accounts",
+    "review:mailbox": "node scripts/review.mjs mailbox",
+    "review:verify": "node scripts/review-verify.mjs"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "13.0.0",

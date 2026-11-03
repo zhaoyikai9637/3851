@@ -29,7 +29,9 @@ import { createApp as communicationApp } from '../jrs-hr-module/server/src/app.j
 import { DatabaseSessionStore } from '../jrs-hr-module/server/src/session-store.js';
 
 export async function createRuntime({mailTransport}={}) {
-  const settings = loadSettings(), fileStore = createFileStore(settings), pool = createDatabasePool(settings.db);
+  const settings = loadSettings();
+  if(settings.DB_MODE==='review' && (!mailTransport?.reviewCapture || typeof mailTransport.sendMail!=='function'))throw Error('Review mode requires its local captured mailbox. Use npm run review:start.');
+  const fileStore = createFileStore(settings), pool = createDatabasePool(settings.db);
   const makeSequelize = () => resilientSequelize(new Sequelize(settings.DB_NAME, settings.DB_USER, settings.DB_PASSWORD, { dialect: 'mysql', host: settings.DB_HOST, port: settings.db.port, logging: false, timezone: '+00:00', dialectOptions: settings.db.ssl ? { ssl: settings.db.ssl } : {}, define: { underscored: true }, retry: {max:0}, pool:{max:4,min:0,idle:10000,evict:5000,acquire:20000} }));
   const communicationDb = makeSequelize();
   let applicantDb, data;
@@ -111,7 +113,7 @@ export async function createRuntime({mailTransport}={}) {
     const hrDist = path.join(root, 'jrs-hr-module/client/dist');
     app.use('/hr', express.static(hrDist, { dotfiles: 'deny' }));
     app.get(/^\/hr(?:\/.*)?$/, (req, res) => res.sendFile(path.join(hrDist, 'index.html')));
-    app.use(candidateApp.createApp({ repository, config, mailer: createCandidateRecoveryMailer(candidateMailer.createMailer({smtp:settings.smtp}),settings.candidateMail) }));
+    app.use(candidateApp.createApp({ repository, config, mailer: createCandidateRecoveryMailer(candidateMailer.createMailer({smtp:settings.smtp},settings.DB_MODE==='review'?{transport:mailTransport}:{}),settings.candidateMail) }));
     return { app, close, settings, repository, recruitment, data, fileStore };
   } catch (error) { await close(); throw error; }
 }

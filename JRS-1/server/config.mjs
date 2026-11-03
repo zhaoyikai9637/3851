@@ -1,3 +1,4 @@
+import {assertReviewSettings} from './review-policy.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +30,8 @@ export function loadSettings({env: overrides = process.env, envFile = process.en
     const target=env.DB_MODE==='production'?['jrs_production','jrs_production_app']:['jrs_team','jrs_team_app'];
     if(!env.DB_HOST || env.DB_HOST !== env.DB_EXPECTED_HOST || ['127.0.0.1','localhost'].includes(env.DB_HOST) || env.DB_NAME !== target[0] || env.DB_USER !== target[1] || !env.DB_PASSWORD || !Number.isInteger(Number(env.DB_PORT)) || Number(env.DB_PORT)<1 || Number(env.DB_PORT)>65535 || !(env.DB_SSL_CA_PATH||env.DB_SSL_CA_PEM)) throw new Error('Cloud runtime requires the explicit isolated target, restricted runtime account and a trusted CA.');
     ssl = { ca:env.DB_SSL_CA_PEM||fs.readFileSync(path.resolve(root,env.DB_SSL_CA_PATH),'utf8'), rejectUnauthorized:true, verifyIdentity:true };
+  } else if(env.DB_MODE==='review') {
+    assertReviewSettings(env);
   } else {
     if(env.DB_MODE && env.DB_MODE !== 'local') throw new Error('Unknown database mode.');
     assertLocalDatabase(env);

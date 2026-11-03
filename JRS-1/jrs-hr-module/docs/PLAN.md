@@ -303,3 +303,8 @@ This is the historical queue. Necessary applicant/login integration and synchron
 5. Final phase task added by the user: complete Notification email templates, then remove verified test templates whose names begin with JRS. Inventory content and references first; a prefix alone does not prove a template is disposable. Back up before cleanup, preserve sent-email snapshots, and archive referenced test templates rather than break references.
 
 Current status: shared target and local dev have schema 10 and ten active formal templates. Verified seed archival preserved history. The core integration is synchronized and tested; pending receipt/deployment/visual items are listed in the current continuation plan above.
+
+
+## Independent reviewer environment (2026-11-03)
+
+Added an opt-in review mode using its own loopback MySQL instance on port 33307, schema 12, generated fictional accounts/jobs, local private uploads and captured email. No production handoff or cloud credentials are required. See ../../docs/LOCAL_REVIEW.md and ../../docs/REVIEW_CHECKLIST.md. Existing cloud runtime and deployment policies remain in place.

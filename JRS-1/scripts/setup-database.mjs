@@ -36,7 +36,7 @@ try {
   const [tables] = await pool.query('SHOW TABLES');
   if (tables.length) {
     const [[version]] = await pool.query('SELECT version FROM JRS_INTEGRATION_VERSION WHERE id=1');
-    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(version?.version)) throw new Error('Existing schema is not a completed JRS integration database. No automatic overwrite.');
+    if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(version?.version)) throw new Error('Existing schema is not a completed JRS integration database. No automatic overwrite.');
     if (version.version === 1) {
       await pool.query('CREATE TABLE JRS_CANDIDATE_LINK (recruiting_id VARCHAR(96) PRIMARY KEY, canonical_id INT NOT NULL UNIQUE) ENGINE=InnoDB');
       await pool.query('CREATE TABLE JRS_HR_APPLICATION_LINK (recruiting_id VARCHAR(96) PRIMARY KEY, canonical_id INT NOT NULL UNIQUE) ENGINE=InnoDB');
