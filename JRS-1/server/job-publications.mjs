@@ -31,7 +31,7 @@ export function jobPublicationServices(pool, recruitment, bridge) {
         if (!job) throw httpError(404, 'Job not found.');
         await connection.execute('INSERT INTO JRS_JOB_PUBLICATION(recruiting_id,salary_range,closing_date,publish_date,unpublish_date) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE salary_range=VALUES(salary_range),closing_date=VALUES(closing_date),publish_date=VALUES(publish_date),unpublish_date=VALUES(unpublish_date)', [id, data.salaryRange, data.closingDate || null, data.publishDate || null, data.unpublishDate || null]);
         const state = await recruitment.load(namespacePool(connection));
-        await bridge.mirror(connection, state, state);
+        await bridge.mirror(connection, state, state, {jobIds:[id]});
         await connection.execute('UPDATE recruiting_workspace SET revision=revision+1,updated_at=? WHERE id=1', [new Date().toISOString()]);
         await connection.commit();
         return data;

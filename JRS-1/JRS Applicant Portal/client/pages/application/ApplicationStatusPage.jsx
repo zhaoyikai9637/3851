@@ -20,22 +20,36 @@ export default function ApplicationStatusPage() {
   const [application, setApplication] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [applicationError, setApplicationError] = useState(null);
+  const [profileError, setProfileError] = useState(null);
   const [message, setMessage] = useState(location.state?.submitted ? { type: "success", text: "Your application was submitted successfully." } : null);
 
-  async function loadData() {
+  async function loadApplication() {
+    setLoading(true);
+    setApplicationError(null);
     try {
-      const [applicationResponse, profileResponse] = await Promise.all([api.get("/applications/me"), api.get("/profile")]);
-      setApplication(applicationResponse.data.application);
-      setProfile(profileResponse.data.profile);
-    } catch (requestError) {
-      setMessage({ type: "danger", text: getApiError(requestError, "Unable to load your application status.") });
+      const response = await api.get("/applications/me");
+      setApplication(response.data.application);
+    } catch (error) {
+      setApplicationError(getApiError(error, "Unable to load your application status. Please try again."));
     } finally {
       setLoading(false);
     }
   }
 
+  async function loadProfile() {
+    setProfileError(null);
+    try {
+      const response = await api.get("/profile");
+      setProfile(response.data.profile);
+    } catch {
+      setProfileError("Your profile settings could not be loaded. Your application is still saved.");
+    }
+  }
+
   useEffect(() => {
-    loadData();
+    loadApplication();
+    loadProfile();
   }, []);
 
   const currentPosition = useMemo(() => timelinePosition(application?.status), [application]);
@@ -63,6 +77,14 @@ export default function ApplicationStatusPage() {
 
   if (loading) return <div className="full-page-message inline"><div className="spinner-border text-primary" /><p>Checking your application...</p></div>;
 
+  if (applicationError && !application) return (
+    <section className="surface empty-state large" role="alert">
+      <h2>Unable to load your application</h2>
+      <p>{applicationError}</p>
+      <button className="btn btn-primary" onClick={loadApplication} type="button">Try again</button>
+    </section>
+  );
+
   if (!application) {
     return (
       <div className="page-stack">
@@ -81,6 +103,8 @@ export default function ApplicationStatusPage() {
 
   return (
     <div className="page-stack status-page">
+      {applicationError && <div className="alert alert-danger" role="alert">{applicationError}<button className="btn btn-link" onClick={loadApplication} type="button">Try again</button></div>}
+      {profileError && <div className="alert alert-warning" role="alert">{profileError}<button className="btn btn-link" onClick={loadProfile} type="button">Retry profile settings</button></div>}
       {message && <div className={"alert alert-" + message.type + " mb-0"} role="alert">{message.text}</div>}
 
       <section className="status-role-header surface">
@@ -148,7 +172,7 @@ export default function ApplicationStatusPage() {
         </div>
         <div className="action-buttons">
           <Link className="btn btn-outline-primary btn-lg" to="/applicant/resume"><UserRoundPen size={20} />Edit profile and resumes</Link>
-          {profile?.availabilityStatus !== "CLOSED" && <button className="btn btn-outline-secondary btn-lg" type="button" onClick={closeVisibility}><EyeOff size={20} />Close recruiter visibility</button>}
+          {profile && !profileError && profile.availabilityStatus !== "CLOSED" && <button className="btn btn-outline-secondary btn-lg" type="button" onClick={closeVisibility}><EyeOff size={20} />Close recruiter visibility</button>}
           {!withdrawn && !["Accepted", "Rejected"].includes(application.status) && <button className="btn btn-outline-danger btn-lg" type="button" onClick={withdrawApplication}><XCircle size={20} />Withdraw application</button>}
         </div>
       </section>

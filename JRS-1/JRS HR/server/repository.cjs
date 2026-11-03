@@ -73,7 +73,7 @@ function createRepository(pool) {
       await conn.beginTransaction();
       if(write)await conn.query('SELECT revision FROM hr_workspace WHERE id=1 FOR UPDATE');
       const value=await fn(conn);await conn.commit();return value;
-    } catch(e) {await conn.rollback();throw e;} finally {conn.release();}
+    } catch(e) {try{await conn.rollback();}catch{}throw e;} finally {conn.release();}
   }
   async function snapshot(userId) {return transaction(async conn=>{
     const db=await load(conn);

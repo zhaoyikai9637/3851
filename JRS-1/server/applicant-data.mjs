@@ -57,7 +57,8 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     const [[account]] = await this.repository.pool.execute("SELECT a.account_id,c.full_name,a.email FROM MODULE_ACCOUNT a JOIN CANDIDATE c ON c.account_id=a.account_id WHERE a.account_id=? AND a.role='candidate'", [id]);
     if (!account) return null;
     const user = { id: account.account_id, fullName: account.full_name, email: account.email, role: 'applicant' };
-    const [record] = await this.models.User.findOrCreate({ where: { id: user.id }, defaults: user });
+    let record = await this.models.User.findByPk(user.id);
+    if (!record) [record] = await this.models.User.findOrCreate({ where: { id: user.id }, defaults: user });
     if(record.fullName!==user.fullName || record.email!==user.email)await record.update(user);
     return user;
   }

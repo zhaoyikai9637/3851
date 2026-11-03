@@ -15,7 +15,7 @@ test('formal templates retain every supported workflow and use validated busines
 test('formal scheduling and offer messages require actual workflow values before rendering',async()=>{
  assert.ok(formalTemplates,'Formal template library is missing');
  const native=[];
- await createRecruitmentBridge({}).templates({query:async()=>[formalTemplates.map((t,index)=>({template_id:index+1,template_name:t.templateName,subject:t.subject,body:t.body,usage_type:t.usageType,is_active:1,updated_at:'2026-10-21T00:00:00Z'}))],execute:async(_sql,p)=>native.push({id:p[0],name:p[1],kind:p[2],subject:p[3],body:p[4],active:true})});
+ await createRecruitmentBridge({}).templates({query:async()=>[formalTemplates.map((t,index)=>({template_id:index+1,template_name:t.templateName,subject:t.subject,body:t.body,usage_type:t.usageType,is_active:1,updated_at:'2026-10-21T00:00:00Z'}))],execute:async(_sql,p)=>{for(let i=0;i<p.length;i+=7)native.push({id:p[i],name:p[i+1],kind:p[i+2],subject:p[i+3],body:p[i+4],active:true});}});
  const db=M.seed(),a=db.applications[0];db.templates=native;a.stage='Interview';
  const schedule=native.find(t=>t.name==='Interview Schedule');assert.throws(()=>S.fillTemplate(db,a,user,schedule),/no date/);
  db.interviews=[{applicationId:a.id,status:'Scheduled',date:'2031-01-12',time:'09:30',format:'Video',location:'https://meeting.example.test/room',interviewer:'Test panel'}];

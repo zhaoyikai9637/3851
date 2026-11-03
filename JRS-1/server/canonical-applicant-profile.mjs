@@ -21,9 +21,11 @@ function profileFromRecords(c,accountId,education,spoken,career) {
 export async function readApplicantProfile(db,accountId) {
  const [[c]]=await db.query('SELECT * FROM CANDIDATE WHERE account_id=?',[accountId]);
  if(!c)throw httpError(404,'Candidate profile not found.');
- const [education]=await db.query('SELECT * FROM EDUCATION WHERE candidate_id=? ORDER BY education_id',[c.candidate_id]);
- const [spoken]=await db.query('SELECT * FROM LANGUAGE WHERE candidate_id=? ORDER BY language_id',[c.candidate_id]);
- const [career]=await db.query('SELECT * FROM CAREER_HISTORY WHERE candidate_id=? ORDER BY role_id',[c.candidate_id]);
+ const [[education],[spoken],[career]]=await Promise.all([
+  db.query('SELECT * FROM EDUCATION WHERE candidate_id=? ORDER BY education_id',[c.candidate_id]),
+  db.query('SELECT * FROM LANGUAGE WHERE candidate_id=? ORDER BY language_id',[c.candidate_id]),
+  db.query('SELECT * FROM CAREER_HISTORY WHERE candidate_id=? ORDER BY role_id',[c.candidate_id])
+ ]);
  return profileFromRecords(c,accountId,education,spoken,career);
 }
 // The caller owns the transaction, so contact/list edits and application snapshots

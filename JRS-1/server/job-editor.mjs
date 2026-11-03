@@ -61,7 +61,7 @@ export function jobEditorRouter({ recruitment, pool, requireUser }) {
             ...(legacyPublication ? [publication.unpublishDate || null] : []),
           ],
         );
-        await recruitment.save(connection, before, after);
+        await recruitment.save(connection, before, after, {jobIds:[job.id]});
       },
     });
     const result = await commands.execute(

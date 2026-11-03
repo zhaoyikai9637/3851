@@ -51,6 +51,11 @@ function createApp({repo,cfg,transport,sharedAuth}) {
       res.json({items:items.slice((page-1)*limit,page*limit),total:items.length,page,limit,revision:db.revision});
     });
   }
+  app.get('/api/hr/notifications/:id/status',async(req,res)=>{
+    const [[row]]=await repo.pool.execute('SELECT d.id,d.status,d.last_error AS lastError,w.revision FROM hr_email_draft d JOIN hr_workspace w ON w.id=1 WHERE d.id=?',[req.params.id]);
+    if(!row)fail(404,'Email draft not found.');
+    res.json(row);
+  });
   app.post('/api/hr/notifications/:id/send',async(req,res)=>{
     if(typeof req.body.attachResume!=='boolean')fail(422,'Choose whether to attach the resume.');
     const result=await mailer.send(req.params.id,req.user,Number(req.get('If-Match')),req.body.attachResume);res.json({...result,db:await workspace(req.user.id)});

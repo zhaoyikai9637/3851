@@ -2,7 +2,7 @@ import {createCandidateRecoveryMailer} from './candidate-mail.mjs';
 import express from 'express';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import mysql from 'mysql2/promise';
+import {createDatabasePool,resilientSequelize,recoverRead} from './database-recovery.mjs';
 import { Sequelize } from 'sequelize';
 import { root, loadSettings, applicantPortalEnabled } from './config.mjs';
 import {createFileStore} from './file-storage.mjs';
@@ -29,8 +29,8 @@ import { createApp as communicationApp } from '../jrs-hr-module/server/src/app.j
 import { DatabaseSessionStore } from '../jrs-hr-module/server/src/session-store.js';
 
 export async function createRuntime({mailTransport}={}) {
-  const settings = loadSettings(), fileStore = createFileStore(settings), pool = mysql.createPool(settings.db);
-  const makeSequelize = () => new Sequelize(settings.DB_NAME, settings.DB_USER, settings.DB_PASSWORD, { dialect: 'mysql', host: settings.DB_HOST, port: settings.db.port, logging: false, timezone: '+00:00', dialectOptions: settings.db.ssl ? { ssl: settings.db.ssl } : {}, define: { underscored: true } });
+  const settings = loadSettings(), fileStore = createFileStore(settings), pool = createDatabasePool(settings.db);
+  const makeSequelize = () => resilientSequelize(new Sequelize(settings.DB_NAME, settings.DB_USER, settings.DB_PASSWORD, { dialect: 'mysql', host: settings.DB_HOST, port: settings.db.port, logging: false, timezone: '+00:00', dialectOptions: settings.db.ssl ? { ssl: settings.db.ssl } : {}, define: { underscored: true }, retry: {max:0}, pool:{max:4,min:0,idle:10000,evict:5000,acquire:20000} }));
   const communicationDb = makeSequelize();
   let applicantDb, data;
   const close = async () => { await Promise.all([pool.end(), communicationDb.close(), applicantDb?.close()]); };
@@ -41,9 +41,9 @@ export async function createRuntime({mailTransport}={}) {
     const repository = new candidateRepository.Repository(pool,{integratedRoot:true}), bridge = createRecruitmentBridge(pool, { experimentalApplicantPortal: experimental });
     const recruitment = recruitmentRepository.createRepository(namespacePool(pool));
     const load = recruitment.load, save = recruitment.save, snapshot = recruitment.snapshot;
-    recruitment.snapshot = async userId => loadAssessments(pool,await snapshot(userId));
+    recruitment.snapshot = async userId => loadAssessments(pool,await recoverRead(()=>snapshot(userId)));
     recruitment.load = async connection => { await bridge.templates(connection); return loadAssessments(connection,await load(connection)); };
-    recruitment.save = async (connection, before, after) => { await save(connection, before, after); await saveAssessments(connection,before,after); await bridge.mirror(connection, before, after); };
+    recruitment.save = async (connection, before, after, options) => { await save(connection, before, after); await saveAssessments(connection,before,after); await bridge.mirror(connection, before, after, options); };
     // The original repository closes over its private load/save. Wrap its transaction
     // callbacks too, so original HR command code crosses the same integration boundary.
     const transact = recruitment.transaction;

@@ -10,15 +10,26 @@ const convertVariables = value => value.replace(/\[([A-Za-z][A-Za-z0-9_]*)\]/g, 
 export function createRecruitmentBridge(pool, { experimentalApplicantPortal = false } = {}) {
   async function templates(connection) {
     const [rows] = await connection.query('SELECT * FROM EMAIL_TEMPLATE');
-    for (const t of rows) await connection.execute('INSERT INTO recruiting_email_template(id,name,kind,subject,body,active,updated_at) VALUES(?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE name=VALUES(name),kind=VALUES(kind),subject=VALUES(subject),body=VALUES(body),active=VALUES(active),updated_at=VALUES(updated_at)', [
-      `canonical-template-${t.template_id}`, t.template_name, templateKind(t.usage_type), convertVariables(t.subject), convertVariables(t.body), Number(t.is_active), new Date(t.updated_at).toISOString(),
-    ]);
+    if (!rows.length) return;
+    const values = rows.flatMap(t => [`canonical-template-${t.template_id}`, t.template_name, templateKind(t.usage_type), convertVariables(t.subject), convertVariables(t.body), Number(t.is_active), new Date(t.updated_at).toISOString()]);
+    await connection.execute('INSERT INTO recruiting_email_template(id,name,kind,subject,body,active,updated_at) VALUES '+rows.map(()=>'(?,?,?,?,?,?,?)').join(',')+' ON DUPLICATE KEY UPDATE name=VALUES(name),kind=VALUES(kind),subject=VALUES(subject),body=VALUES(body),active=VALUES(active),updated_at=VALUES(updated_at)',values);
   }
 
-  async function mirror(connection, before, after) {
+  async function mirror(connection, before, after, {jobIds = []} = {}) {
+    const changed = key => {
+      const previous = new Map((before[key] || []).map(row => [row.id, row]));
+      return (after[key] || []).filter(row => !previous.has(row.id) || JSON.stringify(previous.get(row.id)) !== JSON.stringify(row));
+    };
+    const forcedJobs = new Set(jobIds);
+    const changedJobs = new Set(changed('jobs').map(row => row.id));
+    const jobs = after.jobs.filter(row => changedJobs.has(row.id) || forcedJobs.has(row.id) || (before === after && !jobIds.length));
+    const candidates = changed('candidates'), applications = changed('applications');
+    const oldEvents = new Set(before.systemNotifications.map(n => n.id));
+    const events = after.systemNotifications.filter(n => !oldEvents.has(n.id));
+    if (!jobs.length && !candidates.length && !applications.length && !events.length) return;
     const [[owner]] = await connection.query("SELECT user_id FROM HR_USER WHERE account_status='ACTIVE' ORDER BY user_id LIMIT 1");
     if (!owner) throw httpError(409, 'An active canonical HR profile is required.');
-    for (const job of after.jobs) {
+    for (const job of jobs) {
       const [[link]] = await connection.execute('SELECT * FROM JRS_JOB_LINK WHERE recruiting_id=?', [job.id]);
       const [[publication]] = await connection.execute('SELECT * FROM JRS_JOB_PUBLICATION WHERE recruiting_id=?', [job.id]);
       const open = publicationState(job.status,{publishDate:publication?.publish_date,unpublishDate:publication?.unpublish_date,closingDate:publication?.closing_date}).accepting;
@@ -43,7 +54,7 @@ export function createRecruitmentBridge(pool, { experimentalApplicantPortal = fa
         await connection.execute('INSERT INTO JRS_JOB_LINK(recruiting_id,portal_id,canonical_id) VALUES(?,?,?)', [job.id, portalId, canonical.id]);
       }
     }
-    for (const c of after.candidates) {
+    for (const c of candidates) {
       const [[link]] = await connection.execute('SELECT canonical_id FROM JRS_CANDIDATE_LINK WHERE recruiting_id=?', [c.id]);
       if(link) {
         const previous=before.candidates?.find(row=>row.id===c.id);
@@ -60,7 +71,7 @@ export function createRecruitmentBridge(pool, { experimentalApplicantPortal = fa
         await connection.execute('INSERT INTO JRS_CANDIDATE_LINK(recruiting_id,canonical_id) VALUES(?,?)', [c.id, canonical.id]);
       }
     }
-    for (const a of after.applications) {
+    for (const a of applications) {
       const [[link]] = await connection.execute('SELECT canonical_id FROM JRS_HR_APPLICATION_LINK WHERE recruiting_id=?', [a.id]);
       if (!link) {
         const [[candidate]] = await connection.execute('SELECT canonical_id FROM JRS_CANDIDATE_LINK WHERE recruiting_id=?', [a.candidateId]);
@@ -76,8 +87,7 @@ export function createRecruitmentBridge(pool, { experimentalApplicantPortal = fa
         if (portal && !portal.withdrawn) await connection.execute('UPDATE applications SET status=?,status_message=?,updated_at=UTC_TIMESTAMP() WHERE id=?', [publicStatus(a.stage), `Recruitment stage: ${a.stage}.`, portal.portal_id]);
       }
     }
-    const oldEvents = new Set(before.systemNotifications.map(n => n.id));
-    for (const n of after.systemNotifications.filter(n => !oldEvents.has(n.id))) {
+    for (const n of events) {
       const [[link]] = await connection.execute('SELECT canonical_id FROM JRS_HR_APPLICATION_LINK WHERE recruiting_id=?', [n.applicationId]);
       await connection.execute('INSERT IGNORE INTO SYSTEM_NOTIFICATION(recipient_user_id,application_id,notification_type,title,message,source_module,event_key,is_read) VALUES(?,?,?,?,?,?,?,0)', [owner.user_id, link?.canonical_id || null, n.eventType === 'New Application' ? 'NEW_APPLICATION' : 'STATUS_UPDATE', n.title.slice(0, 180), n.title, n.sourceModule || 'Applications', `recruiting:${n.id}`]);
     }

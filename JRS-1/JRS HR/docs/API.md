@@ -70,3 +70,6 @@ See [SIMPLE_WORKFLOW_v2.6.md](SIMPLE_WORKFLOW_v2.6.md). The combined
 duration and format supplied by the form. Stage, appointment and optional draft
 are saved atomically. Closed jobs block progression. ISO date values and trusted
 shared sessions remain mandatory. No schema or existing business row is reset.
+
+
+GET /api/hr/notifications/{id}/status requires the same HR authentication as the workspace. It returns id, status, lastError and revision only. Use it to reconcile a lost send response; never automatically resend a Sending or Uncertain draft. The integrated URL starts with /recruitment/api/.
