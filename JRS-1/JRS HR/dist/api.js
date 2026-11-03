@@ -11,7 +11,7 @@
     return result;
   }
   function signIn() { window.top.location.assign('/pages/login/login.html'); return new Promise(() => {}); }
-  async function refresh(){db=await request('hr/workspace');user=db.currentUser;if(db.csrfToken)csrf=db.csrfToken;error='';return db;}
+  async function refresh(){db=await request('hr/workspace');user=db.currentUser;if(db.csrfToken){csrf=db.csrfToken;delete db.csrfToken;}error='';return db;}
   async function boot(){
     if(location.protocol==='file:')throw Error('Start the backend with npm start, then open http://localhost:3000. This version requires the server.');
     try{await refresh();}catch(e){if(e.status!==401)throw e;await signIn();}
