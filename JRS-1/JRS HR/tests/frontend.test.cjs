@@ -56,7 +56,7 @@ test('resume and result pages include the document, job description and complete
     for(const requirement of j.requirements)assert.ok(list.includes(requirement));
     for(const information of [j.location,j.department,j.type,j.mode])assert.ok(!list.includes(information),'Job metadata must not pad the requirements list');
     assert.match(details,/Job Information/i);
-    for(const information of [j.location,j.department,j.type,j.mode])assert.ok(details.includes(information));
+    for(const information of [j.location,j.department,j.type])assert.ok(details.includes(information));
   }
   const html=V.render(['review',a.id],db,state());
   assert.ok(html.includes('Job Description'));assert.ok(html.includes(j.description));assert.ok(html.includes('Job Requirements'));
@@ -464,4 +464,13 @@ test('resume upload refreshes a stale revision so the same selected file can be 
   await c.HRRemote.upload('candidate-qa',file);
   const puts=calls.filter(x=>x.method==='PUT');assert.equal(puts[0].headers['If-Match'],'1');assert.equal(puts[1].headers['If-Match'],'2');
   assert.equal(c.HRRemote.db.revision,3);
+});
+
+test('job lists and review facts omit work arrangement while retaining employment type and location',()=>{
+ const db=M.seed(),j=db.jobs[0];j.mode='Retired arrangement fixture';
+ const V=views(),list=V.HRViews.render(['jobs'],db,state()),facts=V.HRReview.jobDetails(j);
+ assert.ok(list.includes('EMPLOYMENT TYPE'));assert.ok(list.includes(j.type));assert.ok(list.includes(j.location));
+ assert.ok(facts.includes('Employment type'));assert.ok(facts.includes(j.type));
+ for(const html of [list,facts]){assert.ok(!html.includes('Retired arrangement fixture'));assert.ok(!/work arrangement|work mode/i.test(html));}
+ assert.equal(j.mode,'Retired arrangement fixture');
 });

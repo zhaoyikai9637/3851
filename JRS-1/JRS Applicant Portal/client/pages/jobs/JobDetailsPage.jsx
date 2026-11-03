@@ -35,7 +35,7 @@ export default function JobDetailsPage({ authenticated = false }) {
           <p>{job.summary}</p>
           <div className="job-meta-list prominent">
             <span><MapPin size={19} />{job.location}</span>
-            <span><BriefcaseBusiness size={19} />{jobLabel(job.workMode)} | {jobLabel(job.employmentType)}</span>
+            <span><BriefcaseBusiness size={19} />{jobLabel(job.employmentType)}</span>
             {job.closingDate && <span><CalendarDays size={19} />Apply by {formatDate(job.closingDate)}</span>}
             {job.salaryRange && <span><CircleDollarSign size={19} />{job.salaryRange}</span>}
           </div>

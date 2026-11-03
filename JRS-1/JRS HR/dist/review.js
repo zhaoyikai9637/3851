@@ -7,7 +7,7 @@
   }
   function jobDetails(j){
     const rows=requirementsRows(j),complete=rows.length>=8&&rows.length<=12;
-    const information=[['Department',j.department],['Employment type',j.type],['Work arrangement',j.mode],['Location',j.location]];
+    const information=[['Department',j.department],['Employment type',j.type],['Location',j.location]];
     return `<section class="job-information"><h3>Job Description</h3><p class="job-description-text">${e(j.description)}</p><h3>Job Requirements</h3>${!complete?'<p class="requirements-incomplete">This position needs 8–12 requirements. '+link('jobs','Complete in Job Postings')+'</p>':''}<ol class="job-requirements-list">${rows.map(row=>'<li>'+e(row)+'</li>').join('')}</ol><details class="job-facts-section"><summary>Job Information</summary><dl class="job-facts">${information.map(([label,value])=>'<dt>'+e(label)+'</dt><dd>'+e(value)+'</dd>').join('')}</dl></details></section>`;
   }
   function viewer(db,a,ui){

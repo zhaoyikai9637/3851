@@ -25,12 +25,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const jobs = window.JRS_PORTAL_JOBS.map(job => ({ ...job, mode: job.workMode, level: job.experienceLevel, type: job.employmentType, skills: job.requirements.join(" ") }));
     function jobsPage() {
         root.innerHTML = `<div class="page-stack"><section class="search-surface surface"><div><p class="eyebrow">APPLICANT JOB SEARCH</p><h2>Find a suitable role</h2><p>Choose the one role that best matches your skills and experience.</p></div><form id="searchForm" class="job-search-form"><input class="form-control" id="jobSearch" aria-label="Search jobs" placeholder="Search by job title, skill, or department" maxlength="100"><button class="btn btn-primary" type="submit">Search jobs</button></form></section><div class="jobs-layout"><aside class="surface filters-panel"><h2>Filters</h2><form id="filterForm"><div class="filter-fields" id="filterFields"></div><div class="filter-buttons"><button class="btn btn-primary" type="submit">Apply filters</button><button class="btn" type="reset">Reset</button></div></form></aside><section class="jobs-results" aria-label="Job results"><div class="results-heading"><div><p class="eyebrow">CURRENT VACANCIES</p><h2 id="resultCount"></h2></div></div><div id="jobList" class="job-list" aria-live="polite"></div></section></div></div><dialog id="jobDialog" aria-labelledby="detailTitle"><p class="eyebrow">ROLE DETAILS</p><h2 id="detailTitle"></h2><p id="detailSummary"></p><p id="detailMeta"></p><div id="detailSections"></div><div class="dialog-actions"><button class="btn btn-primary" disabled>Continue to application</button><button class="btn" id="closeDetails" type="button">Close</button></div></dialog>`;
-        const filters = [['department', 'Department'], ['location', 'Location'], ['mode', 'Work mode'], ['level', 'Experience level']];
+        const filters = [['department', 'Department'], ['location', 'Location'], ['level', 'Experience level']];
         for (const [key, label] of filters) {
             const field = document.createElement('label'); field.className = 'form-label-group';
             const span = document.createElement('span'); span.textContent = label;
             const select = document.createElement('select'); select.id = key; select.className = 'form-select';
-            select.add(new Option('All ' + ({ department: 'departments', location: 'locations', mode: 'work modes', level: 'experience levels' })[key], ''));
+            select.add(new Option('All ' + ({ department: 'departments', location: 'locations', level: 'experience levels' })[key], ''));
             for (const value of new Set(jobs.map(job => job[key]))) select.add(new Option(value, value));
             field.append(span, select); $('filterFields').append(field);
         }
@@ -42,11 +42,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             for (const job of matches) {
                 const card = document.createElement('article'); card.className = 'job-card surface';
                 // All interpolated fields below are fixed local fixtures, never account data.
-                card.innerHTML = `<div><div class="job-title-row"><div><span class="department-badge">${job.department}</span><h3>${job.title}</h3></div><span class="job-type">${job.type}</span></div><p class="job-summary">${job.summary}</p><div class="job-meta-list"><span>${job.location}</span><span>${job.mode}</span><span>${job.level}</span><span>Closes ${displayDate(job.closingDate)}</span></div></div><div class="job-card-action"><button class="btn" type="button">View details</button></div>`;
+                card.innerHTML = `<div><div class="job-title-row"><div><span class="department-badge">${job.department}</span><h3>${job.title}</h3></div><span class="job-type">${job.type}</span></div><p class="job-summary">${job.summary}</p><div class="job-meta-list"><span>${job.location}</span><span>${job.level}</span><span>Closes ${displayDate(job.closingDate)}</span></div></div><div class="job-card-action"><button class="btn" type="button">View details</button></div>`;
                 card.querySelector('button').addEventListener('click', () => {
                     $('detailTitle').textContent = job.title;
                     $('detailSummary').textContent = job.summary;
-                    $('detailMeta').textContent = `${job.department} · ${job.location} · ${job.workMode} · ${job.salaryRange} · Closes ${displayDate(job.closingDate)}`;
+                    $('detailMeta').textContent = `${job.department} · ${job.location} · ${job.salaryRange} · Closes ${displayDate(job.closingDate)}`;
                     $('detailSections').replaceChildren();
                     for (const [key, title] of [['responsibilities', 'Responsibilities'], ['requirements', 'Essential requirements'], ['preferredQualifications', 'Preferred qualifications'], ['benefits', 'Benefits and hiring process']]) {
                         const heading = document.createElement('h3'); heading.textContent = title;

@@ -10,7 +10,7 @@ My Resume describes availability as job-search status, using Open to new opportu
 Opening Reschedule Interview clears date, time, venue and interviewer. It retains the booking ID, duration, format and optional notes. Saving still updates the existing scheduled booking, and closing the form leaves it unchanged. CSS and form markup structure are unchanged.
 
 ## Deferred work
-The existing review navigation and duplicate notification body remain unchanged. Work-arrangement values still appear on applicant job details and HR review facts. These values do not affect submission authorization or application progression, but can be misleading because the current editor no longer exposes a control for them. New jobs retain the hidden On-site default; old jobs retain their saved mode. Display removal needs a separate product decision.
+The existing review navigation and duplicate notification body remain unchanged. The owner subsequently approved removing all job work-arrangement displays. See WORK_ARRANGEMENT_REMOVAL.md for that separate change; historical hidden values remain compatible.
 
 ## Validation
 Run npm run test:all and the independent real-MySQL reviewer workflow. Verify mirrored state-change timestamps against their source event on a UTC+8 session. Check reschedule blank fields and successful save/cancel through the integrated HR iframe in Edge. Check job-search wording on desktop and narrow screens. No cloud deployment or historical production timestamp correction is included.

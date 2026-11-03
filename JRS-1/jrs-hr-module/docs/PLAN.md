@@ -1,3 +1,7 @@
+## Retired job work arrangement - 2026-11-03
+
+Remove the job Work arrangement field and its values from guest/applicant details, HR review facts, native listings/edit fallbacks and the standalone applicant display fallback. Preserve employment type, location, historical values, API compatibility and interview meeting format. This supersedes the earlier deferred display decision. See ../../docs/WORK_ARRANGEMENT_REMOVAL.md.
+
 ## Notification and reschedule corrections - 2026-11-03
 
 Persist mirrored notification times from the original UTC event, clarify applicant job-search status without claiming submitted applications are hidden, and require fresh reschedule inputs while retaining booking identity and optional settings. Preserve CSS and all deferred review controls. See ../../docs/NOTIFICATION_AND_RESCHEDULE_FIXES.md.
