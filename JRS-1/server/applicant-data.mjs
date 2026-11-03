@@ -1,3 +1,4 @@
+import {readPersonalProfile} from './candidate-profile-details.mjs';
 import {applicationQuestions} from './applicant-questions.mjs';
 import fs from 'node:fs/promises';
 import {createFileStore} from './file-storage.mjs';
@@ -169,8 +170,9 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       const profile=await readApplicantProfile({query},userId);
       const [[resumeLink]] = await query('SELECT f.* FROM RESUME_FILE f JOIN JRS_RESUME_LINK l ON l.canonical_id=f.file_id WHERE l.portal_id=?', [resume.id]);
       if (!resumeLink) throw httpError(409,'The selected resume has not been linked.');
-      await query('UPDATE JRS_APPLICATION_LINK SET applicant_snapshot=? WHERE portal_id=?',[JSON.stringify({...profile,fullName:canonical.full_name,email:canonical.email,...values,declarationAcceptedAt:at,resume:{canonicalId:resumeLink.file_id,name:resume.originalName,mimeType:resume.mimeType}}),application.id]);
       await writeApplicantProfile({query},userId,{phone:values.phone,location:values.location,experiences:values.experiences});
+      const profileDetails=await readPersonalProfile({query},canonical.candidate_id);
+      await query('UPDATE JRS_APPLICATION_LINK SET applicant_snapshot=? WHERE portal_id=?',[JSON.stringify({...profile,profileDetails,fullName:canonical.full_name,email:canonical.email,...values,declarationAcceptedAt:at,resume:{canonicalId:resumeLink.file_id,name:resume.originalName,mimeType:resume.mimeType}}),application.id]);
       if (resumeLink?.file_type === 'application/pdf') await connection.execute('INSERT INTO hr_resume(candidate_id,filename,size_bytes,content,uploaded_at) VALUES(?,?,?,?,?) ON DUPLICATE KEY UPDATE filename=VALUES(filename),size_bytes=VALUES(size_bytes),content=VALUES(content),uploaded_at=VALUES(uploaded_at)', [candidateId, resume.originalName.slice(0, 150), resume.size, await this.fileStore.get(resumeLink.storage_key), at]);
       return { ...application.toJSON(), job: submittedJob, resume: resume.toJSON() };
     });

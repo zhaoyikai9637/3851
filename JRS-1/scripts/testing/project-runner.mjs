@@ -22,7 +22,7 @@ export async function createTestPlan(root,reportDirectory,{all=false}={}) {
  const native=path.join(root,'JRS HR');
  const plan=[
   node('integrated','Integrated boundaries, adapters and shared UI',root,await nodeTests(path.join(root,'tests'),'.test.mjs')),
-  {id:'login-profile',label:'Login, recovery and personal profile',cwd:path.join(root,'JRS Login and profile'),args:['--experimental-vm-modules',path.join(root,'node_modules/jest/bin/jest.js'),'--runInBand','--ci','--colors=false','--json','--outputFile='+path.join(reportDirectory,'login-profile.json')],format:'json',jsonReport:path.join(reportDirectory,'login-profile.json')},
+  {id:'login-profile',label:'Login, recovery and personal profile',cwd:path.join(root,'JRS Login and profile'),args:[path.join(root,'scripts/testing/run-login-tests.mjs'),'--outputFile='+path.join(reportDirectory,'login-profile.json')],format:'json',jsonReport:path.join(reportDirectory,'login-profile.json')},
   {...node('applicant','Applicant validation and API (demo data)',path.join(root,'JRS Applicant Portal/server'),await nodeTests(path.join(root,'JRS Applicant Portal/server/test'),'.test.js')),env:{DB_MODE:'demo'}},
   node('recruiting','HR recruitment workflow and API',native,await nodeTests(path.join(native,'tests'),'.test.cjs')),
   vitestSuite('hr-client','HR React pages and controls','jrs-hr-module/client'),

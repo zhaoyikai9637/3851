@@ -1,3 +1,7 @@
+## Candidate profile details - 2026-11-03
+
+Show all applicant profile sections inside the existing candidate card, separated into current personal information and submitted application/history. Load details only on demand behind HR authorization, retain complete snapshots for new submissions, and label unavailable historical fields without backfilling. Verified 747 unit/API tests, builds, real local MySQL edits versus immutable snapshots, and Edge desktop/mobile layout. Isolate Jest files to stabilize Node VM execution. See ../../docs/CANDIDATE_PROFILE_DETAILS.md.
+
 ## Candidate visibility and ownership - 2026-11-03
 
 Show candidates only after an application is submitted or received. Derive applicant ownership from canonical account links; reject HR profile/resume writes and proxy intake for applicant-owned records while retaining manual intake capabilities. Preserve registrations, old hidden rows, submitted documents and closed application history; no schema migration. See ../../docs/CANDIDATE_VISIBILITY.md for verification and boundaries.

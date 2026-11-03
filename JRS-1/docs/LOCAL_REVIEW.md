@@ -76,3 +76,5 @@ Verified on Windows with Node.js 24.16.0 and MySQL Community Server 26.7.0: a cl
 Regression results: root Node tests 190, HR client Vitest tests 136, communication backend/API Vitest tests 183 and native recruiting Node tests 125 passed (634 tests). The HR frontend suite was rerun successfully from the clean export with --pool=threads after the original deep-path working copy encountered a worker startup timeout. Frontend builds and the English source check passed. Email delivery, cloud failure behavior, and the full manual checklist are outside this local verification record.
 
 Candidate policy acceptance also checks that registrations stay absent from HR until application submission, applicant-owned profile/resume writes are rejected in HR, legacy registration-only records remain hidden without deletion, and manual intake editing/upload still works. See CANDIDATE_VISIBILITY.md.
+
+The real workflow also saves all profile sections before applying and edits them afterward: current HR information changes, while the submitted profile stays fixed. Full detail reads occur only on the corresponding candidate/application pages.

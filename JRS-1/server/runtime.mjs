@@ -1,3 +1,4 @@
+import {candidateDetailsRouter} from './candidate-profile-details.mjs';
 import {applyCandidateOwnership,assertCandidateReadAccess,assertManualCandidateEmail} from './candidate-ownership.mjs';
 import {createCandidateRecoveryMailer} from './candidate-mail.mjs';
 import express from 'express';
@@ -106,6 +107,7 @@ export async function createRuntime({mailTransport}={}) {
     });
     app.use((req, res, next) => /^\/api\/(auth|hr)(\/|$)/.test(req.path) ? hr(req, res, next) : next());
     app.use('/recruitment/api/hr/job-postings', jobEditorRouter({ recruitment, pool, requireUser:sharedAuth.requireUser }));
+    app.use('/recruitment/api/hr/candidates',candidateDetailsRouter({pool,requireUser:sharedAuth.requireUser}));
     app.use('/recruitment/api/hr/applications',submittedMaterialsRouter({pool,requireUser:sharedAuth.requireUser,uploadDir,fileStore}));
     app.use('/recruitment', recruiting);
     if (experimental) {

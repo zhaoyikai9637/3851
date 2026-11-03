@@ -46,3 +46,5 @@ Keep local screenshots and .local/review/verification.json with your report. Sta
 - jrs-hr-module/server/src: notification center, email templates, logs and HR profile APIs.
 
 For each write, trace the UI API call to the route, authentication/CSRF checks, validation, transaction and persistence; reload through the opposite role to confirm integration. Use the browser Network tab to record a failing route and HTTP status. Do not paste request cookies, passwords, reset tokens or private resume content into a shared report.
+
+- After applying, edit every personal profile section. In HR Current personal profile, verify the latest values; in Submitted application & history and Resume Review, verify the original values and selected resume. Verify that older applications explicitly identify uncaptured fields.

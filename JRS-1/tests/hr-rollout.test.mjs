@@ -157,11 +157,11 @@ test("a single complete review confirmation books the interview while keeping th
     w.close();
   }
 });
-test("candidate information remains accessible without an application",async()=>{
+test("candidate information stays hidden when no application exists",async()=>{
  const {dom,db,doc}=await setup();try{
   db.candidates.push({...db.candidates[0],id:"unassigned-person",name:"Unassigned Example",email:"unassigned@example.test"});
   doc.querySelector("main").innerHTML=dom.window.HRViews.render(["candidate","unassigned-person"],db,{});
-  assert.ok(doc.body.textContent.includes("unassigned@example.test"));
-  assert.ok(doc.body.textContent.includes("No applications recorded"));
+  assert.ok(!doc.body.textContent.includes("unassigned@example.test"));
+  assert.ok(doc.body.textContent.includes("No application recorded"));
  }finally{dom.window.close();}
 });

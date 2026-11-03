@@ -29,7 +29,8 @@
         const grid=host.querySelector('.profile-grid');
         if(grid){
           const section=ui.section||'details',panels=[...grid.children];
-          grid.insertAdjacentHTML('beforebegin',`<nav class="section-tabs" aria-label="Candidate sections">${[['details','Candidate details'],['history','Tasks & history']].map(([id,label])=>V.button('section',label,id,section===id?'selected':'',`aria-pressed="${section===id}"`)).join('')}</nav>`);
+          const profileTabs=grid.classList.contains('candidate-information-grid')?[['details','Current personal profile'],['history','Submitted application & history']]:[['details','Candidate details'],['history','Tasks & history']];
+          grid.insertAdjacentHTML('beforebegin',`<nav class="section-tabs" aria-label="Candidate sections">${profileTabs.map(([id,label])=>V.button('section',label,id,section===id?'selected':'',`aria-pressed="${section===id}"`)).join('')}</nav>`);
           panels.forEach((panel,i)=>{panel.hidden=(section==='history'?i!==1:i!==0);});
           grid.classList.add('single-section');
         }

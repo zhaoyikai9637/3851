@@ -32,6 +32,10 @@ Keep credentials in ignored local files or Render Variables. Copy .env.example o
 
 Candidates enter HR after an application is submitted or received. Applicant-owned profiles and resumes are read-only in HR; manual intake records retain supplementation. Existing accounts and records are preserved. See [Candidate visibility and ownership](docs/CANDIDATE_VISIBILITY.md).
 
+## HR personal information
+
+The existing candidate card separates the current personal profile from submitted application information. New submissions capture all profile sections; older uncaptured fields remain explicitly unrecorded. See [Candidate profile details](docs/CANDIDATE_PROFILE_DETAILS.md) for access, loading and snapshot behavior.
+
 ## Modules
 
 - JRS Login and profile: shared login/registration, candidate code recovery and the original personal profile.

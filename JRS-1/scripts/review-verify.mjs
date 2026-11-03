@@ -42,10 +42,16 @@ try{
  await site.repository.pool.execute('UPDATE recruiting_workspace SET revision=revision+1 WHERE id=1');
  const oldRegistration=await manager.get('/recruitment/api/hr/workspace').expect(200);assert.ok(!oldRegistration.body.candidates.some(c=>c.id===legacyId));
  await manager.get('/recruitment/api/hr/candidates/'+encodeURIComponent(legacyId)+'/resume').expect(404);
+ await manager.get('/recruitment/api/hr/candidates/'+encodeURIComponent(legacyId)+'/profile').expect(404);
  passed.push('Legacy registration-only records remain stored but hidden, including direct resume access');
 
  const jobs=await request(site.app).get('/applicant-api/jobs').expect(200);assert.ok(jobs.body.jobs.length>=3);const job=jobs.body.jobs[0];
  const uploaded=await candidate.post('/applicant-api/resumes').set('X-CSRF-Token',csrf).attach('resume',Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'),{filename:'local-review.pdf',contentType:'application/pdf'}).expect(201);
+ await candidate.put('/api/profile/summary').set('X-CSRF-Token',csrf).send({personal_summary:'Summary saved with application'}).expect(200);
+ await candidate.put('/api/profile/skills').set('X-CSRF-Token',csrf).send({skills:['SQL','Testing']}).expect(200);
+ await candidate.put('/api/profile/languages').set('X-CSRF-Token',csrf).send({languages:[{language_name:'English',can_read:true,can_write:false},{language_name:'Chinese',can_read:false,can_write:true}]}).expect(200);
+ const school=await candidate.post('/api/profile/education').set('X-CSRF-Token',csrf).send({institution:'Original Academy',qualification:'Bachelor',is_current_study:false,finished_year:'2026',description:'Original study details'}).expect(201);
+ const certificate=await candidate.post('/api/profile/certifications').set('X-CSRF-Token',csrf).send({cert_name:'Original Certificate',issuing_org:'Example Issuer',issue_month_year:'2025-02',no_expiry:true,description:'Original certificate details'}).expect(201);
  const payload={jobId:job.id,resumeId:uploaded.body.resume.id,phone:'+65 8123 4567',location:'["SG","",""]',coverLetter:'Local integration verification.',experiences:[{companyName:'Fictional Review Company',jobTitle:'Developer',startDate:'2024-01',endDate:'',currentRole:true,responsibilities:'Implemented and tested software.',achievements:'',skills:['JAVASCRIPT']}],roleAnswers:{availability:'Within 1 month'},declarationAccepted:true};
  await candidate.post('/applicant-api/applications').set('X-CSRF-Token',csrf).send({...payload,declarationAccepted:false}).expect(422);
  const submission=await candidate.post('/applicant-api/applications').set('X-CSRF-Token',csrf).send(payload).expect(201);
@@ -59,6 +65,22 @@ try{
  await manager.get('/recruitment/api/hr/applications/'+encodeURIComponent(application.id)+'/submitted-resume').expect(200);
  await candidate.get('/recruitment/api/hr/applications/'+encodeURIComponent(application.id)+'/submitted-resume').expect(403);
  passed.push('Private resume upload, declaration validation, submission and HR queue synchronization');
+ await candidate.get('/recruitment/api/hr/candidates/'+encodeURIComponent(person.id)+'/profile').expect(403);
+ const detailBefore=await manager.get('/recruitment/api/hr/candidates/'+encodeURIComponent(person.id)+'/profile').expect(200);
+ const originalSubmitted=detailBefore.body.applications.find(a=>a.id===application.id).profileDetails;
+ assert.equal(detailBefore.body.currentProfile.summary,'Summary saved with application');assert.equal(originalSubmitted.summary,'Summary saved with application');assert.equal(originalSubmitted.career[0].title,'Developer');assert.equal(originalSubmitted.education[0].institution,'Original Academy');assert.equal(originalSubmitted.certifications[0].name,'Original Certificate');assert.deepEqual(originalSubmitted.skills,['SQL','Testing']);assert.equal(originalSubmitted.languages[0].reading,true);assert.equal(originalSubmitted.languages[1].writing,true);
+ await candidate.put('/api/profile').set('X-CSRF-Token',csrf).send({first_name:'Updated',last_name:'Reviewer',country_code:'+65',contact_number:'81234567',home_location:'Singapore'}).expect(200);
+ await candidate.put('/api/profile/summary').set('X-CSRF-Token',csrf).send({personal_summary:'Updated current summary'}).expect(200);
+ await candidate.put('/api/profile/skills').set('X-CSRF-Token',csrf).send({skills:['Node.js']}).expect(200);
+ await candidate.put('/api/profile/languages').set('X-CSRF-Token',csrf).send({languages:[{language_name:'English',can_read:true,can_write:true}]}).expect(200);
+ await candidate.put('/api/profile/education/'+school.body.id).set('X-CSRF-Token',csrf).send({institution:'Updated Academy',qualification:'Bachelor',is_current_study:false,finished_year:'2026',description:'Updated study details'}).expect(200);
+ await candidate.put('/api/profile/certifications/'+certificate.body.id).set('X-CSRF-Token',csrf).send({cert_name:'Updated Certificate',issuing_org:'Example Issuer',issue_month_year:'2025-02',no_expiry:true,description:'Updated certificate details'}).expect(200);
+ const ownProfile=await candidate.get('/api/profile').expect(200);const careerId=ownProfile.body.profile.career[0].role_id;
+ await candidate.put('/api/profile/career/'+careerId).set('X-CSRF-Token',csrf).send({job_title:'Updated Developer',company_name:'Updated Company',start_month_year:'2024-01',end_month_year:null,is_current_role:true,description:'Updated responsibilities'}).expect(200);
+ const detailAfter=await manager.get('/recruitment/api/hr/candidates/'+encodeURIComponent(person.id)+'/profile').expect(200);assert.equal(detailAfter.body.currentProfile.name,'Updated Reviewer');assert.equal(detailAfter.body.currentProfile.summary,'Updated current summary');assert.equal(detailAfter.body.currentProfile.career[0].title,'Updated Developer');assert.equal(detailAfter.body.currentProfile.education[0].institution,'Updated Academy');assert.equal(detailAfter.body.currentProfile.certifications[0].name,'Updated Certificate');assert.deepEqual(detailAfter.body.currentProfile.skills,['Node.js']);assert.equal(detailAfter.body.currentProfile.languages[0].writing,true);assert.deepEqual(detailAfter.body.applications.find(a=>a.id===application.id).profileDetails,originalSubmitted);
+ passed.push('Current full profile follows applicant edits while submitted full profile remains immutable');
+ workspace=(await manager.get('/recruitment/api/hr/workspace').expect(200)).body;
+
  const M=(await import('../JRS HR/dist/state.js')).default;
  await manager.post('/recruitment/api/hr/commands/move-interview').set('X-CSRF-Token',hr.body.csrfToken).set('If-Match',String(workspace.revision)).set('Idempotency-Key',randomUUID()).send({applicationId:application.id,date:M.day(30),time:'10:00',duration:45,format:'Video',location:'Local review meeting',interviewer:'Reviewer '+randomUUID(),notify:false,notes:'Fictional workflow verification.'}).expect(200);
  const status=await candidate.get('/applicant-api/applications/me').expect(200);assert.equal(status.body.application.status,'Interview');

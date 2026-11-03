@@ -31,6 +31,22 @@
   const app=id=>{const a=store.db.applications.find(a=>a.id===id);if(!a)throw Error('Application not found.');return a;};
   function go(path){if(window.parent&&window.parent!==window)window.parent.postMessage({type:"jrs:workspace",route:path,intent:true},location.origin);if(location.hash==='#/'+path){route=path.split('/');render();}else location.hash='/'+path;}
   function notify(text){$('#toast').textContent=text;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,5500);}
+  const profileRequestTokens=new WeakMap();
+  function focusedPerson(){
+    if(route[0]==='candidate')return store.db.candidates.find(c=>c.id===route[1]);
+    if(['review','results'].includes(route[0])){const a=store.db.applications.find(a=>a.id===route[1]);return a&&store.db.candidates.find(c=>c.id===a.candidateId);}
+    return null;
+  }
+  function loadProfileDetails(){
+    const c=focusedPerson();if(!c||c.profileSource!=='applicant'||typeof store.request!=='function'||c.profileDetailsState)return;
+    const token={};profileRequestTokens.set(c,token);c.profileDetailsState='loading';
+    store.request('hr/candidates/'+encodeURIComponent(c.id)+'/profile').then(result=>{
+      if(profileRequestTokens.get(c)!==token||!store.db.candidates.includes(c))return;
+      c.currentProfile=result.currentProfile;c.profileDetailsState='ready';
+      for(const saved of result.applications||[]){const a=store.db.applications.find(a=>a.id===saved.id);if(a?.submission)Object.assign(a.submission,{profileDetails:saved.profileDetails,submittedAt:saved.submittedAt});}
+      if(focusedPerson()===c)render();
+    }).catch(()=>{if(profileRequestTokens.get(c)!==token||!store.db.candidates.includes(c))return;c.profileDetailsState='error';if(focusedPerson()===c)render();});
+  }
   function render(){
     const focused=document.activeElement?.matches("[data-search]")?document.activeElement:null;
     const selection=focused?[focused.selectionStart,focused.selectionEnd]:null;
@@ -45,12 +61,13 @@
     if(page==='candidate'){const c=db.candidates.find(c=>c.id===route[1]);if(c)$('#content .heading-actions')?.insertAdjacentHTML('beforeend',(c.canEditProfile===false?'':button('candidate-edit','Edit Contact Details',c.id))+(c.canUploadResume===false?'':button('resume-upload','Upload Resume',c.id)));if(c){const applications=db.applications.filter(a=>a.candidateId===c.id);if(applications.length>1)$('#content .page-heading')?.insertAdjacentHTML('afterend','<nav class="module-tabs" aria-label="Candidate applications">'+applications.map(a=>V.link('candidate/'+c.id+'/'+a.id,e(job(db,a).title)+' · '+e(V.stageLabel(a.stage)),ui.profileApplicationId===a.id?'active':'')).join('')+'</nav>');}}
 
     if(selection){const input=$("[data-search]");input?.focus({preventScroll:true});input?.setSelectionRange(...selection);}
-    scheduleFit();
+    scheduleFit();loadProfileDetails();
   }
   function routeChanged(){
     if(route[0]==='applications'){listOrigin=route.join('/');queueStates.set(listOrigin,{...ui});}
     $('.sidebar').classList?.remove('mobile-open');$('[data-action=mobile-menu]').setAttribute?.('aria-expanded','false');
     route=V.parseRoute(location.hash);
+    const profilePerson=focusedPerson();if(profilePerson?.profileSource==='applicant'){delete profilePerson.currentProfile;delete profilePerson.profileDetailsState;}
     if(route[0]==='success'){
       const event=store.db.activity.find(x=>x.id===route[1]),a=event&&store.db.applications.find(a=>a.id===event.applicationId);
       route=a?[a.stage==='Interview Results'?'results':'review',a.id]:['applications'];
@@ -78,7 +95,7 @@
   const choice=(label,name,values,value='')=>`<label>${label}<select name="${name}">${values.map(v=>{const [id,text]=Array.isArray(v)?v:[v,v];return `<option value="${e(id)}" ${id===value?'selected':''}>${e(text)}</option>`;}).join('')}</select></label>`;
   const actions=(submit='Save',danger=false)=>`<footer class="form-footer">${button('close','Cancel','','secondary')}<button type="submit" class="button ${danger?'danger':'primary'}">${icon('arrow')}${submit}</button></footer>`;
   const form=(action,id,fields,submit='Save',danger=false,extra='')=>`<form class="form" data-command="${action}" data-id="${e(id)}" ${extra}><div class="modal-content"><div class="form-error" role="alert" hidden></div>${fields}</div>${actions(submit,danger)}</form>`;
-  const candidateCard=a=>{const c=candidate(store.db,a),j=job(store.db,a);return `<span class="field-label">APPLICANT</span><div class="modal-candidate"><div class="person">${V.avatar(c)}<div><strong>${e(c.name)}</strong><small>${e(j.title)} · ${e(c.email)}</small></div></div><div class="candidate-id"><small>APPLICATION ID</small><strong>${e(a.id)}</strong></div></div>`;};
+  const candidateCard=a=>{const c={...candidate(store.db,a),...(a.submission?.candidate||{})},j=job(store.db,a);return `<span class="field-label">APPLICANT</span><div class="modal-candidate"><div class="person">${V.avatar(c)}<div><strong>${e(c.name)}</strong><small>${e(j.title)} · ${e(c.email)}</small></div></div><div class="candidate-id"><small>APPLICATION ID</small><strong>${e(a.id)}</strong></div></div>`;};
   const notifySwitch=(title,subtitle,tone='blue',checked=true)=>`<label class="notification-toggle"><span><span class="icon-disc ${tone}">${icon('mail')}</span><span><strong>${title}</strong><small>${subtitle}</small></span></span><input class="switch" type="checkbox" name="notify" ${checked?'checked':''} aria-label="${title}"><small>Notification is saved as an application draft. Review and send it from the application.</small></label>`;
   function interviewFields(a,i){
     return candidateCard(a)+`<div class="form-grid">${field('Interview date','date',i?.date||'','date',`required min="${HRModel.day()}"`)}${field('Interview time','time',i?.time||'','time','required')}</div>`+field('Interview venue or meeting link','location',i?.location||'','text','required maxlength="300" placeholder="Room, address or video meeting link"')+field('Interviewer','interviewer',i?.interviewer||'','text','required maxlength="100" placeholder="Enter interviewer"')+`<details class="interview-options"><summary>More options</summary><div class="form-grid">${choice('Duration','duration',[['15','15 minutes'],['30','30 minutes'],['45','45 minutes'],['60','60 minutes'],['90','90 minutes'],['120','120 minutes']],String(i?.duration||45))}${choice('Meeting format','format',['Video','On-site','Phone'],i?.format||'Video')}</div>${area('Internal notes (optional)','notes',i?.notes||'','maxlength="500"')}</details><label class="interview-draft"><input type="checkbox" name="notify" checked><span>Prepare interview email draft</span></label><p class="field-help">No email is sent automatically.</p>`;
@@ -211,6 +228,7 @@
         case 'export':exportApplications();break;
         case 'filters':open('Filter Applications','Apply filters to the work queue.',form('filters','',V.select?choice('Position','job',[['','All positions'],...store.db.jobs.map(j=>[j.id,j.title])],ui.job)+choice('Priority','priority',[['','All priorities'],'High','Normal'],ui.priority)+`<div class="form-grid">${field('Applied from','from',ui.from,'date')}${field('Applied to','to',ui.to,'date')}</div>`:'','Apply Filters'),'filter');break;
         case 'application':applicationDetails(id);break;
+        case 'profile-retry':{const c=focusedPerson();if(c){delete c.profileDetailsState;render();}break;}
         case 'move-interview':decision(id,false);break;
         case 'reject':decision(id,true);break;
         case 'resume-page':ui.resumePage=Number(id);render();break;
