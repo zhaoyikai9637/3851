@@ -253,13 +253,13 @@ test('new interview forms start with blank date, time, venue and interviewer wit
   }
 });
 
-test('rescheduling preserves saved meeting values rather than using the blank new-interview form',async()=>{
+test('rescheduling requires a fresh booking while retaining its identity and optional settings',async()=>{
   const db=M.seed(),application=db.applications[0];application.stage='Interview';
   const interview={id:'booking-to-reschedule',applicationId:application.id,date:M.day(5),time:'16:15',duration:90,format:'Phone',location:'+65 12345678',interviewer:'Existing Interviewer',notes:'Keep the saved interview brief.',status:'Scheduled'};db.interviews=[interview];
   const page=await controller('#/applications/interview',{db}),before=JSON.stringify(db);await page.action('interview-reschedule',interview.id);
   const html=page.e('#modal-body').innerHTML;assert.equal(page.e('#modal-title').textContent,'Reschedule Interview');assert.ok(html.includes('data-interview-id="'+interview.id+'"'));
   for(const name of ['date','time','location','interviewer']){
-    const input=html.match(new RegExp('<input\\b(?=[^>]*\\bname="'+name+'")[^>]*>'))?.[0];assert.ok(input);assert.ok(input.includes('value="'+interview[name]+'"'),'Reschedule retains '+name);
+    const input=html.match(new RegExp('<input\\b(?=[^>]*\\bname="'+name+'")[^>]*>'))?.[0];assert.ok(input);assert.match(input,/\bvalue=""/,'Reschedule requires a fresh '+name);assert.match(input,/\brequired\b/);
   }
   for(const [name,value] of [['duration','90'],['format','Phone']]){
     const select=html.match(new RegExp('<select\\b[^>]*name="'+name+'"[^>]*>([\\s\\S]*?)<\\/select>'))?.[1];assert.ok(select);

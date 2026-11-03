@@ -1,3 +1,7 @@
+## Notification and reschedule corrections - 2026-11-03
+
+Persist mirrored notification times from the original UTC event, clarify applicant job-search status without claiming submitted applications are hidden, and require fresh reschedule inputs while retaining booking identity and optional settings. Preserve CSS and all deferred review controls. See ../../docs/NOTIFICATION_AND_RESCHEDULE_FIXES.md.
+
 ## Candidate profile details - 2026-11-03
 
 Show all applicant profile sections inside the existing candidate card, separated into current personal information and submitted application/history. Load details only on demand behind HR authorization, retain complete snapshots for new submissions, and label unavailable historical fields without backfilling. Verified 747 unit/API tests, builds, real local MySQL edits versus immutable snapshots, and Edge desktop/mobile layout. Isolate Jest files to stabilize Node VM execution. See ../../docs/CANDIDATE_PROFILE_DETAILS.md.

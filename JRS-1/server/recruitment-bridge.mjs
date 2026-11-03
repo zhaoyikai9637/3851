@@ -89,7 +89,7 @@ export function createRecruitmentBridge(pool, { experimentalApplicantPortal = fa
     }
     for (const n of events) {
       const [[link]] = await connection.execute('SELECT canonical_id FROM JRS_HR_APPLICATION_LINK WHERE recruiting_id=?', [n.applicationId]);
-      await connection.execute('INSERT IGNORE INTO SYSTEM_NOTIFICATION(recipient_user_id,application_id,notification_type,title,message,source_module,event_key,is_read) VALUES(?,?,?,?,?,?,?,0)', [owner.user_id, link?.canonical_id || null, n.eventType === 'New Application' ? 'NEW_APPLICATION' : 'STATUS_UPDATE', n.title.slice(0, 180), n.title, n.sourceModule || 'Applications', `recruiting:${n.id}`]);
+      await connection.execute('INSERT IGNORE INTO SYSTEM_NOTIFICATION(recipient_user_id,application_id,notification_type,title,message,source_module,event_key,is_read,created_at) VALUES(?,?,?,?,?,?,?,0,?)', [owner.user_id, link?.canonical_id || null, n.eventType === 'New Application' ? 'NEW_APPLICATION' : 'STATUS_UPDATE', n.title.slice(0, 180), n.title, n.sourceModule || 'Applications', `recruiting:${n.id}`, new Date(n.createdAt).toISOString().slice(0,19).replace('T',' ')]);
     }
   }
 

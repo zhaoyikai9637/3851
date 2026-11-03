@@ -110,18 +110,18 @@ export default function ResumePage() {
 
       <section className="surface visibility-section">
         <div>
-          <p className="eyebrow text-primary">RECRUITER VISIBILITY</p>
-          <h2>Can recruiters contact you?</h2>
-          <p>Keep your profile available when you are open to a new role. Close it when you no longer want recruitment messages.</p>
+          <p className="eyebrow text-primary">JOB SEARCH STATUS</p>
+          <h2>Are you open to new opportunities?</h2>
+          <p>Set your current job-search status. HR can still view applications you have already submitted.</p>
         </div>
-        <div className="visibility-choice" role="group" aria-label="Recruiter visibility">
+        <div className="visibility-choice" role="group" aria-label="Job-search status">
           <button className={"visibility-option " + (profile.availabilityStatus === "AVAILABLE" ? "selected" : "")} type="button" onClick={() => setProfile((current) => ({ ...current, availabilityStatus: "AVAILABLE" }))}>
             <Eye size={24} />
-            <span><strong>Available</strong><small>Recruiters can find my profile</small></span>
+            <span><strong>Available</strong><small>Open to new opportunities</small></span>
           </button>
           <button className={"visibility-option " + (profile.availabilityStatus === "CLOSED" ? "selected" : "")} type="button" onClick={() => setProfile((current) => ({ ...current, availabilityStatus: "CLOSED" }))}>
             <EyeOff size={24} />
-            <span><strong>Closed</strong><small>Do not show my profile to recruiters</small></span>
+            <span><strong>Closed</strong><small>Not currently seeking a role</small></span>
           </button>
         </div>
       </section>
@@ -191,7 +191,7 @@ export default function ResumePage() {
       </section>
 
       <div className="sticky-save-bar">
-        <span>{profile.availabilityStatus === "AVAILABLE" ? "Profile visible to recruiters" : "Profile hidden from recruiters"}</span>
+        <span>{profile.availabilityStatus === "AVAILABLE" ? "Open to new opportunities" : "Not currently seeking a role"}</span>
         <button className="btn btn-primary btn-lg" type="submit" disabled={saving}><Save size={20} />{saving ? "Saving..." : "Save profile"}</button>
       </div>
     </form>
