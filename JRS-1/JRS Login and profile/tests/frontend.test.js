@@ -29,7 +29,7 @@ beforeEach(async () => {
     dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
     await settle();
 });
-afterEach(() => dom.window.close());
+afterEach(async () => { await settle(); dom.window.close(); await settle(); });
 test('untrusted summary is rendered literally, without injected DOM elements', () => {
     const summary = dom.window.document.getElementById('summaryContent');
     expect(summary.textContent).toContain('<img src=x');
@@ -69,18 +69,31 @@ test('basic details submit phone and home location; failed saves keep the drawer
     expect(doc.getElementById('profileMessage').textContent).toBe('Connection lost');
     expect(request).toHaveBeenCalledWith('/profile', expect.objectContaining({ body: expect.objectContaining({ home_location: 'Singapore', contact_number: '91234567' }) }));
 });
-test('all local HTML resources exist and no inline event handlers remain', () => {
-    function walk(folder) {
+test('all local HTML resources exist and no inline event handlers remain', async () => {
+    async function walk(folder) {
         for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
             const filename = path.join(folder, entry.name);
-            if (entry.isDirectory()) { walk(filename); continue; }
+            if (entry.isDirectory()) { await walk(filename); continue; }
             if (!filename.endsWith('.html')) continue;
             const html = fs.readFileSync(filename, 'utf8');
             expect(html).not.toMatch(/\son\w+\s*=/i);
-            for (const match of html.matchAll(/(?:src|href|action)="([^"]+)"/g)) {
-                if (/^(https?:|#)/.test(match[1]) || match[1] === '/jobs') continue; // Public route supplied by the integrated server.
-                expect(fs.existsSync(match[1].startsWith('/') ? path.join(root, match[1].slice(1)) : path.resolve(folder, match[1]))).toBe(true);
-            }
+            const resourceDom = new JSDOM(html, { runScripts: 'outside-only' });
+            await new Promise(resolve => resourceDom.window.addEventListener('load', resolve, { once: true }));
+            try {
+                for (const element of resourceDom.window.document.querySelectorAll('[src], [href], form[action]')) {
+                    for (const attribute of ['src', 'href', 'action']) {
+                        const target = element.getAttribute(attribute);
+                        if (!target || /^(https?:|#)/.test(target) || target === '/jobs') continue;
+                        if (attribute === 'action' && target === '/api/login') {
+                            expect(element.tagName).toBe('FORM');
+                            expect(element.method).toBe('post');
+                            continue; // The API contract is covered by api.test.js.
+                        }
+                        const localPath = target.startsWith('/') ? path.join(root, target.slice(1)) : path.resolve(folder, target);
+                        expect({ target, exists: fs.existsSync(localPath) }).toEqual({ target, exists: true });
+                    }
+                }
+            } finally { resourceDom.window.close(); }
             const script = filename.replace(/\.html$/, '.js');
             if (fs.existsSync(script)) {
                 for (const match of fs.readFileSync(script, 'utf8').matchAll(/window\.location\.(?:href\s*=\s*|replace\(\s*)['"]([^'"]+)['"]/g)) {
@@ -89,5 +102,5 @@ test('all local HTML resources exist and no inline event handlers remain', () =>
             }
         }
     }
-    walk(root);
+    await walk(root);
 });

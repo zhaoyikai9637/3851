@@ -36,6 +36,10 @@ Keep credentials in ignored local files or Render Variables. Copy .env.example o
 
 Profile is accessed from the header identity. Legacy display addresses forward to live applicant routes when enabled. My Resume retains its existing form and layout.
 
+## Test the entire integrated project
+
+Run npm test (or npm run test:unit) to execute all six active module unit/API suites and save a combined report. Run npm run test:all to include both frontend builds and the English check. Use npm run test:root for the previous root-only tests. See [Project tests](docs/PROJECT_TESTS.md) for coverage boundaries, individual suite selection and report locations. Real local database workflows use npm run review:verify separately.
+
 ## Verification and limits
 
 On 31 October 2026 the isolated schema-12 QA workflow passed real Aiven/Supabase checks for private resumes, declarations, shared HR access, interview status synchronization, withdrawal and immutable submitted materials. Production was backed up, upgraded to schema 12 and accepted by a local readiness smoke check. Render build, public acceptance and post-restart checks remain separate.

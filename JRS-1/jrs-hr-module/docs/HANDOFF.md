@@ -1,3 +1,7 @@
+## Unified project tests - 2026-11-03
+
+The root npm test/test:unit entry now runs all six active unit/API suites sequentially and saves a combined report. test:all also builds both React frontends and checks English; test:root preserves the old command. Keep real MySQL workflows explicit through review:verify. The login resource test now distinguishes the POST login API action from static files. The English source scan also supports downloaded ZIPs without Git while retaining strict ref checks. Verified test:all: 734 tests across six active modules, both frontend builds and the English scan passed; isolated review:verify passed separately. See ../../docs/PROJECT_TESTS.md.
+
 ## Login initialization and HR startup - 2026-11-03
 
 Guard credential submission until the login listeners are installed, use POST as defense in depth, combine integrated session verification, and load native HR identity/CSRF/workspace in one request. Preserve per-request revocation and standalone compatibility. See ../../docs/LOGIN_STARTUP_PERFORMANCE.md for tests and timing limits.

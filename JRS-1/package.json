@@ -12,7 +12,7 @@
     "build": "node scripts/build.mjs",
     "deploy:check": "node scripts/check-deployment.mjs",
     "deploy:export-schema": "node scripts/export-production-schema.mjs",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node scripts/test-project.mjs",
     "check:english": "node scripts/check-english.mjs",
     "db:setup": "node scripts/setup-database.mjs",
     "test:workflow": "node --test tests/default-boundary.mysql.mjs",
@@ -24,7 +24,10 @@
     "review:check": "node scripts/review.mjs check",
     "review:accounts": "node scripts/review.mjs accounts",
     "review:mailbox": "node scripts/review.mjs mailbox",
-    "review:verify": "node scripts/review-verify.mjs"
+    "review:verify": "node scripts/review-verify.mjs",
+    "test:unit": "node scripts/test-project.mjs",
+    "test:all": "node scripts/test-project.mjs --all",
+    "test:root": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "13.0.0",

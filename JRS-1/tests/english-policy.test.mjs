@@ -37,3 +37,29 @@ test('repository scanning from the package subdirectory cannot silently inspect 
     assert.ok(result.files > 0, 'The package command must inspect the repository instead of passing an empty scan');
   } finally { process.chdir(previous); }
 });
+
+test('a downloaded source archive scans source without Git and omits private or generated data', async () => {
+  const fs = await import('node:fs/promises'), os = await import('node:os'), path = await import('node:path');
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'jrs-english-archive-'));
+  try {
+    await fs.mkdir(path.join(directory, 'src'));
+    await fs.writeFile(path.join(directory, 'README.md'), 'Source review guide');
+    await fs.writeFile(path.join(directory, 'src/app.js'), 'export {};');
+    await fs.writeFile(path.join(directory, '.env.example'), 'DB_PASSWORD=replace-me');
+    await fs.writeFile(path.join(directory, '.env'), '\u79c1\u6709');
+    for (const folder of ['node_modules', '.local', 'uploads', 'test-results']) {
+      await fs.mkdir(path.join(directory, folder));
+      await fs.writeFile(path.join(directory, folder, 'ignored.txt'), '\u79c1\u6709');
+    }
+    assert.deepEqual(policy.checkRepository(undefined, { cwd: directory }), { files: 3, issues: [] });
+    await fs.writeFile(path.join(directory, 'src/app.js'), '\u6d4b\u8bd5');
+    assert.deepEqual(policy.checkRepository(undefined, { cwd: directory }).issues, [{ path: 'src/app.js', kind: 'text' }]);
+  } finally {
+    assert.equal(path.dirname(directory), os.tmpdir());
+    await fs.rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('source archives cannot silently substitute their working tree for a requested Git ref', () => {
+  assert.throws(() => policy.checkRepository('HEAD', { cwd: fileURLToPath(new URL('./missing-git-fixture/', import.meta.url)) }), /Git history is required/);
+});
