@@ -110,4 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         finally { button.disabled = false; toggle.disabled = false; syncMode(); }
     });
+    // Only enable credentials after every input and submit listener is installed.
+    $('authFields').disabled = false;
+    form.setAttribute('aria-busy', 'false');
+    $('authReadyMessage').hidden = true;
 });

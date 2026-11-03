@@ -35,3 +35,5 @@
 
 /* Suppress the duplicate native Edge password reveal control. */
 .login-card input::-ms-reveal, .login-card input::-ms-clear { display:none; }
+
+.login-card .auth-fields { border: 0; padding: 0; margin: 0; min-width: 0; }

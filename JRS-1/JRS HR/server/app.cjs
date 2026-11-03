@@ -28,11 +28,12 @@ function createApp({repo,cfg,transport,sharedAuth}) {
   app.get('/api/auth/me',(req,res)=>res.json({user:req.user,csrfToken:req.session.csrf}));
   app.post('/api/auth/logout',auth.logout);
   app.post('/api/auth/password',auth.changePassword);
-  const workspace=async userId=>{
-    const db=await repo.snapshot(userId),[[u]]=await repo.pool.execute('SELECT * FROM hr_user WHERE id=?',[userId]);
-    db.currentUser=publicUser(u);db.mailEnabled=cfg.mail.enabled;db.timezone='Asia/Singapore';return db;
+  const workspace=async (userId,verifiedUser)=>{
+    const db=await repo.snapshot(userId);
+    if(verifiedUser)db.currentUser=verifiedUser;
+    else{const [[u]]=await repo.pool.execute('SELECT * FROM hr_user WHERE id=?',[userId]);db.currentUser=publicUser(u);}db.mailEnabled=cfg.mail.enabled;db.timezone='Asia/Singapore';return db;
   };
-  app.get('/api/hr/workspace',async(req,res)=>res.json(await workspace(req.user.id)));
+  app.get('/api/hr/workspace',async(req,res)=>res.json({...await workspace(req.user.id,req.user),csrfToken:req.session.csrf}));
   app.get('/api/hr/templates/variables',(req,res)=>res.json({variables}));
   app.post('/api/hr/templates/:id/preview',async(req,res)=>{const db=await repo.snapshot(req.user.id),a=find(db.applications,req.body.applicationId),t=find(db.templates,req.params.id);if(!t.active)fail(409,'This template is archived.');res.json(fillTemplate(db,a,req.user,t));});
   app.post('/api/hr/commands/:command',async(req,res)=>{

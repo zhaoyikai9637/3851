@@ -1,3 +1,7 @@
+## Login initialization and HR startup - 2026-11-03
+
+Guard credential submission until the login listeners are installed, use POST as defense in depth, combine integrated session verification, and load native HR identity/CSRF/workspace in one request. Preserve per-request revocation and standalone compatibility. See ../../docs/LOGIN_STARTUP_PERFORMANCE.md for tests and timing limits.
+
 ## Reliability fixes - 2026-11-03
 
 Separate applicant status/profile loading, recover bounded safe reads, confirm email status after a lost response without automatic resend, and synchronize only changed recruitment records. Preserve publication-only edits and all identity/CSRF/revision boundaries. See ../../docs/RELIABILITY_FIXES.md for test scope and delivery limits.

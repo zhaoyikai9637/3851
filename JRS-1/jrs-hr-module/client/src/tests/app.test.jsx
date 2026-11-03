@@ -498,6 +498,7 @@ describe("notification workflow", () => {
     expect(
       screen.getByRole("status", { name: "Loading notifications" }),
     ).toBeVisible();
+    await waitFor(() => expect(resolve).toBeTypeOf('function'));
     resolve(
       json({ items: [], total: 0, page: 1, pageSize: 20, unread: 0, all: 0 }),
     );

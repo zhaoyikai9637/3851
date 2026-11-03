@@ -58,6 +58,24 @@ class Repository {
         });
     }
     async session(sid) {
+        if (this.integratedRoot) {
+            const [[row]] = await this.pool.query(`SELECT a.account_id,a.email,a.role,a.hr_user_id,
+                CASE WHEN JSON_VALID(s.data) THEN JSON_UNQUOTE(JSON_EXTRACT(s.data,'$.csrf')) END AS csrf,
+                h.user_id AS canonical_hr_id,h.account_status AS canonical_hr_status,h.role AS canonical_hr_role
+                FROM MODULE_SESSION s JOIN MODULE_ACCOUNT a ON a.account_id=
+                    CASE WHEN JSON_VALID(s.data) THEN JSON_UNQUOTE(JSON_EXTRACT(s.data,'$.account_id')) END
+                LEFT JOIN HR_USER h ON h.user_id=a.hr_user_id
+                WHERE s.sid=? AND s.expires>UTC_TIMESTAMP()
+                AND CASE WHEN JSON_VALID(s.data) THEN JSON_TYPE(JSON_EXTRACT(s.data,'$.account_id')) END='INTEGER'
+                AND CASE WHEN JSON_VALID(s.data) THEN JSON_UNQUOTE(JSON_EXTRACT(s.data,'$.module')) END='jrs-candidate'
+                AND a.role IN ('candidate','hr')`, [sid]);
+            if (!row || !['candidate','hr'].includes(row.role)) return null;
+            if (row.role==='hr' && (!row.canonical_hr_id || row.canonical_hr_status!=='ACTIVE' || !['HR_MANAGER','HR_STAFF'].includes(row.canonical_hr_role))) return null;
+            const account={account_id:row.account_id,email:row.email,role:row.role,hr_user_id:row.hr_user_id,csrf:row.csrf};
+            // This identity is verified by this request's join; it is never cached across requests.
+            if(row.role==='hr') account.verifiedHrIdentity={user_id:row.canonical_hr_id,account_status:row.canonical_hr_status,role:row.canonical_hr_role};
+            return account;
+        }
         const [[row]] = await this.pool.query('SELECT data FROM MODULE_SESSION WHERE sid = ? AND expires > UTC_TIMESTAMP()', [sid]);
         if (!row) return null;
         let data; try { data = JSON.parse(row.data); } catch { return null; }

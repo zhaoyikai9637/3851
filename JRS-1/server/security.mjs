@@ -23,7 +23,7 @@ export function createSharedIdentity(repository, config) {
     async resolve(req) {
       const account = await readSharedSession(req, repository);
       if (account?.role !== 'hr') return null;
-      const hr = await repository.hrIdentity(account.account_id);
+      const hr = account.verifiedHrIdentity || await repository.hrIdentity(account.account_id);
       if (!hr || hr.account_status !== 'ACTIVE' || !['HR_MANAGER', 'HR_STAFF'].includes(hr.role)) return null;
       return { subject: `account:${account.account_id}`, sessionId: hash(account.sid), role: 'HR', hrUserId: hr.user_id };
     },

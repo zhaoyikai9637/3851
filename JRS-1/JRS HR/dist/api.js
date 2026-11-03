@@ -11,11 +11,11 @@
     return result;
   }
   function signIn() { window.top.location.assign('/pages/login/login.html'); return new Promise(() => {}); }
-  async function refresh(){db=await request('hr/workspace');user=db.currentUser;error='';return db;}
+  async function refresh(){db=await request('hr/workspace');user=db.currentUser;if(db.csrfToken)csrf=db.csrfToken;error='';return db;}
   async function boot(){
     if(location.protocol==='file:')throw Error('Start the backend with npm start, then open http://localhost:3000. This version requires the server.');
-    try{const r=await request('auth/me');user=r.user;csrf=r.csrfToken;}catch(e){if(e.status!==401)throw e;await signIn();}
-    await refresh();document.querySelector('#app-shell').hidden=false;return store;
+    try{await refresh();}catch(e){if(e.status!==401)throw e;await signIn();}
+    document.querySelector('#app-shell').hidden=false;return store;
   }
   async function sendingStatus(id,attempts=1) {
     for(let attempt=0;attempt<attempts;attempt++) {

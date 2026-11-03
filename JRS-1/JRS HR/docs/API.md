@@ -73,3 +73,5 @@ shared sessions remain mandatory. No schema or existing business row is reset.
 
 
 GET /api/hr/notifications/{id}/status requires the same HR authentication as the workspace. It returns id, status, lastError and revision only. Use it to reconcile a lost send response; never automatically resend a Sending or Uncertain draft. The integrated URL starts with /recruitment/api/.
+
+GET /api/hr/workspace includes csrfToken for the authenticated request, alongside currentUser and the workspace. Responses remain no-store. Native startup uses this one response instead of a separate auth/me request; all mutation requests still require X-CSRF-Token.

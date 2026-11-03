@@ -27,7 +27,10 @@
         <div class="auth-card login-card">
             <a id="guestBrowseLink" class="login-guest-back" href="/jobs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5-7 7 7 7M5 12h14"/></svg><span>Back to guest page</span></a>
             <h1 class="auth-title" id="authTitle">Log in</h1>
-            <form id="loginForm" novalidate>
+            <p id="authReadyMessage" class="login-feedback" role="status">Preparing sign-in. If this message remains, reload the page.</p>
+            <noscript><p class="login-feedback">Enable JavaScript to log in or register.</p></noscript>
+            <form id="loginForm" method="post" action="/api/login" aria-busy="true" novalidate>
+                <fieldset id="authFields" class="auth-fields" aria-label="Account details" disabled>
                 <div id="registerNames" hidden>
                     <div class="form-group"><label for="registerFirstName">First name</label><input id="registerFirstName" type="text" maxlength="50" autocomplete="given-name" aria-describedby="registerNameError"><div class="error-message" id="registerNameError" aria-live="polite"></div></div>
                     <div class="form-group"><label for="registerLastName">Last name</label><input id="registerLastName" type="text" maxlength="49" autocomplete="family-name"></div>
@@ -53,6 +56,7 @@
                 <div id="formMessage" class="login-feedback" role="status" aria-live="polite" hidden></div>
                 <button type="submit" id="loginBtn" class="btn-primary">Log in</button>
                 <p class="login-register"><span id="registerPrompt">Don’t have an account?</span> <button type="button" id="registerToggle" class="btn-text">Register</button></p>
+                </fieldset>
             </form>
         </div>
     </main>

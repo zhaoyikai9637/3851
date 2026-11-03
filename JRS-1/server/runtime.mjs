@@ -58,8 +58,7 @@ export async function createRuntime({mailTransport}={}) {
     };
     const originalSnapshot = recruitment.snapshot;
     recruitment.snapshot = async userId => {
-      await refreshCanonicalPeople(pool);
-      await bridge.templates(pool);
+      await Promise.all([refreshCanonicalPeople(pool),bridge.templates(pool)]);
       return addSubmittedMaterials(pool,await originalSnapshot(userId));
     };
     const models = communicationModels(communicationDb, { integratedMailHistory: true });
