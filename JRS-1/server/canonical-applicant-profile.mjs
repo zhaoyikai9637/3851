@@ -70,8 +70,9 @@ export async function syncRecruitmentPerson(db,accountId,profile) {
  const [[c]]=await db.query("SELECT c.*,a.email AS account_email FROM CANDIDATE c JOIN MODULE_ACCOUNT a ON a.account_id=c.account_id WHERE c.account_id=? AND a.role='candidate'",[accountId]);
  if(!c)return false;
  const [[link]]=await db.query('SELECT recruiting_id FROM JRS_CANDIDATE_LINK WHERE canonical_id=?',[c.candidate_id]);
- if(!link && c.availability_status==='CLOSED')return false;
  const id=link?.recruiting_id||`account-${accountId}`;
+ const [[application]]=await db.query('SELECT id FROM recruiting_application WHERE candidate_id=? LIMIT 1',[id]);
+ if(!application)return false;
  const [[old]]=await db.query('SELECT * FROM recruiting_candidate WHERE id=?',[id]);
  profile ||= await readApplicantProfile(db,accountId);
  return storeRecruitmentPerson(db,c,profile,id,link,old);
@@ -98,7 +99,7 @@ export async function refreshCanonicalPeople(pool) {
   await db.beginTransaction();
   await db.query('SELECT revision FROM recruiting_workspace WHERE id=1 FOR UPDATE');
   // Read shared profiles once per workspace refresh, never once per authentication.
-  const [people]=await db.query("SELECT c.*,a.email AS account_email FROM CANDIDATE c JOIN MODULE_ACCOUNT a ON a.account_id=c.account_id WHERE a.role='candidate'");
+  const [people]=await db.query("SELECT c.*,a.email AS account_email FROM CANDIDATE c JOIN MODULE_ACCOUNT a ON a.account_id=c.account_id LEFT JOIN JRS_CANDIDATE_LINK owned ON owned.canonical_id=c.candidate_id WHERE a.role='candidate' AND EXISTS(SELECT 1 FROM recruiting_application p WHERE p.candidate_id=COALESCE(owned.recruiting_id,CONCAT('account-',c.account_id)))");
   if (!people.length) { await db.commit(); return; }
   const [education]=await db.query('SELECT * FROM EDUCATION ORDER BY education_id');
   const [career]=await db.query('SELECT * FROM CAREER_HISTORY ORDER BY role_id');

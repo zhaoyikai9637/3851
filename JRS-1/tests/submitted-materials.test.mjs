@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {addSubmittedMaterials,submittedMaterialsRouter} from '../server/submitted-materials.mjs';
 test('application review uses the submission identity and the integrated document route',async()=>{
- const workspace={applications:[{id:'application-1'}],candidates:[{name:'Current name'}]};
+ const workspace={applications:[{id:'application-1',candidateId:'candidate-1'}],candidates:[{id:'candidate-1',name:'Current name'}]};
  const pool={query:async()=>[[{recruiting_id:'application-1',file_name:'old.pdf',file_type:'application/pdf',applicant_snapshot:JSON.stringify({fullName:'Submitted name',email:'old@example.test',phone:'+6581234567',location:'["SG","",""]',education:[],experiences:[{startDate:'2025-01',endDate:'2025-01',currentRole:false,skills:['REACT']}]})}]]};
  await addSubmittedMaterials(pool,workspace);assert.equal(workspace.applications[0].submission.candidate.name,'Submitted name');
  assert.equal(workspace.applications[0].submission.resumeUrl,'/recruitment/api/hr/applications/application-1/submitted-resume');

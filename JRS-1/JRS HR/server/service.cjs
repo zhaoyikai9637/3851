@@ -38,7 +38,7 @@ function validatePayload(p) {
   }
   if(p.notify!==undefined&&typeof p.notify!=='boolean')fail(422,'Notification preference must be true or false.');
 }
-function applyCommand(db,command,p,user) {
+function applyCommand(db,command,p,user,{applicantSubmission=false}={}) {
   validatePayload(p);if(managerOnly.has(command)&&user.role!=='HR_MANAGER')fail(403,'This action requires an HR Manager.');
   if (['template-save','template-delete'].includes(command) && typeof p.id === 'string' && p.id.startsWith('canonical-template-')) fail(409,'Manage this shared template in Templates. The recruitment copy is read-only.');
   const assessment=command==='feedback'&&p.assessment!==undefined?parseAssessment(p.assessment):null;
@@ -75,13 +75,13 @@ function applyCommand(db,command,p,user) {
   } else if(command==='application-create') {
     const j=find(db.jobs,p.jobId);if(j.status!=='Active')fail(409,'Applications require an active job.');
     let c;
-    if(p.candidateId)c=find(db.candidates,p.candidateId);
+    if(p.candidateId){c=find(db.candidates,p.candidateId);if(c.canReceiveApplication===false&&!applicantSubmission)fail(403,'Applicants submit applications through their own accounts.');}
     else {const v=p.candidate||{},address=email(v.email);if(db.candidates.some(c=>c.email.toLowerCase()===address))fail(409,'This email already exists. Select the existing candidate.');c=candidateValue(v);c.id=M.uid('candidate');c.createdAt=now();c.notes='';db.candidates.push(c);}
     if(db.applications.some(a=>a.candidateId===c.id&&a.jobId===j.id))fail(409,'This candidate already has an application for this job.');
     const a={id:M.uid('APP'),candidateId:c.id,jobId:j.id,stage:'Pending Review',appliedDate:M.day(),priority:p.priority==='High'?'High':'Normal',rejectionReason:'',rejectionConfirmed:false,notes:[],feedback:null,offer:null,createdAt:now()};db.applications.push(a);
     const event=audit(db,user,'Application received',a.id);db.systemNotifications.unshift({id:event.id,applicationId:a.id,title:c.name+' applied for '+j.title,eventType:'New Application',sourceModule:'Applications',createdAt:event.at});result={application:a,activity:event};
   } else if(command==='candidate-save') {
-    const c=find(db.candidates,p.id),v=candidateValue(p,c);if(db.candidates.some(x=>x.id!==c.id&&x.email.toLowerCase()===v.email))fail(409,'Another candidate uses this email.');
+    const c=find(db.candidates,p.id);if(c.canEditProfile===false)fail(403,'Applicant profiles are maintained by the applicant.');const v=candidateValue(p,c);if(db.candidates.some(x=>x.id!==c.id&&x.email.toLowerCase()===v.email))fail(409,'Another candidate uses this email.');
     if(db.notifications.some(n=>n.candidateId===c.id&&n.status==='Sending'))fail(409,'A message is being sent for this candidate.');
     Object.assign(c,v);db.notifications.filter(n=>n.candidateId===c.id&&n.status==='Draft').forEach(n=>n.to=c.email);audit(db,user,'Candidate details updated',db.applications.find(a=>a.candidateId===c.id)?.id);result.candidate=c;
   } else if(command==='template-save') {
@@ -139,6 +139,7 @@ function createService(repo) {
       const [[cached]]=await conn.execute('SELECT request_hash,result_json FROM hr_request WHERE id=?',[id]);
       if(cached){if(cached.request_hash!==requestHash)fail(409,'This request key was used for a different operation.');const result=typeof cached.result_json==='string'?JSON.parse(cached.result_json):cached.result_json;if(result.purged)fail(410,'The records for this request were removed under the five-year retention policy.','RETENTION_EXPIRED');return result;}
       const before=await repo.load(conn);if(before.revision!==revision)fail(409,'Another user changed this workspace. Refresh and review the latest data before saving.','REVISION_CONFLICT');
+      if(command==='application-create'&&p&&!p.candidateId&&p.candidate&&repo.assertManualCandidateEmail)await repo.assertManualCandidateEmail(conn,email(p.candidate.email));
       const after=M.clone(before),result=applyCommand(after,command,p,user);
       if(command==='profile-save') {
         const phone=text(p.phone,'Phone',40,true),office=text(p.officeLocation,'Office location',100,true);

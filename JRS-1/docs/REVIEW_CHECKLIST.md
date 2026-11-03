@@ -4,6 +4,9 @@ Start with LOCAL_REVIEW.md. Record the source commit, Node/MySQL versions, brows
 
 ## Applicant
 
+- Register and edit a profile without applying; confirm the account is absent from HR workspace/search. After applying, confirm the candidate appears once, with HR profile editing and resume upload unavailable. Confirm direct API attempts are rejected.
+
+
 - Browse jobs as a guest; search/filter and open details. Confirm skills and description bullets.
 - Open login and register. Submit empty/invalid fields, then create a fictional account. Confirm header name and profile access only from the header identity.
 - Edit profile, summary, career history, education, certifications, skills and languages. Test current roles with an empty end date, month/year selection, 2000-character limits, edit/delete controls and refresh persistence.
@@ -13,6 +16,9 @@ Start with LOCAL_REVIEW.md. Record the source commit, Node/MySQL versions, brows
 - Reset the password using review:mailbox, then confirm the old session/password and reused reset token are rejected. Log out.
 
 ## HR staff and manager
+
+- Receive a manual application; confirm that candidate retains editable contact details and supplemental PDF upload. Withdraw a self-submitted application and confirm its history remains visible.
+
 
 - Log in with each generated role. Check dashboard, jobs, candidates, applications, interviews, offers and communication pages.
 - Create/edit a job and check guest publication. Check draft/closed roles, dates and unchanged applicant submission snapshots.

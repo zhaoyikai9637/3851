@@ -67,12 +67,13 @@ function createApp({repo,cfg,transport,sharedAuth}) {
     filename=text(filename,'Filename',150).replace(/[\x00-\x1f\x7f/\\]/g,'_');if(!filename.toLowerCase().endsWith('.pdf'))fail(422,'Resume must be a PDF.');
     await repo.transaction(async conn=>{
       const before=await repo.load(conn);if(!req.get('If-Match')||Number(req.get('If-Match'))!==before.revision)fail(409,'Refresh before uploading this resume.','REVISION_CONFLICT');
-      find(before.candidates,req.params.id);const after=M.clone(before),at=new Date().toISOString();
+      const candidate=find(before.candidates,req.params.id);if(candidate.canUploadResume===false)fail(403,'Applicant resumes are maintained by the applicant.');const after=M.clone(before),at=new Date().toISOString();
       await conn.execute('INSERT INTO hr_resume(candidate_id,filename,size_bytes,content,uploaded_at) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE filename=VALUES(filename),size_bytes=VALUES(size_bytes),content=VALUES(content),uploaded_at=VALUES(uploaded_at)',[req.params.id,filename,req.body.length,req.body,at]);
       audit(after,req.user,'Candidate resume uploaded',after.applications.find(a=>a.candidateId===req.params.id)?.id||null,filename);after.revision++;after.updatedAt=at;await repo.save(conn,before,after);
     },true);res.json({db:await workspace(req.user.id)});
   });
   app.get('/api/hr/candidates/:id/resume',async(req,res)=>{
+    if(repo.assertCandidateReadAccess)await repo.assertCandidateReadAccess(req.params.id);
     const [[r]]=await repo.pool.execute('SELECT filename,content FROM hr_resume WHERE candidate_id=?',[req.params.id]);if(!r)fail(404,'No uploaded resume is available.');
     res.set('Content-Type','application/pdf');res.set('Content-Disposition',`${req.query.download==='1'?'attachment':'inline'}; filename="resume.pdf"; filename*=UTF-8''${encodeURIComponent(r.filename)}`);res.send(r.content);
   });

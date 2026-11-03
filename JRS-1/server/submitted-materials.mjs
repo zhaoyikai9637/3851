@@ -1,3 +1,4 @@
+import {applyCandidateOwnership} from './candidate-ownership.mjs';
 import express from 'express';
 import {createFileStore} from './file-storage.mjs';
 import {httpError} from './security.mjs';
@@ -10,8 +11,7 @@ export async function addSubmittedMaterials(pool,workspace) {
   const snapshot=typeof row.applicant_snapshot==='string'?JSON.parse(row.applicant_snapshot):row.applicant_snapshot;
   a.submission={candidate:{name:snapshot.fullName,email:snapshot.email,phone:snapshot.phone,location:locationLabel(snapshot.location),...workFacts(snapshot.experiences),education:(snapshot.education||[]).map(e=>[e.qualification,e.institution].filter(Boolean).join(' · ')).join('; ')||'Not recorded'},resumeUrl:row.file_name?'/recruitment/api/hr/applications/'+encodeURIComponent(a.id)+'/submitted-resume':null,resumeName:row.file_name,resumeType:row.file_type};
  }
- const [hidden]=await pool.query("SELECT l.recruiting_id FROM JRS_CANDIDATE_LINK l JOIN CANDIDATE c ON c.candidate_id=l.canonical_id WHERE c.availability_status=\'CLOSED\' AND NOT EXISTS (SELECT 1 FROM recruiting_application a WHERE a.candidate_id=l.recruiting_id)");
- const excluded=new Set(hidden.map(row=>row.recruiting_id));workspace.candidates=workspace.candidates.filter(c=>!excluded.has(c.id));
+ await applyCandidateOwnership(pool,workspace,{visibleOnly:true});
  return workspace;
 }
 export function submittedMaterialsRouter({pool,requireUser,uploadDir,fileStore=createFileStore({uploadDir})}) {

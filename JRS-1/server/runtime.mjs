@@ -1,3 +1,4 @@
+import {applyCandidateOwnership,assertCandidateReadAccess,assertManualCandidateEmail} from './candidate-ownership.mjs';
 import {createCandidateRecoveryMailer} from './candidate-mail.mjs';
 import express from 'express';
 import fs from 'node:fs/promises';
@@ -44,7 +45,7 @@ export async function createRuntime({mailTransport}={}) {
     const recruitment = recruitmentRepository.createRepository(namespacePool(pool));
     const load = recruitment.load, save = recruitment.save, snapshot = recruitment.snapshot;
     recruitment.snapshot = async userId => loadAssessments(pool,await recoverRead(()=>snapshot(userId)));
-    recruitment.load = async connection => { await bridge.templates(connection); return loadAssessments(connection,await load(connection)); };
+    recruitment.load = async connection => { await bridge.templates(connection); return applyCandidateOwnership(connection,await loadAssessments(connection,await load(connection))); };
     recruitment.save = async (connection, before, after, options) => { await save(connection, before, after); await saveAssessments(connection,before,after); await bridge.mirror(connection, before, after, options); };
     // The original repository closes over its private load/save. Wrap its transaction
     // callbacks too, so original HR command code crosses the same integration boundary.
@@ -58,6 +59,8 @@ export async function createRuntime({mailTransport}={}) {
       return result;
       }, write);
     };
+    recruitment.assertCandidateReadAccess=id=>assertCandidateReadAccess(pool,id);
+    recruitment.assertManualCandidateEmail=(connection,address)=>assertManualCandidateEmail(connection,address);
     const originalSnapshot = recruitment.snapshot;
     recruitment.snapshot = async userId => {
       await Promise.all([refreshCanonicalPeople(pool),bridge.templates(pool)]);

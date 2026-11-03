@@ -47,6 +47,8 @@ When reviewing a downloaded ZIP, the English checker scans source directly witho
 
 ## Verified run (3 November 2026)
 
-npm run test:all passed all eight groups from a downloaded-source-style directory without .git: integrated 195, login/profile 69, applicant API 26, recruiting 125, HR React client 136 and HR communication backend 183 (734 tests total), plus both frontend production builds and the English scan. The runner contract tests also verify that one failed suite does not prevent later suites from running and the combined result remains failed. review:verify separately passed against the isolated local MySQL review database. No production database or real mail service was used.
+npm run test:all passed all eight groups from a downloaded-source-style directory without .git: integrated 203, login/profile 69, applicant API 26, recruiting 125, HR React client 136 and HR communication backend 183 (742 tests total), plus both frontend production builds and the English scan. The runner contract tests also verify that one failed suite does not prevent later suites from running and the combined result remains failed. review:verify separately passed against the isolated local MySQL review database. No production database or real mail service was used.
 
 Login/profile uses testEnvironmentOptions.globalsCleanup=off for compatibility between Jest 30 and manually created JSDOM VM windows. Windows are still closed by their test cleanup hooks.
+
+Candidate visibility/ownership tests cover registration-only hiding, read-only applicant data, manual-candidate capabilities and actual candidate-view controls. The local MySQL workflow additionally validates legacy mappings and direct API enforcement.

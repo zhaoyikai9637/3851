@@ -147,16 +147,17 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       const [[publication]] = await query('SELECT r.status,p.publish_date AS publishDate,p.closing_date AS closingDate,p.unpublish_date AS unpublishDate FROM recruiting_job_position r LEFT JOIN JRS_JOB_PUBLICATION p ON p.recruiting_id=r.id WHERE r.id=?',[jobLink.recruiting_id]);
       if (!publicationState(publication?.status,publication).accepting) throw httpError(404,'This role is not available for applications.');
       const before = await this.recruitment.load(connection), after = state.clone(before), at = new Date().toISOString();
-      const candidateId = `account-${userId}`;
+      const [[personLink]]=await query('SELECT recruiting_id FROM JRS_CANDIDATE_LINK WHERE canonical_id=?',[canonical.candidate_id]);
+      const candidateId = personLink?.recruiting_id || `account-${userId}`;
       if (!after.candidates.some(c => c.id === candidateId)) {
         const c = { name: canonical.full_name, email: canonical.email, phone: values.phone, location: locationLabel(values.location), ...facts,
           graduateStatus: 'Not recorded', educationLevel: 'Not recorded', educationMajor: '', graduationDate: null, education: 'Not recorded' };
         after.candidates.push({ ...c, id: candidateId, notes: `${values.coverLetter}\n\n${values.experiences.map(e => `${e.companyName} — ${e.jobTitle} (${e.startDate}–${e.currentRole ? 'Present' : e.endDate})\n${e.responsibilities}`).join('\n\n')}`.slice(0, 6000), createdAt: at });
-        await query('INSERT INTO JRS_CANDIDATE_LINK(recruiting_id,canonical_id) VALUES(?,?)', [candidateId, canonical.candidate_id]);
+        if(!personLink)await query('INSERT INTO JRS_CANDIDATE_LINK(recruiting_id,canonical_id) VALUES(?,?)', [candidateId, canonical.candidate_id]);
       }
       const [[manager]] = await query("SELECT id,name,role FROM recruiting_user WHERE status='Active' AND role='HR_MANAGER' ORDER BY id LIMIT 1");
       if (!manager) throw httpError(409, 'No active recruitment manager is available.');
-      const result = hrService.applyCommand(after, 'application-create', { candidateId, jobId: jobLink.recruiting_id }, manager);
+      const result = hrService.applyCommand(after, 'application-create', { candidateId, jobId: jobLink.recruiting_id }, manager,{applicantSubmission:true});
       result.activity.actor = `Applicant: ${canonical.full_name}`.slice(0, 100);
       result.activity.actorId = null;
       const submittedJob={...job.toJSON(),roleQuestions:applicationQuestions(job.roleQuestions)};

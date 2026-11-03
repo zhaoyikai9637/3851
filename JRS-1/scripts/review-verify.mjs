@@ -30,6 +30,20 @@ try{
  const hr=await manager.post('/api/login').send(managerAccount).expect(200);await staff.post('/api/login').send(staffAccount).expect(200);
  await candidate.get('/recruitment/api/hr/workspace').expect(403);await manager.get('/applicant-api/applications/me').expect(403);
  passed.push('Manager/staff login and cross-role access restrictions');
+ const unsubmitted=await manager.get('/recruitment/api/hr/workspace').expect(200);assert.ok(!unsubmitted.body.candidates.some(c=>c.email===email),'Registration alone must not enter the HR workspace');
+ const unsubmittedList=await manager.get('/recruitment/api/hr/candidates').query({q:email}).expect(200);assert.equal(unsubmittedList.body.items.length,0);
+ passed.push('Registered applicants are hidden before application submission');
+ const intakeJob=unsubmitted.body.jobs.find(j=>j.status==='Active');await manager.post('/recruitment/api/hr/commands/application-create').set('X-CSRF-Token',hr.body.csrfToken).set('If-Match',String(unsubmitted.body.revision)).set('Idempotency-Key',randomUUID()).send({jobId:intakeJob.id,candidate:{name:'Proxy attempt',email,phone:'+65 8123 4567',location:'Singapore',experience:2,skills:'JavaScript'}}).expect(403);
+
+ const [[unstored]]=await site.repository.pool.execute('SELECT COUNT(*) AS total FROM recruiting_candidate WHERE email=?',[email]);assert.equal(unstored.total,0,'Workspace refresh must not create an unsubmitted candidate');
+ const [[canonicalPerson]]=await site.repository.pool.execute('SELECT candidate_id FROM CANDIDATE WHERE email=?',[email]);const legacyId='legacy-'+randomUUID();
+ await site.repository.pool.execute("INSERT INTO recruiting_candidate(id,name,email,phone,location,experience,education,skills,notes,created_at) VALUES(?,?,?,'','',0,'Not recorded','[]','',?)",[legacyId,'Workflow Reviewer',email,new Date().toISOString()]);
+ await site.repository.pool.execute('INSERT INTO JRS_CANDIDATE_LINK(recruiting_id,canonical_id) VALUES(?,?)',[legacyId,canonicalPerson.candidate_id]);
+ await site.repository.pool.execute('UPDATE recruiting_workspace SET revision=revision+1 WHERE id=1');
+ const oldRegistration=await manager.get('/recruitment/api/hr/workspace').expect(200);assert.ok(!oldRegistration.body.candidates.some(c=>c.id===legacyId));
+ await manager.get('/recruitment/api/hr/candidates/'+encodeURIComponent(legacyId)+'/resume').expect(404);
+ passed.push('Legacy registration-only records remain stored but hidden, including direct resume access');
+
  const jobs=await request(site.app).get('/applicant-api/jobs').expect(200);assert.ok(jobs.body.jobs.length>=3);const job=jobs.body.jobs[0];
  const uploaded=await candidate.post('/applicant-api/resumes').set('X-CSRF-Token',csrf).attach('resume',Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF'),{filename:'local-review.pdf',contentType:'application/pdf'}).expect(201);
  const payload={jobId:job.id,resumeId:uploaded.body.resume.id,phone:'+65 8123 4567',location:'["SG","",""]',coverLetter:'Local integration verification.',experiences:[{companyName:'Fictional Review Company',jobTitle:'Developer',startDate:'2024-01',endDate:'',currentRole:true,responsibilities:'Implemented and tested software.',achievements:'',skills:['JAVASCRIPT']}],roleAnswers:{availability:'Within 1 month'},declarationAccepted:true};
@@ -37,6 +51,11 @@ try{
  const submission=await candidate.post('/applicant-api/applications').set('X-CSRF-Token',csrf).send(payload).expect(201);
  let workspace=(await manager.get('/recruitment/api/hr/workspace').expect(200)).body;
  const person=workspace.candidates.find(c=>c.email===email),application=workspace.applications.find(a=>a.candidateId===person?.id);assert.ok(application);
+ assert.equal(person.id,legacyId,'Submission must reuse an existing canonical candidate mapping');assert.equal(person.profileSource,'applicant');assert.equal(person.canEditProfile,false);assert.equal(person.canUploadResume,false);
+ await manager.post('/recruitment/api/hr/commands/candidate-save').set('X-CSRF-Token',hr.body.csrfToken).set('If-Match',String(workspace.revision)).set('Idempotency-Key',randomUUID()).send({id:person.id,name:'Unauthorized change',canEditProfile:true}).expect(403);
+ await manager.put('/recruitment/api/hr/candidates/'+encodeURIComponent(person.id)+'/resume').set('X-CSRF-Token',hr.body.csrfToken).set('If-Match',String(workspace.revision)).set('Content-Type','application/pdf').set('X-Filename','forbidden.pdf').send(Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF')).expect(403);
+ await manager.get('/recruitment/api/hr/candidates/'+encodeURIComponent(person.id)+'/resume').expect(200);
+ passed.push('Submitted applicant appears with server-enforced readonly profile and resume');
  await manager.get('/recruitment/api/hr/applications/'+encodeURIComponent(application.id)+'/submitted-resume').expect(200);
  await candidate.get('/recruitment/api/hr/applications/'+encodeURIComponent(application.id)+'/submitted-resume').expect(403);
  passed.push('Private resume upload, declaration validation, submission and HR queue synchronization');
@@ -48,6 +67,14 @@ try{
  passed.push('Interview scheduling, applicant status synchronization and withdrawal synchronization');
  await candidate.post('/api/logout').set('X-CSRF-Token',csrf).send({}).expect(200);
  passed.push('Applicant logout');
+ const manualEmail='manual-'+randomUUID()+'@example.test';let manualState=(await manager.get('/recruitment/api/hr/workspace').expect(200)).body;
+ const manualJob=manualState.jobs.find(j=>j.status==='Active');
+ const manualCreated=await manager.post('/recruitment/api/hr/commands/application-create').set('X-CSRF-Token',hr.body.csrfToken).set('If-Match',String(manualState.revision)).set('Idempotency-Key',randomUUID()).send({jobId:manualJob.id,candidate:{name:'Manual Reviewer',email:manualEmail,phone:'+65 8123 4567',location:'Singapore',experience:2,skills:'JavaScript, SQL'}}).expect(200);
+ const manual=manualCreated.body.db.candidates.find(c=>c.email===manualEmail);assert.ok(manual);assert.equal(manual.canEditProfile,true);assert.equal(manual.canUploadResume,true);
+ const manualEdited=await manager.post('/recruitment/api/hr/commands/candidate-save').set('X-CSRF-Token',hr.body.csrfToken).set('If-Match',String(manualCreated.body.db.revision)).set('Idempotency-Key',randomUUID()).send({id:manual.id,name:'Manual Reviewer Updated',email:manualEmail,phone:'+65 8123 4567',location:'Singapore',experience:2,skills:'JavaScript, SQL'}).expect(200);
+ await manager.put('/recruitment/api/hr/candidates/'+encodeURIComponent(manual.id)+'/resume').set('X-CSRF-Token',hr.body.csrfToken).set('If-Match',String(manualEdited.body.db.revision)).set('Content-Type','application/pdf').set('X-Filename','manual.pdf').send(Buffer.from('%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF')).expect(200);
+ passed.push('HR-entered candidates retain editable contact details and resume upload');
+
  await fs.writeFile(path.join(reviewDirectory,'verification.json'),JSON.stringify({at:new Date().toISOString(),passed,scope:'Local MySQL and captured mail only. No external email delivery was tested.'},null,2));
  for(const item of passed)console.log('PASS: '+item);
 }catch(error){console.error('Review verification failed:',error.message);process.exitCode=1;}finally{await site.close();}

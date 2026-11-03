@@ -1,3 +1,7 @@
+## Candidate visibility and ownership - 2026-11-03
+
+Show candidates only after an application is submitted or received. Derive applicant ownership from canonical account links; reject HR profile/resume writes and proxy intake for applicant-owned records while retaining manual intake capabilities. Preserve registrations, old hidden rows, submitted documents and closed application history; no schema migration. See ../../docs/CANDIDATE_VISIBILITY.md for verification and boundaries.
+
 ## Interview date filter - 2026-11-03
 
 Restore the converted text date filter to the shared 40px control style, align the label and contain its calendar icon. Edge desktop/mobile geometry and calendar checks passed; 734 project tests and both frontend builds passed. Candidate edit/upload controls already exist in the original module and remain unchanged; a separate ownership decision is documented in ../../docs/INTERVIEW_DATE_FILTER.md.

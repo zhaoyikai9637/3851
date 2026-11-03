@@ -28,6 +28,10 @@ Use Node.js 24. From this directory:
 
 Keep credentials in ignored local files or Render Variables. Copy .env.example only for an explicitly configured local database. Do not run setup, migrations or seeds at deployment/startup.
 
+## HR candidate visibility
+
+Candidates enter HR after an application is submitted or received. Applicant-owned profiles and resumes are read-only in HR; manual intake records retain supplementation. Existing accounts and records are preserved. See [Candidate visibility and ownership](docs/CANDIDATE_VISIBILITY.md).
+
 ## Modules
 
 - JRS Login and profile: shared login/registration, candidate code recovery and the original personal profile.
