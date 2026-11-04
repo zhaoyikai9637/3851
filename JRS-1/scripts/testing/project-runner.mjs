@@ -17,8 +17,13 @@ async function nodeTests(directory,suffix) {
 }
 export async function createTestPlan(root,reportDirectory,{all=false}={}) {
  const vitest=path.join(root,'node_modules/vitest/vitest.mjs');
- const node=(id,label,cwd,files)=>({id,label,cwd,args:['--test','--test-concurrency=2','--test-reporter=tap',...files],format:'tap'});
- const vitestSuite=(id,label,folder)=>({id,label,cwd:path.join(root,folder),args:[vitest,'run','--pool=threads','--maxWorkers=1','--reporter=default','--reporter=json','--outputFile='+path.join(reportDirectory,id+'.json')],format:'json',jsonReport:path.join(reportDirectory,id+'.json')});
+ const node=(id,label,cwd,files)=>({id,label,cwd,args:[...(process.platform==='win32'?['--regexp-interpret-all']:[]),'--test','--test-concurrency=1','--test-reporter=tap',...files],format:'tap'});
+ const vitestSuite=(id,label,folder)=>{
+  // Avoid the observed Windows V8 native RegExp compiler crash in large DOM suites.
+  // Keep JS/Wasm support and all assertions; this applies only to the test process.
+  const flags=process.platform==='win32'&&id==='hr-client'?['--regexp-interpret-all']:[];
+  return {id,label,cwd:path.join(root,folder),args:[...flags,vitest,'run','--pool=forks','--maxWorkers=1',...flags.map(flag=>'--execArgv='+flag),'--reporter=default','--reporter=json','--outputFile='+path.join(reportDirectory,id+'.json')],format:'json',jsonReport:path.join(reportDirectory,id+'.json')};
+ };
  const native=path.join(root,'JRS HR');
  const plan=[
   node('integrated','Integrated boundaries, adapters and shared UI',root,await nodeTests(path.join(root,'tests'),'.test.mjs')),

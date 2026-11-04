@@ -59,3 +59,7 @@ On 31 October 2026 the isolated schema-12 QA workflow passed real Aiven/Supabase
 The standalone applicant test command is cross-platform and uses demo data. Root MySQL tests require their dedicated local test schemas; never point them at production. See docs/TEAM_UPDATE_20261028.md, docs/APPLICANT_ADAPTATION.md and docs/CANDIDATE_CODE_RECOVERY.md.
 
 The old JRS directory is a source recovery reference. Reverting source also requires reviewing database, environment and file-storage compatibility. This release does not create HR identities, publish vacancies, copy old uploads or deploy automatically.
+
+## Timestamp maintenance and public access performance
+
+See [history and performance corrections](docs/HISTORY_AND_PERFORMANCE_REPAIRS.md) for explicit-target notification timestamp preview/repair, private backups, Windows test process settings and bounded public job/hashed-asset caching. Render Free wake-up latency remains a platform constraint.

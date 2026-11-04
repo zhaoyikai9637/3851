@@ -15,7 +15,7 @@ This runs the unit and API test suites of all six active integrated areas, in se
 | hr-client | HR React pages and controls | Vitest / React Testing Library |
 | hr-server | HR communication backend, permissions and APIs | Vitest / Supertest |
 
-The HR suites use one thread worker and login/profile runs each Jest file in its own in-band process so one project command does not start several large test pools concurrently. Root and recruiting Node tests use at most two file workers. A failed suite does not stop the remaining suites; the final process exits with code 1 if any suite fails or its required report is missing.
+The HR suites use one forked worker process and login/profile runs each Jest file in its own in-band process so one project command does not start several large test pools concurrently. Root and recruiting Node tests use at most two file workers. A failed suite does not stop the remaining suites; the final process exits with code 1 if any suite fails or its required report is missing.
 
 ## Commands
 
@@ -54,3 +54,7 @@ Login/profile uses testEnvironmentOptions.globalsCleanup=off for compatibility b
 Candidate visibility/ownership tests cover registration-only hiding, read-only applicant data, manual-candidate capabilities and actual candidate-view controls. The local MySQL workflow additionally validates legacy mappings and direct API enforcement.
 
 The per-file login/profile wrapper isolates Node VM contexts while preserving every test and aggregate report. A failed file stays failed; later files continue without automatic retries. Current-versus-submitted full profile checks are included in the unit and isolated MySQL suites.
+
+On Windows, the HR UI launcher and worker interpret regular expressions to avoid the observed native V8 compiler crash. This is scoped to the test process; application startup and production builds use normal Node execution. Login API tests own their loopback listener explicitly. Tests are not retried or skipped to recover from native errors. See HISTORY_AND_PERFORMANCE_REPAIRS.md.
+
+Validation on 2026-11-04: node scripts/test-project.mjs --all completed in one run on Node 24.16.0 with all eight groups passing: 756/756 tests, both production frontend builds and the English source scan. Isolated real-MySQL applicant/HR workflow, timestamp equality, immediate publish/close invalidation and hashed-asset cache headers were verified separately. Native-crash and interrupted cross-runtime reports remain private evidence; no failed result was overwritten or retried automatically.

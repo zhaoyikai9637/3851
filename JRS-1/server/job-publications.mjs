@@ -16,7 +16,7 @@ export const publicationSchema = z.object({ salaryRange: z.string().trim().max(8
 export const editorPublicationSchema = z.object({ salaryRange:z.string().trim().max(80), closingDate:date, publishDate:date }).strict().superRefine((data, context) => {
   if (data.publishDate && data.closingDate && data.closingDate < data.publishDate) context.addIssue({code:'custom',message:'Application deadline must not be before publication.',path:['closingDate']});
 });
-export function jobPublicationServices(pool, recruitment, bridge) {
+export function jobPublicationServices(pool, recruitment, bridge, {onChange=()=>{}}={}) {
   return {
     async jobPublications() {
       const [items] = await pool.query('SELECT j.id,j.title,j.status,COALESCE(p.salary_range,\'\') AS salaryRange,p.closing_date AS closingDate,p.publish_date AS publishDate,p.unpublish_date AS unpublishDate FROM recruiting_job_position j LEFT JOIN JRS_JOB_PUBLICATION p ON p.recruiting_id=j.id ORDER BY j.title');
@@ -34,6 +34,7 @@ export function jobPublicationServices(pool, recruitment, bridge) {
         await bridge.mirror(connection, state, state, {jobIds:[id]});
         await connection.execute('UPDATE recruiting_workspace SET revision=revision+1,updated_at=? WHERE id=1', [new Date().toISOString()]);
         await connection.commit();
+        onChange();
         return data;
       } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
     },

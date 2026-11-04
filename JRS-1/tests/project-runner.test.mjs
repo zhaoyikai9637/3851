@@ -5,6 +5,9 @@ test('default project tests cover each active module without database integratio
  const plan=await createTestPlan(root,path.join(os.tmpdir(),'jrs-test-report-preview'));
  assert.deepEqual(plan.map(s=>s.id),['integrated','login-profile','applicant','recruiting','hr-client','hr-server']);
  for(const suite of plan){assert.ok(suite.cwd.startsWith(root));assert.ok(!suite.args.some(arg=>/\.mysql\.|\.integration\.|migrate|setup-database/.test(arg)));}
+ for(const suite of plan.filter(s=>['hr-client','hr-server'].includes(s.id))){assert.ok(suite.args.includes('--pool=forks'));assert.ok(!suite.args.includes('--pool=threads'));}
+ if(process.platform==='win32'){const ui=plan.find(s=>s.id==='hr-client');assert.equal(ui.args[0],'--regexp-interpret-all');assert.ok(ui.args.includes('--execArgv=--regexp-interpret-all'));assert.ok(!plan.find(s=>s.id==='hr-server').args.includes('--regexp-interpret-all'));}
+ for(const suite of plan.filter(s=>s.format==='tap')){assert.ok(suite.args.includes('--test-concurrency=1'));if(process.platform==='win32')assert.equal(suite.args[0],'--regexp-interpret-all');}
  assert.equal(plan.find(s=>s.id==='applicant').env.DB_MODE,'demo');assert.ok(plan.find(s=>s.id==='integrated').args.some(a=>a.endsWith('applicant-integration.test.mjs')),'Integration adapter unit tests must remain included');
  const all=await createTestPlan(root,path.join(os.tmpdir(),'jrs-test-report-preview'),{all:true});assert.deepEqual(all.slice(-2).map(s=>s.id),['build','english']);
 });

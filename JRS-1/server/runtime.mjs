@@ -53,12 +53,14 @@ export async function createRuntime({mailTransport}={}) {
     const transact = recruitment.transaction;
     recruitment.transaction = async (fn, write = false) => {
       if(write)await refreshCanonicalPeople(pool);
-      return transact(async connection => {
+      const result = await transact(async connection => {
       if(write)await bridge.templates(connection);
       const result=await fn(connection);
       if(write)await syncSentMail(connection,{uploadDir:settings.uploadDir,fileStore});
       return result;
       }, write);
+      if(write)data?.invalidateJobs();
+      return result;
     };
     recruitment.assertCandidateReadAccess=id=>assertCandidateReadAccess(pool,id);
     recruitment.assertManualCandidateEmail=(connection,address)=>assertManualCandidateEmail(connection,address);
@@ -73,7 +75,7 @@ export async function createRuntime({mailTransport}={}) {
     if(fileStore.kind==='supabase')await fileStore.check();
     const config = { production: settings.production, secret: settings.SESSION_SECRET, origin: settings.origin, mode: 'team', companyName: 'JRS', uploadDir, fileStore, teamLoginUrl: `${settings.origin}/pages/login/login.html`, sessionMs: 8 * 3600000, resetSecret: settings.RESET_SECRET, integratedRoot: true };
     const identity = createSharedIdentity(repository, config);
-    const hr = communicationApp({ services: { ...createServices(models, config), ...jobPublicationServices(pool, recruitment, bridge) }, config, identity, sessionStore: new DatabaseSessionStore(models.Session) });
+    const hr = communicationApp({ services: { ...createServices(models, config), ...jobPublicationServices(pool, recruitment, bridge, {onChange:()=>data?.invalidateJobs()}) }, config, identity, sessionStore: new DatabaseSessionStore(models.Session) });
     const sharedAuth = {
       async login() { throw httpError(409, 'Use the shared JRS sign-in page.'); },
       async requireUser(req, res, next) {
@@ -116,6 +118,7 @@ export async function createRuntime({mailTransport}={}) {
       data = await mountApplicantPortal({ app, applicantDb, repository, recruitment, bridge, uploadDir, fileStore, identity, settings });
     }
     const hrDist = path.join(root, 'jrs-hr-module/client/dist');
+    app.use('/hr/assets', express.static(path.join(hrDist,'assets'), {dotfiles:'deny',maxAge:'1y',immutable:true}));
     app.use('/hr', express.static(hrDist, { dotfiles: 'deny' }));
     app.get(/^\/hr(?:\/.*)?$/, (req, res) => res.sendFile(path.join(hrDist, 'index.html')));
     app.use(candidateApp.createApp({ repository, config, mailer: createCandidateRecoveryMailer(candidateMailer.createMailer({smtp:settings.smtp},settings.DB_MODE==='review'?{transport:mailTransport}:{}),settings.candidateMail) }));

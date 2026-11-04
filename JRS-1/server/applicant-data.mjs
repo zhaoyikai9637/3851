@@ -1,3 +1,4 @@
+import {publicJobCache} from './public-job-cache.mjs';
 import {readPersonalProfile} from './candidate-profile-details.mjs';
 import {applicationQuestions} from './applicant-questions.mjs';
 import fs from 'node:fs/promises';
@@ -21,6 +22,7 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     super(sequelize, models);
     Object.assign(this, { repository, recruitment, bridge, uploadDir });
     this.fileStore=fileStore||createFileStore({uploadDir});
+    this.publicCatalogue=publicJobCache();
   }
   async refreshPublicationStatus() {
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' });
@@ -33,15 +35,26 @@ export class IntegratedApplicantData extends MySqlDataLayer {
   presentJob(job, state, intake=true) {
     return {...job,...(intake?{roleQuestions:applicationQuestions(job.roleQuestions)}:{}),isOpen:!!state?.accepting,isVisible:!!state?.visible,applicationAvailability:state?.accepting?'Accepting applications':'No longer accepting applications'};
   }
+  invalidateJobs(){this.publicCatalogue.clear();}
+  async jobCatalogue(){
+    return this.publicCatalogue.read(async()=>{
+      const [records,[publications]]=await Promise.all([
+        this.models.Job.findAll({order:[['closingDate','ASC']]}),
+        this.repository.pool.query('SELECT l.portal_id AS id,r.status,p.publish_date AS publishDate,p.closing_date AS closingDate,p.unpublish_date AS unpublishDate FROM JRS_JOB_LINK l JOIN recruiting_job_position r ON r.id=l.recruiting_id LEFT JOIN JRS_JOB_PUBLICATION p ON p.recruiting_id=r.id WHERE l.portal_id IS NOT NULL')
+      ]);
+      return {records:records.map(row=>row.toJSON()),publications};
+    });
+  }
   async listJobs(filters) {
-    const [records, publications] = await Promise.all([this.models.Job.findAll({order:[['closingDate','ASC']]}),this.publicationRecords()]);
-    const jobs = records.filter(row=>publications.get(row.id)?.visible).map(row=>this.presentJob(row.toJSON(),publications.get(row.id)));
+    const {records,publications}=await this.jobCatalogue();
+    const states=new Map(publications.map(row=>[row.id,publicationState(row.status,row)]));
+    const jobs=records.filter(row=>states.get(row.id)?.visible).map(row=>this.presentJob(row,states.get(row.id)));
     return {jobs:jobs.filter(job=>matchesJob(job,filters)),filters:jobFilters(jobs)};
   }
   async getJob(id) {
-    const [job,publications] = await Promise.all([super.getJob(id),this.publicationRecords()]);
-    const state=publications.get(Number(id));
-    return job && state?.visible ? this.presentJob(job,state) : null;
+    const {records,publications}=await this.jobCatalogue(),job=records.find(row=>row.id===Number(id)),dates=publications.find(row=>row.id===Number(id));
+    const state=dates?publicationState(dates.status,dates):null;
+    return job&&state?.visible?this.presentJob(job,state):null;
   }
   async getCurrentApplication(userId) {
     const application = await super.getCurrentApplication(userId);

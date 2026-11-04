@@ -1,3 +1,4 @@
+const http = require('node:http');
 const request = require('supertest');
 const bcrypt = require('bcrypt');
 const path = require('node:path');
@@ -14,11 +15,18 @@ beforeEach(async () => {
     await fs.mkdir(path.join(__dirname, '../test-results'), { recursive: true });
     uploadDir = await fs.mkdtemp(path.join(__dirname, '../test-results/upload-'));
     mailer = { ready: true, sendCode: jest.fn().mockResolvedValue(undefined) };
-    app = createApp({ repository: repo, mailer, now: () => instant, config: {
+    const handler = createApp({ repository: repo, mailer, now: () => instant, config: {
         origin: 'http://localhost:3001', production: false, resetSecret: 'x'.repeat(64), sessionMs: 3600000, uploadDir
     } });
+    app = http.createServer(handler);
+    await new Promise((resolve,reject)=>{app.once('error',reject);app.listen(0,'127.0.0.1',resolve);});
 });
-afterEach(async () => { await fs.rm(uploadDir, { recursive: true, force: true }); });
+afterEach(async () => {
+    if(app?.listening)await new Promise((resolve,reject)=>{app.close(error=>error?reject(error):resolve());app.closeAllConnections();});
+    const testRoot=path.resolve(__dirname,'../test-results');
+    if(path.dirname(path.resolve(uploadDir))!==testRoot||!path.basename(uploadDir).startsWith('upload-'))throw Error('Refusing to remove an unexpected test directory.');
+    await fs.rm(uploadDir, { recursive: true, force: true });
+});
 async function login(email = 'alice@example.test', password = 'GoodPassword1!') {
     const client = request.agent(app);
     const response = await client.post('/api/login').send({ email, password }).expect(200);

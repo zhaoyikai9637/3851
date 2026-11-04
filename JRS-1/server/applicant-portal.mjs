@@ -54,7 +54,7 @@ export async function mountApplicantPortal({ app, applicantDb, repository, recru
   applicants.use((error,req,res,next)=>{if(res.headersSent)return next(error);const status=error instanceof multer.MulterError?400:error.status||500;if(status>=500)console.error('Applicant request failed:',error.code||'INTERNAL_ERROR');res.status(status).json({message:status>=500?'The server could not complete this request.':error instanceof multer.MulterError?'Upload one resume of at most 5 MB.':error.message});});
   app.use('/applicant-api', applicants);
   const applicantDist = path.join(root, 'JRS Applicant Portal/client/dist');
-  app.use('/assets', express.static(path.join(applicantDist, 'assets'), { dotfiles: 'deny' }));
+  app.use('/assets', express.static(path.join(applicantDist, 'assets'), {dotfiles:'deny',maxAge:'1y',immutable:true}));
   app.get(/^\/(jobs|applicant|connect|auth\/complete)(\/.*)?$/, (req, res) => res.sendFile(path.join(applicantDist, 'index.html')));
   return data;
 }

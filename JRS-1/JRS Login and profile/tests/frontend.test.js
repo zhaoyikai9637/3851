@@ -1,6 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { JSDOM } = require('jsdom');
+// Keep jsdom/cssstyle in Node's dependency realm while test windows are closed.
+const { createRequire } = require('node:module');
+const { JSDOM } = createRequire(__filename)('jsdom');
 const root = path.join(__dirname, '../client');
 const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 let dom, state, request;

@@ -1,3 +1,7 @@
+## Historical time repair and execution/performance corrections - 2026-11-04
+
+Add an explicit-target, backup-first transactional correction for source-linked notification times. Stabilize Windows test execution with forked HR workers, test-only RegExp interpretation and explicitly owned login API listeners. Cache only public job catalogue reads for five seconds, invalidate after committed writes and cache only hashed frontend assets in browsers. No production data or service-plan changes were needed. Verified 756/756 tests, both frontend builds and the English scan in one full run, plus isolated MySQL workflow and cache checks. See ../../docs/HISTORY_AND_PERFORMANCE_REPAIRS.md.
+
 ## Retired job work arrangement - 2026-11-03
 
 Remove the job Work arrangement field and its values from guest/applicant details, HR review facts, native listings/edit fallbacks and the standalone applicant display fallback. Preserve employment type, location, historical values, API compatibility and interview meeting format. This supersedes the earlier deferred display decision. See ../../docs/WORK_ARRANGEMENT_REMOVAL.md.
