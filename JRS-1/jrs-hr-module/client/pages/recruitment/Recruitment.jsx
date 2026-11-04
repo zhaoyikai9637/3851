@@ -6,7 +6,7 @@ import { Candidates } from "./Candidates";
 
 const validRoute = (value) =>
   typeof value === "string" &&
-  /^(?:dashboard|jobs|interviews|reports|applications(?:\/(?:applications-review|pending-review|interview|interview-results|offer|rejected|hired))?|(?:review|results)\/[A-Za-z0-9_-]+|candidate\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)$/.test(
+  /^(?:dashboard|jobs|interviews|reports|outbox|applications(?:\/(?:applications-review|pending-review|interview|interview-results|offer|rejected|hired))?|(?:review|results)\/[A-Za-z0-9_-]+|candidate\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)$/.test(
     value,
   );
 export function Recruitment({ page, title }) {
@@ -116,7 +116,7 @@ export function Recruitment({ page, title }) {
       if (event.data?.type === "jrs:dialog") {
         frame.current.scrollIntoView({ block: "start" });
       }
-      if(event.data?.type==='jrs:navigate'&&typeof event.data.path==='string'&&(['/notifications','/templates','/logs','/profile','/applications'].includes(event.data.path)||/^\/(?:notifications|templates|logs)\?application=[1-9]\d*$/.test(event.data.path)))navigate(event.data.path);
+      if(event.data?.type==='jrs:navigate'&&typeof event.data.path==='string'&&(['/notifications','/outbox','/templates','/logs','/profile','/applications'].includes(event.data.path)||/^\/(?:notifications|outbox|templates|logs)\?application=[1-9]\d*$/.test(event.data.path)))navigate(event.data.path);
     }
     window.addEventListener("message", receive);
     return () => window.removeEventListener("message", receive);
@@ -125,12 +125,13 @@ export function Recruitment({ page, title }) {
   const embeddedPage = candidate
     ? `candidate/${encodeURIComponent(candidate)}`
     : context.data
-      ? 'review/'+context.data.recruitingId
+      ? page==='outbox'?'outbox':'review/'+context.data.recruitingId
       : validRoute(requested)
       ? requested
       : page;
   const filter = page === "applications" ? new URLSearchParams(search).get("job") : null;
-  const source = `/recruitment/${filter ? "?job=" + encodeURIComponent(filter) : ""}#/${embeddedPage}`;
+  const frameParams=new URLSearchParams();if(filter)frameParams.set("job",filter);if(page==="outbox"&&context.data)frameParams.set("application",context.data.recruitingId);
+  const source=`/recruitment/${frameParams.size?"?"+frameParams:""}#/${embeddedPage}`;
   if(context.id&&context.busy)return <Loading/>;
   if(context.id&&context.error)return <ErrorBox error={context.error} retry={context.reload}/>;
   return (

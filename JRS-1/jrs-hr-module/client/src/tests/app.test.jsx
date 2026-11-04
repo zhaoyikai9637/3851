@@ -258,11 +258,11 @@ describe("authentication and navigation", () => {
     expect(screen.getByRole('heading',{name:'Reports',level:1})).toHaveClass('visually-hidden');
   });
 
-  it('removes the outbox entry and redirects its old URL to Applications', async () => {
+  it('opens the original email outbox inside Notifications without redirecting to Applications', async () => {
     mount('/outbox');
     const navigation = await screen.findByRole('navigation', { name: 'Main navigation' });
     expect(within(navigation).queryByRole('link', { name: 'Email Outbox' })).not.toBeInTheDocument();
-    expect(await screen.findByTitle('Applications')).toHaveAttribute('src', '/recruitment/#/applications');
+    expect(await screen.findByTitle('Email Outbox')).toHaveAttribute('src','/recruitment/#/outbox');expect(within(screen.getByRole('navigation',{name:'Communication pages'})).getByRole('link',{name:'Email Outbox'})).toHaveAttribute('aria-current','page');
   });
 
   it.each([['/templates', 'Email Templates'], ['/logs', 'Logs']])('routes embedded navigation to %s without falling back to Notifications', async (path, title) => {
@@ -285,11 +285,11 @@ describe("authentication and navigation", () => {
     expect(screen.queryByRole('heading', { name: 'Notification Center' })).not.toBeInTheDocument();
   });
 
-  it.each(["/dashboard", "/applications", "/candidates", "/job-postings", "/interviews", "/outbox", "/reports", "/profile", "/profile/edit"])("hides communication navigation on %s", async (route) => {
+  it.each(["/dashboard", "/applications", "/candidates", "/job-postings", "/interviews", "/reports", "/profile", "/profile/edit"])("hides communication navigation on %s", async (route) => {
     overrides["GET /recruitment/api/hr/candidates"] = () => json({ items: [] });
     overrides["GET /api/hr/job-publications"] = () => json({ items: [] });
     mount(route);
-    if(route==="/outbox")await screen.findByTitle("Applications");
+
     expect(await screen.findByRole("navigation", { name: "Main navigation" })).toBeVisible();
     expect(screen.queryByRole("navigation", { name: "Communication pages" })).not.toBeInTheDocument();
     const location = screen.queryByRole("navigation", { name: "Current location" });
@@ -303,12 +303,12 @@ describe("authentication and navigation", () => {
     expect(screen.getByRole("button", { name: /Riley Morgan/ })).toBeVisible();
   });
 
-  it.each(["/notifications", "/templates", "/logs"])("shows communication navigation on %s", async (route) => {
+  it.each(["/notifications", "/outbox", "/templates", "/logs"])("shows communication navigation on %s", async (route) => {
     mount(route);
     const tabs = await screen.findByRole("navigation", { name: "Communication pages" });
     expect(screen.queryByRole("navigation", { name: "Current location" })).not.toBeInTheDocument();
     expect(screen.getByRole('heading',{level:1})).toHaveClass('visually-hidden');
-    expect(within(tabs).getAllByRole("link")).toHaveLength(3);
+    expect(within(tabs).getAllByRole("link")).toHaveLength(4);
     expect(within(tabs).getByRole("link", { current: "page" })).toHaveAttribute("href", route);
   });
 
@@ -1153,4 +1153,10 @@ it('offers only eligible shared templates in application context and carries the
 it('scopes sent email history to the current application and provides a return link',async()=>{
  overrides['GET /api/hr/applications/10/communication-context']=()=>json({applicationId:10,recruitingId:'APP-linked',candidateName:'Casey Taylor',positionTitle:'Software Developer',currentStatus:'Interview',eligibleTemplateIds:[1]});state.log.applicationId=10;
  const ui=mount('/logs?application=10');await screen.findByRole('table',{name:'Sent email history'});expect(fetcher.mock.calls.some(([u])=>u.startsWith('/api/hr/logs?')&&new URL(u,'http://test').searchParams.get('applicationId')==='10')).toBe(true);await ui.click(screen.getByRole('button',{name:'View email to Casey Taylor'}));const dialog=screen.getByRole('dialog');expect(await within(dialog).findByRole('link',{name:'Open application'})).toHaveAttribute('href','/applications?application=10');
+});
+
+
+it('keeps the selected application when opening its original email outbox',async()=>{
+ overrides['GET /api/hr/applications/10/communication-context']=()=>json({applicationId:10,recruitingId:'APP-linked',candidateName:'Casey Taylor',positionTitle:'Developer',currentStatus:'Rejected',eligibleTemplateIds:[1]});
+ mount('/outbox?application=10');const frame=await screen.findByTitle('Email Outbox');expect(frame.getAttribute('src')).toBe('/recruitment/?application=APP-linked#/outbox');expect(await screen.findByRole('region',{name:'Application communications'})).toHaveTextContent('Casey Taylor');
 });

@@ -94,3 +94,11 @@ html, body { height:auto !important; min-height:0 !important; overflow-y:visible
  #content .queue-panel>.table-scroll {overflow:visible;}
  .row-menu>div {position:absolute;right:0;top:100%;z-index:5;box-shadow:0 8px 24px #19294715;}
 }
+
+/* The authenticated host owns the communication tabs. */
+#app-shell #content > .module-tabs{display:none}
+
+@media(max-width:600px){
+ #content .email-outbox-item{display:grid;grid-template-columns:36px minmax(0,1fr);align-items:start;}
+ #content .email-outbox-item>.card-actions{grid-column:1/-1;justify-content:flex-start;flex-wrap:wrap;}
+}

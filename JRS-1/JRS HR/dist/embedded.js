@@ -1,8 +1,8 @@
 (() => {
-  const targets = { notifications: '/notifications', templates: '/templates', 'mail-log': '/logs', 'hr-profile': '/profile', outbox: '/applications' };
+  const targets = { notifications: '/notifications', templates: '/templates', 'mail-log': '/logs', 'hr-profile': '/profile', outbox: '/outbox' };
   function navigate(route, intent=false) {
     if (window.parent === window) return false;
-    if (/^(?:dashboard|jobs|interviews|reports|applications(?:\/(?:applications-review|pending-review|interview|interview-results|offer|rejected|hired))?|(?:review|results)\/[A-Za-z0-9_-]+|candidate\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)$/.test(route)) {
+    if (/^(?:dashboard|jobs|interviews|reports|outbox|applications(?:\/(?:applications-review|pending-review|interview|interview-results|offer|rejected|hired))?|(?:review|results)\/[A-Za-z0-9_-]+|candidate\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)$/.test(route)) {
       if(intent) window.parent.postMessage({type:'jrs:workspace',route,intent:true},location.origin);
       return false;
     }

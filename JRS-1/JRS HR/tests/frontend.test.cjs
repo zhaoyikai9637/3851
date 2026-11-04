@@ -230,10 +230,10 @@ test('offer actions depend on approval, expiry and manager permission rather tha
   assert.match(expired.e('#modal-body').innerHTML,/data-action="offer-accept"[^>]*disabled/);
 });
 
-test('rejecting uses one explicit confirmation without reason selection or automatic mail',async()=>{
+test('rejecting uses one confirmation and prepares an unsent draft without a reason-selection screen',async()=>{
  const db=M.seed(),application=db.applications.find(a=>a.stage==='Pending Review');
- const cancelled=await controller('#/review/'+application.id,{db}),before=JSON.stringify(db);let prompt='';cancelled.c.confirm=text=>{prompt=text;return false;};await cancelled.action('reject',application.id);assert.match(prompt,/closed.*interviews.*cancelled.*No email/);assert.equal(cancelled.commits.length,0);assert.equal(JSON.stringify(db),before);assert.equal(cancelled.e('#modal').open,false);
- const accepted=await controller('#/review/'+application.id,{db});await accepted.action('reject',application.id);assert.equal(accepted.commits.length,1);assert.equal(accepted.commits[0].command,'reject');assert.equal(accepted.commits[0].payload.applicationId,application.id);assert.equal(accepted.commits[0].payload.reason,'Application closed by HR.');assert.equal(accepted.commits[0].payload.notify,false);assert.equal(accepted.e('#modal').open,false);assert.equal(accepted.c.location.hash.replace(/^#/,''),'/applications/rejected');
+ const cancelled=await controller('#/review/'+application.id,{db}),before=JSON.stringify(db);let prompt='';cancelled.c.confirm=text=>{prompt=text;return false;};await cancelled.action('reject',application.id);assert.match(prompt,/closed.*interviews.*cancelled.*draft.*No email/);assert.equal(cancelled.commits.length,0);assert.equal(JSON.stringify(db),before);assert.equal(cancelled.e('#modal').open,false);
+ const accepted=await controller('#/review/'+application.id,{db});await accepted.action('reject',application.id);assert.equal(accepted.commits.length,1);assert.equal(accepted.commits[0].command,'reject');assert.equal(accepted.commits[0].payload.applicationId,application.id);assert.equal(accepted.commits[0].payload.reason,'Application closed by HR.');assert.equal(accepted.commits[0].payload.notify,true);const outcome=M.clone(db);M.apply(outcome,'reject',accepted.commits[0].payload);assert.equal(outcome.notifications.filter(n=>n.applicationId===application.id&&n.status==='Draft').length,1);assert.equal(accepted.e('#modal').open,false);assert.equal(accepted.c.location.hash.replace(/^#/,''),'/applications/rejected');
 });
 
 test('rejected applications show read-only details without a rejection editor or reason task',async()=>{
@@ -445,10 +445,9 @@ test('notifications respect Singapore date boundaries and communication lists pa
   assert.equal((html.match(/class="notification-item/g)||[]).length,4);
   assert.ok(html.includes('of 13 records'));assert.ok(html.includes('data-action="application"'));
   assert.equal(c.HRViews.localDay('2026-10-04T17:00:00Z'),'2026-10-05');
-  db.notifications=[{id:'draft',subject:'Subject',to:'test@example.com',createdAt:'2026-10-04T17:00:00Z',status:'Draft'}];
+  db.notifications=[{id:'draft',applicationId:db.applications[0].id,subject:'Subject',to:'test@example.com',createdAt:'2026-10-04T17:00:00Z',status:'Draft'}];
   const outbox=c.HRViews.render(['outbox'],db,{...state(),pageSize:4});
-  assert.ok(outbox.includes('APPLICANT'));
-  assert.ok(!outbox.includes('Email Outbox'));
+  assert.ok(outbox.includes('Email Outbox'));assert.ok(outbox.includes('Subject'));assert.ok(outbox.includes('data-action="message-edit"'));assert.ok(outbox.includes('data-action="mail-send"'));assert.ok(outbox.includes('disabled title="Email delivery is not configured"'));const scoped=c.HRViews.render(['outbox'],db,{...state(),pageSize:4,mailApplicationId:'different-application'});assert.ok(scoped.includes('No messages yet'));assert.ok(!scoped.includes('data-action="mail-send"'));
 });
 
 test('resume upload refreshes a stale revision so the same selected file can be retried',async()=>{

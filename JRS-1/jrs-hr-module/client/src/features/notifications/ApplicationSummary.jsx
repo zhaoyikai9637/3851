@@ -16,7 +16,7 @@ export function ApplicationSummary({ id, onClose }) {
       ) : error ? (
         <ErrorBox error={error} retry={reload} />
       ) : (
-        <><nav className="communication-context-links" aria-label="Application links"><Link to={applicationPath(id)}>Open application</Link><Link to={applicationPath(id,{compose:true})}>Write email</Link><Link to={"/notifications?application="+id}>Related notifications</Link><Link to={"/templates?application="+id}>Templates</Link><Link to={"/logs?application="+id}>Sent emails</Link></nav><dl className="detail-grid">
+        <><nav className="communication-context-links" aria-label="Application links"><Link to={applicationPath(id)}>Open application</Link><Link to={applicationPath(id,{compose:true})}>Write email</Link><Link to={"/notifications?application="+id}>Related notifications</Link><Link to={"/outbox?application="+id}>Email Outbox</Link><Link to={"/templates?application="+id}>Templates</Link><Link to={"/logs?application="+id}>Sent emails</Link></nav><dl className="detail-grid">
           <div>
             <dt>Candidate</dt>
             <dd>{data.candidateName}</dd>

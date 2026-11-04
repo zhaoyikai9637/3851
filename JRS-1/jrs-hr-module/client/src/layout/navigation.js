@@ -1,5 +1,6 @@
 export const communicationLinks = [
   ["/notifications", "Notifications"],
+  ["/outbox", "Email Outbox"],
   ["/templates", "Templates"],
   ["/logs", "Logs"],
 ];
