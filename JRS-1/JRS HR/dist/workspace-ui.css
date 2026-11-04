@@ -218,3 +218,7 @@
 .review-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
 .review-actions>.button{min-height:40px;margin:0;vertical-align:middle}
 @media(max-width:700px){.review-heading>.review-person{flex-basis:100%}.review-actions{width:100%;margin-left:0}.review-actions>.button{flex:1 1 auto}}
+
+.communication-context{padding:16px 20px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}.communication-context-links{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:0 0 16px}.communication-context .communication-context-links{flex-basis:100%;margin:0}.communication-context-links [aria-current=page]{font-weight:700;text-decoration:underline}
+
+[aria-label="Candidate emails"] .section-heading{flex-wrap:wrap;gap:12px;align-items:flex-start}[aria-label="Candidate emails"] .card-actions{display:flex;flex-wrap:wrap;gap:8px}.communication-context-links>a{display:inline-flex;align-items:center;min-height:36px}

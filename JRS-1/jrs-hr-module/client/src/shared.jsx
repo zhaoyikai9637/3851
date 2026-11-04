@@ -10,6 +10,7 @@ export function useLoad(url) {
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
+    if(!url)return ()=>controller.abort();
     setState({ data: null, busy: true, error: null });
     api
       .request(url, { signal: controller.signal })
@@ -21,7 +22,7 @@ export function useLoad(url) {
       });
     return () => controller.abort();
   }, [url, revision]);
-  return { ...state, reload: () => setRevision((v) => v + 1) };
+  return { ...(url?state:{data:null,busy:false,error:null}), reload: () => setRevision((v) => v + 1) };
 }
 export const dateTime = formatDateTime;
 export { default as usageTypes } from "../../shared/template-types.json";

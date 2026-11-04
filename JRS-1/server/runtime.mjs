@@ -1,3 +1,4 @@
+import {applicationCommunicationRouter} from './application-communications.mjs';
 import {createHrMailjetTransport} from './hr-mailjet.mjs';
 import {candidateDetailsRouter} from './candidate-profile-details.mjs';
 import {applyCandidateOwnership,assertCandidateReadAccess,assertManualCandidateEmail} from './candidate-ownership.mjs';
@@ -108,6 +109,8 @@ export async function createRuntime({mailTransport}={}) {
       if (/^\/(api|applicant-api|recruitment\/api)/.test(req.path)) res.set('Cache-Control', 'no-store');
       next();
     });
+    app.use('/api/hr/applications',applicationCommunicationRouter({pool,requireUser:sharedAuth.requireUser}));
+    app.use('/recruitment/api/hr/applications',applicationCommunicationRouter({pool,requireUser:sharedAuth.requireUser,native:true}));
     app.use((req, res, next) => /^\/api\/(auth|hr)(\/|$)/.test(req.path) ? hr(req, res, next) : next());
     app.use('/recruitment/api/hr/job-postings', jobEditorRouter({ recruitment, pool, requireUser:sharedAuth.requireUser }));
     app.use('/recruitment/api/hr/candidates',candidateDetailsRouter({pool,requireUser:sharedAuth.requireUser}));

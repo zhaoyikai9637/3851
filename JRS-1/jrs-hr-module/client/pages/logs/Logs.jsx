@@ -1,3 +1,5 @@
+import {Link} from 'react-router-dom';
+import {CommunicationContext,useApplicationContext,applicationPath} from '../../src/features/communication/ApplicationContext';
 import { useState } from "react";
 import { api, query } from "../../src/api";
 import { LogActivity } from "../../src/features/logs/LogActivity";
@@ -14,12 +16,13 @@ import {
 } from "../../src/shared";
 
 export function Logs() {
+  const context=useApplicationContext();
   const [filters, setFilters] = useState(initialLogFilters),
     [draft, setDraft] = useState(initialLogFilters),
     [datesOpen, setDatesOpen] = useState(false),
     [error, setError] = useState(null),
     [selected, setSelected] = useState(null);
-  const load = useLoad(`/api/hr/logs?${query(filters)}`);
+  const load = useLoad(`/api/hr/logs?${query({...filters,...(context.id?{applicationId:context.id}:{})})}`);
   const hasFilters = Boolean(filters.search || filters.trigger || filters.from || filters.to);
   function apply(event) {
     event.preventDefault();
@@ -43,6 +46,7 @@ export function Logs() {
   }
   return (
     <>
+      <CommunicationContext context={context}/>
       <PageHeading eyebrow={null} className="workspace-page-heading" title="Logs" />
       <section className="surface log-surface">
         <LogFilters
@@ -101,6 +105,7 @@ function LogDetail({ id, onClose }) {
       ) : (
         row && (
           <>
+            {row.applicationId?<nav className="communication-context-links" aria-label="Email application links"><Link to={applicationPath(row.applicationId)}>Open application</Link><Link to={"/notifications?application="+row.applicationId}>Related notifications</Link><Link to={"/templates?application="+row.applicationId}>Templates</Link><Link to={applicationPath(row.applicationId,{compose:true})}>Write email</Link><Link to={"/logs?application="+row.applicationId}>Application email history</Link></nav>:null}
             <dl className="detail-grid">
               <div>
                 <dt>Recipient</dt>

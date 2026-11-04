@@ -1,3 +1,4 @@
+import {randomUUID} from 'node:crypto';
 import test from 'node:test';import assert from 'node:assert/strict';import express from 'express';import request from 'supertest';
 import {docxText,previewPage,isDocx} from '../server/docx-preview.mjs';import {submittedMaterialsRouter} from '../server/submitted-materials.mjs';import {resumeDocx} from './helpers/docx-fixture.mjs';
 test('real Word content is readable and escaped while the original document remains unchanged',async()=>{const bytes=resumeDocx(),before=Buffer.from(bytes),text=await docxText(bytes);assert.match(text,/Preview Candidate/);assert.match(text,/Software Engineer/);const html=previewPage('<img src=x>.docx',text);assert.match(html,/&lt;script&gt;alert/);assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img'));assert.deepEqual(bytes,before);assert.equal(isDocx({file_name:'CV.DOCX'}),true);});
@@ -7,4 +8,10 @@ test('Word preview retains HR authorization, no-store and sandbox headers while 
  const original=await request(app).get('/documents/a/submitted-resume?download=1').buffer(true).parse((res,done)=>{const chunks=[];res.on('data',c=>chunks.push(c));res.on('end',()=>done(null,Buffer.concat(chunks)));res.on('error',done);}).expect(200);assert.match(original.headers['content-disposition'],/^attachment/);assert.deepEqual(original.body,bytes);
  file={...file,file_name:'legacy.doc',file_type:'application/msword'};const old=await request(app).get('/documents/a/submitted-resume/preview').expect(415);assert.match(old.text,/Download the original/);
  file={...file,storage_key:'../../other'};await request(app).get('/documents/a/submitted-resume/preview').expect(404);
+});
+
+
+test('rapid requests for the same authorized document coalesce rather than exhaust the two-worker limit',async()=>{
+ const bytes=resumeDocx(),comment=Buffer.from('cold-cache-'+randomUUID());bytes.writeUInt16LE(comment.length,bytes.length-2);const distinct=Buffer.concat([bytes,comment]);
+ const texts=await Promise.all(Array.from({length:6},()=>docxText(distinct)));assert.equal(new Set(texts).size,1);assert.match(texts[0],/Preview Candidate/);assert.equal(await docxText(distinct),texts[0]);
 });

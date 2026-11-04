@@ -1,3 +1,7 @@
+## Connected application communications - 2026-11-04
+
+Connect Applications, Notifications, Templates and Logs with an authenticated application-ID mapping and a shared context strip. Preserve current application when filtering notices/history or opening a chosen eligible template in Candidate Message. Add full-application and email links to summaries/history. Scope read-all to the current owned application; retain recipient/sender ownership, explicit sending and existing business rules. No schema, production data or cloud settings changed. Verified a clean 784/784 test run, builds, English, real isolated SQL and complete Edge desktop/mobile captured-send journeys. Repeated DOCX extraction is coalesced with a bounded short-lived server text cache; per-request authorization and original downloads remain unchanged. See ../../docs/APPLICATION_COMMUNICATION_LINKS.md.
+
 ## Status-aware templates and optional HR Mailjet - 2026-11-04
 
 Filter template choices with one UI/backend policy, preserving booking and approved-offer prerequisites. Add opt-in HTTPS HR Mailjet delivery using server-only existing Mailjet credentials; retain independent sandbox recipients, explicit preview/send, existing logs and no automatic retries. No cloud variables, production records or real messages were changed. Verified 777/777 tests, both builds, English, isolated SQL with captured mail and Edge at desktop/mobile widths. Real inbox delivery remains an activation acceptance step. See ../../docs/STATUS_TEMPLATES_AND_HR_MAILJET.md.

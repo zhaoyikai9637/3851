@@ -659,7 +659,7 @@ describe("notification workflow", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Future dates");
     expect(fetcher.mock.calls.some(([url])=>url.includes("to=9999-12-31"))).toBe(false);
   });
-  it("shows only a clearly labeled read-only application summary", async () => {
+  it("opens a read-only application summary with connected workflow links", async () => {
     const ui = mount();
     await ui.click(
       await screen.findByRole("button", {
@@ -668,8 +668,10 @@ describe("notification workflow", () => {
     );
     const dialog = screen.getByRole("dialog");
     expect(await within(dialog).findByText("Casey Taylor")).toBeVisible();
-    expect(dialog).toHaveTextContent("Read-only summary");
+    expect(within(dialog).getByRole("link",{name:"Open application"})).toHaveAttribute("href","/applications?application=10");
+    expect(within(dialog).getByRole("link",{name:"Write email"})).toHaveAttribute("href","/applications?application=10&compose=1");
     expect(within(dialog).getAllByRole("button")).toHaveLength(2);
+    expect(within(dialog).getByRole("link",{name:"Templates",exact:true})).toHaveAttribute("href","/templates?application=10");
     await ui.click(
       within(dialog).getByRole("button", { name: "Close", exact: true }),
     );
@@ -1134,4 +1136,21 @@ it("opens the full-page job creator only for a trusted embedded job action",asyn
   expect(await screen.findByRole('region',{name:'Create job'})).toBeVisible();
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.getByRole('button',{name:'Publish job',exact:true})).toBeVisible();
+});
+
+
+it('keeps notification context when opening its application and explicitly composing an email',async()=>{
+ overrides['GET /api/hr/applications/10/communication-context']=()=>json({applicationId:10,recruitingId:'APP-linked',candidateName:'Casey Taylor',positionTitle:'Software Developer',currentStatus:'Interview',eligibleTemplateIds:[1]});
+ const ui=mount('/notifications?application=10');const context=await screen.findByRole('region',{name:'Application communications'});await within(context).findByText('Casey Taylor · Software Developer');
+ expect(fetcher.mock.calls.some(([u])=>u.startsWith('/api/hr/notifications?')&&new URL(u,'http://test').searchParams.get('applicationId')==='10')).toBe(true);
+ await ui.click(within(context).getByRole('link',{name:'Write email'}));const frame=await screen.findByTitle('Applications');expect(frame.getAttribute('src')).toContain('#/review/APP-linked');frame.contentWindow.postMessage=vi.fn();
+ fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:frame',height:700}}));expect(frame.contentWindow.postMessage).toHaveBeenCalledWith({type:'jrs:compose-application',applicationId:'APP-linked'},window.location.origin);
+});
+it('offers only eligible shared templates in application context and carries the chosen template to compose',async()=>{
+ overrides['GET /api/hr/applications/10/communication-context']=()=>json({applicationId:10,recruitingId:'APP-linked',candidateName:'Casey Taylor',positionTitle:'Software Developer',currentStatus:'Interview',eligibleTemplateIds:[1]});
+ const ui=mount('/templates?application=10');const context=await screen.findByRole('region',{name:'Application communications'});const use=await within(context).findByRole('link',{name:'Use selected template'});expect(use).toHaveAttribute('href','/applications?application=10&compose=1&template=1');expect(screen.queryByText('Offer Letter')).toBeNull();await ui.click(use);const frame=await screen.findByTitle('Applications');frame.contentWindow.postMessage=vi.fn();fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:frame',height:700}}));expect(frame.contentWindow.postMessage).toHaveBeenCalledWith({type:'jrs:compose-application',applicationId:'APP-linked',templateId:'canonical-template-1'},window.location.origin);
+});
+it('scopes sent email history to the current application and provides a return link',async()=>{
+ overrides['GET /api/hr/applications/10/communication-context']=()=>json({applicationId:10,recruitingId:'APP-linked',candidateName:'Casey Taylor',positionTitle:'Software Developer',currentStatus:'Interview',eligibleTemplateIds:[1]});state.log.applicationId=10;
+ const ui=mount('/logs?application=10');await screen.findByRole('table',{name:'Sent email history'});expect(fetcher.mock.calls.some(([u])=>u.startsWith('/api/hr/logs?')&&new URL(u,'http://test').searchParams.get('applicationId')==='10')).toBe(true);await ui.click(screen.getByRole('button',{name:'View email to Casey Taylor'}));const dialog=screen.getByRole('dialog');expect(await within(dialog).findByRole('link',{name:'Open application'})).toHaveAttribute('href','/applications?application=10');
 });

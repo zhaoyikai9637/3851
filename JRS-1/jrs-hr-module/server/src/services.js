@@ -56,15 +56,16 @@ export function createServices(m, { companyName = 'JRS' } = {}) {
     },
     async photo(userId) { const hr = await m.HrUser.findByPk(userId); if (!hr?.profilePhotoUrl) throw notFound(); return hr.profilePhotoUrl; },
     async notifications(userId, f) {
-      const where = { recipientUserId: userId };
+      const scope={recipientUserId:userId,...(f.applicationId?{applicationId:f.applicationId}:{})};
+      const where={...scope};
       if (f.read === 'unread') where.isRead = false;
       if (f.type) where.notificationType = f.type;
       if (f.search) where[Op.or] = ['title','message','sourceModule'].map(key => ({ [key]: { [Op.substring]: f.search } }));
       const dates = dateWhere(f.from, f.to); if (dates) where.createdAt = dates;
       const [{ rows, count }, unread, all] = await Promise.all([
         m.Notification.findAndCountAll({ where, attributes: { exclude: ['eventKey'] }, order: [['createdAt','DESC'],['notificationId','DESC']], limit: f.pageSize, offset: (f.page-1)*f.pageSize }),
-        m.Notification.count({ where: { recipientUserId: userId, isRead: false } }),
-        m.Notification.count({ where: { recipientUserId: userId } })
+        m.Notification.count({ where: { ...scope, isRead:false } }),
+        m.Notification.count({ where:scope })
       ]);
       return page(rows, count, f, { unread, all });
     },
@@ -73,8 +74,8 @@ export function createServices(m, { companyName = 'JRS' } = {}) {
       if (!n) throw notFound();
       if (!n.isRead) await n.update({ isRead: true, readAt: new Date() });
     },
-    async markAllRead(userId) {
-      const rows = await m.Notification.findAll({ where: { recipientUserId: userId, isRead: false }, attributes: ['notificationId'] });
+    async markAllRead(userId,applicationId) {
+      const rows = await m.Notification.findAll({ where:{recipientUserId:userId,isRead:false,...(applicationId?{applicationId}:{})}, attributes:['notificationId'] });
       const notificationIds = rows.map(row => plain(row).notificationId);
       if (!notificationIds.length) return { updated: 0, notificationIds: [] };
       const [count] = await m.Notification.update(
@@ -95,7 +96,7 @@ export function createServices(m, { companyName = 'JRS' } = {}) {
     async updateTemplate(userId, id, fields) { const t = await m.Template.findOne({ where: { templateId: id, isActive: true } }); if (!t) throw notFound(); return t.update({ ...fields, updatedBy: userId }); },
     async deleteTemplate(userId, id) { const t = await m.Template.findOne({ where: { templateId: id, isActive: true } }); if (!t) throw notFound(); await t.update({ isActive: false, updatedBy: userId }); },
     async logs(userId, f) {
-      const where = successfulLog(userId);
+      const where={...successfulLog(userId),...(f.applicationId?{applicationId:f.applicationId}:{})};
       if (f.search) where[Op.or] = ['candidateName','positionTitle'].map(key => ({ [key]: { [Op.substring]: f.search } }));
       if (f.trigger) where.triggerEvent = f.trigger;
       const dates = dateWhere(f.from, f.to); if (dates) where.sentAt = { ...where.sentAt, ...dates };

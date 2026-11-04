@@ -1,3 +1,4 @@
+import {CommunicationContext,useApplicationContext} from '../../src/features/communication/ApplicationContext';
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../src/api";
 import { useAuth } from "../../src/auth";
@@ -23,6 +24,7 @@ const tokens = Object.keys(templateVariables);
 const fieldsOf = (row) =>
   row ? Object.fromEntries(Object.keys(blank).map((key) => [key, row[key]])) : { ...blank };
 export function Templates() {
+  const context=useApplicationContext();
   const load = useLoad("/api/hr/templates");
   const [selected, setSelected] = useState(undefined),
     [dirty, setDirty] = useState(false),
@@ -30,7 +32,8 @@ export function Templates() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(null),
     [message, setMessage] = useState("");
-  const activeId = selected === undefined ? (load.data?.items[0]?.templateId ?? null) : selected;
+  const visibleItems=(load.data?.items||[]).filter(t=>!context.id||context.data?.eligibleTemplateIds?.includes(t.templateId));
+  const activeId=selected===null?null:visibleItems.some(t=>t.templateId===selected)?selected:(visibleItems[0]?.templateId??null);
   function choose(id) {
     if (id === activeId) return;
     if (dirty) setConfirmation({ kind: "discard", id });
@@ -61,9 +64,12 @@ export function Templates() {
       setBusy(false);
     }
   }
+  if(context.id&&context.busy)return <Loading/>;
+  if(context.id&&context.error)return <ErrorBox error={context.error} retry={context.reload}/>;
   const item = load.data?.items.find((t) => t.templateId === activeId);
   return (
     <>
+      <CommunicationContext context={context} templateId={activeId}/>
       <PageHeading
         eyebrow={null}
         className="workspace-page-heading"
@@ -88,12 +94,12 @@ export function Templates() {
               <div className="section-heading">
                 <h2>Templates</h2>
                 <span className="section-count">
-                  {load.data.items.length} saved template{load.data.items.length === 1 ? "" : "s"}
+                  {visibleItems.length} saved template{visibleItems.length === 1 ? "" : "s"}
                 </span>
               </div>
               <div className="template-list">
-                {load.data.items.length ? (
-                  load.data.items.map((t) => (
+                {visibleItems.length ? (
+                  visibleItems.map((t) => (
                     <button
                       key={t.templateId}
                       className={`template-option ${activeId === t.templateId ? "selected" : ""}`}
@@ -110,7 +116,7 @@ export function Templates() {
                     </button>
                   ))
                 ) : (
-                  <Empty title="No templates yet">Create a template to get started.</Empty>
+                  <Empty title={context.id?"No templates for this application":"No templates yet"}>{context.id?"Return to the application to write a custom message.":"Create a template to get started."}</Empty>
                 )}
               </div>
               <p className="template-footnote">Shared templates for your HR team.</p>

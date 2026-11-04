@@ -77,7 +77,7 @@
     if(route[0]==='applications'&&pendingJob){ui.job=pendingJob;ui.page=1;pendingJob='';}
     ui.profileApplicationId=route[2]||'';ui.returnQueue=route[0]!=='applications'?listOrigin:'';ui.reviewQueueContext=Object.fromEntries(['q','job','stage','priority','from','to'].map(key=>[key,queueStates.get(listOrigin)?.[key]||'']));
     if(location.hash.replace(/^#\/?/,'').split('/')[0]==='candidates'||location.hash.startsWith('#/applications/applications-review'))history.replaceState(null,'','#/'+path);
-    render();$('#content').focus({preventScroll:true});window.scrollTo(0,0);
+      render();$('#content').focus({preventScroll:true});window.scrollTo(0,0);
   }
   function snapshot(){const f=$('#modal form');return f?JSON.stringify([...new FormData(f).entries()]):'';}
   function open(title,subtitle,html,ic='file',tone='blue',wide=false){
@@ -246,6 +246,7 @@
         case 'offer-approve':if(confirm('Approve these offer terms?')){await commit('approve-offer',{applicationId:id});render();offerDetails(id);}break;
         case 'offer-message':await commit('offer-message',{applicationId:id});close(true);render();notify('Offer email draft prepared in Email Outbox.');break;
         case 'offer-accept':open('Record Offer Acceptance','Use this after the candidate has confirmed acceptance.',form('accept-offer',id,candidateCard(app(id))+area('Acceptance record','notes','','required maxlength="1000" placeholder="Record when and how the candidate accepted."'),'Confirm Acceptance'),'check','green');break;
+        case 'application-notifications':case 'application-templates':case 'application-logs':{app(id);const context=await store.request('hr/applications/'+encodeURIComponent(id)+'/communication-context'),target=action.slice('application-'.length),path='/'+target+'?application='+context.applicationId;if(window.parent!==window)window.parent.postMessage({type:'jrs:navigate',path},location.origin);else location.assign('/hr'+path);break;}
         case 'message':messageForm(id);break;
         case 'message-edit':{const n=store.db.notifications.find(n=>n.id===id);if(n.status!=='Draft'){open(n.status+' Message',n.status==='Sent'?'This message was accepted by the email server.':'This message is read-only.',`<div class="modal-content"><h3>${e(n.subject)}</h3><p class="muted">${e(n.to)}</p><div class="note-box spaced">${e(n.body)}</div></div>`,'mail','gray');}else messageForm(n.applicationId,id);break;}
         case 'email-download':{const n=store.db.notifications.find(n=>n.id===id);if(n.status!=='Draft')throw Error('This draft is no longer current.');const subject=n.subject.replace(/[\r\n]/g,' '),to=n.to.replace(/[\r\n]/g,'');const data='To: '+to+'\r\nSubject: '+subject+'\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-Unsent: 1\r\n\r\n'+n.body.replace(/\r?\n/g,'\r\n');download(new Blob([data],{type:'message/rfc822'}),'JRS-Email-Draft.eml');break;}
@@ -305,6 +306,13 @@
     layoutHeight=window.innerHeight;
     layoutWidth=window.innerWidth;clearTimeout(resizeTimer);
     resizeTimer=setTimeout(()=>render(),180);
+  });
+  window.addEventListener('message',async event=>{
+    if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='jrs:compose-application')return;
+    const {applicationId,templateId}=event.data;if(typeof applicationId!=='string'||!['review','results'].includes(route[0])||route[1]!==applicationId)return;
+    try{const a=app(applicationId),t=templateId?store.db.templates.find(t=>t.id===templateId):null;if(templateId&&(!t||!HRModel.templateAllowed(store.db,a,t)))throw Error('This template is not available for the current application status.');
+      const content=t?await store.request('hr/templates/'+encodeURIComponent(t.id)+'/preview',{method:'POST',body:{applicationId}}):null;messageForm(applicationId);if(content){const f=$('#modal form');f.elements.templateId.value=t.id;f.elements.subject.value=content.subject;f.elements.body.value=content.body;}
+    }catch(error){notify(error.message);}
   });
   window.addEventListener('hashchange',routeChanged);
   document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));

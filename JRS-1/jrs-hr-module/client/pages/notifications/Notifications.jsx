@@ -1,3 +1,4 @@
+import {CommunicationContext} from '../../src/features/communication/ApplicationContext';
 import { ApplicationSummary } from "../../src/features/notifications/ApplicationSummary";
 import {
   NotificationGroup,
@@ -15,6 +16,7 @@ export { groupNotifications };
 export function Notifications() {
   const { state, actions } = useNotificationCenter();
   const {
+    context,
     activeFilters,
     allCount,
     application,
@@ -34,6 +36,7 @@ export function Notifications() {
 
   return (
     <>
+      <CommunicationContext context={context}/>
       <PageHeading
         eyebrow={null}
         title="Notification Center"

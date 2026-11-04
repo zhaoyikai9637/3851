@@ -1,3 +1,5 @@
+import {CommunicationContext,useApplicationContext} from '../../src/features/communication/ApplicationContext';
+import {ErrorBox,Loading} from '../../src/shared';
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Candidates } from "./Candidates";
@@ -8,6 +10,7 @@ const validRoute = (value) =>
     value,
   );
 export function Recruitment({ page, title }) {
+  const context=useApplicationContext(),composeSent=useRef(false);
   const frame = useRef(null),
     navigate = useNavigate();
   const { pathname, search, key: locationKey } = useLocation(),
@@ -16,7 +19,7 @@ export function Recruitment({ page, title }) {
   const [contentHeight, setContentHeight] = useState(600);
   const [sectionPacket,setSectionPacket]=useState(null);
   useEffect(()=>{
-    setSections?.(null);setSectionPacket(null);
+    setSections?.(null);setSectionPacket(null);composeSent.current=false;
     return ()=>setSections?.(null);
   },[locationKey,page,candidate,setSections]);
   function reportViewport() {
@@ -58,8 +61,11 @@ export function Recruitment({ page, title }) {
       }
       if (event.data?.type === 'jrs:frame') {
         const height=event.data.height;
-        if (Number.isFinite(height) && height > 0 && height <= 100000) setContentHeight(Math.ceil(height));
+        if(!Number.isFinite(height)||height<=0||height>100000)return;
+        setContentHeight(Math.ceil(height));
         reportViewport();
+        const params=new URLSearchParams(search),template=params.get('template');
+        if(context.data&&params.get('compose')==='1'&&!composeSent.current){composeSent.current=true;event.source.postMessage({type:'jrs:compose-application',applicationId:context.data.recruitingId,...(template&&/^[1-9]\d*$/.test(template)?{templateId:'canonical-template-'+template}:{})},window.location.origin);}
         return;
       }
       if (event.data?.type === "jrs:workspace" && event.data.intent === true && validRoute(event.data.route)) {
@@ -71,6 +77,7 @@ export function Recruitment({ page, title }) {
             : ["review", "results", "candidate"].includes(base)
               ? "/applications"
               : "/" + base;
+        if(context.id&&["applications","review","results"].includes(base)&&route!=="review/"+context.data?.recruitingId){navigate(target+"?view="+encodeURIComponent(route));return;}
         if (target !== pathname)
           navigate(target + (base === "jobs" ? "" : "?view=" + encodeURIComponent(route)));
       }
@@ -109,27 +116,26 @@ export function Recruitment({ page, title }) {
       if (event.data?.type === "jrs:dialog") {
         frame.current.scrollIntoView({ block: "start" });
       }
-      if (
-        event.data?.type === "jrs:navigate" &&
-        ["/notifications", "/templates", "/logs", "/profile", "/applications"].includes(
-          event.data.path,
-        )
-      )
-        navigate(event.data.path);
+      if(event.data?.type==='jrs:navigate'&&typeof event.data.path==='string'&&(['/notifications','/templates','/logs','/profile','/applications'].includes(event.data.path)||/^\/(?:notifications|templates|logs)\?application=[1-9]\d*$/.test(event.data.path)))navigate(event.data.path);
     }
     window.addEventListener("message", receive);
     return () => window.removeEventListener("message", receive);
-  }, [navigate, pathname, locationKey, setTrail, setSections, page, candidate]);
+  }, [navigate, pathname, locationKey, setTrail, setSections, page, candidate, search, context.data]);
   const requested = new URLSearchParams(search).get("view");
   const embeddedPage = candidate
     ? `candidate/${encodeURIComponent(candidate)}`
-    : validRoute(requested)
+    : context.data
+      ? 'review/'+context.data.recruitingId
+      : validRoute(requested)
       ? requested
       : page;
   const filter = page === "applications" ? new URLSearchParams(search).get("job") : null;
   const source = `/recruitment/${filter ? "?job=" + encodeURIComponent(filter) : ""}#/${embeddedPage}`;
+  if(context.id&&context.busy)return <Loading/>;
+  if(context.id&&context.error)return <ErrorBox error={context.error} retry={context.reload}/>;
   return (
     <>
+      {context.id?<CommunicationContext context={context}/>:null}
       {page==='candidates'&&<div hidden={Boolean(candidate)}><Candidates onOpen={setCandidate}/></div>}
       {candidate && (
         <button

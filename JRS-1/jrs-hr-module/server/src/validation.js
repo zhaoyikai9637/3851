@@ -36,6 +36,7 @@ const historical = schema => schema.strict().superRefine((value, context) => {
 });
 export const notificationFiltersSchema = historical(z.object({
   ...sharedFilters,
+  applicationId:idSchema.optional(),
   read: z.enum(['all', 'unread']).default('all'),
   search: z.string().trim().max(150).optional(),
   type: z.enum(['NEW_APPLICATION', 'STATUS_UPDATED']).optional(),
@@ -44,7 +45,7 @@ export const notificationRestoreSchema = z.object({
   notificationIds: z.array(idSchema).min(1).max(5000),
 }).strict();
 export const logFiltersSchema = historical(z.object({
-  ...sharedFilters, search: z.string().trim().max(150).optional(), trigger: z.string().trim().max(100).optional(),
+  ...sharedFilters, applicationId:idSchema.optional(), search: z.string().trim().max(150).optional(), trigger: z.string().trim().max(100).optional(),
   status: z.literal('SENT').optional()
 }));
 // Kept for existing notification-filter callers; logs have their own strict contract.

@@ -1,3 +1,5 @@
+import {Link} from 'react-router-dom';
+import {applicationPath} from '../communication/ApplicationContext';
 import { dateTime, ErrorBox, Modal, useLoad } from "../../shared";
 
 export function ApplicationSummary({ id, onClose }) {
@@ -5,7 +7,7 @@ export function ApplicationSummary({ id, onClose }) {
   return (
     <Modal title="Application summary" onClose={onClose}>
       <p className="notice">
-        Read-only summary. Recruitment actions are managed by the Applications team.
+        Review this application or prepare an email using its current status.
       </p>
       {busy ? (
         <div className="loading-state" role="status">
@@ -14,7 +16,7 @@ export function ApplicationSummary({ id, onClose }) {
       ) : error ? (
         <ErrorBox error={error} retry={reload} />
       ) : (
-        <dl className="detail-grid">
+        <><nav className="communication-context-links" aria-label="Application links"><Link to={applicationPath(id)}>Open application</Link><Link to={applicationPath(id,{compose:true})}>Write email</Link><Link to={"/notifications?application="+id}>Related notifications</Link><Link to={"/templates?application="+id}>Templates</Link><Link to={"/logs?application="+id}>Sent emails</Link></nav><dl className="detail-grid">
           <div>
             <dt>Candidate</dt>
             <dd>{data.candidateName}</dd>
@@ -31,7 +33,7 @@ export function ApplicationSummary({ id, onClose }) {
             <dt>Applied at</dt>
             <dd>{dateTime(data.appliedAt)}</dd>
           </div>
-        </dl>
+        </dl></>
       )}
     </Modal>
   );

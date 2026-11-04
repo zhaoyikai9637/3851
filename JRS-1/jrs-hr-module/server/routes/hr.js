@@ -115,7 +115,7 @@ export function createApp({ services, config, sessionStore, staticDir, identity 
     res.sendFile(path.join(config.uploadDir,name));
   });
   app.get('/api/hr/notifications',async (req,res) => res.json(await services.notifications(req.hrUserId,notificationFiltersSchema.parse(req.query))));
-  app.patch('/api/hr/notifications/read-all',async (req,res) => res.json(await services.markAllRead(req.hrUserId)));
+  app.patch('/api/hr/notifications/read-all',async (req,res) => res.json(await (req.query.applicationId===undefined?services.markAllRead(req.hrUserId):services.markAllRead(req.hrUserId,idSchema.parse(req.query.applicationId)))));
   app.patch('/api/hr/notifications/restore-unread',async (req,res) => res.json(await services.restoreUnread(req.hrUserId,notificationRestoreSchema.parse(req.body).notificationIds)));
   app.patch('/api/hr/notifications/:id/read',async (req,res) => { await services.markRead(req.hrUserId,idSchema.parse(req.params.id)); res.status(204).end(); });
   app.get('/api/hr/templates',async (req,res) => res.json({ items:await services.templates() }));

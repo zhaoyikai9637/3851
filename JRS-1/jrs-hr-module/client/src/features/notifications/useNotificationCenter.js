@@ -1,3 +1,4 @@
+import {useApplicationContext} from '../communication/ApplicationContext';
 import { useEffect, useMemo, useState } from "react";
 import { api, query } from "../../api";
 import { historicalDateRange, useLoad } from "../../shared";
@@ -8,6 +9,7 @@ import {
 } from "./notificationUtils";
 
 export function useNotificationCenter() {
+  const context=useApplicationContext();
   const [filters, setFilters] = useState(INITIAL_NOTIFICATION_FILTERS);
   const [draft, setDraft] = useState(INITIAL_NOTIFICATION_FILTERS);
   const [showDates, setShowDates] = useState(false);
@@ -16,7 +18,7 @@ export function useNotificationCenter() {
   const [filterError, setFilterError] = useState(null);
   const [application, setApplication] = useState(null);
   const [undoIds, setUndoIds] = useState([]);
-  const load = useLoad(`/api/hr/notifications?${query(filters)}`);
+  const load = useLoad(`/api/hr/notifications?${query({...filters,...(context.id?{applicationId:context.id}:{})})}`);
 
   useEffect(() => {
     if (load.data && filters.page > 1 && !load.data.items.length)
@@ -60,7 +62,7 @@ export function useNotificationCenter() {
     setBusy(true);
     setError(null);
     try {
-      const result = await api.request("/api/hr/notifications/read-all", {
+      const result = await api.request("/api/hr/notifications/read-all"+(context.id?"?applicationId="+context.id:""), {
         method: "PATCH",
       });
       setUndoIds(result.notificationIds || []);
@@ -146,6 +148,7 @@ export function useNotificationCenter() {
 
   return {
     state: {
+      context,
       activeFilters,
       allCount,
       application,
