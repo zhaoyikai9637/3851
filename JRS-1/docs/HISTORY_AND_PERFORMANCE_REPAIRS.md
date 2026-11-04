@@ -42,3 +42,7 @@ Validation on 2026-11-04: node scripts/test-project.mjs --all completed in one r
 ## Copy follow-up validation
 
 The status/repeated-body follow-up passed five focused UI tests, both frontend production builds, Edge desktop/mobile fixture-API checks (1440px/390px) and the isolated real-MySQL applicant/HR workflow. The HR backend completed 182/183 tests with a 10-second timeout in tests/db.test.js certificate-configuration creation/cleanup, including on a separate serial run. No backend configuration, timeout limit or assertion was changed to obtain a pass. This is an unresolved test-execution limitation; the earlier 756-test clean run belongs to the preceding release. No new clean full-project total is claimed. Private interrupted full-root/full-UI logs are retained.
+
+## Database test timeout resolved
+
+The retained certificate-configuration timeout was resolved in a test-only follow-up by preloading the real mysql2 dialect during collection. Focused tests passed 2/2 (115 ms) and the complete HR backend passed 183/183 in one run. The 10-second deadline, assertions, cleanup and all production/TLS configuration remain unchanged. See DATABASE_CONFIG_TEST_TIMING.md. The earlier failures remain historical evidence.

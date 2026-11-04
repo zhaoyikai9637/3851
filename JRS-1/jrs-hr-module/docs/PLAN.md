@@ -1,3 +1,7 @@
+## Database configuration test timeout resolved - 2026-11-04
+
+Preload the real mysql2 dialect during test-module collection instead of charging its first lazy load to the TLS-configuration case. Preserve the 10-second timeout, real Sequelize factory, both configuration assertions and connection cleanup; production code and TLS settings are unchanged. Focused configuration tests passed 2/2 (115 ms total); the complete HR backend passed 183/183 in 35.71 seconds. This supersedes the timeout limitation in the preceding copy follow-up. No new full-project/cloud acceptance run is claimed. See ../../docs/DATABASE_CONFIG_TEST_TIMING.md.
+
 ## Job-search status and notification copy - 2026-11-04
 
 Application Status now labels availability as job-search status and explicitly retains HR access to submitted applications. Notification cards omit only empty bodies or bodies identical to their title after trimming outer whitespace; distinct messages, source/time, navigation and read actions remain. No stored notification content, application visibility policy or database structure changes. Follow-up checks: five focused UI tests, both frontend builds, Edge at 1440px/390px and isolated MySQL workflows passed. HR backend: 182/183 passed, with an unresolved 10-second timeout in the unchanged TLS-configuration test; do not claim a clean full-project run.

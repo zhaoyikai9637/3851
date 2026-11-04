@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+// Load the real dialect during collection, outside each configuration assertion's deadline.
+// Sequelize otherwise loads it lazily inside the first constructor call.
+import 'mysql2';
 import { createDatabase } from '../src/db.js';
 
 const base = {
