@@ -140,5 +140,21 @@
     function restore(value){validate(value);const copy=clone(value);copy.revision++;copy.updatedAt=iso();const text=JSON.stringify(copy);storage.setItem(KEY,text);db=copy;raw=text;corrupt=false;error='';}
     return {get db(){return db;},get error(){return error;},get raw(){return raw;},commit,restore,reset(){restore(seed());}};
   }
-  root.HRModel={KEY,STAGES,requirements,screening,graduateStatuses,seed,validate,apply,createStore,day,uid,clone};if(typeof module!=='undefined')module.exports=root.HRModel;
+  function templateAllowed(db,a,t){
+    if(!a||!t?.active)return false;
+    const source=db.activity?.find(event=>event.applicationId===a.id&&event.to==='Rejected')?.from;
+    switch(t.kind){
+      case 'In Progress':return ['Pending Review','Interview','Interview Results'].includes(a.stage);
+      case 'Interview Invite':return a.stage==='Interview'&&db.interviews.some(i=>i.applicationId===a.id&&i.status==='Scheduled');
+      case 'Offer Letter':return a.stage==='Offer'&&a.offer?.approval==='Approved'&&/^\d{4}-\d{2}-\d{2}$/.test(a.offer.expiry||'')&&a.offer.expiry>=day();
+      case 'Accepted':return a.stage==='Hired';
+      case 'Rejected':return a.stage==='Rejected';
+      case 'Application Rejection':return a.stage==='Rejected'&&source==='Pending Review';
+      case 'Interview Rejection':return a.stage==='Rejected'&&['Interview','Interview Results'].includes(source);
+      case 'Offer Withdrawal':return a.stage==='Rejected'&&source==='Offer';
+      case 'Offer Declined Acknowledgement':return a.offer?.status==='Declined';
+      default:return false;
+    }
+  }
+  root.HRModel={templateAllowed,KEY,STAGES,requirements,screening,graduateStatuses,seed,validate,apply,createStore,day,uid,clone};if(typeof module!=='undefined')module.exports=root.HRModel;
 })(typeof window!=='undefined'?window:globalThis);

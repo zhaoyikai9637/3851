@@ -67,3 +67,10 @@ test('HTTP allows an HR review decision without academic metadata and preserves 
   assert.equal(r.status,200);assert.equal(r.data.db.applications.find(x=>x.id===a.id).stage,'Interview');
   assert.equal(JSON.stringify(r.data.db.candidates.find(c=>c.id===a.candidateId)),facts);
 }));
+
+
+test('HTTP template previews reject a template from another stage before returning message content',async()=>fixture(async({repo,request,login})=>{
+ const session=await login();await repo.transaction(async conn=>{const before=await repo.load(conn),after=M.clone(before);after.applications[0].stage='Rejected';await repo.save(conn,before,after);});const db=await repo.snapshot(),a=db.applications[0],progress=db.templates.find(t=>t.kind==='In Progress'),rejected=db.templates.find(t=>t.kind==='Rejected');
+ const incompatible=await request('/api/hr/templates/'+progress.id+'/preview',{method:'POST',...session,body:{applicationId:a.id}});assert.equal(incompatible.status,422);assert.ok(!incompatible.data.subject);
+ const valid=await request('/api/hr/templates/'+rejected.id+'/preview',{method:'POST',...session,body:{applicationId:a.id}});assert.equal(valid.status,200);assert.ok(!valid.data.body.includes('{{'));assert.ok(valid.data.body.includes(db.candidates[0].name));
+}));

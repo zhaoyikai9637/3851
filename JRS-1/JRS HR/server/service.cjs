@@ -60,6 +60,7 @@ function applyCommand(db,command,p,user,{applicantSubmission=false}={}) {
       if(t.kind==='Accepted'&&a.stage!=='Hired')fail(422,'Record offer acceptance before using this template.');
       if(t.kind==='Rejected'&&a.stage!=='Rejected')fail(422,'Reject the application before using this template.');
       if(t.kind==='Interview Invite'&&a.stage!=='Interview')fail(422,'Move this application to Interview first.');
+      if(!M.templateAllowed(db,a,t))fail(422,'This template is not available for the current application status.');
       if(!p.subject||!p.body)p={...p,...fillTemplate(db,a,user,t)};
     }
     if(['move-interview','schedule','task'].includes(command))text(p.notes,'Notes',command==='task'?1000:500,true);

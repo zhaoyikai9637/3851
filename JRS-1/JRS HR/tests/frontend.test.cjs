@@ -485,3 +485,13 @@ test('resume review embeds protected Word text previews and keeps original PDF a
  a.submission.resumeName='submitted.pdf';a.submission.resumeType='application/pdf';html=V.render(['review',a.id],db,state());assert.ok(html.includes(a.submission.resumeUrl+'#view=FitH'));
  delete a.submission;c.resume={filename:'manual.pdf'};html=V.render(['review',a.id],db,state());assert.ok(html.includes('src="/recruitment/api/hr/candidates/'+c.id+'/resume#view=FitH"'));assert.ok(!html.includes('src="/api/hr/candidates/'));
 });
+
+test('message template choices follow the application status and approved offer or booking prerequisites',async()=>{
+ const catalog=require('../scripts/database.cjs').templates();
+ for(const [stage,expected]of [['Pending Review',['In Progress']],['Interview',['Interview Invite','In Progress']],['Interview Results',['In Progress']],['Offer',['Offer Letter']],['Hired',['Accepted']],['Rejected',['Rejected']]]){
+  const db=M.seed();db.templates=catalog;const a=db.applications[0];a.stage=stage;a.offer={approval:'Approved',expiry:M.day(7)};if(stage==='Interview')db.interviews.push({id:'template-meeting',applicationId:a.id,status:'Scheduled'});
+  const page=await controller('#/review/'+a.id,{db});await page.action('message',a.id);const html=page.e('#modal-body').innerHTML;const select=html.match(/<select[^>]*name="templateId"[^>]*>([\s\S]*?)<\/select>/)[1];
+  for(const t of catalog)assert.equal(select.includes('value="'+t.id+'"'),expected.includes(t.kind),stage+' / '+t.kind);assert.ok(select.includes('Custom message'));
+ }
+ const db=M.seed(),a=db.applications[0],t=catalog.find(t=>t.kind==='Offer Letter');a.stage='Offer';a.offer={approval:'Awaiting approval',expiry:M.day(7)};assert.equal(M.templateAllowed(db,a,t),false);a.offer.approval='Approved';a.offer.expiry=M.day(-1);assert.equal(M.templateAllowed(db,a,t),false);a.stage='Interview';assert.equal(M.templateAllowed(db,a,catalog.find(t=>t.kind==='Interview Invite')),false);
+});

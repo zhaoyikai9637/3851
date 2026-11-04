@@ -110,7 +110,7 @@ test('written job requirements suffice while legacy academic metadata remains co
 test('stage-appropriate templates work without academic screening but retain workflow restrictions',()=>{
   for(const kind of ['Offer Letter','Interview Invite']){
     const d=setup(),a=d.applications[0],c=d.candidates[0];Object.assign(c,{educationLevel:'Not recorded',educationMajor:'Accounting',graduationDate:null});
-    a.stage=kind==='Offer Letter'?'Offer':'Interview';a.offer={approval:'Approved',expiry:M.day(7)};
+    a.stage=kind==='Offer Letter'?'Offer':'Interview';a.offer={approval:'Approved',expiry:M.day(7)};if(kind==='Interview Invite')d.interviews.push({id:'template-booking',applicationId:a.id,status:'Scheduled',date:M.day(2),time:'10:00',duration:45,format:'Video',location:'QA meeting',interviewer:user.name,notes:''});
     const t=d.templates.find(t=>t.kind===kind),payload={applicationId:a.id,templateId:t.id,subject:'Test',body:'Test'};
     assert.equal(run(d,'message',payload).result.notification.subject,'Test');
     a.stage='Pending Review';a.offer=null;const before=JSON.stringify(d);
@@ -196,4 +196,11 @@ test('legacy rejected applications prepare an unsent draft without the removed r
  applyCommand(d,'message',{applicationId:a.id,templateId:t.id},user);
  const draft=d.notifications.find(n=>n.applicationId===a.id);assert.equal(draft.status,'Draft');assert.ok(!draft.body.includes('{{'));assert.equal(a.rejectionReason,reason);assert.equal(a.rejectionConfirmed,false);
  const active=setup(),pending=active.applications.find(a=>a.stage==='Pending Review');assert.throws(()=>applyCommand(active,'message',{applicationId:pending.id,templateId:t.id},user),/Reject the application/);assert.equal(active.notifications.length,0);
+});
+
+
+test('message commands reject a status-incompatible template even with custom subject and body',()=>{
+ const d=setup(),a=d.applications.find(a=>a.stage==='Rejected'),t=d.templates.find(t=>t.kind==='In Progress');
+ assert.throws(()=>applyCommand(d,'message',{applicationId:a.id,templateId:t.id,subject:'Custom',body:'Custom'},user),/current application status/);assert.equal(d.notifications.length,0);
+ const kinds=['Application Rejection','Interview Rejection','Offer Withdrawal'];for(const from of ['Pending Review','Interview','Offer']){d.activity=[{applicationId:a.id,to:'Rejected',from}];for(const kind of kinds)assert.equal(M.templateAllowed(d,a,{active:true,kind}),kind===({'Pending Review':'Application Rejection',Interview:'Interview Rejection',Offer:'Offer Withdrawal'}[from]));}
 });

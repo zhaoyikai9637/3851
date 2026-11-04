@@ -6,7 +6,7 @@ function createMailer(repo,cfg,transport) {
   const options=cfg.mail;
   async function send(id,user,revision,attachResume=false) {
     if(!options.enabled)fail(409,'Email sending is not enabled. Your message remains a draft.');
-    if(!options.host||!options.from||!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(options.from))fail(503,'Configure SMTP_HOST and a valid MAIL_FROM before sending.');
+    if((options.provider!=='mailjet'&&!options.host)||!options.from||!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(options.from))fail(503,'Configure the selected mail provider and a valid sender before sending.');
     const prepared=await repo.transaction(async conn=>{
       const before=await repo.load(conn),after=M.clone(before),n=find(after.notifications,id);
       // The persistent draft ID, rather than a new request key, prevents repeat sends.

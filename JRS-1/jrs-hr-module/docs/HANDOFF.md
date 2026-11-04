@@ -1,3 +1,7 @@
+## Status-aware templates and optional HR Mailjet - 2026-11-04
+
+Filter template choices with one UI/backend policy, preserving booking and approved-offer prerequisites. Add opt-in HTTPS HR Mailjet delivery using server-only existing Mailjet credentials; retain independent sandbox recipients, explicit preview/send, existing logs and no automatic retries. No cloud variables, production records or real messages were changed. Verified 777/777 tests, both builds, English, isolated SQL with captured mail and Edge at desktop/mobile widths. Real inbox delivery remains an activation acceptance step. See ../../docs/STATUS_TEMPLATES_AND_HR_MAILJET.md.
+
 ## Rejection simplification and original mail templates - 2026-11-04
 
 Remove the rejection-reason selection and editable Review Rejection screens at the user's request. Keep one closure confirmation and read-only application details. Preserve existing history and backend transition guards; allow legacy rejected records to prepare unsent drafts without the retired confirmation step. Restore only the five original email templates from the old database after backup and conflict checks; the user excluded its five orphaned historical test notifications. Verified 768/768 project tests, both production builds, English, isolated SQL and Edge desktop/mobile flows. Source synchronization does not authorize deployment. See ../../docs/REJECTION_AND_RESTORED_TEMPLATES.md.

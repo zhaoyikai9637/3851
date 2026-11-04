@@ -4,14 +4,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import {candidateMailSettings} from './candidate-mail.mjs';
-import {mailSettings} from './mail-settings.mjs';
+import {mailSettings,hrMailSettings} from './mail-settings.mjs';
 import {storageSettings} from './file-storage.mjs';
 export const root = fileURLToPath(new URL('../', import.meta.url));
 export const applicantPortalEnabled = settings => settings.ENABLE_APPLICANT_PORTAL !== undefined ? settings.ENABLE_APPLICANT_PORTAL === 'true' : settings.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL !== 'false';
 export function assertDeploymentPolicy(settings,{requireMail=false}={}) {
   if(!settings.production||settings.DB_MODE!=='production')throw new Error('Deployment requires the isolated production target.');
   if(settings.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL!=='false')throw new Error('Set the reviewed applicant portal boundary explicitly to false.');
-  if(requireMail&&(!settings.smtp.enabled||settings.smtp.mode!=='production'))throw new Error('Configure and verify production mail before public invitation.');
+  if(requireMail&&(!(settings.hrMail||settings.smtp).enabled||(settings.hrMail||settings.smtp).mode!=='production'))throw new Error('Configure and verify production mail before public invitation.');
 }
 export function assertLocalDatabase(settings) {
   if (settings.DB_MODE === 'team' || !['127.0.0.1', 'localhost'].includes(settings.DB_HOST) || !['jrs_integrated_dev_20261019', 'jrs_integrated_test_20261019'].includes(settings.DB_NAME) || Number(settings.DB_PORT) !== 3307) throw new Error('Maintenance and tests require an isolated local JRS database on port 3307.');
@@ -20,7 +20,7 @@ export function loadSettings({env: overrides = process.env, envFile = process.en
   const base = envFile ? dotenv.parse(fs.readFileSync(envFile)) : {};
   const mailFile = overrides.JRS_MAIL_ENV_FILE || base.JRS_MAIL_ENV_FILE;
   const privateMail = mailFile ? dotenv.parse(fs.readFileSync(path.resolve(root,mailFile))) : {};
-  if(Object.keys(privateMail).some(key=>!['SMTP_','CANDIDATE_MAIL_','MAILJET_'].some(prefix=>key.startsWith(prefix))))throw new Error('The private mail file may contain mail settings only.');
+  if(Object.keys(privateMail).some(key=>!['SMTP_','CANDIDATE_MAIL_','MAILJET_','HR_MAIL_'].some(prefix=>key.startsWith(prefix))))throw new Error('The private mail file may contain mail settings only.');
   const env = {...base,...privateMail,...overrides};
   if(env.SMTP_PASSWORD_FILE)env.SMTP_PASSWORD=fs.readFileSync(path.resolve(root,env.SMTP_PASSWORD_FILE),'utf8').replace(/\r?\n$/,'');
   if(env.ENABLE_APPLICANT_PORTAL!==undefined&&!['true','false'].includes(env.ENABLE_APPLICANT_PORTAL))throw new Error('ENABLE_APPLICANT_PORTAL must be true or false.');
@@ -47,6 +47,6 @@ export function loadSettings({env: overrides = process.env, envFile = process.en
   if(production&&env.RAILWAY_SERVICE_ID&&env.DB_MODE!=='production')throw new Error('Railway requires the isolated production database mode.');
   const uploadDir=env.JRS_DATA_DIR?path.join(path.resolve(env.JRS_DATA_DIR),'uploads'):path.join(root,'.local/resumes');
   return { ...env, production, origin:origin.origin, port, host,uploadDir,
-    smtp:mailSettings(env),candidateMail:candidateMailSettings(env),
+    smtp:mailSettings(env),hrMail:hrMailSettings(env,mailSettings(env)),candidateMail:candidateMailSettings(env),
     db: { host: env.DB_HOST, port: Number(env.DB_PORT), database: env.DB_NAME, user: env.DB_USER, password: env.DB_PASSWORD, timezone: 'Z', dateStrings: true, multipleStatements: false, connectionLimit: 8, ...(ssl ? {ssl} : {}) } };
 }

@@ -15,8 +15,8 @@ try {
    pool=mysql.createPool({...settings.db,connectTimeout:5000,connectionLimit:1});
    await checkReadiness({pool,uploadDir:settings.uploadDir,fileStore:createFileStore(settings)});
  }
- console.log(process.argv.includes('--connect')?'Deployment checks passed: configuration, build, schema and storage. SMTP delivery is not tested.':'Offline deployment checks passed: configuration and built assets only. Database, volume and SMTP delivery are not tested.');
- if(!settings.smtp.enabled)console.log('Mail is disabled: password recovery and real email delivery are unavailable. This is not public-release acceptance.');
+ console.log(process.argv.includes('--connect')?'Deployment checks passed: configuration, build, schema and storage. Email delivery is not tested.':'Offline deployment checks passed: configuration and built assets only. Database, volume and Email delivery are not tested.');
+ if(!(settings.hrMail||settings.smtp).enabled)console.log('HR mail is disabled. Candidate password recovery uses its separate provider configuration.');
 } catch(error) {
  // Driver errors can contain credentials, hosts and SQL. Log only safe fixed labels.
  const safe=error.message?.startsWith('Deployment requires')||error.message?.startsWith('Set the reviewed')||error.message?.startsWith('Configure and verify production mail');

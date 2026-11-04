@@ -1,3 +1,4 @@
+import {createHrMailjetTransport} from './hr-mailjet.mjs';
 import {candidateDetailsRouter} from './candidate-profile-details.mjs';
 import {applyCandidateOwnership,assertCandidateReadAccess,assertManualCandidateEmail} from './candidate-ownership.mjs';
 import {createCandidateRecoveryMailer} from './candidate-mail.mjs';
@@ -88,7 +89,7 @@ export async function createRuntime({mailTransport}={}) {
         await identity.logout(req, res); res.json({ ok: true });
       },
     };
-    const recruiting = recruitmentApp.createApp({ repo: recruitment, cfg: { origin: settings.origin, secure: settings.production, writesEnabled: true, mail: recruitmentMailSettings(settings.smtp), publicDir: path.join(root, 'JRS HR/dist') }, sharedAuth, transport:mailTransport });
+    const recruiting = recruitmentApp.createApp({ repo: recruitment, cfg: { origin: settings.origin, secure: settings.production, writesEnabled: true, mail: settings.hrMail||recruitmentMailSettings(settings.smtp), publicDir: path.join(root, 'JRS HR/dist') }, sharedAuth, transport:mailTransport||(settings.hrMail?.provider==='mailjet'?createHrMailjetTransport(settings.hrMail):undefined) });
     const app = express();
     app.disable('x-powered-by');
     if(settings.production)app.set('trust proxy',1);

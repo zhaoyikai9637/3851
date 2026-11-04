@@ -35,7 +35,7 @@ function createApp({repo,cfg,transport,sharedAuth}) {
   };
   app.get('/api/hr/workspace',async(req,res)=>res.json({...await workspace(req.user.id,req.user),csrfToken:req.session.csrf}));
   app.get('/api/hr/templates/variables',(req,res)=>res.json({variables}));
-  app.post('/api/hr/templates/:id/preview',async(req,res)=>{const db=await repo.snapshot(req.user.id),a=find(db.applications,req.body.applicationId),t=find(db.templates,req.params.id);if(!t.active)fail(409,'This template is archived.');res.json(fillTemplate(db,a,req.user,t));});
+  app.post('/api/hr/templates/:id/preview',async(req,res)=>{const db=await repo.snapshot(req.user.id),a=find(db.applications,req.body.applicationId),t=find(db.templates,req.params.id);if(!t.active)fail(409,'This template is archived.');if(!M.templateAllowed(db,a,t))fail(422,'This template is not available for the current application status.');res.json(fillTemplate(db,a,req.user,t));});
   app.post('/api/hr/commands/:command',async(req,res)=>{
     const revision=Number(req.get('If-Match'));
     if(!req.get('If-Match'))fail(428,'If-Match revision is required.');
