@@ -1,3 +1,7 @@
+## Show interview options directly - 2026-11-04
+
+Remove the More options disclosure from the shared schedule/reschedule form. Duration, meeting format and internal notes are always visible. Keep all values, validation, draft preparation and scheduling behavior unchanged.
+
 ## Remove duplicate communication links - 2026-11-04
 
 Remove the integration-added navigation row from the application identity strip; the original SJY handoff did not include it. Keep applicant identity, current-status filtering, the selected-template action and the existing workspace tabs and application actions. No business logic or data changes.

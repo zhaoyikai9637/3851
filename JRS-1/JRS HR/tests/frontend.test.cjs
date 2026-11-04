@@ -251,7 +251,7 @@ test('new interview forms start with blank date, time, venue and interviewer wit
       const input=html.match(new RegExp('<input\\b(?=[^>]*\\bname="'+name+'")[^>]*>'))?.[0];
       assert.ok(input,'Booking contains '+name);assert.match(input,/\bvalue=""/,'New '+name+' must be deliberately provided');assert.match(input,/\brequired\b/);
     }
-    assert.ok(html.includes('More options'));assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
+    assert.ok(!html.includes('More options'));assert.ok(!html.includes('<details class="interview-options"'));for(const label of ['Duration','Meeting format','Internal notes (optional)'])assert.ok(html.includes(label));assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
     await page.action('close');assert.equal(page.e('#modal').open,false);assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
   }
 });
