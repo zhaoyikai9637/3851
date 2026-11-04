@@ -54,11 +54,11 @@ function applyCommand(db,command,p,user,{applicantSubmission=false}={}) {
     if(command==='message'&&p.templateId){const t=find(db.templates,p.templateId);if(!t.active)fail(409,'This template is archived.');const a=find(db.applications,p.applicationId);
       const rejectionFrom=db.activity.find(event=>event.applicationId===a.id&&event.to==='Rejected')?.from;
       const rejectionTypes={'Application Rejection':['Pending Review'],'Interview Rejection':['Interview','Interview Results'],'Offer Withdrawal':['Offer']};
-      if(Object.hasOwn(rejectionTypes,t.kind)&&(a.stage!=='Rejected'||!a.rejectionConfirmed||!rejectionTypes[t.kind].includes(rejectionFrom)))fail(422,'This template does not match the recorded rejection stage.');
+      if(Object.hasOwn(rejectionTypes,t.kind)&&(a.stage!=='Rejected'||!rejectionTypes[t.kind].includes(rejectionFrom)))fail(422,'This template does not match the recorded rejection stage.');
       if(t.kind==='Offer Declined Acknowledgement'&&a.offer?.status!=='Declined')fail(422,'Record the candidate offer decline before using this template.');
       if(t.kind==='Offer Letter'&&(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<M.day()))fail(422,'Approve a valid offer before using an offer template.');
       if(t.kind==='Accepted'&&a.stage!=='Hired')fail(422,'Record offer acceptance before using this template.');
-      if(t.kind==='Rejected'&&(a.stage!=='Rejected'||!a.rejectionConfirmed))fail(422,'Confirm the rejection before using this template.');
+      if(t.kind==='Rejected'&&a.stage!=='Rejected')fail(422,'Reject the application before using this template.');
       if(t.kind==='Interview Invite'&&a.stage!=='Interview')fail(422,'Move this application to Interview first.');
       if(!p.subject||!p.body)p={...p,...fillTemplate(db,a,user,t)};
     }

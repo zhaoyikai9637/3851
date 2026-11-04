@@ -230,15 +230,16 @@ test('offer actions depend on approval, expiry and manager permission rather tha
   assert.match(expired.e('#modal-body').innerHTML,/data-action="offer-accept"[^>]*disabled/);
 });
 
-test('rejection asks for a reason without a status diagram and opening or cancelling preserves records',async()=>{
-  const db=M.seed(),application=db.applications.find(a=>a.stage==='Pending Review'),applicant=db.candidates.find(c=>c.id===application.candidateId);
-  Object.assign(applicant,{educationLevel:'Secondary school',graduationDate:null});
-  const page=await controller('#/review/'+application.id,{db}),before=JSON.stringify(db);await page.action('reject',application.id);const html=page.e('#modal-body').innerHTML;
-  assert.match(html,/<select\b[^>]*name="reason"/);assert.ok(html.includes('Qualifications do not meet the job requirements'));
-  assert.ok(!/<input\b[^>]*type="hidden"[^>]*name="reason"/.test(html));assert.equal(application.stage,'Pending Review');
-  for(const text of ['Status Change','CURRENT STATUS','NEW STATUS','status-change','status-box'])assert.ok(!html.includes(text),'Remove redundant rejection status diagram: '+text);
-  assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
-  await page.action('close');assert.equal(page.e('#modal').open,false);assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
+test('rejecting uses one explicit confirmation without reason selection or automatic mail',async()=>{
+ const db=M.seed(),application=db.applications.find(a=>a.stage==='Pending Review');
+ const cancelled=await controller('#/review/'+application.id,{db}),before=JSON.stringify(db);let prompt='';cancelled.c.confirm=text=>{prompt=text;return false;};await cancelled.action('reject',application.id);assert.match(prompt,/closed.*interviews.*cancelled.*No email/);assert.equal(cancelled.commits.length,0);assert.equal(JSON.stringify(db),before);assert.equal(cancelled.e('#modal').open,false);
+ const accepted=await controller('#/review/'+application.id,{db});await accepted.action('reject',application.id);assert.equal(accepted.commits.length,1);assert.equal(accepted.commits[0].command,'reject');assert.equal(accepted.commits[0].payload.applicationId,application.id);assert.equal(accepted.commits[0].payload.reason,'Application closed by HR.');assert.equal(accepted.commits[0].payload.notify,false);assert.equal(accepted.e('#modal').open,false);assert.equal(accepted.c.location.hash.replace(/^#/,''),'/applications/rejected');
+});
+
+test('rejected applications show read-only details without a rejection editor or reason task',async()=>{
+ const db=M.seed(),application=db.applications.find(a=>a.stage==='Rejected');const page=await controller('#/applications',{db}),before=JSON.stringify(db);await page.action('application',application.id);const html=page.e('#modal-body').innerHTML;
+ assert.ok(page.e('#modal').open);assert.ok(!/confirm-rejection|Save Reason|Rejection reason|Prepare notice|textarea/.test(html));assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
+ const V=views().HRViews;assert.ok(!V.render(['review',application.id],db,state()).includes('View Rejection'));assert.ok(!V.attention(db,application).some(x=>/reason/i.test(x)));
 });
 
 test('new interview forms start with blank date, time, venue and interviewer without changing applicant records',async()=>{

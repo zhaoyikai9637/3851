@@ -188,3 +188,12 @@ test('structured education facts can be saved without requiring duplicate free-t
   const edited=run(received.db,'candidate-save',fields).db.candidates.find(x=>x.id===c.id);
   for(const field of ['educationLevel','educationMajor','graduationDate'])assert.equal(edited[field],c[field]);assert.equal(M.screening.assess(edited,j).allowed,true);
 });
+
+
+test('legacy rejected applications prepare an unsent draft without the removed reason confirmation step',()=>{
+ const d=setup(),a=d.applications.find(a=>a.stage==='Rejected'),reason=a.rejectionReason;a.rejectionConfirmed=false;
+ const t=d.templates.find(t=>t.kind==='Rejected');assert.ok(t);
+ applyCommand(d,'message',{applicationId:a.id,templateId:t.id},user);
+ const draft=d.notifications.find(n=>n.applicationId===a.id);assert.equal(draft.status,'Draft');assert.ok(!draft.body.includes('{{'));assert.equal(a.rejectionReason,reason);assert.equal(a.rejectionConfirmed,false);
+ const active=setup(),pending=active.applications.find(a=>a.stage==='Pending Review');assert.throws(()=>applyCommand(active,'message',{applicationId:pending.id,templateId:t.id},user),/Reject the application/);assert.equal(active.notifications.length,0);
+});

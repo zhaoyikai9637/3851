@@ -100,19 +100,15 @@
   function interviewFields(a,i){
     return candidateCard(a)+`<div class="form-grid">${field('Interview date','date',i?.date||'','date',`required min="${HRModel.day()}"`)}${field('Interview time','time',i?.time||'','time','required')}</div>`+field('Interview venue or meeting link','location',i?.location||'','text','required maxlength="300" placeholder="Room, address or video meeting link"')+field('Interviewer','interviewer',i?.interviewer||'','text','required maxlength="100" placeholder="Enter interviewer"')+`<details class="interview-options"><summary>More options</summary><div class="form-grid">${choice('Duration','duration',[['15','15 minutes'],['30','30 minutes'],['45','45 minutes'],['60','60 minutes'],['90','90 minutes'],['120','120 minutes']],String(i?.duration||45))}${choice('Meeting format','format',['Video','On-site','Phone'],i?.format||'Video')}</div>${area('Internal notes (optional)','notes',i?.notes||'','maxlength="500"')}</details><label class="interview-draft"><input type="checkbox" name="notify" checked><span>Prepare interview email draft</span></label><p class="field-help">No email is sent automatically.</p>`;
   }
-  function decision(id,reject=false){const a=app(id);
-    if(!reject){open('Move to Interview','Confirm the date, time and venue. Times are Singapore time (UTC+08:00).',form('move-interview',id,interviewFields(a),'Confirm Interview',false,'autocomplete="off"'),'calendar','purple');return;}
-    const notesLabel=`<span class="label-row"><span>Internal Notes</span><small>Optional · <span data-note-count>0</span> / 500</small></span>`;
-    const fields=candidateCard(a)+choice('Rejection Reason <span class="required">*</span>','reason',[['','Select a reason'],'Qualifications do not meet the job requirements','Skills do not meet the position requirements','Insufficient relevant experience','Position requirements do not match candidate expectations','Candidate withdrew their application','Position has been filled','Other'])+'<label data-other-reason hidden>Specify reason<input name="reasonDetail" maxlength="300" placeholder="Record the reason"></label>'+area(notesLabel,'notes','','maxlength="500" placeholder="Add a private note for the hiring team..."')+notifySwitch('Prepare rejection notification','Prepare an application outcome message for the candidate.','red');
-    open('Reject Application','Record a reason before closing this application.',form('reject',id,fields,'Confirm Rejection',true),'x','red');
+  function decision(id){const a=app(id);
+    open('Move to Interview','Confirm the date, time and venue. Times are Singapore time (UTC+08:00).',form('move-interview',id,interviewFields(a),'Confirm Interview',false,'autocomplete="off"'),'calendar','purple');
   }
-  function applicationDetails(id){const a=app(id),c=candidate(store.db,a),j=job(store.db,a);if(a.stage==='Pending Review'){go('review/'+a.id);return;}if(a.stage==='Interview Results'){results(id);return;}if(a.stage==='Offer'){offerDetails(id);return;}if(a.stage==='Rejected'){rejectionDetails(id);return;}
+  function applicationDetails(id){const a=app(id),c=candidate(store.db,a),j=job(store.db,a);if(a.stage==='Pending Review'){go('review/'+a.id);return;}if(a.stage==='Interview Results'){results(id);return;}if(a.stage==='Offer'){offerDetails(id);return;}
     const meetings=store.db.interviews.filter(i=>i.applicationId===id),scheduled=meetings.some(i=>i.status==='Scheduled');
     if(a.stage==='Interview'){if(scheduled)interviewDetails(meetings.find(i=>i.status==='Scheduled').id);else schedule(id);return;}
     open('Application details',c.name+' · '+j.title,`<div class="modal-content">${candidateCard(a)}${badge(a.stage)}<dl class="details spaced"><dt>Applied</dt><dd>${V.date(a.appliedDate)}</dd><dt>Position</dt><dd>${e(j.title)}</dd></dl>${meetings.length?'<h4>Interviews</h4>'+meetings.map(i=>`<div class="task-item"><div>${V.date(i.date)} · ${e(i.time)}<small>${e(i.status)}</small></div>${button('interview','Details',i.id,'secondary compact')}</div>`).join(''):''}<div class="modal-actions">${a.stage==='Interview'&&!scheduled?button('schedule','Schedule interview',id,'primary',j.status==='Active'?'':'disabled title="Activate this job to schedule interviews"')+button('reject','Reject candidate',id,'danger'):''}</div></div>`,'file');
   }
   function results(id){go('results/'+id);}
-  function rejectionDetails(id){const a=app(id);open('Review Rejection','Confirm the reason and prepare candidate communication.',form('confirm-rejection',id,candidateCard(a)+badge('Rejected')+area('Rejection reason','reason',a.rejectionReason,'required maxlength="500"')+`<p class="form-intro">${a.rejectionConfirmed?'Reason confirmed. Changes will be recorded in the activity history.':'This rejection reason needs confirmation.'}</p><div class="modal-actions">${button('message','Prepare notice',id,'secondary')}</div>`,'Save Reason'), 'x','red');}
   function offerDetails(id){
     const a=app(id),o=a.offer;if(!o)throw Error('No offer is available.');
     const expired=o.expiry<HRModel.day();
@@ -231,7 +227,7 @@
         case 'application':applicationDetails(id);break;
         case 'profile-retry':{const c=focusedPerson();if(c){delete c.profileDetailsState;render();}break;}
         case 'move-interview':decision(id,false);break;
-        case 'reject':decision(id,true);break;
+        case 'reject':if(confirm('Reject this application? It will be closed and any scheduled interviews will be cancelled. No email will be sent.')){await commit('reject',{applicationId:id,reason:'Application closed by HR.',notify:false});close(true);go('applications/rejected');render();notify('Application rejected. No email has been sent.');}break;
         case 'resume-page':ui.resumePage=Number(id);render();break;
         case 'resume-fit':ui.resumeFit=true;render();break;
         case 'resume-actual':ui.resumeFit=false;ui.zoom=100;render();break;
