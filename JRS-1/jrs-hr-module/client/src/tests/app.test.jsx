@@ -1139,12 +1139,12 @@ it("opens the full-page job creator only for a trusted embedded job action",asyn
 });
 
 
-it('keeps notification context when opening its application and explicitly composing an email',async()=>{
+it('keeps application identity and notification filtering without duplicate navigation',async()=>{
  overrides['GET /api/hr/applications/10/communication-context']=()=>json({applicationId:10,recruitingId:'APP-linked',candidateName:'Casey Taylor',positionTitle:'Software Developer',currentStatus:'Interview',eligibleTemplateIds:[1]});
- const ui=mount('/notifications?application=10');const context=await screen.findByRole('region',{name:'Application communications'});await within(context).findByText('Casey Taylor · Software Developer');
+ mount('/notifications?application=10');const context=await screen.findByRole('region',{name:'Application communications'});await within(context).findByText('Casey Taylor · Software Developer');
  expect(fetcher.mock.calls.some(([u])=>u.startsWith('/api/hr/notifications?')&&new URL(u,'http://test').searchParams.get('applicationId')==='10')).toBe(true);
- await ui.click(within(context).getByRole('link',{name:'Write email'}));const frame=await screen.findByTitle('Applications');expect(frame.getAttribute('src')).toContain('#/review/APP-linked');frame.contentWindow.postMessage=vi.fn();
- fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:frame',height:700}}));expect(frame.contentWindow.postMessage).toHaveBeenCalledWith({type:'jrs:compose-application',applicationId:'APP-linked'},window.location.origin);
+ expect(within(context).queryByRole('navigation')).not.toBeInTheDocument();
+ expect(within(context).queryByRole('link',{name:'Write email'})).not.toBeInTheDocument();
 });
 it('offers only eligible shared templates in application context and carries the chosen template to compose',async()=>{
  overrides['GET /api/hr/applications/10/communication-context']=()=>json({applicationId:10,recruitingId:'APP-linked',candidateName:'Casey Taylor',positionTitle:'Software Developer',currentStatus:'Interview',eligibleTemplateIds:[1]});

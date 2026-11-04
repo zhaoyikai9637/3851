@@ -1,3 +1,7 @@
+## Remove duplicate communication links - 2026-11-04
+
+Remove the integration-added navigation row from the application identity strip; the original SJY handoff did not include it. Keep applicant identity, current-status filtering, the selected-template action and the existing workspace tabs and application actions. No business logic or data changes.
+
 ## Restore original email outbox workflow - 2026-11-04
 
 Restore the SJY v2.6.2 Email Outbox tab and native draft review/send route that the integration previously redirected to Applications. Business decisions prepare unsent drafts, with no forced redirect or automatic email; reject retains one confirmation and prepares its original default notification draft. Preserve current-status template guards, explicit send, Mailjet, recipient identity and logs. Scoped outbox links retain application context. Removed rejection-reason screens stay removed. All 785 unit/API tests, both builds, English, isolated SQL and Edge desktop/mobile captured-send journeys passed; no production records, schema or cloud settings changed. See ../../docs/ORIGINAL_OUTBOX_WORKFLOW.md.

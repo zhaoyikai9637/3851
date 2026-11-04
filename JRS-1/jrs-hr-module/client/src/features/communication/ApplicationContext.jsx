@@ -10,17 +10,13 @@ export function useApplicationContext(){
  return {id,...load};
 }
 export function CommunicationContext({context,templateId}){
- const {pathname}=useLocation(),{id,data,busy,error}=context;
+ const {id,data,busy,error}=context;
  if(!id)return null;
  const canUse=templateId&&data?.eligibleTemplateIds?.includes(Number(templateId));
  return <section className="surface communication-context" aria-label="Application communications">
   {busy?<p role="status">Loading application…</p>:error?<ErrorBox error={error} retry={context.reload}/>:data?<>
    <strong>{data.candidateName} · {data.positionTitle}</strong><span className="subtle">{data.currentStatus}</span>
-   <nav className="communication-context-links" aria-label="Application links">
-    <Link to={applicationPath(id)}>Open application</Link><Link to={applicationPath(id,{compose:true})}>Write email</Link>
-    {[['notifications','Notifications'],['outbox','Email Outbox'],['templates','Templates'],['logs','Logs']].map(([path,label])=><Link key={path} to={'/'+path+'?application='+id} aria-current={pathname==='/'+path?'page':undefined}>{label}</Link>)}
-    {canUse?<Link className="btn btn-primary btn-sm" to={applicationPath(id,{compose:true,templateId})}>Use selected template</Link>:null}
-   </nav>
+   {canUse?<Link className="btn btn-primary btn-sm" to={applicationPath(id,{compose:true,templateId})}>Use selected template</Link>:null}
   </>:null}
  </section>;
 }
