@@ -1,3 +1,4 @@
+import {docxText,isDocx,previewPage} from './docx-preview.mjs';
 import {applyCandidateOwnership} from './candidate-ownership.mjs';
 import express from 'express';
 import {createFileStore} from './file-storage.mjs';
@@ -16,7 +17,18 @@ export async function addSubmittedMaterials(pool,workspace) {
 }
 export function submittedMaterialsRouter({pool,requireUser,uploadDir,fileStore=createFileStore({uploadDir})}) {
  const router=express.Router();router.use(requireUser);
- router.get('/:id/submitted-resume',async(req,res,next)=>{
+   router.get('/:id/submitted-resume/preview',async(req,res,next)=>{
+   try{
+    const [[file]]=await pool.execute('SELECT f.file_name,f.file_type,f.storage_key FROM JRS_APPLICATION_LINK l JOIN applications a ON a.id=l.portal_id JOIN JRS_RESUME_LINK r ON r.portal_id=a.resume_id JOIN RESUME_FILE f ON f.file_id=r.canonical_id JOIN CANDIDATE c ON c.candidate_id=f.candidate_id AND c.account_id=l.account_id WHERE l.recruiting_id=?',[req.params.id]);
+    if(!file||!/^[a-f0-9]{64}$/.test(file.storage_key))throw httpError(404,'Submitted document is unavailable.');
+    res.set('Cache-Control','no-store');res.set('X-Content-Type-Options','nosniff');res.set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; sandbox");res.type('html');
+    if(!isDocx(file))return res.status(415).send(previewPage(file.file_name,'Preview supports DOCX text. Download this document to view it.',{unavailable:true}));
+    const bytes=await fileStore.get(file.storage_key);
+    try{const text=await docxText(bytes);res.send(previewPage(file.file_name,text));}
+    catch{res.status(422).send(previewPage(file.file_name,'The document could not be previewed. Use the Download button to open the original file.',{unavailable:true}));}
+   }catch(error){next(error);}
+  });
+router.get('/:id/submitted-resume',async(req,res,next)=>{
   try{
    const [[file]]=await pool.execute('SELECT f.file_name,f.file_type,f.storage_key FROM JRS_APPLICATION_LINK l JOIN applications a ON a.id=l.portal_id JOIN JRS_RESUME_LINK r ON r.portal_id=a.resume_id JOIN RESUME_FILE f ON f.file_id=r.canonical_id JOIN CANDIDATE c ON c.candidate_id=f.candidate_id AND c.account_id=l.account_id WHERE l.recruiting_id=?',[req.params.id]);
    if(!file||!/^[a-f0-9]{64}$/.test(file.storage_key))throw httpError(404,'Submitted document is unavailable.');

@@ -476,3 +476,11 @@ test('job lists and review facts omit work arrangement while retaining employmen
  for(const html of [list,facts]){assert.ok(!html.includes('Retired arrangement fixture'));assert.ok(!/work arrangement|work mode/i.test(html));}
  assert.equal(j.mode,'Retired arrangement fixture');
 });
+
+test('resume review embeds protected Word text previews and keeps original PDF and download paths',()=>{
+ const {HRViews:V}=views(),db=M.seed(),a=db.applications[0],c=db.candidates.find(c=>c.id===a.candidateId);c.canUploadResume=false;
+ a.submission={candidate:{name:c.name},resumeName:'submitted.docx',resumeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',resumeUrl:'/recruitment/api/hr/applications/'+a.id+'/submitted-resume'};
+ let html=V.render(['review',a.id],db,state());assert.ok(html.includes('src="'+a.submission.resumeUrl+'/preview"'));assert.ok(html.includes('sandbox=""'));assert.match(html,/data-action="resume-print"[^>]*disabled/);
+ a.submission.resumeName='submitted.pdf';a.submission.resumeType='application/pdf';html=V.render(['review',a.id],db,state());assert.ok(html.includes(a.submission.resumeUrl+'#view=FitH'));
+ delete a.submission;c.resume={filename:'manual.pdf'};html=V.render(['review',a.id],db,state());assert.ok(html.includes('src="/recruitment/api/hr/candidates/'+c.id+'/resume#view=FitH"'));assert.ok(!html.includes('src="/api/hr/candidates/'));
+});
