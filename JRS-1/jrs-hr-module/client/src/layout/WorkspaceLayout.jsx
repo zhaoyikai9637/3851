@@ -77,7 +77,7 @@ function AccountMenu({ user, onLogout }) {
         <Avatar user={user} />
         <span className="account-name">
           {user.fullName}
-          <small>{user.role}</small>
+          <small>{{ HR_MANAGER: "HR Manager", HR_STAFF: "HR Officer", HR_OFFICER: "HR Officer" }[user.role] || user.role}</small>
         </span>
         <span aria-hidden="true">⌄</span>
       </button>

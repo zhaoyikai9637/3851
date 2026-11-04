@@ -6,6 +6,7 @@ import "../assets/css/styles.css";
 import "../../../JRS HR/dist/scrollbars.css";
 import { App } from "./App";
 import "../../../JRS HR/dist/workspace-ui.css";
+import "../../../JRS HR/dist/brand.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

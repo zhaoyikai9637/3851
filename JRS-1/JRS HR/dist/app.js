@@ -75,7 +75,7 @@
     }
     const path=route.join('/');ui={...defaults(),...(route[0]==='applications'?queueStates.get(path):{})};
     if(route[0]==='applications'&&pendingJob){ui.job=pendingJob;ui.page=1;pendingJob='';}
-    ui.profileApplicationId=route[2]||'';ui.returnQueue=route[0]!=='applications'?listOrigin:'';
+    ui.profileApplicationId=route[2]||'';ui.returnQueue=route[0]!=='applications'?listOrigin:'';ui.reviewQueueContext=Object.fromEntries(['q','job','stage','priority','from','to'].map(key=>[key,queueStates.get(listOrigin)?.[key]||'']));
     if(location.hash.replace(/^#\/?/,'').split('/')[0]==='candidates'||location.hash.startsWith('#/applications/applications-review'))history.replaceState(null,'','#/'+path);
     render();$('#content').focus({preventScroll:true});window.scrollTo(0,0);
   }
@@ -227,6 +227,7 @@
         case 'period':ui.period=id;render();break;
         case 'export':exportApplications();break;
         case 'filters':open('Filter Applications','Apply filters to the work queue.',form('filters','',V.select?choice('Position','job',[['','All positions'],...store.db.jobs.map(j=>[j.id,j.title])],ui.job)+choice('Priority','priority',[['','All priorities'],'High','Normal'],ui.priority)+`<div class="form-grid">${field('Applied from','from',ui.from,'date')}${field('Applied to','to',ui.to,'date')}</div>`:'','Apply Filters'),'filter');break;
+        case 'review-details':{const a=app(id),c={...candidate(store.db,a),...(a.submission?.candidate||{})},j=job(store.db,a);const fields=[['Application ID',a.id],['Candidate',c.name],['Position',j.title],['Status',V.stageLabel(a.stage)],['Submitted',V.date(a.appliedDate)],['Priority',a.priority],['Resume',a.submission?.resumeName||c.resume?.filename||'Not provided']];open('Application details','Submitted application information.',`<div class="modal-content"><dl class="details">${fields.map(([label,value])=>'<dt>'+e(label)+'</dt><dd>'+e(value)+'</dd>').join('')}</dl></div>`,'file');break;}
         case 'application':applicationDetails(id);break;
         case 'profile-retry':{const c=focusedPerson();if(c){delete c.profileDetailsState;render();}break;}
         case 'move-interview':decision(id,false);break;

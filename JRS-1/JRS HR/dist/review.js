@@ -17,9 +17,11 @@
     const controls=submitted?`<a class="button secondary compact" href="${e(submitted)}?download=1">Download submitted resume</a>`:c.resume?`<a class="button secondary compact" href="/api/hr/candidates/${encodeURIComponent(c.id)}/resume" target="_blank" rel="noopener">Open PDF</a>`:sample?`${button('resume-fit','Fit width','','secondary compact')}${button('resume-actual','100%','','secondary compact')}${button('zoom',icon('minus'),'-10','icon-button','aria-label="Zoom out"')}<span class="zoom-label">${ui.resumeFit!==false?'Fit width':ui.zoom+'%'}</span>${button('zoom',icon('plus'),'10','icon-button','aria-label="Zoom in"')}`:'';
     return `<section class="panel resume-viewer" id="resume-viewer" aria-label="Applicant resume"><div class="resume-toolbar"><strong title="${e(filename)}">${e(filename)}</strong><div>${c.canUploadResume===false?'':button('resume-upload','Upload',c.id,'secondary compact')}${button('resume-download',icon('download')+'Download',a.id,'secondary compact',available?'':'disabled')}${button('resume-print',icon('print')+'Print',a.id,'secondary compact',available&&(!submitted||a.submission.resumeType==='application/pdf')?'':'disabled')}${button('fullscreen',icon('expand'),'','icon-button','aria-label="Fullscreen resume"')}</div></div>${controls?'<div class="resume-view-controls">'+controls+'</div>':''}<div class="resume-canvas" tabindex="0" aria-label="Scrollable resume">${content}</div></section>`;
   }
-  function heading(db,a){
+  function heading(db,a,ui){
     const c={...candidate(db,a),...(a.submission?.candidate||{})},j=job(db,a);
-    return `<div class="review-heading"><div class="review-person">${V.avatar(c)}<div><h2>${e(c.name)}</h2><p>${e(j.title)} · ${e(a.id)}</p></div>${badge(a.stage)}</div></div>`;
+    const rows=V.filtered(db,ui.reviewQueueContext||{}),index=rows.findIndex(row=>row.id===a.id),next=index>=0?rows[index+1]:null;
+    const navigation=`<nav class="review-actions" aria-label="Application review actions">${link(ui.returnQueue||'applications','Back to list','button secondary')}${next?link(V.resumePath(next),'Next application','button secondary'):'<button class="button secondary" type="button" disabled aria-disabled="true">Next application</button>'}${button('review-details','Application details',a.id,'secondary')}</nav>`;
+    return `<div class="review-heading"><div class="review-person">${V.avatar(c)}<div><h2>${e(c.name)}</h2><p>${e(j.title)} · ${e(a.id)}</p></div>${badge(a.stage)}</div>${navigation}</div>`;
   }
   function meetingSummary(db,a){
     const i=db.interviews.find(i=>i.applicationId===a.id&&i.status==='Scheduled');
@@ -40,7 +42,7 @@
     else decisions=button('application',a.stage==='Rejected'?'View Rejection':'Details',a.id,'secondary');
     const submitted='<details class="submitted-profile-details"><summary>Submitted Personal Information</summary>'+V.submittedProfile(a,c)+'</details>';
     const details=results?resultsContent(db,a)+`<details class="result-job-details"><summary>Job Description & Requirements</summary>${jobDetails(j)}</details>`:meetingSummary(db,a)+jobDetails(j);
-    return heading(db,a,results)+`<div class="review-grid ${results?'results-grid':''}">${viewer(db,a,ui)}<aside class="panel requirements"><div class="requirements-body" tabindex="0">${details}${submitted}</div><div class="next-step"><div class="review-decision-actions">${decisions}</div>${j.status!=='Active'?'<p class="danger-text">Activate this job before progressing applicants.</p>':''}</div></aside></div>`;
+    return heading(db,a,ui)+`<div class="review-grid ${results?'results-grid':''}">${viewer(db,a,ui)}<aside class="panel requirements"><div class="requirements-body" tabindex="0">${details}${submitted}</div><div class="next-step"><div class="review-decision-actions">${decisions}</div>${j.status!=='Active'?'<p class="danger-text">Activate this job before progressing applicants.</p>':''}</div></aside></div>`;
   }
   root.HRReview={render,requirementsRows,jobDetails,viewer};
 })(window);

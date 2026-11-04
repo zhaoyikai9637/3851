@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 import App from "./App";
 import "./assets/css/styles.css";
 import "../../JRS Login and profile/client/assets/css/buttons.css";
+import "../../JRS HR/dist/brand.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

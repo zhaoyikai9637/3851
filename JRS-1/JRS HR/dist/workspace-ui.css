@@ -212,3 +212,9 @@
 .candidate-information-grid.single-section .details{grid-template-columns:100px minmax(0,1fr)}
 .candidate-information-grid dd,.candidate-information-grid h3,.hr-profile-record h5{overflow-wrap:anywhere;min-width:0}
 .hr-personal-profile .skill-tags span{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+
+/* Review shortcuts form one right-aligned toolbar; narrow screens may wrap. */
+.review-heading>.review-person{flex:1 1 280px}
+.review-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
+.review-actions>.button{min-height:40px;margin:0;vertical-align:middle}
+@media(max-width:700px){.review-heading>.review-person{flex-basis:100%}.review-actions{width:100%;margin-left:0}.review-actions>.button{flex:1 1 auto}}

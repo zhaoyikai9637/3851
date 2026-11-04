@@ -82,14 +82,16 @@ test('HR reviews resumes against written requirements without academic prompts o
   }
 });
 
-test('review and results keep the resume and decisions without duplicate navigation or activity buttons',()=>{
+test('review and results share one shortcut toolbar without profile or activity actions',()=>{
   const {HRViews:V}=views(),db=M.seed();
   for(const [route,stage,action] of [['review','Pending Review','move-interview'],['results','Interview Results','offer-edit']]){
     const application=db.applications.find(a=>a.stage===stage),html=V.render([route,application.id],db,state());
     assert.ok(html.includes('aria-label="Applicant resume"'));assert.ok(html.includes('data-action="'+action+'"'));
-    for(const label of ['Back to list','Previous','Next','Applicant details','Application details','View profile','View activity'])assert.ok(!new RegExp('>'+label+'<','i').test(html),'Remove duplicate action: '+label);
+    for(const label of ['Previous','Next','Applicant details','View profile','View activity'])assert.ok(!new RegExp('>'+label+'<','i').test(html),'Remove duplicate action: '+label);
     assert.ok(!html.includes('data-action="activity"'));
-    assert.ok(!html.includes('class="heading-actions"'),'Use the existing breadcrumb instead of a second navigation group');
+    assert.equal((html.match(/class="review-actions"/g)||[]).length,1);
+    for(const label of ['Back to list','Next application','Application details'])assert.equal((html.match(new RegExp('>'+label+'<','g'))||[]).length,1);
+    assert.ok(!html.includes('class="heading-actions"'),'Keep shortcuts together rather than adding separate action groups');
   }
 });
 

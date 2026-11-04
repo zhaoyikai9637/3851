@@ -1,0 +1,27 @@
+/* Shared visual identity for applicant pages and both HR renderers. */
+:root{
+ --jrs-brand-font:Inter,"Segoe UI",Arial,sans-serif;
+ --jrs-brand-primary:#2563eb;--jrs-brand-hover:#1d4ed8;
+ --jrs-brand-ink:#172033;--jrs-brand-muted:#5f6f86;
+ --jrs-brand-line:#d8e1ee;--jrs-brand-background:#f3f6fb;
+ --jrs-brand-control-radius:8px;--jrs-brand-panel-radius:14px;
+ --jrs-blue:var(--jrs-brand-primary);--jrs-blue-dark:var(--jrs-brand-hover);
+ --jrs-text:var(--jrs-brand-ink);--jrs-muted:var(--jrs-brand-muted);
+ --jrs-border:var(--jrs-brand-line);--jrs-bg:var(--jrs-brand-background);
+ --jrs-accent:var(--jrs-brand-primary);--jrs-accent-hover:var(--jrs-brand-hover);
+ --jrs-ink:var(--jrs-brand-ink);--jrs-line:var(--jrs-brand-line);
+ --blue:var(--jrs-brand-primary);--primary:var(--jrs-brand-primary);
+ --ink:var(--jrs-brand-ink);--text:var(--jrs-brand-ink);
+ --muted:var(--jrs-brand-muted);--line:var(--jrs-brand-line);
+ --bs-primary:var(--jrs-brand-primary);--bs-primary-rgb:37,99,235;
+ --bs-body-font-family:var(--jrs-brand-font);
+ --jrs-button-primary:var(--jrs-brand-primary);--jrs-button-primary-hover:var(--jrs-brand-hover);
+ --jrs-button-text:var(--jrs-brand-ink);--jrs-button-border:var(--jrs-brand-line);
+}
+body{font-family:var(--jrs-brand-font);color:var(--jrs-brand-ink);background:var(--jrs-brand-background)}
+.surface,.panel{border-color:var(--jrs-brand-line);border-radius:var(--jrs-brand-panel-radius)}
+.btn:not(.btn-link),.form-control,.form-select,#modal input:not([type=checkbox]):not([type=radio]),#modal select,#modal textarea{border-radius:var(--jrs-brand-control-radius)}
+.form-control:focus,.form-select:focus{border-color:var(--jrs-brand-primary);box-shadow:0 0 0 4px rgb(37 99 235 / 12%)}
+button:focus-visible,a:focus-visible{outline-color:var(--jrs-brand-primary)}
+
+body :is(.btn:not(.btn-link),.btn-primary,.btn-primary-small,.btn-outline,.btn-secondary-link,.btn-text){font-family:var(--jrs-brand-font)}
