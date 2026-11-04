@@ -33,8 +33,12 @@ Local measured sample: first public job read 345 ms, subsequent reads 2-3 ms. Th
 No plan change or background keep-alive traffic is introduced. Render Free can spin down after inactivity; process-local caches start empty after a restart, so the first platform wake-up delay cannot be eliminated by this application cache. See https://render.com/docs/free#spinning-down-on-idle.
 
 ## Scope retained
-Application Status wording is unchanged in this update. Recommended copy: job-search status plus an explicit statement that HR retains access to submitted applications.
+Follow-up: Application Status now uses job-search status wording and explicitly states that HR can still view submitted applications. The underlying availability update and submitted-application policy are unchanged.
 
-Duplicate notification title/body is unchanged. Examples include Offer prepared, Interview feedback recorded, moved-to-interview and applied-for-job events; the recruitment bridge writes the same text to both fields. The previously deferred review navigation remains unchanged.
+Follow-up: notification cards omit the body only if it is empty or repeats the title after trimming outer whitespace. Distinct details remain visible. Stored title/message, source/time, application navigation and read actions remain unchanged. Examples of repeated content include Offer prepared and Interview feedback recorded. The previously deferred review navigation remains unchanged.
 
 Validation on 2026-11-04: node scripts/test-project.mjs --all completed in one run on Node 24.16.0 with all eight groups passing: 756/756 tests, both production frontend builds and the English source scan. Isolated real-MySQL applicant/HR workflow, timestamp equality, immediate publish/close invalidation and hashed-asset cache headers were verified separately. Native-crash and interrupted cross-runtime reports remain private evidence; no failed result was overwritten or retried automatically.
+
+## Copy follow-up validation
+
+The status/repeated-body follow-up passed five focused UI tests, both frontend production builds, Edge desktop/mobile fixture-API checks (1440px/390px) and the isolated real-MySQL applicant/HR workflow. The HR backend completed 182/183 tests with a 10-second timeout in tests/db.test.js certificate-configuration creation/cleanup, including on a separate serial run. No backend configuration, timeout limit or assertion was changed to obtain a pass. This is an unresolved test-execution limitation; the earlier 756-test clean run belongs to the preceding release. No new clean full-project total is claimed. Private interrupted full-root/full-UI logs are retained.

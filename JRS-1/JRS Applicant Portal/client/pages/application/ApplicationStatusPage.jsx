@@ -54,13 +54,13 @@ export default function ApplicationStatusPage() {
 
   const currentPosition = useMemo(() => timelinePosition(application?.status), [application]);
 
-  async function closeVisibility() {
+  async function closeJobSearch() {
     try {
       const { data } = await api.put("/profile", { ...profile, availabilityStatus: "CLOSED" });
       setProfile(data.profile);
-      setMessage({ type: "success", text: "Your profile is now hidden from recruiter searches." });
+      setMessage({ type: "success", text: "Your job-search status has been updated. HR can still view your submitted applications." });
     } catch (requestError) {
-      setMessage({ type: "danger", text: getApiError(requestError, "Unable to update profile visibility.") });
+      setMessage({ type: "danger", text: getApiError(requestError, "Unable to update your job-search status.") });
     }
   }
 
@@ -172,7 +172,7 @@ export default function ApplicationStatusPage() {
         </div>
         <div className="action-buttons">
           <Link className="btn btn-outline-primary btn-lg" to="/applicant/resume"><UserRoundPen size={20} />Edit profile and resumes</Link>
-          {profile && !profileError && profile.availabilityStatus !== "CLOSED" && <button className="btn btn-outline-secondary btn-lg" type="button" onClick={closeVisibility}><EyeOff size={20} />Close recruiter visibility</button>}
+          {profile && !profileError && profile.availabilityStatus !== "CLOSED" && <button className="btn btn-outline-secondary btn-lg" type="button" onClick={closeJobSearch}><EyeOff size={20} />Not looking for opportunities</button>}
           {!withdrawn && !["Accepted", "Rejected"].includes(application.status) && <button className="btn btn-outline-danger btn-lg" type="button" onClick={withdrawApplication}><XCircle size={20} />Withdraw application</button>}
         </div>
       </section>

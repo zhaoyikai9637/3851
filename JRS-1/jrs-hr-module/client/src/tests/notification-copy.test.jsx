@@ -1,0 +1,22 @@
+import React from 'react';
+import {afterEach,expect,it,vi} from 'vitest';
+import {cleanup,render,screen} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import {NotificationGroup} from '../features/notifications/NotificationList';
+afterEach(cleanup);
+it('hides only empty or repeated bodies while preserving details, navigation and read actions',async()=>{
+ const base={notificationType:'OFFER',applicationId:9,isRead:false,sourceModule:'Offers',createdAt:'2026-11-04T01:00:00Z'};
+ const items=[{...base,notificationId:1,title:'Offer prepared',message:'  Offer prepared  '},{...base,notificationId:2,title:'Offer approved',message:'Salary and start date were approved.'},{...base,notificationId:3,title:'Offer sent',message:''}];
+ const onOpen=vi.fn(),onToggleRead=vi.fn();
+ const {container}=render(<NotificationGroup group={{label:'Earlier',items}} busy={false} onOpen={onOpen} onToggleRead={onToggleRead}/>);
+ expect(screen.getAllByText('Offer prepared')).toHaveLength(1);
+ expect(container.querySelectorAll('.notification-message')).toHaveLength(1);
+ expect(screen.getByText('Salary and start date were approved.')).toBeInTheDocument();
+ expect(container.querySelectorAll('.notification-meta')).toHaveLength(3);
+ await userEvent.click(screen.getByRole('button',{name:'Review offer: Offer prepared'}));
+ expect(onOpen).toHaveBeenCalledWith(items[0]);
+ await userEvent.click(screen.getByRole('button',{name:'More actions for Offer prepared'}));
+ await userEvent.click(screen.getByRole('menuitem',{name:'Mark as read'}));
+ expect(onToggleRead).toHaveBeenCalledWith(items[0]);
+ expect(items[0].message).toBe('  Offer prepared  ');
+});

@@ -1,3 +1,7 @@
+## Job-search status and notification copy - 2026-11-04
+
+Application Status now labels availability as job-search status and explicitly retains HR access to submitted applications. Notification cards omit only empty bodies or bodies identical to their title after trimming outer whitespace; distinct messages, source/time, navigation and read actions remain. No stored notification content, application visibility policy or database structure changes. Follow-up checks: five focused UI tests, both frontend builds, Edge at 1440px/390px and isolated MySQL workflows passed. HR backend: 182/183 passed, with an unresolved 10-second timeout in the unchanged TLS-configuration test; do not claim a clean full-project run.
+
 ## Historical time repair and execution/performance corrections - 2026-11-04
 
 Add an explicit-target, backup-first transactional correction for source-linked notification times. Stabilize Windows test execution with forked HR workers, test-only RegExp interpretation and explicitly owned login API listeners. Cache only public job catalogue reads for five seconds, invalidate after committed writes and cache only hashed frontend assets in browsers. No production data or service-plan changes were needed. Verified 756/756 tests, both frontend builds and the English scan in one full run, plus isolated MySQL workflow and cache checks. See ../../docs/HISTORY_AND_PERFORMANCE_REPAIRS.md.

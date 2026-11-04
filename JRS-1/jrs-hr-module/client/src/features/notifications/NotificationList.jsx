@@ -60,6 +60,9 @@ function NotificationItem({ item, group, busy, onOpen, onToggleRead }) {
     };
   }, [menuOpen]);
 
+  const message = String(item.message ?? "").trim();
+  const showMessage = message && message !== String(item.title ?? "").trim();
+
   const details = (
     <>
       <span className="notification-state" aria-hidden="true" />
@@ -68,7 +71,7 @@ function NotificationItem({ item, group, busy, onOpen, onToggleRead }) {
       </span>
       <span className="notification-copy">
         <span className="notification-title">{item.title}</span>
-        <span className="notification-message">{item.message}</span>
+        {showMessage ? <span className="notification-message">{item.message}</span> : null}
         <span className="notification-meta">
           {item.sourceModule} <span aria-hidden="true">·</span>{" "}
           {notificationTime(item.createdAt, group)}
