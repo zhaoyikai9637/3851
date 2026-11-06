@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "../../src/icons";
 import { Modal } from "../../src/shared";
@@ -325,23 +325,6 @@ export function Interviews({ fetcher, now }) {
     setParams(next, { replace: name === "q" });
   }
 
-  // Dashboard schedule cards link here with ?interview=<id> to open its details.
-  const linkedInterview = params.get("interview");
-  useEffect(() => {
-    if (!db || !linkedInterview) return;
-    const interview = db.interviews.find((item) => item.id === linkedInterview);
-    if (interview) setDialog({ kind: "details", interview });
-  }, [db, linkedInterview]);
-
-  function closeDialog() {
-    setDialog(null);
-    if (params.has("interview")) {
-      const next = new URLSearchParams(params);
-      next.delete("interview");
-      setParams(next, { replace: true });
-    }
-  }
-
   const eligible = useMemo(
     () => (db ? db.applications.filter((item) => item.stage === "Interview" && jobOf(db, item).status === "Active" && !db.interviews.some((interview) => interview.applicationId === item.id && interview.status === "Scheduled")) : []),
     [db],
@@ -381,11 +364,6 @@ export function Interviews({ fetcher, now }) {
       return;
     }
     setDialog({ kind, interview });
-    if (params.has("interview")) {
-      const next = new URLSearchParams(params);
-      next.delete("interview");
-      setParams(next, { replace: true });
-    }
   }
 
   if (error) {
@@ -494,7 +472,7 @@ export function Interviews({ fetcher, now }) {
         </Modal>
       )}
       {dialog?.kind === "details" && (
-        <DetailsDialog db={db} interview={db.interviews.find((item) => item.id === dialog.interview.id) || dialog.interview} onAction={onAction} onClose={closeDialog} now={now} />
+        <DetailsDialog db={db} interview={db.interviews.find((item) => item.id === dialog.interview.id) || dialog.interview} onAction={onAction} onClose={() => setDialog(null)} now={now} />
       )}
       {(dialog?.kind === "schedule" || dialog?.kind === "reschedule") && (
         <ScheduleForm
