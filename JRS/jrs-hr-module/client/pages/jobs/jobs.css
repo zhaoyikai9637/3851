@@ -2,7 +2,7 @@
   --jobs-ink: #24334c;
   --jobs-muted: #74829a;
   --jobs-line: #e3e9f1;
-  --jobs-blue: #365fd2;
+  --jobs-blue: var(--jrs-blue);
   --jobs-soft: #f4f7fc;
   color: var(--jobs-ink);
 }
@@ -24,12 +24,12 @@
   white-space: nowrap;
 }
 .job-primary {
-  background: #365fd2;
+  background: var(--jrs-blue);
   color: #fff;
   box-shadow: 0 2px 3px #24334c0c;
 }
 .job-primary:hover {
-  background: #2c50b6;
+  background: var(--jrs-blue-dark);
 }
 .job-primary svg {
   width: 17px;
@@ -52,7 +52,7 @@
 }
 .jobs-workspace button:focus-visible,
 .job-details-page button:focus-visible {
-  outline: 2px solid #365fd2;
+  outline: 2px solid var(--jrs-blue);
   outline-offset: 3px;
 }
 .jobs-table-panel {
@@ -92,7 +92,7 @@
   background-color: #fff;
 }
 .jobs-filter select:focus-visible {
-  outline: 2px solid #365fd2;
+  outline: 2px solid var(--jrs-blue);
   outline-offset: 2px;
 }
 .jobs-search {
@@ -123,7 +123,7 @@
   box-shadow: none !important;
 }
 .jobs-search:focus-within {
-  border-color: #718bdc;
+  border-color: var(--jrs-blue);
   box-shadow: 0 0 0 3px #365fd20c;
 }
 .jobs-table-scroll {
@@ -176,7 +176,7 @@
   cursor: pointer;
 }
 .job-title-button:hover {
-  color: #365fd2;
+  color: var(--jrs-blue);
 }
 .job-row-meta {
   display: flex;
@@ -246,7 +246,7 @@
   white-space: nowrap;
 }
 .job-row-open:hover {
-  color: #244dc0;
+  color: var(--jrs-blue-dark);
 }
 .jobs-table-footer {
   padding: 17px 24px;
@@ -604,7 +604,7 @@
 }
 .job-calendar-grid button:hover {
   background: #edf2ff;
-  color: #3159bf;
+  color: var(--jrs-blue-dark);
 }
 .job-calendar-clear {
   display: block;

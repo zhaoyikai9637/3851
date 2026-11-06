@@ -15,6 +15,11 @@ export function Recruitment({ page, title }) {
   const [candidate, setCandidate] = useState("");
   const [contentHeight, setContentHeight] = useState(600);
   const [sectionPacket,setSectionPacket]=useState(null);
+  // The route the embedded workspace is currently showing, as reported by the frame.
+  const frameRoute = useRef(null);
+  // The iframe src is fixed while it stays mounted; later route changes are sent as messages
+  // so in-frame navigation never reloads the frame.
+  const frameSource = useRef(null);
   useEffect(()=>{
     setSections?.(null);setSectionPacket(null);
     return ()=>setSections?.(null);
@@ -54,6 +59,24 @@ export function Recruitment({ page, title }) {
         const height=event.data.height;
         if (Number.isFinite(height) && height > 0 && height <= 100000) setContentHeight(Math.ceil(height));
         reportViewport();
+        return;
+      }
+      // In-frame navigation within this page: mirror it into the address bar so Back,
+      // refresh and copied links reopen the same view.
+      if (event.data?.type === "jrs:route" && validRoute(event.data.route)) {
+        const route = event.data.route;
+        frameRoute.current = route;
+        if (candidate) return;
+        const params = new URLSearchParams(search);
+        const current = params.get("view") || page;
+        if (route === current) return;
+        const base = route.split("/")[0];
+        const owner = base === "jobs" ? "job-postings" : ["review", "results", "candidate"].includes(base) ? "applications" : base;
+        if (owner !== page) return;
+        if (route === page) params.delete("view");
+        else params.set("view", route);
+        const query = params.toString();
+        navigate(pathname + (query ? "?" + query : ""));
         return;
       }
       if (event.data?.type === "jrs:workspace" && event.data.intent === true && validRoute(event.data.route)) {
@@ -113,7 +136,7 @@ export function Recruitment({ page, title }) {
     }
     window.addEventListener("message", receive);
     return () => window.removeEventListener("message", receive);
-  }, [navigate, pathname, locationKey, setTrail, setSections, page, candidate]);
+  }, [navigate, pathname, search, locationKey, setTrail, setSections, page, candidate]);
   const requested = new URLSearchParams(search).get("view");
   const embeddedPage = candidate
     ? `candidate/${encodeURIComponent(candidate)}`
@@ -121,7 +144,20 @@ export function Recruitment({ page, title }) {
       ? requested
       : page;
   const filter = page === "applications" ? new URLSearchParams(search).get("job") : null;
-  const source = `/recruitment/${filter ? "?job=" + encodeURIComponent(filter) : ""}#/${embeddedPage}`;
+  const frameVisible = page !== "candidates" || Boolean(candidate);
+  const frameKey = `${filter || ""}|${candidate}`;
+  if (!frameVisible) frameSource.current = null;
+  else if (!frameSource.current || frameSource.current.key !== frameKey) {
+    frameSource.current = { key: frameKey, src: `/recruitment/${filter ? "?job=" + encodeURIComponent(filter) : ""}#/${embeddedPage}` };
+    frameRoute.current = embeddedPage;
+  }
+  const source = frameSource.current?.src;
+  // Back/forward (or a link) changed the requested view: ask the frame to open it.
+  useEffect(() => {
+    if (!frameVisible || frameRoute.current === embeddedPage) return;
+    frameRoute.current = embeddedPage;
+    frame.current?.contentWindow?.postMessage({ type: "jrs:open", route: embeddedPage }, window.location.origin);
+  }, [embeddedPage, frameVisible]);
   return (
     <>
       {page==='candidates'&&<div hidden={Boolean(candidate)}><Candidates onOpen={setCandidate}/></div>}

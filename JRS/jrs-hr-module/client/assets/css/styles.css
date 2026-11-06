@@ -1,21 +1,22 @@
 :root {
-  font-family: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
-  color: #24344e;
-  background: #f2f5fa;
+  /* Local names mapped onto the shared tokens in shared/ui/tokens.css. */
+  font-family: var(--jrs-font);
+  color: var(--jrs-text);
+  background: var(--jrs-bg);
   font-synthesis: none;
-  --navy: #192947;
-  --blue: #315fd2;
-  --muted: #5b6b82;
-  --line: #dfe7f0;
-  --surface: #ffffff;
-  --surface-soft: #f8fafd;
-  --blue-soft: #ebf1ff;
-  --bs-primary: #315fd2;
-  --bs-primary-rgb: 49, 95, 210;
+  --navy: var(--jrs-navy);
+  --blue: var(--jrs-blue);
+  --muted: var(--jrs-muted);
+  --line: var(--jrs-border);
+  --surface: var(--jrs-surface);
+  --surface-soft: var(--jrs-bg);
+  --blue-soft: var(--jrs-blue-soft);
+  --bs-primary: var(--jrs-blue);
+  --bs-primary-rgb: var(--jrs-blue-rgb);
 }
 body {
   margin: 0;
-  font-family: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+  font-family: var(--jrs-font);
   font-size: 14px;
   line-height: 1.5;
   color: #24344e;
@@ -39,11 +40,11 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #315fd2;
+  outline: 2px solid var(--jrs-blue);
   outline-offset: 3px;
 }
 a {
-  color: #2856be;
+  color: var(--jrs-blue-dark);
 }
 h1,
 h2,
@@ -92,18 +93,18 @@ button:disabled {
   font-size: 12px;
 }
 .btn-primary {
-  --bs-btn-bg: #315fd2;
-  --bs-btn-border-color: #315fd2;
-  --bs-btn-hover-bg: #244daf;
-  --bs-btn-hover-border-color: #244daf;
-  --bs-btn-disabled-bg: #315fd2;
-  --bs-btn-disabled-border-color: #315fd2;
+  --bs-btn-bg: var(--jrs-blue);
+  --bs-btn-border-color: var(--jrs-blue);
+  --bs-btn-hover-bg: var(--jrs-blue-dark);
+  --bs-btn-hover-border-color: var(--jrs-blue-dark);
+  --bs-btn-disabled-bg: var(--jrs-blue);
+  --bs-btn-disabled-border-color: var(--jrs-blue);
 }
 .btn-outline-primary {
-  --bs-btn-color: #2856be;
+  --bs-btn-color: var(--jrs-blue-dark);
   --bs-btn-border-color: #b5c8ef;
-  --bs-btn-hover-bg: #315fd2;
-  --bs-btn-hover-border-color: #315fd2;
+  --bs-btn-hover-bg: var(--jrs-blue);
+  --bs-btn-hover-border-color: var(--jrs-blue);
 }
 .btn-light {
   background: #f5f7fb;
@@ -161,7 +162,7 @@ button:disabled {
   place-items: center;
   width: 42px;
   height: 46px;
-  background: #3a6ce2;
+  background: var(--jrs-blue);
   border-radius: 13px;
   color: #fff;
   font-size: 32px;
@@ -200,7 +201,7 @@ button:disabled {
 }
 .sidebar nav a.active,
 .mobile-navigation nav a.active {
-  background: #3567db;
+  background: var(--jrs-blue);
   color: #fff;
   box-shadow: inset 0 1px 0 #ffffff20;
 }
@@ -448,7 +449,7 @@ button:disabled {
   padding: 0 24px 14px;
 }
 .text-button:hover {
-  color: #20469e;
+  color: var(--jrs-blue-dark);
 }
 .section-count {
   color: #6c7c92;
@@ -499,7 +500,7 @@ button:disabled {
 }
 .form-control:focus,
 .form-select:focus {
-  border-color: #315fd2;
+  border-color: var(--jrs-blue);
   box-shadow: 0 0 0 3px #315fd226;
 }
 .form-control[readonly] {
@@ -530,7 +531,7 @@ button:disabled {
 .date-input-control:hover .date-picker-button,
 .date-input-control:focus-within .date-picker-button {
   background: #edf2fa;
-  color: #315fcb;
+  color: var(--jrs-blue);
 }
 .date-picker-native {
   position: absolute;
@@ -572,7 +573,7 @@ button:disabled {
   border: 0;
   padding: 0;
   background: none;
-  color: #2856be;
+  color: var(--jrs-blue-dark);
   font-size: 12px;
   font-weight: 650;
 }
@@ -765,8 +766,8 @@ button:disabled {
 .template-option.selected {
   background: #eef3ff;
   border-color: #d7e3fb;
-  color: #2856be;
-  box-shadow: inset 3px 0 0 #315fd2;
+  color: var(--jrs-blue-dark);
+  box-shadow: inset 3px 0 0 var(--jrs-blue);
 }
 .template-option:hover {
   background: #f3f6fc;
@@ -826,7 +827,7 @@ button:disabled {
   background: white;
   border: 1px solid #bdcff1;
   border-radius: 7px;
-  color: #2856be;
+  color: var(--jrs-blue-dark);
   padding: 7px 10px;
   font-size: 12px;
   font-weight: 600;
@@ -866,14 +867,14 @@ button:disabled {
 .log-summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
 .log-summary h2 { margin: 0 0 3px; font-size: 15px; }
 .log-summary p { margin: 0; color: #607089; font-size: 11px; }
-.log-summary > strong { color: #315fd2; font-size: 12px; white-space: nowrap; }
+.log-summary > strong { color: var(--jrs-blue); font-size: 12px; white-space: nowrap; }
 .log-toolbar { border-bottom: 1px solid var(--line); background: var(--surface-soft); }
 .log-tools { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(170px, .65fr) auto auto auto; align-items: end; gap: 9px; padding: 13px 16px; }
 .log-tools .field { margin: 0; }
 .log-tools .form-label { margin-bottom: 4px; font-size: 10px; }
 .log-tools .form-control, .log-tools .form-select { min-height: 36px; height: 36px; border-radius: 8px; font-size: 12px; }
 .log-date-toggle, .log-tools > .btn { min-height: 36px; white-space: nowrap; }
-.log-date-toggle.active { border-color: #9db4e8; background: #edf3ff; color: #204cae; }
+.log-date-toggle.active { border-color: #9db4e8; background: #edf3ff; color: var(--jrs-blue-dark); }
 .log-date-panel { display: grid; grid-template-columns: repeat(2, minmax(180px, 240px)); gap: 12px; padding: 0 16px 13px; }
 .log-content { padding: 0 16px 12px; }
 .log-group { padding-top: 14px; }
@@ -1354,15 +1355,20 @@ button:disabled {
 .profile-grid form>.editor-actions,.template-editor .editor-actions { position:sticky;bottom:0;background:white;padding:16px 0;border-top:1px solid var(--line);z-index:2; }
 .profile-edit-grid .editor-form>.editor-actions {position:sticky;bottom:0;z-index:2;background:white;border-top:1px solid var(--line);padding:16px 0;}
 .candidate-name {border:0;background:transparent;padding:4px 0;min-height:36px;text-align:left;font-weight:650;color:#24344e;}
-.candidate-name:hover,.candidate-name:focus-visible {color:#315fd2;text-decoration:underline;}
+.candidate-name:hover,.candidate-name:focus-visible {color:var(--jrs-blue);text-decoration:underline;}
 
 /* Original JRS two-circle brand, adapted to the dark HR sidebar. */
 .brand .brand-mark {display:flex;align-items:center;min-width:49px;width:49px;height:42px;background:none;border-radius:0;box-shadow:none;transform:none;}
 .brand-circle {display:block;flex:0 0 31px;height:31px;border-radius:50%;}
 .brand-circle-dark {background:#0f172a;border:1px solid #8293b2;}
-.brand-circle-blue {background:#416be0;margin-left:-12px;}
+.brand-circle-blue {background:var(--jrs-blue);margin-left:-12px;}
 @media (max-width:400px) {
   .topbar.compact-topbar {padding-inline:12px;gap:8px;}
   .compact-topbar .account-button {gap:6px;padding-inline:4px;}
   .compact-topbar .account-button .avatar {width:32px;height:32px;}
+}
+
+/* Sidebar groups (Recruitment / Communication). */
+.sidebar-group + .sidebar-group {
+  margin-top: var(--jrs-space-5);
 }

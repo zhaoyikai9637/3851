@@ -1,14 +1,12 @@
 /* Shared by the React shell and the native recruitment document. */
 :root {
-  --jrs-accent: #315fd2;
-  --jrs-accent-hover: #244daf;
-  --jrs-ink: #24344e;
-  --jrs-muted: #5b6b82;
-  --jrs-line: #dfe7f0;
-  --jrs-soft: #f8fafd;
+  --jrs-accent: var(--jrs-blue);
+  --jrs-accent-hover: var(--jrs-blue-dark);
+  --jrs-ink: var(--jrs-text);
+  --jrs-line: var(--jrs-border);
   --jrs-control-height: 40px;
-  --jrs-control-radius: 8px;
-  --jrs-panel-radius: 14px;
+  --jrs-control-radius: var(--jrs-radius-sm);
+  --jrs-panel-radius: var(--jrs-radius-md);
 }
 
 /* One control scale; links, tabs and destructive actions keep their semantics. */

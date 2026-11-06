@@ -1,25 +1,4 @@
-:root {
-  --jrs-navy: #14233b;
-  --jrs-navy-soft: #203553;
-  --jrs-blue: #2563eb;
-  --jrs-blue-dark: #1d4ed8;
-  --jrs-green: #17845a;
-  --jrs-green-soft: #e9f7f1;
-  --jrs-amber: #b45309;
-  --jrs-bg: #f3f6fb;
-  --jrs-surface: #ffffff;
-  --jrs-soft: #edf3fc;
-  --jrs-border: #d8e1ee;
-  --jrs-text: #172033;
-  --jrs-muted: #5f6f86;
-  --jrs-danger: #c83c4b;
-  --bs-primary: var(--jrs-blue);
-  --bs-primary-rgb: 37, 99, 235;
-  --bs-body-font-family: Inter, "Segoe UI", Arial, sans-serif;
-  --bs-body-color: var(--jrs-text);
-  --bs-border-radius: 6px;
-  --bs-border-radius-lg: 7px;
-}
+/* Colour, type and Bootstrap variables come from shared/ui/tokens.css. */
 
 * {
   box-sizing: border-box;
@@ -177,12 +156,12 @@ textarea.form-control {
 
 .brand-mark::after {
   right: 0;
-  background: #3c78f2;
+  background: var(--jrs-blue);
 }
 
 .brand-mark span {
   right: 6px;
-  background: #3c78f2;
+  background: var(--jrs-blue);
 }
 
 .brand-mark.large {
@@ -638,7 +617,7 @@ textarea.form-control {
 
 .department-badge {
   background: #e8f0ff;
-  color: #1d55b8;
+  color: var(--jrs-blue-dark);
 }
 
 .job-type {
@@ -918,7 +897,7 @@ textarea.form-control {
 
 .application-step.active {
   background: #edf3ff;
-  color: #164da9;
+  color: var(--jrs-blue-dark);
 }
 
 .application-step.active > span {
@@ -1195,7 +1174,7 @@ textarea.form-control {
 .visibility-option.selected {
   border-color: var(--jrs-blue);
   background: #edf3ff;
-  color: #174fae;
+  color: var(--jrs-blue-dark);
 }
 
 .visibility-option strong,
@@ -1520,7 +1499,7 @@ textarea.form-control {
   min-height: 36px;
   padding: 6px 13px;
   background: #e8f0ff;
-  color: #164ea9;
+  color: var(--jrs-blue-dark);
   font-size: 15px;
 }
 

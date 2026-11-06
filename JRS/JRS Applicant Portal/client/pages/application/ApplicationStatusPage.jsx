@@ -93,7 +93,7 @@ export default function ApplicationStatusPage() {
             <span><CalendarDays size={19} />Submitted {formatDate(application.submittedAt)}</span>
           </div>
         </div>
-        <span className={"status-badge status-" + application.status.toLowerCase().replaceAll(" ", "-")}>{application.status}</span>
+        <span className={"jrs-status status-badge status-" + application.status.toLowerCase().replaceAll(" ", "-")} data-status={application.status}>{application.status}</span>
       </section>
 
       {withdrawn ? (
@@ -147,9 +147,10 @@ export default function ApplicationStatusPage() {
           <p>Keep your profile current while the recruitment team reviews your application.</p>
         </div>
         <div className="action-buttons">
-          <Link className="btn btn-outline-primary btn-lg" to="/applicant/resume"><UserRoundPen size={20} />Edit profile and resumes</Link>
-          {profile?.availabilityStatus !== "CLOSED" && <button className="btn btn-outline-secondary btn-lg" type="button" onClick={closeVisibility}><EyeOff size={20} />Close recruiter visibility</button>}
-          {!withdrawn && !["Accepted", "Rejected"].includes(application.status) && <button className="btn btn-outline-danger btn-lg" type="button" onClick={withdrawApplication}><XCircle size={20} />Withdraw application</button>}
+          {/* One primary action; the rarer and destructive actions are visually secondary. */}
+          <Link className="btn btn-primary" to="/applicant/resume"><UserRoundPen size={20} />Edit profile and resumes</Link>
+          {profile?.availabilityStatus !== "CLOSED" && <button className="btn btn-outline-secondary" type="button" onClick={closeVisibility}><EyeOff size={20} />Close recruiter visibility</button>}
+          {!withdrawn && !["Accepted", "Rejected"].includes(application.status) && <button className="btn btn-link text-danger" type="button" onClick={withdrawApplication}><XCircle size={20} />Withdraw application</button>}
         </div>
       </section>
     </div>

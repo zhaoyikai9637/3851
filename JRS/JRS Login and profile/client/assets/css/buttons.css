@@ -1,11 +1,11 @@
 /* Shared applicant buttons: the same scale and hierarchy as the HR workspace. */
 :root {
-  --jrs-button-primary: #315fd2;
-  --jrs-button-primary-hover: #244daf;
-  --jrs-button-text: #24344e;
-  --jrs-button-border: #dfe7f0;
-  --jrs-button-soft: #f8fafd;
-  --jrs-button-radius: 8px;
+  --jrs-button-primary: var(--jrs-blue);
+  --jrs-button-primary-hover: var(--jrs-blue-dark);
+  --jrs-button-text: var(--jrs-text);
+  --jrs-button-border: var(--jrs-border-strong);
+  --jrs-button-soft: var(--jrs-bg);
+  --jrs-button-radius: var(--jrs-radius-sm);
   --jrs-button-height: 40px;
 }
 
@@ -23,7 +23,7 @@ body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .b
   border-radius: var(--jrs-button-radius);
   background: #fff;
   color: var(--jrs-button-text);
-  font-family: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+  font-family: var(--jrs-font);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;

@@ -26,8 +26,8 @@
 .login-card .toggle-password { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; right: 8px; padding: 8px; border: 0; background: transparent; border-radius: 6px; }
 .login-card .toggle-password svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .login-card [hidden] { display: none !important; }
-.login-card .btn-primary { height: 44px; border-radius: 8px; margin-top: 4px; background: linear-gradient(105deg, #365df6, #292acb); box-shadow: 0 4px 12px #3151db26; }
-.login-card .btn-primary:hover:not(:disabled) { background: linear-gradient(105deg, #2b50e3, #2526b6); }
+.login-card .btn-primary { height: 44px; border-radius: 8px; margin-top: 4px; background: linear-gradient(105deg, var(--jrs-blue), #292acb); box-shadow: 0 4px 12px #3151db26; }
+.login-card .btn-primary:hover:not(:disabled) { background: linear-gradient(105deg, var(--jrs-blue), #2526b6); }
 .login-card .btn-primary:disabled { background: #7583a1; box-shadow: none; }
 .login-card .login-register { margin-top: 20px; font-size: 13px; color: #344054; }
 .login-card #registerToggle { display: inline; padding: 0; font: inherit; font-weight: 500; color: #344f7d; }
@@ -36,7 +36,7 @@
 .login-card .login-feedback { margin-bottom: 12px; font-size: 13px; color: #b42318; }
 .login-card .login-feedback.is-success { color: #14532d; }
 .login-card .register-hint { margin: -8px 0 24px; font-size: 13px; color: #64748b; }
-.login-card button:focus-visible, .login-card a:focus-visible { outline: 2px solid #2563eb; outline-offset: 4px; }
+.login-card button:focus-visible, .login-card a:focus-visible { outline: 2px solid var(--jrs-blue); outline-offset: 4px; }
 @media (max-width: 520px) { .login-page .top-header { padding: 0 24px; } .login-page .page-container { padding: 24px 16px; align-items: flex-start; } .login-page .login-card { padding: 32px 8px; } .login-card .auth-title { font-size: 30px; } }
 
 .login-card #registerNames { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }

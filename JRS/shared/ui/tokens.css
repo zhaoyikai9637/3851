@@ -1,0 +1,123 @@
+/*
+ * JRS design tokens: the single source of colour, type, spacing, radius and
+ * shadow values for every JRS front end (shared login pages, applicant portal,
+ * HR workspace shell and the embedded recruitment workspace).
+ *
+ * React apps import this file directly; static pages load it from /shared-ui/tokens.css.
+ * Module stylesheets map their local variable names onto these tokens, so change
+ * values here rather than in individual stylesheets.
+ */
+:root {
+  /* Brand and interaction */
+  --jrs-blue: #2563eb;
+  --jrs-blue-dark: #1d4ed8;
+  --jrs-blue-soft: #eff4ff;
+  --jrs-blue-rgb: 37, 99, 235;
+  --jrs-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.25);
+
+  /* Neutrals */
+  --jrs-navy: #0f1b2d;
+  --jrs-navy-soft: #1c2b44;
+  --jrs-text: #0f172a;
+  --jrs-muted: #64748b;
+  --jrs-border: #e2e8f0;
+  --jrs-border-strong: #cbd5e1;
+  --jrs-bg: #f8fafc;
+  --jrs-surface: #ffffff;
+  --jrs-soft: #f1f5f9;
+
+  /* Status */
+  --jrs-green: #16a34a;
+  --jrs-green-soft: #ecfdf3;
+  --jrs-amber: #d97706;
+  --jrs-amber-soft: #fffbeb;
+  --jrs-danger: #dc2626;
+  --jrs-danger-soft: #fef2f2;
+  --jrs-info: #0284c7;
+  --jrs-info-soft: #f0f9ff;
+
+  /* Typography */
+  --jrs-font: Inter, "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --jrs-text-xs: 12px;
+  --jrs-text-sm: 14px;
+  --jrs-text-md: 16px;
+  --jrs-text-lg: 20px;
+  --jrs-text-xl: 24px;
+  --jrs-text-2xl: 32px;
+
+  /* Spacing scale: use only these steps */
+  --jrs-space-1: 4px;
+  --jrs-space-2: 8px;
+  --jrs-space-3: 12px;
+  --jrs-space-4: 16px;
+  --jrs-space-5: 24px;
+  --jrs-space-6: 32px;
+  --jrs-space-7: 48px;
+
+  /* Shape and depth */
+  --jrs-radius-sm: 6px;
+  --jrs-radius-md: 10px;
+  --jrs-radius-pill: 999px;
+  --jrs-shadow-overlay: 0 12px 32px rgba(15, 23, 42, 0.14);
+
+  /* Bootstrap bridge for pages that use Bootstrap classes */
+  --bs-primary: var(--jrs-blue);
+  --bs-primary-rgb: var(--jrs-blue-rgb);
+  --bs-body-font-family: var(--jrs-font);
+  --bs-body-color: var(--jrs-text);
+  --bs-border-radius: var(--jrs-radius-sm);
+  --bs-border-radius-lg: var(--jrs-radius-sm);
+}
+
+/* Application status badges: one palette shared by applicant and HR screens. */
+.jrs-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jrs-space-1);
+  padding: 2px 10px;
+  border-radius: var(--jrs-radius-pill);
+  font-size: var(--jrs-text-xs);
+  font-weight: 600;
+  line-height: 20px;
+  background: var(--jrs-soft);
+  color: var(--jrs-muted);
+}
+.jrs-status[data-status="Submitted"], .jrs-status[data-status="In Review"] { background: var(--jrs-info-soft); color: var(--jrs-info); }
+.jrs-status[data-status="Interview"] { background: var(--jrs-blue-soft); color: var(--jrs-blue-dark); }
+.jrs-status[data-status="Decision"] { background: var(--jrs-amber-soft); color: var(--jrs-amber); }
+.jrs-status[data-status="Accepted"] { background: var(--jrs-green-soft); color: var(--jrs-green); }
+.jrs-status[data-status="Rejected"] { background: var(--jrs-danger-soft); color: var(--jrs-danger); }
+
+/* Skeleton placeholder for loading states. */
+.jrs-skeleton {
+  display: block;
+  border-radius: var(--jrs-radius-sm);
+  background: linear-gradient(90deg, var(--jrs-soft) 25%, var(--jrs-border) 37%, var(--jrs-soft) 63%);
+  background-size: 400% 100%;
+  animation: jrs-skeleton 1.4s ease infinite;
+}
+@keyframes jrs-skeleton {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jrs-skeleton { animation: none; }
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--jrs-focus-ring);
+}
+
+/* Inline line icons (Lucide geometry) used by the static pages. */
+.jrs-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -3px;
+  flex-shrink: 0;
+}

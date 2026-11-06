@@ -12,7 +12,10 @@ for (const name of ['forgot-password','check-email','set-new-password']) {
       for (const link of d.querySelectorAll('link[rel="stylesheet"]')) {
         if (/^https?:/.test(link.getAttribute('href'))) continue;
         const style = d.createElement('style');
-        style.textContent = await fs.readFile(new URL(link.getAttribute('href'),pageURL),'utf8');
+        const href = link.getAttribute('href');
+        // Site-absolute shared tokens are served from shared/ui by the integrated server.
+        const file = href.startsWith('/shared-ui/') ? new URL('../shared/ui/' + href.slice('/shared-ui/'.length), import.meta.url) : new URL(href,pageURL);
+        style.textContent = await fs.readFile(file,'utf8');
         d.head.append(style);
       }
       const computed = element => dom.window.getComputedStyle(element);

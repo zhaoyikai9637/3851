@@ -1,5 +1,5 @@
 /* Local HTML adaptation of the team's React portal; no Bootstrap runtime needed. */
-body { font-family: Inter, "Segoe UI", Arial, sans-serif; }
+body { font-family: var(--jrs-font); }
 h2,h3,p { margin-top: 0; }
 button,a,input,select { touch-action: manipulation; }
 button { cursor: pointer; }

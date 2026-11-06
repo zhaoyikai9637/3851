@@ -96,6 +96,8 @@ export async function createRuntime({mailTransport}={}) {
     app.get('/', (req, res) => res.redirect(experimental ? '/jobs' : '/pages/login/login.html'));
     app.get('/api/integration-config', (req, res) => res.json({ valid:true, experimentalApplicantPortal: experimental }));
     app.get('/login', (req, res) => res.redirect('/pages/login/login.html'));
+    // Shared design tokens for every front end (static pages link them; React apps bundle them).
+    app.use('/shared-ui', express.static(path.join(root, 'shared/ui'), { dotfiles: 'deny', maxAge: '1h' }));
     for (const feature of ['job-management', 'create-job', 'edit-job', 'interview-schedule', 'interview-feedback']) {
       app.get(`/pages/${feature}/${feature}.html`, (req, res) => res.redirect(feature.startsWith('interview-') ? '/hr/interviews' : '/hr/job-postings'));
     }

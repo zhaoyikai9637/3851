@@ -3,17 +3,18 @@
   display:none!important
 }
 :root{
-  font-family:Arial,Helvetica,sans-serif;
-  color:#192337;
-  background:#f4f7fb;
+  /* Local names mapped onto the shared tokens in shared/ui/tokens.css. */
+  font-family: var(--jrs-font);
+  color:var(--jrs-text);
+  background:var(--jrs-bg);
   font-synthesis:none;
-  --primary:#2560ee;
-  --ink:#192337;
-  --muted:#6e819f;
-  --line:#e7edf6;
-  --blue:#2560ee;
-  --nav:#172235;
-  --radius:15px
+  --primary:var(--jrs-blue);
+  --ink:var(--jrs-text);
+  --muted:var(--jrs-muted);
+  --line:var(--jrs-border);
+  --blue:var(--jrs-blue);
+  --nav:var(--jrs-navy);
+  --radius:var(--jrs-radius-md)
 }
 *{
   box-sizing:border-box
@@ -138,7 +139,7 @@ button{
   left:0
 }
 .brand-mark:after{
-  background:#2568ff;
+  background:var(--jrs-blue);
   left:17px
 }
 .brand-caption{
@@ -448,7 +449,7 @@ main:focus{
   margin-bottom:22px
 }
 .blue{
-  --tone:#2763ed;
+  --tone:var(--jrs-blue);
   --pale:#e7efff
 }
 .purple{
@@ -1021,7 +1022,7 @@ tr:last-child td{
 }
 .resume-banner strong{
   display:block;
-  color:#2561ff;
+  color:var(--jrs-blue);
   font-size:10px;
   margin:5px 0
 }
@@ -1076,7 +1077,7 @@ tr:last-child td{
   width:40px;
   height:4px;
   border-radius:4px;
-  background:#5086fa;
+  background:var(--jrs-blue);
   flex-shrink:0
 }
 .resume-second{
@@ -1435,7 +1436,7 @@ tr:last-child td{
   left:-22px;
   top:5px;
   border-radius:50%;
-  background:#4f82ef
+  background:var(--jrs-blue)
 }
 .timeline small{
   display:block;
@@ -2408,11 +2409,11 @@ dialog::backdrop{
 .login-card { width: min(100%, 430px); display: grid; gap: 20px; padding: 40px; border: 1px solid #dfe6ef; border-radius: 16px; background: white; box-shadow: 0 12px 40px #0b234c12; }
 .login-card label { display: grid; gap: 8px; font-size: 14px; font-weight: 600; }
 .login-card input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; }
-.login-brand { color: #164ca9; font-size: 30px; font-weight: 800; }
+.login-brand { color: var(--jrs-blue-dark); font-size: 30px; font-weight: 800; }
 .login-brand span { display: block; margin-top: 4px; font-size: 14px; font-weight: 500; color: #64748b; }
 .module-tabs { display: flex; gap: 12px; border-bottom: 1px solid #dfe6ef; margin-bottom: 24px; overflow-x: auto; }
 .module-tabs a { padding: 12px 14px; white-space: nowrap; font-size: 14px; color: #586882; }
-.module-tabs a.active { color: #245bcc; border-bottom: 3px solid #245bcc; font-weight: 700; }
+.module-tabs a.active { color: var(--jrs-blue-dark); border-bottom: 3px solid var(--jrs-blue-dark); font-weight: 700; }
 .account-menu { position: relative; }
 .account-menu summary { cursor: pointer; list-style: none; }
 .account-menu summary::-webkit-details-marker { display: none; }

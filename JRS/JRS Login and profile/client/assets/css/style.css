@@ -5,7 +5,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--jrs-font);
 }
 
 body {
@@ -49,7 +49,7 @@ body {
 }
 
 .circle-blue {
-    background-color: #2563eb;
+    background-color: var(--jrs-blue);
     margin-left: -8px;
 }
 
@@ -132,7 +132,7 @@ body {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: #2563eb;
+    border-color: var(--jrs-blue);
 }
 
 .form-group input.input-error {
@@ -151,7 +151,7 @@ body {
 .btn-primary {
     width: 100%;
     height: 44px;
-    background-color: #2563eb;
+    background-color: var(--jrs-blue);
     color: #ffffff;
     border: none;
     border-radius: 4px;
@@ -162,7 +162,7 @@ body {
 }
 
 .btn-primary:hover {
-    background-color: #1d4ed8;
+    background-color: var(--jrs-blue-dark);
 }
 
 .btn-primary:disabled {
@@ -184,7 +184,7 @@ body {
 .btn-text {
     background: none;
     border: none;
-    color: #2563eb;
+    color: var(--jrs-blue);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -232,7 +232,7 @@ body {
 .resend-link {
     background: none;
     border: none;
-    color: #2563eb;
+    color: var(--jrs-blue);
     font-weight: 600;
     cursor: pointer;
     margin-left: 4px;
@@ -308,7 +308,7 @@ body {
 }
 
 .menu-item.active {
-    background-color: #2563eb;
+    background-color: var(--jrs-blue);
     color: #ffffff;
     border-radius: 0 25px 25px 0;
     margin-right: 12px;
@@ -398,8 +398,8 @@ body {
 .btn-secondary-link {
     display: inline-block;
     padding: 5px 12px;
-    border: 1px solid #2563eb;
-    color: #2563eb;
+    border: 1px solid var(--jrs-blue);
+    color: var(--jrs-blue);
     background: #ffffff;
     font-size: 13px;
     font-weight: 600;
@@ -526,7 +526,7 @@ body {
 }
 
 .phone-input-container:focus-within {
-    border-color: #2563eb;
+    border-color: var(--jrs-blue);
 }
 
 .phone-input-container.input-error {
@@ -603,7 +603,7 @@ body {
 }
 
 .upload-dropzone.dragover {
-    border-color: #2563eb;
+    border-color: var(--jrs-blue);
     background-color: #eff6ff;
 }
 
@@ -624,7 +624,7 @@ body {
     margin-top: 14px;
     font-size: 13px;
     font-weight: 600;
-    color: #2563eb;
+    color: var(--jrs-blue);
 }
 
 /* Saved Item Card Styling */
@@ -692,9 +692,9 @@ body {
 .auth-page .auth-subtitle {margin-top:-12px;line-height:1.7;}
 .auth-page .form-group label {font-size:14px;}
 .auth-page .form-group input {min-height:46px;border-radius:8px;}
-.auth-page .btn-primary {height:46px;border-radius:8px;background:#355bce;}
+.auth-page .btn-primary {height:46px;border-radius:8px;background:var(--jrs-blue);}
 .auth-page #registerToggle {width:100%;padding:16px 8px;}
-.auth-page .forgot-link,.auth-page .resend-link {color:#355bce;}
+.auth-page .forgot-link,.auth-page .resend-link {color:var(--jrs-blue);}
 .auth-page .toggle-password {border:0;background:none;font-size:12px;font-weight:600;padding:8px;}
 .auth-page #newPassword {padding-right:70px;}
 .auth-page :focus-visible {outline:3px solid #a8bcf7;outline-offset:3px;}
