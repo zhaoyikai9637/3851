@@ -2370,3 +2370,13 @@ textarea.form-control {
   color: var(--jrs-muted);
   font-size: var(--jrs-text-sm);
 }
+
+/* Keep the role title and apply button in view while reading long descriptions. */
+@media (min-width: 992px) {
+  .role-details-page .role-header {
+    position: sticky;
+    top: var(--jrs-space-4);
+    z-index: 5;
+    box-shadow: 0 1px 0 var(--jrs-border), 0 8px 24px rgba(15, 23, 42, 0.06);
+  }
+}
