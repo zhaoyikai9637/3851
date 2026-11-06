@@ -14,7 +14,17 @@ export function Recruitment({ page, title }) {
     navigate = useNavigate();
   const { pathname, search, key: locationKey } = useLocation(),
     { setTrail,setSections } = useOutletContext();
-  const [candidate, setCandidate] = useState("");
+  // The open candidate profile lives in the address bar (?candidate=<id>) so refresh,
+  // Back and copied links all return to the same person.
+  const candidateParam = new URLSearchParams(search).get("candidate") || "";
+  const candidate = page === "candidates" && /^[A-Za-z0-9_-]{1,100}$/.test(candidateParam) ? candidateParam : "";
+  function setCandidate(id) {
+    const params = new URLSearchParams(search);
+    if (id) params.set("candidate", id);
+    else params.delete("candidate");
+    const query = params.toString();
+    navigate(pathname + (query ? "?" + query : ""));
+  }
   const [contentHeight, setContentHeight] = useState(600);
   const [sectionPacket,setSectionPacket]=useState(null);
   // The route the embedded workspace is currently showing, as reported by the frame.

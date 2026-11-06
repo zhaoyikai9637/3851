@@ -1125,3 +1125,18 @@ it("leaves the candidate profile when switching to another HR workspace", async 
   await ui.click(screen.getByRole("link", {name:"Candidates",exact:true}));
   expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
 });
+it("reopens a candidate profile from its address and returns to the list", async () => {
+  overrides["GET /recruitment/api/hr/candidates"] = () => json({items:[{id:"person-1",name:"Casey"}],total:1,page:1,limit:20});
+  const ui = mount("/candidates?q=Casey&candidate=person-1");
+  expect(await screen.findByTitle("Candidates")).toHaveAttribute("src","/recruitment/#/candidate/person-1");
+  await ui.click(screen.getByRole("button", {name:"Back to candidates"}));
+  expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
+  expect(screen.getByRole("searchbox",{name:"Search candidates"})).toHaveValue("Casey");
+  expect(screen.queryByTitle("Candidates")).not.toBeInTheDocument();
+});
+it("ignores a malformed candidate address", async () => {
+  overrides["GET /recruitment/api/hr/candidates"] = () => json({items:[{id:"person-1",name:"Casey"}],total:1,page:1,limit:20});
+  mount("/candidates?candidate=..%2Fsecret");
+  expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
+  expect(screen.queryByTitle("Candidates")).not.toBeInTheDocument();
+});
