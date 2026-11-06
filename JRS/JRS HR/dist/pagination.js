@@ -7,10 +7,10 @@
  // Pages may stretch their list to fill the window; measure the natural layout instead,
  // otherwise stretched rows would shrink the page size on every pass.
  function measure(host,available,minimumRowHeight=0){
-  const html=host.ownerDocument.documentElement,already=html.classList.contains('fit-measuring');
-  if(!already)html.classList.add('fit-measuring');
+  const classes=host.ownerDocument?.documentElement?.classList,toggle=classes&&!classes.contains('fit-measuring');
+  if(toggle)classes.add('fit-measuring');
   try{return measureNatural(host,available,minimumRowHeight);}
-  finally{if(!already)html.classList.remove('fit-measuring');}
+  finally{if(toggle)classes.remove('fit-measuring');}
  }
  function measureNatural(host,available,minimumRowHeight){
   const rows=[...host.querySelectorAll('table tbody > tr')];

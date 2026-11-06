@@ -36,10 +36,10 @@
     if (!content) return;
     // Measure intrinsic content; root scrollHeight includes the iframe viewport.
     // The fill rules stretch content to the frame; report the natural height instead.
-    const html = document.documentElement;
-    html.classList.add('fit-measuring');
+    const classes = document.documentElement?.classList;
+    classes?.add('fit-measuring');
     const height = Math.ceil(content.getBoundingClientRect().height);
-    html.classList.remove('fit-measuring');
+    classes?.remove('fit-measuring');
     if (height < 1) return; // The authenticated shell is still hidden during loading.
     if (height === previousHeight) return;
     previousHeight = height;
