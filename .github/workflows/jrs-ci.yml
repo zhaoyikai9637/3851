@@ -9,6 +9,9 @@ on:
       - ".github/workflows/jrs-ci.yml"
   workflow_dispatch:
 
+
+# Each test step runs through report.sh, which turns the tail of a failing
+# run into a single annotation so results can be read without the logs UI.
 defaults:
   run:
     working-directory: JRS
@@ -24,7 +27,7 @@ jobs:
           cache: npm
           cache-dependency-path: JRS/package-lock.json
       - run: npm ci
-      - run: npm run build
+      - run: bash -o pipefail -c 'npm run build 2>&1 | tee /tmp/out.txt' || { echo "::error title=Failure details::$(grep -E "not ok|Error|rror:|expected|actual|FAIL|×|✗|AssertionError|at .*test" /tmp/out.txt | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
 
   root-tests:
     runs-on: ubuntu-latest
@@ -36,7 +39,7 @@ jobs:
           cache: npm
           cache-dependency-path: JRS/package-lock.json
       - run: npm ci
-      - run: npm test
+      - run: bash -o pipefail -c 'npm test 2>&1 | tee /tmp/out.txt' || { echo "::error title=Failure details::$(grep -E "not ok|Error|rror:|expected|actual|FAIL|×|✗|AssertionError|at .*test" /tmp/out.txt | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
 
   hr-shell-tests:
     runs-on: ubuntu-latest
@@ -48,7 +51,7 @@ jobs:
           cache: npm
           cache-dependency-path: JRS/package-lock.json
       - run: npm ci
-      - run: npx vitest run --root jrs-hr-module/client
+      - run: bash -o pipefail -c 'npx vitest run --root jrs-hr-module/client 2>&1 | tee /tmp/out.txt' || { echo "::error title=Failure details::$(grep -E "not ok|Error|rror:|expected|actual|FAIL|×|✗|AssertionError|at .*test" /tmp/out.txt | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
 
   hr-legacy-tests:
     runs-on: ubuntu-latest
@@ -61,7 +64,7 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
-      - run: npx jest --testPathIgnorePatterns integration
+      - run: bash -o pipefail -c 'npx jest --testPathIgnorePatterns integration 2>&1 | tee /tmp/out.txt' || { echo "::error title=Failure details::$(grep -E "not ok|Error|rror:|expected|actual|FAIL|×|✗|AssertionError|at .*test" /tmp/out.txt | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
 
   login-tests:
     runs-on: ubuntu-latest
@@ -74,7 +77,7 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
-      - run: npm test
+      - run: bash -o pipefail -c 'npm test 2>&1 | tee /tmp/out.txt' || { echo "::error title=Failure details::$(grep -E "not ok|Error|rror:|expected|actual|FAIL|×|✗|AssertionError|at .*test" /tmp/out.txt | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"; exit 1; }
 
   english-check:
     runs-on: ubuntu-latest

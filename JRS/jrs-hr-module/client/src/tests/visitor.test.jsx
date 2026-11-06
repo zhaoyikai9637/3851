@@ -26,10 +26,10 @@ function mount(overrides={}){
  render(<MemoryRouter initialEntries={['/jobs/role-a']}><Location/><Routes><Route path="/jobs/:jobId" element={<JobDetailsPage/>}/></Routes></MemoryRouter>);
  return userEvent.setup();
 }
-it('the updated apply link uses the shared sign-in handoff and removes the old modal',async()=>{
- const ui=mount();const link=await screen.findByRole('link',{name:'Sign in to apply'});
- expect(link).toHaveAttribute('href','/connect?returnTo=%2Fapplicant%2Fjobs%2Frole-a');
- await ui.click(link);expect(screen.getByLabelText('Current visitor path')).toHaveTextContent('/connect');
+it('the apply link goes straight to sign-in and returns to the application form',async()=>{
+ mount();const link=await screen.findByRole('link',{name:'Sign in to apply'});
+ const target=new URL(link.getAttribute('href'));
+ expect(target.searchParams.get('returnTo')).toBe('/applicant/apply/role-a');
  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 });
 it('closed recruitment disables application entry',async()=>{

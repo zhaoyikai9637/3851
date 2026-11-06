@@ -13,7 +13,8 @@ export default function JobDetailsPage({ authenticated = false }) {
   const { jobId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading: sessionLoading } = useAuth();
+  // The page is also rendered outside the auth provider (HR previews and tests).
+  const { user = null, loading: sessionLoading = false } = useAuth() || {};
   const current = useCurrentApplication(authenticated);
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -16,7 +16,7 @@ const initialFilters = {
 };
 
 export default function JobsPage({ authenticated = false }) {
-  const { user, loading: sessionLoading } = useAuth();
+  const { user = null, loading: sessionLoading = false } = useAuth() || {};
   const current = useCurrentApplication(authenticated);
   const [filters, setFilters] = useState(initialFilters);
   const [jobs, setJobs] = useState([]);
