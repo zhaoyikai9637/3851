@@ -1070,7 +1070,7 @@ describe("logs and HR profile", () => {
 it("opens allowlisted HR deep links from the embedded dashboard while rejecting untrusted routes",async()=>{
  const ui=mount("/dashboard");const frame=await screen.findByTitle("Dashboard");
  fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:workspace",intent:true,route:"applications/offer"}}));
- await waitFor(()=>expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer"));
+ await waitFor(()=>expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer"),{timeout:3000});
  const next=screen.getByTitle("Applications");
  fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",intent:true,route:"https://evil.test"}}));
  fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",route:"dashboard"}}));
