@@ -1,0 +1,184 @@
+/* Reports page: built only from shared tokens (shared/ui/tokens.css). */
+.reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--jrs-space-4);
+}
+.report-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--jrs-space-4);
+  flex-wrap: wrap;
+}
+.report-heading h2 {
+  margin: 0;
+  color: var(--jrs-text);
+  font-size: var(--jrs-text-xl);
+  font-weight: 700;
+}
+.report-heading p {
+  margin: var(--jrs-space-1) 0 0;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-sm);
+}
+.report-heading .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jrs-space-2);
+}
+.report-tabs {
+  display: flex;
+  gap: var(--jrs-space-1);
+  border-bottom: 1px solid var(--jrs-border);
+  overflow-x: auto;
+}
+.report-tabs button {
+  padding: var(--jrs-space-2) var(--jrs-space-4);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.report-tabs button.selected {
+  border-bottom-color: var(--jrs-blue);
+  color: var(--jrs-blue);
+}
+.report-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--jrs-space-4);
+}
+.report-card {
+  padding: var(--jrs-space-5);
+  border: 1px solid var(--jrs-border);
+  border-radius: var(--jrs-radius-md);
+  background: var(--jrs-surface);
+}
+.report-card.flush {
+  padding: 0;
+  overflow: hidden;
+}
+.report-card > p {
+  margin: 0;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-sm);
+}
+.report-card > strong {
+  display: block;
+  margin-top: var(--jrs-space-2);
+  color: var(--jrs-text);
+  font-size: var(--jrs-text-2xl);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.report-card h3 {
+  margin: 0 0 var(--jrs-space-4);
+  color: var(--jrs-text);
+  font-size: var(--jrs-text-md);
+  font-weight: 600;
+}
+.report-stage-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--jrs-space-4) var(--jrs-space-6);
+}
+.report-stage-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--jrs-space-2);
+  color: var(--jrs-text);
+  font-size: var(--jrs-text-sm);
+}
+.report-bar-track {
+  height: 8px;
+  border-radius: var(--jrs-radius-pill);
+  background: var(--jrs-soft);
+  overflow: hidden;
+}
+.report-bar-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--jrs-muted);
+}
+.report-bar-track .tone-amber { background: var(--jrs-amber); }
+.report-bar-track .tone-blue { background: var(--jrs-blue); }
+.report-bar-track .tone-green { background: var(--jrs-green); }
+.report-bar-track .tone-red { background: var(--jrs-danger); }
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--jrs-text-sm);
+}
+.report-table th {
+  padding: var(--jrs-space-3) var(--jrs-space-5);
+  background: var(--jrs-bg);
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.report-table td {
+  padding: var(--jrs-space-3) var(--jrs-space-5);
+  border-top: 1px solid var(--jrs-border);
+  color: var(--jrs-text);
+}
+.report-tasks {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.report-tasks li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--jrs-space-4);
+  padding: var(--jrs-space-3) 0;
+  border-top: 1px solid var(--jrs-border);
+}
+.report-tasks li:first-child {
+  border-top: 0;
+}
+.report-tasks div {
+  display: flex;
+  flex-direction: column;
+}
+.report-tasks small {
+  color: var(--jrs-muted);
+}
+.report-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--jrs-space-3);
+  padding: var(--jrs-space-3) var(--jrs-space-5);
+  border-top: 1px solid var(--jrs-border);
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-sm);
+}
+.report-pager > div {
+  display: flex;
+  align-items: center;
+  gap: var(--jrs-space-3);
+}
+.report-empty {
+  margin: 0;
+  padding: var(--jrs-space-5);
+  color: var(--jrs-muted);
+  text-align: center;
+}
+.report-empty strong {
+  display: block;
+  color: var(--jrs-text);
+}
+.report-loading {
+  color: var(--jrs-muted);
+}

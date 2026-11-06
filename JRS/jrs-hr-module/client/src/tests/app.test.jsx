@@ -51,6 +51,7 @@ beforeEach(() => {
     if (path === "/api/auth/config") return json({loginUrl:null,adapterConfigured:true});
     if (path === '/recruitment/api/auth/me') return json({user:{id:'hr-test'},csrfToken:'shared-token'});
     if (path === '/recruitment/api/hr/job-postings') return json({revision:0,items:[],templates:[]});
+    if (path === '/recruitment/api/hr/workspace') return json({revision:1,jobs:[],applications:[],interviews:[],tasks:[]});
     if (path === "/api/auth/logout") {
       state.signedIn = false;
       return json(null, 204);
@@ -159,7 +160,7 @@ describe("authentication and navigation", () => {
   });
 
   it('hosts trusted embedded sections in the header and sends selection to their source frame',async()=>{
-    const ui=mount('/reports'),frame=await screen.findByTitle('Reports');
+    const ui=mount('/applications'),frame=await screen.findByTitle('Applications');
     const data={type:'jrs:sections',key:'reports-tabs',label:'Report sections',items:[{label:'Overview',selected:true},{label:'Job performance',selected:false}]};
     fireEvent(window,new MessageEvent('message',{origin:'https://untrusted.example',source:frame.contentWindow,data}));
     expect(screen.queryByRole('navigation',{name:'Report sections'})).not.toBeInTheDocument();
@@ -195,8 +196,8 @@ describe("authentication and navigation", () => {
   });
 
   it('lets the browser scroll the full embedded content and rejects untrusted or invalid sizes', async () => {
-    mount('/reports');
-    const frame = await screen.findByTitle('Reports');
+    mount('/interviews');
+    const frame = await screen.findByTitle('Interviews');
     for (const next of [1600, 820, 1600]) {
       fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:frame',height:next}}));
       await waitFor(()=>expect(frame.style.height).toBe(next+'px'));
@@ -1116,7 +1117,7 @@ it("leaves the candidate profile when switching to another HR workspace", async 
   await ui.click(await screen.findByRole("button", {name:"View profile for Casey"}));
   expect(screen.getByTitle("Candidates")).toHaveAttribute("src","/recruitment/#/candidate/person-1");
   await ui.click(screen.getByRole("link", {name:"Reports",exact:true}));
-  expect(await screen.findByTitle("Reports")).toHaveAttribute("src","/recruitment/#/reports");
+  expect(await screen.findByRole("heading",{name:"Reports",level:2})).toBeVisible();
   expect(screen.queryByRole("button",{name:"Back to candidates"})).not.toBeInTheDocument();
   await ui.click(screen.getByRole("link", {name:"Candidates",exact:true}));
   expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
