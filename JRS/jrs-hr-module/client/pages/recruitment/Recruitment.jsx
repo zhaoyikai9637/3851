@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Candidates } from "./Candidates";
+import { CandidateProfile } from "../applications/Profile";
 import { fitsWindow } from "../../src/useViewportRows";
 
 const validRoute = (value) =>
@@ -23,6 +24,8 @@ export function Recruitment({ page, title }) {
     const params = new URLSearchParams(search);
     if (id) params.set("candidate", id);
     else params.delete("candidate");
+    params.delete("application");
+    params.delete("section");
     const query = params.toString();
     navigate(pathname + (query ? "?" + query : ""));
   }
@@ -153,14 +156,11 @@ export function Recruitment({ page, title }) {
     return () => window.removeEventListener("message", receive);
   }, [navigate, pathname, search, locationKey, setTrail, setSections, page, candidate]);
   const requested = new URLSearchParams(search).get("view");
-  const embeddedPage = candidate
-    ? `candidate/${encodeURIComponent(candidate)}`
-    : validRoute(requested)
-      ? requested
-      : page;
+  const embeddedPage = validRoute(requested) ? requested : page;
   const filter = page === "applications" ? new URLSearchParams(search).get("job") : null;
-  const frameVisible = page !== "candidates" || Boolean(candidate);
-  const frameKey = `${filter || ""}|${candidate}`;
+  // Candidates and the candidate profile are native pages; only the other pages embed.
+  const frameVisible = page !== "candidates";
+  const frameKey = filter || "";
   if (!frameVisible) frameSource.current = null;
   else if (!frameSource.current || frameSource.current.key !== frameKey) {
     frameSource.current = { key: frameKey, src: `/recruitment/${filter ? "?job=" + encodeURIComponent(filter) : ""}#/${embeddedPage}` };
@@ -187,7 +187,19 @@ export function Recruitment({ page, title }) {
           Back to candidates
         </button>
       )}
-      {(page!=='candidates'||candidate)&&<iframe
+      {candidate && (
+        <CandidateProfile
+          key={candidate}
+          candidateId={candidate}
+          applicationId={new URLSearchParams(search).get("application") || undefined}
+          applicationLink={(id) => {
+            const params = new URLSearchParams(search);
+            params.set("application", id);
+            return pathname + "?" + params;
+          }}
+        />
+      )}
+      {page!=='candidates'&&<iframe
         ref={frame}
         className="fit-frame"
         title={title}

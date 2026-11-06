@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { CancelForm, DetailsDialog, download, FeedbackForm, interviewCalendar, ScheduleForm } from "../recruitment/dialogs";
 import {
-  AcceptForm, ApplicationDetails, draftFile, MessageForm, MessageView, OfferForm, OfferReview, ReceiveForm,
-  RejectForm, RejectionReview, SendEmail, UploadResume,
+  AcceptForm, ApplicationDetails, CandidateForm, draftFile, MessageForm, MessageView, NoteForm, OfferForm, OfferReview,
+  ReceiveForm, RejectForm, RejectionReview, SendEmail, TaskForm, UploadResume,
 } from "./dialogs";
 
 // Every application dialog in one place, shared by the Applications list and the
@@ -52,6 +52,11 @@ export function useApplicationActions({ workspace, onCreated }) {
         return setDialog({ kind: "resume-upload", candidateId: target });
       case "receive":
         return setDialog({ kind: "receive" });
+      case "candidate-edit":
+        return setDialog({ kind: "candidate-edit", candidate: target });
+      case "task-complete":
+        commit("complete-task", { id: target.id }).then(() => setToast("Task completed.")).catch((commandError) => setToast(commandError.message));
+        return undefined;
       default:
         return setDialog({ kind, id: target.id });
     }
@@ -164,6 +169,15 @@ export function useApplicationActions({ workspace, onCreated }) {
             setToast("Resume uploaded.");
           }}
         />
+      )}
+      {kind === "candidate-edit" && (
+        <CandidateForm candidate={dialog.candidate} onClose={close} onSubmit={(payload) => run("candidate-save", payload, "Changes saved.")} />
+      )}
+      {kind === "candidate-notes" && target && (
+        <NoteForm db={db} application={target} onClose={close} onSubmit={(payload) => run("candidate-notes", payload, "Changes saved.")} />
+      )}
+      {kind === "task" && target && (
+        <TaskForm db={db} application={target} onClose={close} onSubmit={(payload) => run("task", payload, "Changes saved.")} />
       )}
       {kind === "application" && target && (
         <ApplicationDetails db={db} application={target} onClose={close} onInterview={(interview) => setDialog({ kind: "details", interview })} />

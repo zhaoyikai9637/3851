@@ -447,3 +447,70 @@ export function UploadResume({ onSubmit, onClose }) {
     </Modal>
   );
 }
+
+export function CandidateForm({ candidate, onSubmit, onClose }) {
+  const [values, setValues] = useState({
+    name: candidate.name || "",
+    email: candidate.email || "",
+    phone: candidate.phone || "",
+    location: candidate.location || "Singapore",
+    experience: String(candidate.experience ?? 0),
+    skills: (candidate.skills || []).join(", "),
+  });
+  const { error, busy, submit } = useSubmit(onSubmit);
+  const set = (name) => (event) => setValues((current) => ({ ...current, [name]: event.target.value }));
+  return (
+    <Modal title="Edit Contact Details" onClose={onClose} footer={<Footer form="candidate-edit-form" busy={busy} onClose={onClose} label="Save Changes" />}>
+      <form id="candidate-edit-form" className="interview-form" onSubmit={(event) => submit(event, { id: candidate.id, ...values })}>
+        <p className="subtle">Update contact and profile information.</p>
+        <FormError message={error} />
+        <label>Full name<input required maxLength={100} value={values.name} onChange={set("name")} /></label>
+        <label>Email<input type="email" required maxLength={254} value={values.email} onChange={set("email")} /></label>
+        <label>Phone<input required maxLength={40} value={values.phone} onChange={set("phone")} /></label>
+        <label>Location<input required maxLength={100} value={values.location} onChange={set("location")} /></label>
+        <label>Experience (years)<input type="number" required min={0} max={70} step="0.1" value={values.experience} onChange={set("experience")} /></label>
+        <label>Skills (comma separated)<input required maxLength={500} value={values.skills} onChange={set("skills")} /></label>
+      </form>
+    </Modal>
+  );
+}
+
+export function NoteForm({ db, application, onSubmit, onClose }) {
+  const [notes, setNotes] = useState(candidateOf(db, application).notes || "");
+  const { error, busy, submit } = useSubmit(onSubmit);
+  return (
+    <Modal title="Private Candidate Note" onClose={onClose} footer={<Footer form="candidate-note-form" busy={busy} onClose={onClose} label="Save Note" />}>
+      <form id="candidate-note-form" className="interview-form" onSubmit={(event) => submit(event, { applicationId: application.id, notes })}>
+        <p className="subtle">Visible only inside the HR workspace.</p>
+        <FormError message={error} />
+        <label>Note<textarea required maxLength={3000} rows={5} value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
+      </form>
+    </Modal>
+  );
+}
+
+export function TaskForm({ db, application, onSubmit, onClose }) {
+  const [values, setValues] = useState({ title: "", assignee: db.currentUser?.name || "", due: displayDate(businessDay(1)), notes: "" });
+  const { error, busy, submit } = useSubmit(onSubmit);
+  const set = (name) => (event) => setValues((current) => ({ ...current, [name]: event.target.value }));
+  const payload = () => {
+    const due = isoDate(values.due);
+    if (due < singaporeToday()) throw new Error("Due date cannot be in the past.");
+    return { applicationId: application.id, title: values.title, assignee: values.assignee, due, notes: values.notes };
+  };
+  return (
+    <Modal title="Create Follow-up Task" onClose={onClose} footer={<Footer form="candidate-task-form" busy={busy} onClose={onClose} label="Create Task" />}>
+      <form id="candidate-task-form" className="interview-form" onSubmit={(event) => submit(event, payload)}>
+        <p className="subtle">Record preparation work for the hiring team.</p>
+        <ApplicantCard db={db} application={application} />
+        <FormError message={error} />
+        <label>Task title<input required maxLength={150} placeholder="e.g. Prepare technical interview questions" value={values.title} onChange={set("title")} /></label>
+        <div className="interview-form-grid">
+          <label>Assigned to<input required maxLength={100} value={values.assignee} onChange={set("assignee")} /></label>
+          <DateField label="Due date" value={values.due} onChange={(value) => setValues((current) => ({ ...current, due: value }))} min={singaporeToday()} />
+        </div>
+        <label>Task notes<textarea maxLength={1000} rows={3} value={values.notes} onChange={set("notes")} /></label>
+      </form>
+    </Modal>
+  );
+}

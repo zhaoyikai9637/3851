@@ -160,7 +160,7 @@ describe("authentication and navigation", () => {
   });
 
   it('hosts trusted embedded sections in the header and sends selection to their source frame',async()=>{
-    const ui=mount('/applications?view=candidate/candidate-1/app-1'),frame=await screen.findByTitle('Applications');
+    const ui=mount('/dashboard'),frame=await screen.findByTitle('Dashboard');
     const data={type:'jrs:sections',key:'reports-tabs',label:'Report sections',items:[{label:'Overview',selected:true},{label:'Job performance',selected:false}]};
     fireEvent(window,new MessageEvent('message',{origin:'https://untrusted.example',source:frame.contentWindow,data}));
     expect(screen.queryByRole('navigation',{name:'Report sections'})).not.toBeInTheDocument();
@@ -171,7 +171,7 @@ describe("authentication and navigation", () => {
     const post=vi.spyOn(frame.contentWindow,'postMessage');
     await ui.click(within(nav).getByRole('button',{name:'Job performance'}));
     expect(post).toHaveBeenCalledWith({type:'jrs:select-section',key:'reports-tabs',index:1},window.location.origin);
-    await ui.click(screen.getByRole('link',{name:'Dashboard',exact:true}));
+    await ui.click(screen.getByRole('link',{name:'Job Postings',exact:true}));
     expect(screen.queryByRole('navigation',{name:'Report sections'})).not.toBeInTheDocument();
   });
   it('opens Dashboard by default after entering the HR workspace', async () => {
@@ -187,8 +187,6 @@ describe("authentication and navigation", () => {
     overrides['GET /recruitment/api/hr/candidates'] = () => json({items:[{id:'candidate-a',name:'Test Candidate',email:'candidate@example.test',location:'Singapore'}]});
     const ui = mount('/candidates');
     await ui.click(await screen.findByRole('button', {name:'View candidate'}));
-    const frame = screen.getByTitle('Candidates');
-    fireEvent(window, new MessageEvent('message', {origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:location',items:[{label:'Applications',route:'applications'},{label:'Candidate Profile',route:null}]}}));
     await ui.click(screen.getByRole('button',{name:'Back to candidates'}));
     const path = screen.getByRole('navigation',{name:'Current location'});
     expect(within(path).queryByText('Candidate Profile')).not.toBeInTheDocument();
@@ -217,7 +215,7 @@ describe("authentication and navigation", () => {
     expect(await screen.findByTitle('Dashboard')).toBeVisible();
   });
   it('sends a stable list budget after reserving outer header, padding and footer space',async()=>{
-    mount('/applications?view=candidate/candidate-1/app-1');const frame=await screen.findByTitle('Applications');
+    mount('/dashboard');const frame=await screen.findByTitle('Dashboard');
     frame.getBoundingClientRect=()=>({top:120});
     const footer=document.querySelector('.workspace-footer');footer.getBoundingClientRect=()=>({height:55});
     const post=vi.spyOn(frame.contentWindow,'postMessage');
@@ -232,7 +230,7 @@ describe("authentication and navigation", () => {
   });
 
   it('opens embedded dialogs at the browser viewport top so footer actions remain reachable',async()=>{
-    mount('/applications?view=candidate/candidate-1/app-1');const frame=await screen.findByTitle('Applications');
+    mount('/dashboard');const frame=await screen.findByTitle('Dashboard');
     frame.getBoundingClientRect=()=>({top:120});frame.scrollIntoView=vi.fn();
     fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:dialog'}}));
     expect(frame.scrollIntoView).toHaveBeenCalledWith({block:'start'});
@@ -246,11 +244,10 @@ describe("authentication and navigation", () => {
   });
 
   it('keeps embedded stage paths out of the compact navigation header', async () => {
-    const ui = mount('/applications?view=candidate/candidate-1/app-1');
-    const frame = await screen.findByTitle('Applications');
+    const ui = mount('/dashboard');
+    const frame = await screen.findByTitle('Dashboard');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [{label:'Applications',route:'applications'},{label:'Offer',route:null}] } }));
     const header = screen.getByRole('navigation', { name: 'Current location' });
-    expect(within(header).getByRole('heading',{name:'Applications',level:1})).toBeVisible();
     expect(within(header).queryByText('Offer')).not.toBeInTheDocument();
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [] } }));
     expect(screen.queryByRole('button',{name:'Applications',exact:true})).not.toBeInTheDocument();
@@ -266,15 +263,15 @@ describe("authentication and navigation", () => {
   });
 
   it.each([['/templates', 'Email Templates'], ['/logs', 'Logs']])('routes embedded navigation to %s without falling back to Notifications', async (path, title) => {
-    mount('/applications?view=candidate/candidate-1/app-1');
-    const frame = await screen.findByTitle('Applications');
+    mount('/dashboard');
+    const frame = await screen.findByTitle('Dashboard');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:navigate', path } }));
     expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeVisible();
   });
 
   it('ignores frame sizing routes and untrusted navigation messages', async () => {
-    mount('/applications?view=candidate/candidate-1/app-1');
-    const frame = await screen.findByTitle('Applications');
+    mount('/dashboard');
+    const frame = await screen.findByTitle('Dashboard');
     for (const [origin, source, data] of [
       [window.location.origin, frame.contentWindow, { type: 'jrs:frame', height: 850, route: 'notifications' }],
       ['https://untrusted.example', frame.contentWindow, { type: 'jrs:navigate', path: '/templates' }],
@@ -1107,11 +1104,7 @@ it("keeps the Candidates parent path and search context when opening a person",a
  overrides["GET /recruitment/api/hr/candidates"]=()=>json({items:[{id:"person-1",name:"Casey",email:"casey@example.test"}],total:21,page:2,limit:20});
  const ui=mount("/candidates?q=Casey&page=2");
  await ui.click(await screen.findByRole("button",{name:"View profile for Casey"}));
- const frame=screen.getByTitle("Candidates");
- fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:location",items:[{label:"Applications",route:"applications"},{label:"Candidate Profile"}]}}));
- const path=screen.getByRole("navigation",{name:"Current location"});
- expect(within(path).queryByRole("button",{name:"Applications",exact:true})).not.toBeInTheDocument();
- await ui.click(within(path).getByRole("button",{name:"Candidates",exact:true}));
+ await ui.click(screen.getByRole("button",{name:"Back to candidates"}));
  expect(await screen.findByRole("searchbox",{name:"Search candidates"})).toHaveValue("Casey");
  expect(screen.getByText("Page 2 of 2")).toBeVisible();
 });
@@ -1119,7 +1112,7 @@ it("leaves the candidate profile when switching to another HR workspace", async 
   overrides["GET /recruitment/api/hr/candidates"] = () => json({items:[{id:"person-1",name:"Casey"}],total:1,page:1,limit:20});
   const ui = mount("/candidates");
   await ui.click(await screen.findByRole("button", {name:"View profile for Casey"}));
-  expect(screen.getByTitle("Candidates")).toHaveAttribute("src","/recruitment/#/candidate/person-1");
+  expect(screen.getByRole("button",{name:"Back to candidates"})).toBeVisible();
   await ui.click(screen.getByRole("link", {name:"Reports",exact:true}));
   expect(await screen.findByRole("button",{name:"Export Report"})).toBeVisible();
   expect(screen.queryByRole("button",{name:"Back to candidates"})).not.toBeInTheDocument();
@@ -1128,16 +1121,18 @@ it("leaves the candidate profile when switching to another HR workspace", async 
 });
 it("reopens a candidate profile from its address and returns to the list", async () => {
   overrides["GET /recruitment/api/hr/candidates"] = () => json({items:[{id:"person-1",name:"Casey"}],total:1,page:1,limit:20});
+  overrides["GET /recruitment/api/hr/workspace"] = () => json({revision:1,jobs:[{id:"job-a",title:"Analyst",status:"Active"}],candidates:[{id:"person-1",name:"Casey",email:"casey@example.test",skills:[]}],applications:[{id:"app-1",candidateId:"person-1",jobId:"job-a",stage:"Pending Review"}],interviews:[],tasks:[],activity:[],notifications:[]});
   const ui = mount("/candidates?q=Casey&candidate=person-1");
-  expect(await screen.findByTitle("Candidates")).toHaveAttribute("src","/recruitment/#/candidate/person-1");
+  expect(await screen.findByRole("heading",{name:"Casey",level:2})).toBeVisible();
+  expect(screen.getByRole("link",{name:"View Resume"})).toHaveAttribute("href","/applications?view=review/app-1");
   await ui.click(screen.getByRole("button", {name:"Back to candidates"}));
   expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
   expect(screen.getByRole("searchbox",{name:"Search candidates"})).toHaveValue("Casey");
-  expect(screen.queryByTitle("Candidates")).not.toBeInTheDocument();
+  expect(screen.queryByRole("heading",{name:"Casey",level:2})).not.toBeInTheDocument();
 });
 it("ignores a malformed candidate address", async () => {
   overrides["GET /recruitment/api/hr/candidates"] = () => json({items:[{id:"person-1",name:"Casey"}],total:1,page:1,limit:20});
   mount("/candidates?candidate=..%2Fsecret");
   expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
-  expect(screen.queryByTitle("Candidates")).not.toBeInTheDocument();
+  expect(screen.queryByRole("button",{name:"Back to candidates"})).not.toBeInTheDocument();
 });

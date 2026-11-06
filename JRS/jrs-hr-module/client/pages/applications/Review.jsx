@@ -190,7 +190,7 @@ function ResumeViewer({ db, application, onUpload, onError }) {
   );
 }
 
-function CandidateEmails({ db, application, act }) {
+export function CandidateEmails({ db, application, act }) {
   const items = (db.notifications || []).filter((notification) => notification.applicationId === application.id);
   return (
     <section className="panel padded spaced">

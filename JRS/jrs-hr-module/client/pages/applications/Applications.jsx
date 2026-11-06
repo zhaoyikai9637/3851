@@ -1,20 +1,20 @@
 import { useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useViewportRows } from "../../src/useViewportRows";
-import { Recruitment } from "../recruitment/Recruitment";
 import { download, resumePath } from "../recruitment/dialogs";
 import { candidateOf, formatDate, jobOf, useWorkspace } from "../recruitment/workspaceClient";
 import { Toast, useApplicationActions } from "./actions";
 import { businessDay, FiltersDialog } from "./dialogs";
 import { Avatar, Badge, Empty, LegacyIcon, useReturnPath } from "./legacy";
+import { CandidateProfile } from "./Profile";
 import { Review } from "./Review";
 import "./applications.css";
 
 // Native React Applications list. It renders the same markup as the embedded
 // workspace queue inside .hr-legacy (styled by the scoped copy of the legacy
-// stylesheets), so it looks identical. Resume review, interview results and
-// the candidate profile still opens in the embedded workspace through ?view=;
-// resume review and interview results are native (Review.jsx).
+// stylesheets), so it looks identical. Resume review, interview results
+// (Review.jsx) and the candidate profile (Profile.jsx) open through ?view= and
+// are native as well.
 
 export const STAGES = ["Pending Review", "Interview", "Interview Results", "Offer", "Rejected", "Hired"];
 export const stagePath = (stage) => "applications" + (stage ? "/" + (stage === "Pending Review" ? "pending-review" : stage.toLowerCase().replaceAll(" ", "-")) : "");
@@ -60,17 +60,18 @@ export function ApplicationsPage() {
   const stage = stageForView(view);
   const detail = /^(review|results)\/([A-Za-z0-9_-]+)$/.exec(view);
   if (detail) return <Review key={view} id={detail[2]} results={detail[1] === "results"} />;
-  if (stage === undefined) return <CandidateFromApplications />;
+  const profile = /^candidate\/([A-Za-z0-9_-]+)(?:\/([A-Za-z0-9_-]+))?$/.exec(view);
+  if (profile) return <CandidateFromApplications key={profile[1]} candidateId={profile[1]} applicationId={profile[2]} />;
+  if (stage === undefined) return <div className="hr-legacy"><Empty title="Queue not found" detail="Open Applications and choose a status from the filter." /></div>;
   return <Applications stage={stage} />;
 }
 
-// The candidate profile still opens in the embedded workspace, with a way back.
-function CandidateFromApplications() {
+function CandidateFromApplications({ candidateId, applicationId }) {
   const [back, label] = useReturnPath();
   return (
     <>
       <Link className="btn btn-outline-secondary mb-3" to={back}>{label}</Link>
-      <Recruitment key="/applications" page="applications" title="Applications" />
+      <CandidateProfile candidateId={candidateId} applicationId={applicationId} applicationLink={(id) => "/applications?view=candidate/" + candidateId + "/" + id} />
     </>
   );
 }
