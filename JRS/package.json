@@ -25,7 +25,6 @@
     "ajv-formats": "3.0.1",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.2",
     "bootstrap": "^5.3.8",
     "cors": "^2.8.6",
     "country-state-city": "3.2.1",
