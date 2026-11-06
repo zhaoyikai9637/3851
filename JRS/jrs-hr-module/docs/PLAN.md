@@ -2,10 +2,10 @@
 
 ## Native React Applications flow - 2026-11-06
 
-Done: Applications list, resume review and interview results in React with the
-original look; shared application dialogs; Back buttons that keep list context;
-desktop-only window fitting. Next: move the candidate profile out of the
-embedded workspace, then retire the iframe bridge for Applications.
+Done: Applications list, resume review, interview results and the candidate
+profile in React with the original look; shared application dialogs; Back
+buttons that keep list context; desktop-only window fitting. Next: move the
+Dashboard out of the embedded workspace, then retire the iframe bridge.
 
 ## Team applicant update - 2026-10-28
 

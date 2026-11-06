@@ -11,8 +11,11 @@ again after changing those stylesheets). A live comparison of the list against
 the iframe matched every element. All application dialogs are in
 `client/pages/applications/actions.jsx` and send the same workspace commands as
 before. Detail pages keep the list they were opened from (filters and page) for
-their Back button; disabled actions explain why. Only the candidate profile
-(`?view=candidate/...`) still uses the embedded workspace.
+their Back button; disabled actions explain why. The candidate profile
+(`client/pages/applications/Profile.jsx`) is native too and opens from
+Applications (`?view=candidate/<id>/<application>`) and Candidates
+(`?candidate=<id>&application=<id>`). Applications no longer embeds the legacy
+workspace; the iframe now only hosts the Dashboard.
 
 Paged lists fit the window only in the desktop layout (at least 1001 x 620);
 narrower windows show a full page and scroll. The main card stretches to the
