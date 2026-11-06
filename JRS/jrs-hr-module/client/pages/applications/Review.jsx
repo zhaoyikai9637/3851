@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import "../../../JRS HR/dist/resume.js";
+import "../../../../JRS HR/dist/resume.js";
 import { download } from "../recruitment/dialogs";
 import { candidateOf, formatDate, jobOf, useWorkspace } from "../recruitment/workspaceClient";
 import { Toast, useApplicationActions } from "./actions";
