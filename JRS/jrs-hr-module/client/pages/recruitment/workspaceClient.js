@@ -86,7 +86,19 @@ export function useWorkspace(fetcher = (...args) => fetch(...args), returnTo = "
     [fetcher, load],
   );
 
-  return { db, error, load, commit };
+  // Other workspace API calls (for example template previews) with the same session.
+  const request = useCallback(
+    (path, body) =>
+      fetcher("/recruitment/api/" + path, {
+        method: body === undefined ? "GET" : "POST",
+        credentials: "same-origin",
+        headers: body === undefined ? {} : { "Content-Type": "application/json", "X-CSRF-Token": csrf.current },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      }).then(readJson),
+    [fetcher],
+  );
+
+  return { db, error, load, commit, request };
 }
 
 export const candidateOf = (db, application) => db.candidates.find((item) => item.id === application?.candidateId) || { name: "Unknown candidate", email: "" };

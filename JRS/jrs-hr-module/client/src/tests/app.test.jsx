@@ -160,7 +160,7 @@ describe("authentication and navigation", () => {
   });
 
   it('hosts trusted embedded sections in the header and sends selection to their source frame',async()=>{
-    const ui=mount('/applications'),frame=await screen.findByTitle('Applications');
+    const ui=mount('/applications?view=review/app-1'),frame=await screen.findByTitle('Applications');
     const data={type:'jrs:sections',key:'reports-tabs',label:'Report sections',items:[{label:'Overview',selected:true},{label:'Job performance',selected:false}]};
     fireEvent(window,new MessageEvent('message',{origin:'https://untrusted.example',source:frame.contentWindow,data}));
     expect(screen.queryByRole('navigation',{name:'Report sections'})).not.toBeInTheDocument();
@@ -217,7 +217,7 @@ describe("authentication and navigation", () => {
     expect(await screen.findByTitle('Dashboard')).toBeVisible();
   });
   it('sends a stable list budget after reserving outer header, padding and footer space',async()=>{
-    mount('/applications');const frame=await screen.findByTitle('Applications');
+    mount('/applications?view=review/app-1');const frame=await screen.findByTitle('Applications');
     frame.getBoundingClientRect=()=>({top:120});
     const footer=document.querySelector('.workspace-footer');footer.getBoundingClientRect=()=>({height:55});
     const post=vi.spyOn(frame.contentWindow,'postMessage');
@@ -232,7 +232,7 @@ describe("authentication and navigation", () => {
   });
 
   it('opens embedded dialogs at the browser viewport top so footer actions remain reachable',async()=>{
-    mount('/applications');const frame=await screen.findByTitle('Applications');
+    mount('/applications?view=review/app-1');const frame=await screen.findByTitle('Applications');
     frame.getBoundingClientRect=()=>({top:120});frame.scrollIntoView=vi.fn();
     fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:dialog'}}));
     expect(frame.scrollIntoView).toHaveBeenCalledWith({block:'start'});
@@ -246,7 +246,7 @@ describe("authentication and navigation", () => {
   });
 
   it('keeps embedded stage paths out of the compact navigation header', async () => {
-    const ui = mount('/applications');
+    const ui = mount('/applications?view=review/app-1');
     const frame = await screen.findByTitle('Applications');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [{label:'Applications',route:'applications'},{label:'Offer',route:null}] } }));
     const header = screen.getByRole('navigation', { name: 'Current location' });
@@ -262,18 +262,18 @@ describe("authentication and navigation", () => {
     mount('/outbox');
     const navigation = await screen.findByRole('navigation', { name: 'Main navigation' });
     expect(within(navigation).queryByRole('link', { name: 'Email Outbox' })).not.toBeInTheDocument();
-    expect(await screen.findByTitle('Applications')).toHaveAttribute('src', '/recruitment/#/applications');
+    expect(await screen.findByRole('searchbox', { name: 'Search applications' })).toBeVisible();
   });
 
   it.each([['/templates', 'Email Templates'], ['/logs', 'Logs']])('routes embedded navigation to %s without falling back to Notifications', async (path, title) => {
-    mount('/applications');
+    mount('/applications?view=review/app-1');
     const frame = await screen.findByTitle('Applications');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:navigate', path } }));
     expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeVisible();
   });
 
   it('ignores frame sizing routes and untrusted navigation messages', async () => {
-    mount('/applications');
+    mount('/applications?view=review/app-1');
     const frame = await screen.findByTitle('Applications');
     for (const [origin, source, data] of [
       [window.location.origin, frame.contentWindow, { type: 'jrs:frame', height: 850, route: 'notifications' }],
@@ -289,7 +289,7 @@ describe("authentication and navigation", () => {
     overrides["GET /recruitment/api/hr/candidates"] = () => json({ items: [] });
     overrides["GET /api/hr/job-publications"] = () => json({ items: [] });
     mount(route);
-    if(route==="/outbox")await screen.findByTitle("Applications");
+    if(route==="/outbox")await screen.findByRole("searchbox",{name:"Search applications"});
     expect(await screen.findByRole("navigation", { name: "Main navigation" })).toBeVisible();
     expect(screen.queryByRole("navigation", { name: "Communication pages" })).not.toBeInTheDocument();
     const location = screen.queryByRole("navigation", { name: "Current location" });
@@ -1070,11 +1070,12 @@ describe("logs and HR profile", () => {
 it("opens allowlisted HR deep links from the embedded dashboard while rejecting untrusted routes",async()=>{
  const ui=mount("/dashboard");const frame=await screen.findByTitle("Dashboard");
  fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:workspace",intent:true,route:"applications/offer"}}));
- await waitFor(()=>expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer"),{timeout:3000});
- const next=screen.getByTitle("Applications");
- fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",intent:true,route:"https://evil.test"}}));
- fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",route:"dashboard"}}));
- expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer");
+ expect(await screen.findByRole("combobox",{name:"Filter application status"},{timeout:3000})).toHaveValue("Offer");
+ await ui.click(within(screen.getByRole("navigation",{name:"Main navigation"})).getByRole("link",{name:"Dashboard"}));
+ const back=await screen.findByTitle("Dashboard");
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:back.contentWindow,data:{type:"jrs:workspace",intent:true,route:"https://evil.test"}}));
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:back.contentWindow,data:{type:"jrs:workspace",route:"applications"}}));
+ expect(screen.getByTitle("Dashboard")).toBeInTheDocument();
 });
 it('fits Candidates to the viewport and requests the remaining records on the next page',async()=>{
  const rows=Array.from({length:18},(_,i)=>({id:'fit-'+i,name:'Person '+(i+1),email:'person-'+i+'@example.test'}));

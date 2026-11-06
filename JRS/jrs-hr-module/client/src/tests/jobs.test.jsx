@@ -40,6 +40,8 @@ beforeEach(() => {
     if (url === "/api/auth/me") return json({ user, csrfToken: "hr-token", mode: "team" });
     if (url === "/recruitment/api/auth/me")
       return json({ user: { id: "hr-a", role: "HR_MANAGER" }, csrfToken: "shared-token" });
+    if (url === "/recruitment/api/hr/workspace")
+      return json({ revision: 1, jobs: [{ id: "job-a", title: "Software Developer", status: "Active" }], candidates: [], applications: [], interviews: [], tasks: [] });
     if (url === endpoint && (!options.method || options.method === "GET"))
       return json(structuredClone(data));
     if (url === endpoint && options.method === "POST") {
@@ -291,10 +293,7 @@ it("opens applications filtered to the selected job", async () => {
   await ui.click(
     await screen.findByRole("button", { name: "View 12 applications for Software Developer" }),
   );
-  expect(await screen.findByTitle("Applications")).toHaveAttribute(
-    "src",
-    "/recruitment/?job=job-a#/applications",
-  );
+  expect(await screen.findByRole("combobox", { name: "Filter by position" })).toHaveValue("job-a");
 });
 
 it("blocks an unpublish date that ends before the deadline day has finished", async () => {

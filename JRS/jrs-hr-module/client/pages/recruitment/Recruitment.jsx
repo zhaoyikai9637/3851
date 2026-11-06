@@ -127,8 +127,9 @@ export function Recruitment({ page, title }) {
                 )
               )
                 return;
-              if (route === "applications" && pathname !== "/applications")
-                navigate("/applications");
+              // Queues are native React pages; open them directly.
+              if (route === "applications" || page === "applications")
+                navigate("/applications" + (route === "applications" ? "" : "?view=" + route));
               else
                 frame.current?.contentWindow.postMessage(
                   { type: "jrs:open", route },
