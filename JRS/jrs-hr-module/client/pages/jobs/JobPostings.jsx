@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ErrorBox, Loading } from "../../src/shared";
 import { Icon } from "../../src/icons";
 import { createJobsClient } from "./api";
@@ -63,6 +63,15 @@ export function JobPostings() {
     trigger.current=document.activeElement;
     setDetails({ id });
   }
+  // "Create Job Posting" on the Dashboard links here with ?create=1.
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    if (!data || params.get("create") !== "1") return;
+    const next = new URLSearchParams(params);
+    next.delete("create");
+    setParams(next, { replace: true });
+    open(null);
+  }, [data, params]);
   return (
     <>
     <div className="jobs-workspace" ref={list} hidden={!!details}>

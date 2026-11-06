@@ -176,7 +176,7 @@ describe("authentication and navigation", () => {
   });
   it('opens Dashboard by default after entering the HR workspace', async () => {
     mount('/');
-    expect(await screen.findByTitle('Dashboard')).toHaveAttribute('src','/recruitment/#/dashboard');
+    expect(await screen.findByRole('button',{name:'Create Job Posting'})).toBeVisible();
   });
   it('shows template names once without duplicate usage subtitles', async () => {
     mount('/templates');
@@ -196,8 +196,8 @@ describe("authentication and navigation", () => {
   });
 
   it('lets the browser scroll the full embedded content and rejects untrusted or invalid sizes', async () => {
-    mount('/dashboard');
-    const frame = await screen.findByTitle('Dashboard');
+    mount('/applications');
+    const frame = await screen.findByTitle('Applications');
     for (const next of [1600, 820, 1600]) {
       fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:frame',height:next}}));
       await waitFor(()=>expect(frame.style.height).toBe(next+'px'));
@@ -214,7 +214,7 @@ describe("authentication and navigation", () => {
     expect(await screen.findByRole('heading',{name:'Reports',level:1})).toHaveClass('visually-hidden');
     expect(screen.queryByRole('navigation', { name: 'Current location' })).not.toBeInTheDocument();
     await ui.click(within(screen.getByRole('navigation',{name:'Main navigation'})).getByRole('link',{name:'Dashboard'}));
-    expect(await screen.findByTitle('Dashboard')).toBeVisible();
+    expect(await screen.findByRole('button',{name:'Create Job Posting'})).toBeVisible();
   });
   it('sends a stable list budget after reserving outer header, padding and footer space',async()=>{
     mount('/applications');const frame=await screen.findByTitle('Applications');
@@ -439,7 +439,7 @@ describe("authentication and navigation", () => {
       name: "Dashboard",
     });
     await ui.click(dashboard);
-    expect(await screen.findByTitle('Dashboard')).toHaveAttribute('src', '/recruitment/#/dashboard');
+    expect(await screen.findByRole('button',{name:'Create Job Posting'})).toBeVisible();
     expect(dashboard).toHaveClass("active");
     expect(notifications).not.toHaveClass("active");
     expect(screen.queryByText('This area is ready for the recruitment team module.')).not.toBeInTheDocument();
@@ -1067,14 +1067,13 @@ describe("logs and HR profile", () => {
     expect(name).toHaveValue("Unsaved Riley");
   });
 });
-it("opens allowlisted HR deep links from the embedded dashboard while rejecting untrusted routes",async()=>{
- const ui=mount("/dashboard");const frame=await screen.findByTitle("Dashboard");
- fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:workspace",intent:true,route:"applications/offer"}}));
- await waitFor(()=>expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer"));
- const next=screen.getByTitle("Applications");
- fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",intent:true,route:"https://evil.test"}}));
- fireEvent(window,new MessageEvent("message",{origin:location.origin,source:next.contentWindow,data:{type:"jrs:workspace",route:"dashboard"}}));
- expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications/offer");
+it("opens allowlisted HR deep links from the embedded workspace while rejecting untrusted routes",async()=>{
+ mount("/applications");const frame=await screen.findByTitle("Applications");
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:workspace",intent:true,route:"https://evil.test"}}));
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:workspace",route:"reports"}}));
+ expect(screen.getByTitle("Applications")).toHaveAttribute("src","/recruitment/#/applications");
+ fireEvent(window,new MessageEvent("message",{origin:location.origin,source:frame.contentWindow,data:{type:"jrs:workspace",intent:true,route:"reports"}}));
+ expect(await screen.findByRole("button",{name:"Export Report"})).toBeVisible();
 });
 it('fits Candidates to the viewport and requests the remaining records on the next page',async()=>{
  const rows=Array.from({length:18},(_,i)=>({id:'fit-'+i,name:'Person '+(i+1),email:'person-'+i+'@example.test'}));

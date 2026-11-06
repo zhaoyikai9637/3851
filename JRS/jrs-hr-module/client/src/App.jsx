@@ -9,6 +9,7 @@ import { EditProfile, Profile } from "../pages/profile/Profile";
 import { Templates } from "../pages/templates/Templates";
 import { Reports } from "../pages/reports/Reports";
 import { Interviews } from "../pages/interviews/Interviews";
+import { Dashboard } from "../pages/dashboard/Dashboard";
 import { Recruitment } from '../pages/recruitment/Recruitment';
 import { JobPostings } from '../pages/jobs/JobPostings';
 
@@ -25,7 +26,7 @@ const page = (content) => <PageBoundary>{content}</PageBoundary>;
 export function App() {
   return <AuthProvider><Routes><Route element={<WorkspaceLayout />}>
     <Route index element={<Navigate to="/dashboard" replace />} />
-    {workspaceLinks.map(([path, name]) => <Route key={path} path={path.slice(1)} element={page(path === '/job-postings' ? <JobPostings/> : path === '/reports' ? <Reports/> : path === '/interviews' ? <Interviews/> : <Recruitment key={path} page={path.slice(1)} title={name} />)} />)}
+    {workspaceLinks.map(([path, name]) => <Route key={path} path={path.slice(1)} element={page(path === '/job-postings' ? <JobPostings/> : path === '/reports' ? <Reports/> : path === '/interviews' ? <Interviews/> : path === '/dashboard' ? <Dashboard/> : <Recruitment key={path} page={path.slice(1)} title={name} />)} />)}
     <Route path="outbox" element={<Navigate to="/applications" replace />} />
     <Route path="notifications" element={page(<Notifications />)} />
     <Route path="templates" element={page(<Templates />)} />
