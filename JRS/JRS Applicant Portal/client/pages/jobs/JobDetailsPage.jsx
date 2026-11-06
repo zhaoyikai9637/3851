@@ -1,13 +1,20 @@
 import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
 import { ArrowLeft, BriefcaseBusiness, CalendarDays, CheckCircle2, CircleDollarSign, LogIn, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
+import ActiveApplicationNotice from "../../components/ActiveApplicationNotice";
+import { useAuth } from "../../context/AuthContext";
+import useCurrentApplication from "../../hooks/useCurrentApplication";
 import { jobLabel } from "../../utils/jobLabels";
+import { loginUrl, workspacePathFor } from "../../utils/navigation";
 
 export default function JobDetailsPage({ authenticated = false }) {
   const { jobId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, loading: sessionLoading } = useAuth();
+  const current = useCurrentApplication(authenticated);
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,7 +27,8 @@ export default function JobDetailsPage({ authenticated = false }) {
       .finally(() => setLoading(false));
   }, [jobId]);
 
-
+  // A signed-in applicant on the public page is moved to the workspace version of the same role.
+  if (!authenticated && !sessionLoading && user) return <Navigate to={workspacePathFor(location.pathname)} replace />;
   if (loading) return <div className="full-page-message inline"><div className="spinner-border text-primary" /><p>Loading role details...</p></div>;
   if (error || !job) return <div className="alert alert-danger" role="alert">{error || "Role not found."}</div>;
 
@@ -40,16 +48,18 @@ export default function JobDetailsPage({ authenticated = false }) {
           </div>
         </div>
         {authenticated ? (
-          <button className="btn btn-primary btn-lg" type="button" disabled={!job.isOpen} onClick={() => navigate("/applicant/apply/" + job.id)}>
-            {job.isOpen ? "Apply for this role" : "Applications closed"}
+          <button className="btn btn-primary btn-lg" type="button" disabled={!job.isOpen || current.loading || current.active} onClick={() => navigate("/applicant/apply/" + job.id)}>
+            {!job.isOpen ? "Applications closed" : current.active ? "Application in progress" : "Apply for this role"}
           </button>
         ) : job.isOpen ? (
-          <Link className="btn btn-primary btn-lg" to={"/connect?returnTo=" + encodeURIComponent("/applicant/jobs/" + job.id)}>
+          <a className="btn btn-primary btn-lg" href={loginUrl("/applicant/apply/" + job.id)}>
             <LogIn size={20} />
-            {job.isOpen ? "Sign in to apply" : "Applications closed"}
-          </Link>
+            Sign in to apply
+          </a>
         ) : <button className="btn btn-primary btn-lg" type="button" disabled>Applications closed</button>}
       </section>
+
+      {authenticated && job.isOpen && current.active && <ActiveApplicationNotice application={current.application} />}
 
       <div>
         <div className="role-information surface">

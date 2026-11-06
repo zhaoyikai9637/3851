@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.drawer-close, .drawer [id^="cancel"]').forEach(button => button.addEventListener('click', close));
     document.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
     $('logoutBtn').addEventListener('click', () => action($('logoutBtn'), async () => {
-        await JRS.request('/logout', { method: 'POST' }); window.location.href = '../login/login.html';
+        await JRS.request('/logout', { method: 'POST' }); window.location.href = '/';
     }));
     $('editMaterialsBtn').addEventListener('click', () => {
         const [first, last] = names(); set('editFirstName', first); set('editLastName', last);

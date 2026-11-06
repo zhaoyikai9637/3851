@@ -6,6 +6,8 @@ import { jobLabel } from "../../utils/jobLabels";
 import MonthSelect from "../../components/MonthSelect";
 import { PhoneField, LocationField } from "../../components/ContactFields";
 import SkillSelector from "../../components/SkillSelector";
+import ActiveApplicationNotice from "../../components/ActiveApplicationNotice";
+import useCurrentApplication from "../../hooks/useCurrentApplication";
 import { canonicalPhone, locationParts, locationLabel } from "../../../shared/contactFields";
 import { experienceError, experienceMonths } from "../../../shared/applicantFields";
 
@@ -31,6 +33,7 @@ function CharacterCount({ value, limit }) {
 export default function ApplicationPage() {
   const { jobId } = useParams();
   const navigate = useNavigate();
+  const current = useCurrentApplication();
   const [job, setJob] = useState(null);
   const [resumes, setResumes] = useState([]);
   const [step, setStep] = useState(0);
@@ -182,8 +185,17 @@ export default function ApplicationPage() {
     }
   }
 
-  if (loading) return <div className="full-page-message inline"><div className="spinner-border text-primary" /><p>Preparing your application...</p></div>;
+  if (loading || current.loading) return <div className="full-page-message inline"><div className="spinner-border text-primary" /><p>Preparing your application...</p></div>;
   if (!job) return <div className="alert alert-danger" role="alert">{error || "Role not found."}</div>;
+  // Explain the one-active-application rule before the applicant fills in four steps.
+  if (current.active) {
+    return (
+      <div className="page-stack application-page">
+        <Link className="back-link" to={"/applicant/jobs/" + job.id}><ArrowLeft size={20} />Back to role details</Link>
+        <ActiveApplicationNotice application={current.application} />
+      </div>
+    );
+  }
 
   return (
     <div className="page-stack application-page">

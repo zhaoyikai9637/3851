@@ -71,6 +71,30 @@ document.addEventListener('DOMContentLoaded', () => {
     setPasswordVisible(false);
     syncMode();
     window.addEventListener('pageshow', () => setPasswordVisible(false));
+    const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+    const forgotLink = $('forgotPasswordLink');
+    if (forgotLink && returnTo) forgotLink.addEventListener('click', () => sessionStorage.setItem('reset_return_to', returnTo));
+    const hrRoutes = /^\/hr\/(?:dashboard|job-postings|applications|candidates|interviews|reports|notifications|outbox|templates|logs|profile(?:\/edit)?)\/?(?:[?#].*)?$/;
+    async function portalEnabled() {
+        try { return Boolean((await JRS.request('/integration-config')).experimentalApplicantPortal); }
+        catch { return false; }
+    }
+    // Candidates land in the applicant workspace (new accounts start at their resume);
+    // HR users land in the HR workspace. A safe returnTo always wins.
+    async function signInAndContinue(newAccount) {
+        const result = await JRS.request('/login', { method: 'POST', body: { email: email.value.trim(), password: password.value } });
+        const safe = returnTo && !/[\\\r\n]/.test(returnTo);
+        if (result.user.role === 'hr') {
+            window.location.href = safe && hrRoutes.test(returnTo) ? returnTo : '/hr/';
+            return;
+        }
+        let target = '../profile/profile.html';
+        if (await portalEnabled()) {
+            target = newAccount ? '/applicant/resume' : '/applicant/jobs';
+            if (safe && returnTo.startsWith('/applicant/')) target = returnTo;
+        }
+        window.location.href = target;
+    }
     form.addEventListener('submit', async event => {
         event.preventDefault();
         if (button.disabled) return;
@@ -83,18 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (registering) {
                 await JRS.request('/register', { method: 'POST', body: { email: email.value.trim(), password: password.value,
                     first_name: $('registerFirstName').value, last_name: $('registerLastName').value } });
-                registering = false; submitted = false; clearErrors(); setPasswordVisible(false); syncMode();
-                feedback('Account created. You can now log in.', true);
-            } else {
-                const result = await JRS.request('/login', { method: 'POST', body: { email: email.value.trim(), password: password.value } });
-                const requested = new URLSearchParams(window.location.search).get('returnTo');
-                let safeTarget = '../profile/profile.html';
-                if (requested && requested.startsWith('/applicant/') && !requested.includes('\\') && !/[\r\n]/.test(requested)) {
-                    const features = await JRS.request('/integration-config');
-                    if (features.experimentalApplicantPortal) safeTarget = requested;
+                // Sign the new account in straight away instead of asking for the password again.
+                try { await signInAndContinue(true); }
+                catch {
+                    registering = false; submitted = false; clearErrors(); setPasswordVisible(false); syncMode();
+                    feedback('Account created. You can now log in.', true);
                 }
-                const hrTarget = requested && !/[\\\r\n]/.test(requested) && /^\/hr\/(?:dashboard|job-postings|applications|candidates|interviews|reports|tasks|notifications|templates|logs|profile(?:\/edit)?)\/?(?:[?#].*)?$/.test(requested) ? requested : '/hr/';
-                window.location.href = result.user.role === 'hr' ? hrTarget : safeTarget;
+            } else {
+                await signInAndContinue(false);
             }
         } catch (err) {
             if (!registering && err.status === 401) {

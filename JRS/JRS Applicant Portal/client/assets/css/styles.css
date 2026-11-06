@@ -2156,3 +2156,25 @@ textarea.form-control {
     width: 100%;
   }
 }
+
+/* Active application notice: explains the one-active-application rule up front. */
+.active-application-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.active-application-notice > div {
+  flex: 1;
+}
+
+.active-application-notice .btn {
+  align-self: center;
+  white-space: nowrap;
+}
+
+.public-auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

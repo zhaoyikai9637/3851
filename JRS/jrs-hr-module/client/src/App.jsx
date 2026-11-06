@@ -30,6 +30,6 @@ export function App() {
     <Route path="logs" element={page(<Logs />)} />
     <Route path="profile" element={page(<Profile />)} />
     <Route path="profile/edit" element={page(<EditProfile />)} />
-    <Route path="*" element={<div className="empty-state"><h1>Page not found</h1><Link to="/notifications">Return to Notifications</Link></div>} />
+    <Route path="*" element={<div className="empty-state"><h1>Page not found</h1><Link to="/dashboard">Return to Dashboard</Link></div>} />
   </Route></Routes></AuthProvider>;
 }

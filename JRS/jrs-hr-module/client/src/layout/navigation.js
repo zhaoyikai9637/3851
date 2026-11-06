@@ -19,6 +19,6 @@ export function pageName(pathname) {
   return (
     communicationLinks.find(([path]) => path === pathname)?.[1] ||
     workspaceLinks.find(([path]) => path === pathname)?.[1] ||
-    "My Profile"
+    (pathname.startsWith("/profile") ? "My Profile" : "HR Workspace")
   );
 }

@@ -1,8 +1,11 @@
 import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
 import { BriefcaseBusiness, Clock3, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
+import ActiveApplicationNotice from "../../components/ActiveApplicationNotice";
+import { useAuth } from "../../context/AuthContext";
+import useCurrentApplication from "../../hooks/useCurrentApplication";
 import { jobLabel } from "../../utils/jobLabels";
 
 const initialFilters = {
@@ -13,6 +16,8 @@ const initialFilters = {
 };
 
 export default function JobsPage({ authenticated = false }) {
+  const { user, loading: sessionLoading } = useAuth();
+  const current = useCurrentApplication(authenticated);
   const [filters, setFilters] = useState(initialFilters);
   const [jobs, setJobs] = useState([]);
   const [options, setOptions] = useState({ departments: [], locations: [], workModes: [], experienceLevels: [] });
@@ -42,6 +47,13 @@ export default function JobsPage({ authenticated = false }) {
     setFilters((current) => ({ ...current, [event.target.name]: event.target.value }));
   }
 
+  // Filters apply as soon as a value is chosen, so there is a single way to search.
+  function updateSelectFilter(event) {
+    const next = { ...filters, [event.target.name]: event.target.value };
+    setFilters(next);
+    loadJobs(next);
+  }
+
   function handleSearch(event) {
     event.preventDefault();
     loadJobs(filters);
@@ -52,8 +64,11 @@ export default function JobsPage({ authenticated = false }) {
     loadJobs(initialFilters);
   }
 
+  if (!authenticated && !sessionLoading && user) return <Navigate to="/applicant/jobs" replace />;
+
   return (
     <div className="page-stack">
+      {authenticated && current.active && <ActiveApplicationNotice application={current.application} />}
       <section className="search-surface surface">
         <form className="job-search-form" onSubmit={handleSearch}>
           <label className="visually-hidden" htmlFor="job-search">Search roles</label>
@@ -75,7 +90,7 @@ export default function JobsPage({ authenticated = false }) {
           <div className="filter-fields">
             <label className="form-label-group">
               <span>Employment type</span>
-              <select className="form-select form-select-lg" name="employmentType" value={filters.employmentType} onChange={updateFilter}>
+              <select className="form-select form-select-lg" name="employmentType" value={filters.employmentType} onChange={updateSelectFilter}>
                 <option value="">All employment types</option>
                 <option value="FULL_TIME">Full-time</option>
                 <option value="PART_TIME">Part-time</option>
@@ -83,14 +98,14 @@ export default function JobsPage({ authenticated = false }) {
             </label>
             <label className="form-label-group">
               <span>Location</span>
-              <select className="form-select form-select-lg" name="location" value={filters.location} onChange={updateFilter}>
+              <select className="form-select form-select-lg" name="location" value={filters.location} onChange={updateSelectFilter}>
                 <option value="">All locations</option>
                 {options.locations.map((value) => <option key={value} value={value}>{value}</option>)}
               </select>
             </label>
             <label className="form-label-group">
               <span>Experience required</span>
-              <select className="form-select form-select-lg" name="experienceLevel" value={filters.experienceLevel} onChange={updateFilter}>
+              <select className="form-select form-select-lg" name="experienceLevel" value={filters.experienceLevel} onChange={updateSelectFilter}>
                 <option value="">All experience levels</option>
                 <option value="YEARS_1_3">1-3 years</option>
                 <option value="YEARS_3_5">3-5 years</option>
@@ -100,8 +115,7 @@ export default function JobsPage({ authenticated = false }) {
           </div>
 
           <div className="filter-buttons">
-            <button className="btn btn-primary" type="button" onClick={() => loadJobs(filters)}>Apply filters</button>
-            <button className="btn btn-outline-secondary" type="button" onClick={handleReset}>Reset</button>
+            <button className="btn btn-outline-secondary" type="button" onClick={handleReset}>Reset filters</button>
           </div>
         </aside>
 

@@ -1,21 +1,11 @@
-import { ArrowLeft, ExternalLink, LogIn, MonitorPlay } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, LogIn, MonitorPlay } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { getApiError } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
+import { loginUrl, safeReturnTo } from "../../utils/navigation";
 
-function safeReturnTo(value) {
-  return value?.startsWith("/applicant/") ? value : "/applicant/jobs";
-}
-
-function teamLoginUrl(returnTo) {
-  const loginUrl = new URL(
-    import.meta.env.VITE_AUTH_LOGIN_URL || "http://127.0.0.1:3002/login",
-    window.location.origin,
-  );
-  loginUrl.searchParams.set("returnTo", returnTo);
-  return loginUrl.toString();
-}
+const demoEnabled = import.meta.env.VITE_ENABLE_DEMO_AUTH !== "false";
 
 export default function AuthConnectPage() {
   const { user, loading, startDemoSession } = useAuth();
@@ -24,7 +14,14 @@ export default function AuthConnectPage() {
   const [startingPreview, setStartingPreview] = useState(false);
   const [error, setError] = useState("");
   const returnTo = safeReturnTo(searchParams.get("returnTo"));
+  // Without the local demo option this page has nothing to offer, so go straight to sign-in.
+  const goStraightToLogin = !demoEnabled && !loading && !user;
 
+  useEffect(() => {
+    if (goStraightToLogin) window.location.replace(loginUrl(returnTo));
+  }, [goStraightToLogin, returnTo]);
+
+  if (goStraightToLogin) return null;
   if (!loading && user) return <Navigate to={returnTo} replace />;
 
   async function previewAuthenticatedPages() {
@@ -43,22 +40,19 @@ export default function AuthConnectPage() {
   return (
     <div className="auth-connect-page">
       <section className="auth-connect-panel surface">
-        <p className="eyebrow text-primary">AUTHENTICATION HANDOFF</p>
-        <h1>Sign in to continue your application</h1>
+        <h1>Log in to continue</h1>
         <p className="auth-connect-intro">
-          Account registration and password verification are provided by the team's shared login module.
-          After authentication, the applicant returns here and enters the detailed workspace.
+          Log in or create an account to apply for jobs and track your applications.
         </p>
 
         {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
         <div className="auth-connect-actions">
-          <a className="btn btn-primary btn-lg" href={teamLoginUrl(returnTo)}>
+          <a className="btn btn-primary btn-lg" href={loginUrl(returnTo)}>
             <LogIn size={20} />
-            Continue to team sign-in
-            <ExternalLink size={17} />
+            Log in / Register
           </a>
-          {import.meta.env.VITE_ENABLE_DEMO_AUTH !== "false" && (
+          {demoEnabled && (
             <button className="btn btn-outline-secondary btn-lg" type="button" onClick={previewAuthenticatedPages} disabled={startingPreview}>
               <MonitorPlay size={20} />
               {startingPreview ? "Opening preview..." : "Preview signed-in pages"}
@@ -68,7 +62,7 @@ export default function AuthConnectPage() {
 
         <Link className="back-link" to="/jobs">
           <ArrowLeft size={19} />
-          Return to public jobs
+          Back to jobs
         </Link>
       </section>
     </div>

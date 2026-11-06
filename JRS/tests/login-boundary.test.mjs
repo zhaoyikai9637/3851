@@ -8,15 +8,18 @@ const source = await fs.readFile(new URL('../JRS Login and profile/client/pages/
 for (const [role, experimental, query, expected] of [
   ['candidate', false, '', '../profile/profile.html'],
   ['candidate', false, '?returnTo=%2Fapplicant%2Fjobs', '../profile/profile.html'],
+  ['candidate', true, '', '/applicant/jobs'],
   ['candidate', true, '?returnTo=%2Fapplicant%2Fjobs', '/applicant/jobs'],
+  ['candidate', true, '?returnTo=%2Fapplicant%2Fapply%2F7', '/applicant/apply/7'],
   ['hr', false, '', '/hr/'],
   ['hr', false, '?returnTo=%2Fhr%2Fapplications%3Fstage%3DInterview', '/hr/applications?stage=Interview'],
   ['hr', false, '?returnTo=%2Fhr%2Fnotifications', '/hr/notifications'],
   ['hr', false, '?returnTo=%2Fhr%2Funknown', '/hr/'],
+  ['hr', false, '?returnTo=%2Fhr%2Ftasks', '/hr/'],
   ['hr', false, '?returnTo=%2F%2Fevil.example', '/hr/'],
   ['hr', false, '?returnTo=%2Fhr%2F..%2F..%2Fevil', '/hr/'],
-  ['candidate', true, '?returnTo=%2Fhr%2Fapplications', '../profile/profile.html'],
-  ['candidate', true, '?returnTo=https%3A%2F%2Fevil.example', '../profile/profile.html'],
+  ['candidate', true, '?returnTo=%2Fhr%2Fapplications', '/applicant/jobs'],
+  ['candidate', true, '?returnTo=https%3A%2F%2Fevil.example', '/applicant/jobs'],
 ]) test(`shared login redirects ${role} safely (experimental=${experimental}, query=${query || 'none'})`, async () => {
   const html = await fs.readFile(new URL('../JRS Login and profile/client/pages/login/login.html', import.meta.url), 'utf8');
   const dom = new JSDOM(html, { url: `http://localhost/pages/login/login.html${query}`, runScripts: 'outside-only' });

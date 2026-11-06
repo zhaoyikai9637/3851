@@ -30,7 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await JRS.request('/set-new-password', { method: 'POST', body: { resetToken: token, newPassword: password.value } });
             sessionStorage.removeItem('reset_token'); sessionStorage.removeItem('reset_email');
-            window.location.href = '../login/login.html';
+            // Keep the page the user was heading to before they reset their password.
+            const returnTo = sessionStorage.getItem('reset_return_to');
+            sessionStorage.removeItem('reset_return_to');
+            window.location.href = '../login/login.html' + (returnTo ? '?returnTo=' + encodeURIComponent(returnTo) : '');
         } catch (err) { error.textContent = err.message; }
         finally { button.disabled = false; }
     });

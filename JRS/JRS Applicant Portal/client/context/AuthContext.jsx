@@ -32,7 +32,8 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     await api.post("/auth/logout");
-    setUser(null);
+    // Signed-out applicants return to the public job list rather than a sign-in form.
+    window.location.replace("/jobs");
   }
 
   const value = useMemo(
