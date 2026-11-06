@@ -442,7 +442,7 @@ export function UploadResume({ onSubmit, onClose }) {
       <form id="application-upload-form" className="interview-form" onSubmit={(event) => submit(event, () => file)}>
         <p className="subtle">PDF, maximum 5 MB.</p>
         <FormError message={error} />
-        <label>Resume file<input type="file" accept=".pdf,application/pdf" required onChange={(event) => setFile(event.target.files[0] || null)} /></label>
+        <label>Resume file<input type="file" accept=".pdf,application/pdf" onChange={(event) => setFile(event.target.files[0] || null)} /></label>
       </form>
     </Modal>
   );

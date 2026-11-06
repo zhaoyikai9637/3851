@@ -88,6 +88,8 @@ it("uploads a PDF resume with the revision and file name", async () => {
   const ui = mount(fetcherFor(db, { "/recruitment/api/hr/candidates/candidate-7/resume": (options) => { request = options; return { db: { ...db, revision: 6 } }; } }));
   await ui.click(await screen.findByRole("button", { name: "Upload" }));
   const dialog = screen.getByRole("dialog", { name: "Upload Resume" });
+  await ui.click(within(dialog).getByRole("button", { name: "Upload Resume" }));
+  expect(await within(dialog).findByRole("alert")).toHaveTextContent("Choose a PDF resume up to 5 MB.");
   await ui.upload(within(dialog).getByLabelText("Resume file"), new File(["%PDF-1.4"], "alex.pdf", { type: "application/pdf" }));
   await ui.click(within(dialog).getByRole("button", { name: "Upload Resume" }));
   expect(await screen.findByText("Resume uploaded.")).toBeVisible();
