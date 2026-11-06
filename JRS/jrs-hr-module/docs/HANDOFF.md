@@ -1,5 +1,23 @@
 # Engineering handoff
 
+## Native React Applications flow - 2026-11-06
+
+The Applications list (all statuses and each stage queue), resume review and
+interview results now render natively in the HR shell instead of the embedded
+workspace iframe. They keep the original look by rendering the legacy markup
+inside `.hr-legacy`, styled by `client/src/legacy/legacy-scope.css`, which is
+generated from the legacy stylesheets by `JRS/tools/scope-legacy-css.py` (run it
+again after changing those stylesheets). A live comparison of the list against
+the iframe matched every element. All application dialogs are in
+`client/pages/applications/actions.jsx` and send the same workspace commands as
+before. Detail pages keep the list they were opened from (filters and page) for
+their Back button; disabled actions explain why. Only the candidate profile
+(`?view=candidate/...`) still uses the embedded workspace.
+
+Paged lists fit the window only in the desktop layout (at least 1001 x 620);
+narrower windows show a full page and scroll. The main card stretches to the
+bottom of the content area, so no blank strip remains under paged lists.
+
 ## Team applicant update - 2026-10-28
 
 Imported the latest SiHuanjia archive: free skills, controlled availability, inline

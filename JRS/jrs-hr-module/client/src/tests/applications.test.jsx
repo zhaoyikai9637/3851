@@ -194,3 +194,23 @@ it("exports the matching applications as CSV", async () => {
   expect(text).toContain('"app-2","Sarah Lim","sarah@example.test","Software Developer","Interview","Normal","2026-10-20"');
   expect(screen.getByText("Exported 3 matching applications.")).toBeVisible();
 });
+
+it("clears the status together with the other filters and names every active filter", async () => {
+  const ui = mount(fetcherFor(workspace()), "/applications?view=applications%2Finterview&job=job-a", "Interview");
+  await screen.findByRole("table", { name: "Applications" });
+  expect(screen.getByText("Status: Interview · Software Developer")).toBeVisible();
+  await ui.click(screen.getByRole("button", { name: "Clear filters" }));
+  expect(screen.getByLabelText("Current location")).toHaveTextContent(/^\/applications$/);
+});
+
+it("explains disabled actions and opens details from every row", async () => {
+  mount(fetcherFor(workspace({ applications: [
+    { id: "app-5", candidateId: "candidate-1", jobId: "job-a", stage: "Interview Results", priority: "Normal", appliedDate: "2026-11-01" },
+    { id: "app-6", candidateId: "candidate-2", jobId: "job-b", stage: "Pending Review", priority: "Normal", appliedDate: "2026-11-02" },
+  ] })));
+  const table = await screen.findByRole("table", { name: "Applications" });
+  const rows = within(table).getAllByRole("row");
+  expect(within(rows[1]).getByRole("button", { name: "Prepare Offer" })).toHaveAttribute("title", "Record interview feedback first");
+  expect(within(rows[1]).getByRole("link", { name: "Details" })).toHaveAttribute("href", "/applications?view=candidate/candidate-1/app-5");
+  expect(within(rows[2]).getByRole("button", { name: "Move to Interview" })).toHaveAttribute("title", "Activate this job to progress the application");
+});

@@ -144,8 +144,8 @@ export function OfferReview({ db, application, onAction, onClose, busy }) {
           <button type="button" className="btn btn-outline-secondary" disabled={busy} onClick={() => onAction("offer-edit")}>Edit Offer</button>
           {!approved && !confirming && <button type="button" className="btn btn-primary" disabled={busy || Boolean(block)} title={block || undefined} onClick={() => setConfirming(true)}>Approve Offer</button>}
           {!approved && confirming && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => onAction("approve-offer")}>Confirm approval</button>}
-          {approved && <button type="button" className="btn btn-primary" disabled={busy || expired} onClick={() => onAction("offer-message")}>Prepare Offer Email</button>}
-          <button type="button" className="btn btn-outline-secondary" disabled={busy || !approved || expired} onClick={() => onAction("offer-accept")}>Record Acceptance</button>
+          {approved && <button type="button" className="btn btn-primary" disabled={busy || expired} title={expired ? "Offer expired" : undefined} onClick={() => onAction("offer-message")}>Prepare Offer Email</button>}
+          <button type="button" className="btn btn-outline-secondary" disabled={busy || !approved || expired} title={expired ? "Offer expired" : approved ? undefined : "Approve the offer first"} onClick={() => onAction("offer-accept")}>Record Acceptance</button>
           <button type="button" className="btn btn-link text-danger" disabled={busy} onClick={() => onAction("reject")}>Reject / Close application</button>
         </div>
       }

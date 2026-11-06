@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "../../src/icons";
 import { Modal } from "../../src/shared";
 import { useViewportRows } from "../../src/useViewportRows";
@@ -21,6 +21,7 @@ export function Interviews({ fetcher, now }) {
   const { db, error, load, commit } = useWorkspace(fetcher, "/hr/interviews");
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [dialog, setDialog] = useState(null);
   const [notice, setNotice] = useState("");
   // Rows per page follow the space left in the window, so the page never needs scrolling.
@@ -142,7 +143,7 @@ export function Interviews({ fetcher, now }) {
                   return (
                     <tr key={interview.id}>
                       <td>
-                        <button type="button" className="interview-person-link" title="View resume" onClick={() => navigate("/applications?view=" + resumePath(application))}>
+                        <button type="button" className="interview-person-link" title="View resume" onClick={() => navigate("/applications?view=" + resumePath(application), { state: { from: location.pathname + location.search } })}>
                           <Person db={db} application={application} />
                         </button>
                         <small className="d-block subtle interview-job">{jobOf(db, application).title}</small>

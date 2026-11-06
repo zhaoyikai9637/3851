@@ -4,7 +4,7 @@ import "../../../../JRS HR/dist/resume.js";
 import { download } from "../recruitment/dialogs";
 import { candidateOf, formatDate, jobOf, useWorkspace } from "../recruitment/workspaceClient";
 import { Toast, useApplicationActions } from "./actions";
-import { Avatar, Badge, Empty, formatDateTime, LegacyIcon } from "./legacy";
+import { Avatar, Badge, Empty, formatDateTime, LegacyIcon, useReturnPath } from "./legacy";
 import "./applications.css";
 
 // Native React resume review and interview results page. It renders the same
@@ -221,10 +221,10 @@ function CandidateEmails({ db, application, act }) {
 function Decisions({ db, application, results, act }) {
   const active = jobOf(db, application).status === "Active";
   if (results && application.stage === "Interview Results") {
-    return <><button type="button" className="button primary" disabled={!(active && application.feedback)} onClick={() => act("offer-edit", application)}>Prepare Offer</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button></>;
+    return <><button type="button" className="button primary" disabled={!(active && application.feedback)} title={!active ? "Activate this job to progress the application" : application.feedback ? undefined : "Record interview feedback first"} onClick={() => act("offer-edit", application)}>Prepare Offer</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button></>;
   }
   if (!results && application.stage === "Pending Review") {
-    return <><button type="button" className="button primary" disabled={!active} onClick={() => act("move-interview", application)}>Move to Interview</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button></>;
+    return <><button type="button" className="button primary" disabled={!active} title={active ? undefined : "Activate this job to progress the application"} onClick={() => act("move-interview", application)}>Move to Interview</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button></>;
   }
   if (application.stage === "Interview") {
     const meeting = db.interviews.find((interview) => interview.applicationId === application.id && interview.status === "Scheduled");
@@ -232,7 +232,7 @@ function Decisions({ db, application, results, act }) {
       <>
         {meeting
           ? <button type="button" className="button primary" onClick={() => act("interview", meeting)}>View Interview</button>
-          : <button type="button" className="button primary" disabled={!active} onClick={() => act("schedule", application)}>Schedule Interview</button>}
+          : <button type="button" className="button primary" disabled={!active} title={active ? undefined : "Activate this job to schedule interviews"} onClick={() => act("schedule", application)}>Schedule Interview</button>}
         <button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button>
       </>
     );
@@ -247,6 +247,7 @@ export function Review({ id, results: resultsRoute = false, fetcher }) {
   const workspace = useWorkspace(fetcher, "/hr/applications?view=" + (resultsRoute ? "results/" : "review/") + id);
   const { db, error, load } = workspace;
   const { act, elements, toast, setToast } = useApplicationActions({ workspace });
+  const [back, backLabel] = useReturnPath();
 
   if (error) {
     return (
@@ -260,7 +261,7 @@ export function Review({ id, results: resultsRoute = false, fetcher }) {
 
   const application = db.applications.find((item) => item.id === id);
   if (!application) {
-    return <div className="hr-legacy"><Empty title="Application not found" detail="Return to Applications and select an existing record." /></div>;
+    return <div className="hr-legacy"><Link className="btn btn-outline-secondary mb-3" to={back}>{backLabel}</Link><Empty title="Application not found" detail="Return to Applications and select an existing record." /></div>;
   }
   const person = candidateOf(db, application);
   const job = jobOf(db, application);
@@ -269,6 +270,7 @@ export function Review({ id, results: resultsRoute = false, fetcher }) {
   return (
     <>
       <div className="hr-legacy review-page" data-page={resultsRoute ? "results" : "review"}>
+        <Link className="btn btn-outline-secondary mb-3" to={back}>{backLabel}</Link>
         <div className="review-heading">
           <div className="review-person">
             <Avatar person={person} />

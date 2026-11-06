@@ -6,7 +6,7 @@ import { download, resumePath } from "../recruitment/dialogs";
 import { candidateOf, formatDate, jobOf, useWorkspace } from "../recruitment/workspaceClient";
 import { Toast, useApplicationActions } from "./actions";
 import { businessDay, FiltersDialog } from "./dialogs";
-import { Avatar, Badge, Empty, LegacyIcon } from "./legacy";
+import { Avatar, Badge, Empty, LegacyIcon, useReturnPath } from "./legacy";
 import { Review } from "./Review";
 import "./applications.css";
 
@@ -60,8 +60,19 @@ export function ApplicationsPage() {
   const stage = stageForView(view);
   const detail = /^(review|results)\/([A-Za-z0-9_-]+)$/.exec(view);
   if (detail) return <Review key={view} id={detail[2]} results={detail[1] === "results"} />;
-  if (stage === undefined) return <Recruitment key="/applications" page="applications" title="Applications" />;
+  if (stage === undefined) return <CandidateFromApplications />;
   return <Applications stage={stage} />;
+}
+
+// The candidate profile still opens in the embedded workspace, with a way back.
+function CandidateFromApplications() {
+  const [back, label] = useReturnPath();
+  return (
+    <>
+      <Link className="btn btn-outline-secondary mb-3" to={back}>{label}</Link>
+      <Recruitment key="/applications" page="applications" title="Applications" />
+    </>
+  );
 }
 
 export function Applications({ stage = "", fetcher }) {
@@ -69,6 +80,9 @@ export function Applications({ stage = "", fetcher }) {
   const { db, error, load } = workspace;
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Detail pages return to this exact queue, filters and page included.
+  const from = { from: location.pathname + location.search };
   const [filtersOpen, setFiltersOpen] = useState(false);
   const open = (path) => "/applications?view=" + path;
   const { act, elements, toast, setToast } = useApplicationActions({ workspace, onCreated: (application) => navigate(open("review/" + application.id)) });
@@ -119,6 +133,11 @@ export function Applications({ stage = "", fetcher }) {
     navigate("/applications" + (next.toString() ? "?" + next : ""));
   }
 
+  // Clearing returns to the full queue: every filter, including the status, is reset.
+  function clearFilters() {
+    navigate("/applications");
+  }
+
   function exportList() {
     const rows = items.map((application) => [application.id, candidateOf(db, application).name, candidateOf(db, application).email, jobOf(db, application).title, application.stage, application.priority, application.appliedDate]);
     download(csvFile(["Application ID", "Candidate", "Email", "Position", "Stage", "Priority", "Applied Date"], rows), "JRS-Applications.csv", "text/csv;charset=utf-8");
@@ -127,19 +146,20 @@ export function Applications({ stage = "", fetcher }) {
 
   function rowActions(application) {
     const active = jobOf(db, application).status === "Active";
-    const details = <Link className="button secondary compact" to={open("candidate/" + application.candidateId + "/" + application.id)}>Details</Link>;
+    const details = <Link className="button secondary compact" to={open("candidate/" + application.candidateId + "/" + application.id)} state={from}>Details</Link>;
+    const blocked = active ? undefined : "Activate this job to progress the application";
     const reject = <button type="button" className="button danger compact" onClick={() => act("reject", application)}>Reject</button>;
     const meeting = application.stage === "Interview" && db.interviews.find((interview) => interview.applicationId === application.id && interview.status === "Scheduled");
     if (application.stage === "Interview" && !meeting) {
-      return <><button type="button" className="button primary compact" disabled={!active} onClick={() => act("schedule", application)}>Schedule Interview</button>{reject}{details}</>;
+      return <><button type="button" className="button primary compact" disabled={!active} title={blocked} onClick={() => act("schedule", application)}>Schedule Interview</button>{reject}{details}</>;
     }
     switch (application.stage) {
       case "Pending Review":
-        return <><button type="button" className="button primary compact" disabled={!active} onClick={() => act("move-interview", application)}>Move to Interview</button>{reject}{details}</>;
+        return <><button type="button" className="button primary compact" disabled={!active} title={blocked} onClick={() => act("move-interview", application)}>Move to Interview</button>{reject}{details}</>;
       case "Interview":
         return <><button type="button" className="button primary compact" onClick={() => act("review", application)}>View Interview</button>{reject}{details}</>;
       case "Interview Results":
-        return <><Link className="button primary compact" to={open("results/" + application.id)}>View Results</Link><button type="button" className="button secondary compact" disabled={!(active && application.feedback)} onClick={() => act("offer-edit", application)}>Prepare Offer</button>{reject}</>;
+        return <><Link className="button primary compact" to={open("results/" + application.id)} state={from}>View Results</Link><button type="button" className="button secondary compact" disabled={!(active && application.feedback)} title={blocked || (application.feedback ? undefined : "Record interview feedback first")} onClick={() => act("offer-edit", application)}>Prepare Offer</button>{reject}{details}</>;
       case "Offer":
         return <><button type="button" className="button primary compact" onClick={() => act("review", application)}>Review Offer</button>{reject}{details}</>;
       case "Rejected":
@@ -160,6 +180,14 @@ export function Applications({ stage = "", fetcher }) {
   if (!db) return <div className="loading-state" role="status"><span className="spinner-border spinner-border-sm" aria-hidden="true" /> Loading…</div>;
 
   const hasFilters = filters.job || filters.priority || filters.from || filters.to || filters.q;
+  const activeFilters = [
+    stage ? "Status: " + stage : "",
+    filters.q ? "Search “" + filters.q + "”" : "",
+    filters.job ? db.jobs.find((job) => job.id === filters.job)?.title || "Selected position" : "",
+    filters.priority ? filters.priority + " priority" : "",
+    filters.from ? "From " + formatDate(filters.from) : "",
+    filters.to ? "To " + formatDate(filters.to) : "",
+  ].filter(Boolean);
   const showStage = !stage;
 
   return (
@@ -187,10 +215,10 @@ export function Applications({ stage = "", fetcher }) {
               <button type="button" className="button primary" onClick={() => act("receive")}><LegacyIcon name="plus" />Receive Application</button>
             </div>
           </div>
-          {hasFilters && (
+          {(hasFilters || stage) && (
             <div className="filter-strip">
-              <span className="muted">{[filters.priority ? filters.priority + " priority" : "", filters.from ? "From " + formatDate(filters.from) : "", filters.to ? "To " + formatDate(filters.to) : ""].filter(Boolean).join(" · ")}</span>
-              <button type="button" className="button text-button" onClick={() => update({ q: "", job: "", priority: "", from: "", to: "" })}>Clear filters</button>
+              <span className="muted">{activeFilters.join(" · ")}</span>
+              <button type="button" className="button text-button" onClick={clearFilters}>Clear filters</button>
             </div>
           )}
           {visible.length ? (
@@ -206,7 +234,7 @@ export function Applications({ stage = "", fetcher }) {
                     return (
                       <tr key={application.id}>
                         <td>
-                          <Link to={open(resumePath(application))} className="applicant-resume-link" aria-label={"View resume for " + person.name} title="View resume">
+                          <Link to={open(resumePath(application))} state={from} className="applicant-resume-link" aria-label={"View resume for " + person.name} title="View resume">
                             <div className="person"><Avatar person={person} /><div><strong>{person.name}</strong><small>{person.email}</small></div></div>
                           </Link>
                         </td>

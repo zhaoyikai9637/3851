@@ -38,8 +38,8 @@ function fetcherFor(db, handlers = {}) {
   });
 }
 
-function mount(fetcher, props = {}) {
-  render(<MemoryRouter><Review id="app-1" fetcher={fetcher} {...props} /></MemoryRouter>);
+function mount(fetcher, props = {}, entry = "/applications?view=review/app-1") {
+  render(<MemoryRouter initialEntries={[entry]}><Review id="app-1" fetcher={fetcher} {...props} /></MemoryRouter>);
   return userEvent.setup();
 }
 
@@ -117,4 +117,15 @@ it("edits a saved draft and keeps sending disabled while email is off", async ()
 it("reports an application that no longer exists", async () => {
   mount(fetcherFor(workspace({ applications: [] })));
   expect(await screen.findByRole("heading", { name: "Application not found" })).toBeVisible();
+});
+
+it("returns to the list it was opened from, or to the full queue", async () => {
+  mount(fetcherFor(workspace()), {}, { pathname: "/applications", search: "?view=review/app-1", state: { from: "/applications?view=applications%2Fpending-review&page=2" } });
+  expect(await screen.findByRole("link", { name: "Back to Applications" })).toHaveAttribute("href", "/applications?view=applications%2Fpending-review&page=2");
+  cleanup();
+  mount(fetcherFor(workspace()), {}, { pathname: "/applications", search: "?view=review/app-1", state: { from: "/interviews?status=" } });
+  expect(await screen.findByRole("link", { name: "Back to Interviews" })).toHaveAttribute("href", "/interviews?status=");
+  cleanup();
+  mount(fetcherFor(workspace()), {}, { pathname: "/applications", search: "?view=review/app-1", state: { from: "https://evil.test" } });
+  expect(await screen.findByRole("link", { name: "Back to Applications" })).toHaveAttribute("href", "/applications");
 });

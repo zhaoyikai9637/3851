@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { formatDate } from "../recruitment/workspaceClient";
 
 // Small pieces of the embedded workspace markup, reproduced exactly so the scoped
@@ -39,4 +40,12 @@ export function Empty({ title, detail = "Try changing your filters." }) {
 export function formatDateTime(value) {
   if (!value) return "";
   return formatDate(value) + ", " + new Date(value).toLocaleTimeString("en-SG", { timeZone: "Asia/Singapore", hour: "2-digit", minute: "2-digit" });
+}
+
+// Detail pages return to the list they were opened from (filters and page
+// included), or to the full Applications queue when opened directly.
+export function useReturnPath() {
+  const origin = useLocation().state?.from;
+  const back = typeof origin === "string" && origin.startsWith("/") && !origin.startsWith("//") ? origin : "/applications";
+  return [back, back.startsWith("/interviews") ? "Back to Interviews" : "Back to Applications"];
 }
