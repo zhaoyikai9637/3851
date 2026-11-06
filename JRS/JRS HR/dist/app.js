@@ -9,7 +9,7 @@
   let listBudget=window.innerHeight-180,fitTimer,rowHeight=0,fitKey='';
   function fitList(){
     if(composingSearch)return;
-    if(!['applications','interviews','reports','jobs'].includes(route[0]))return;
+    if(!['dashboard','applications','interviews','reports','jobs'].includes(route[0]))return;
     const key=route.join('/')+':'+(ui.section||'')+':'+window.innerWidth;
     if(key!==fitKey){fitKey=key;rowHeight=0;}
     const result=window.HRPagination?.measure($('#content'),listBudget,rowHeight);

@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useOutletContext, useSearchParams } from "react-router-dom";
 import { Download } from "lucide-react";
+import { useViewportRows } from "../../src/useViewportRows";
 import "./reports.css";
 
 // Native React version of the recruitment Reports page (previously rendered by the
@@ -13,7 +14,6 @@ const SECTIONS = [
   ["jobs", "Job performance"],
   ["tasks", "Follow-up tasks"],
 ];
-const PAGE_SIZE = 6;
 const TONE = { "Pending Review": "amber", Interview: "purple", "Interview Results": "purple", Offer: "green", Rejected: "red", Hired: "green" };
 
 async function readJson(response) {
@@ -50,13 +50,13 @@ export function reportCsv(db) {
   return "﻿" + [header, ...rows].map((row) => row.map(cell).join(",")).join("\r\n");
 }
 
-function Pager({ page, total, onChange }) {
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (total <= PAGE_SIZE) return null;
-  const first = (page - 1) * PAGE_SIZE + 1;
+function Pager({ page, total, size, onChange }) {
+  const pages = Math.max(1, Math.ceil(total / size));
+  if (total <= size) return null;
+  const first = (page - 1) * size + 1;
   return (
     <div className="report-pager">
-      <span>Showing {first}–{Math.min(page * PAGE_SIZE, total)} of {total}</span>
+      <span>Showing {first}–{Math.min(page * size, total)} of {total}</span>
       <div>
         <button className="btn btn-outline-secondary btn-sm" type="button" disabled={page <= 1} onClick={() => onChange(page - 1)}>Previous</button>
         <span>Page {page} of {pages}</span>
@@ -79,6 +79,9 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState("");
   const [page, setPage] = useState(1);
+  // Rows per page follow the space left in the window, so the page never needs scrolling.
+  const host = useRef(null);
+  const PAGE_SIZE = useViewportRows(host, db ? `${db.revision}-${section}` : -1, 6);
 
   const load = useCallback(async () => {
     try {
@@ -200,7 +203,7 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
   const tasksPage = stats.tasks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="reports-page">
+    <div className="reports-page" ref={host}>
       <div className="report-heading">
         <button className="btn btn-primary" type="button" onClick={exportReport}><Download size={18} aria-hidden="true" />Export Report</button>
       </div>
@@ -265,7 +268,7 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
             </table>
           </div>
           {db.jobs.length === 0 && <p className="report-empty">No job postings yet.</p>}
-          <Pager page={page} total={db.jobs.length} onChange={setPage} />
+          <Pager page={page} total={db.jobs.length} size={PAGE_SIZE} onChange={setPage} />
         </section>
       )}
 
@@ -279,7 +282,7 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
           ) : (
             <ul className="report-tasks">
               {tasksPage.map((task) => (
-                <li key={task.id}>
+                <li key={task.id} data-fit-row>
                   <div>
                     <strong>{task.title}</strong>
                     <small>{task.assignee}{task.due ? " · " + formatDate(task.due) : ""}</small>
@@ -291,7 +294,7 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
               ))}
             </ul>
           )}
-          <Pager page={page} total={stats.tasks.length} onChange={setPage} />
+          <Pager page={page} total={stats.tasks.length} size={PAGE_SIZE} onChange={setPage} />
         </section>
       )}
     </div>

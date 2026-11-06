@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { useViewportRows } from "../../src/useViewportRows";
 import { ApplicationSummary } from "../../src/features/notifications/ApplicationSummary";
 import {
   NotificationGroup,
@@ -13,7 +15,12 @@ import { Empty, ErrorBox, PageHeading, Pagination } from "../../src/shared";
 export { groupNotifications };
 
 export function Notifications() {
-  const { state, actions } = useNotificationCenter();
+  // Rows per page follow the space left in the window, so the page never needs scrolling.
+  const host = useRef(null),
+    loaded = useRef(null);
+  const fit = useViewportRows(host, loaded.current, 20);
+  const { state, actions } = useNotificationCenter(fit);
+  loaded.current = state.load.data;
   const {
     activeFilters,
     allCount,
@@ -40,7 +47,7 @@ export function Notifications() {
         description={summary}
         className="workspace-page-heading"
       />
-      <section className="surface notification-surface">
+      <section className="surface notification-surface" ref={host}>
         <NotificationToolbar
           activeFilters={activeFilters}
           allCount={allCount}

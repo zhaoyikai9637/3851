@@ -69,7 +69,7 @@
     if(trail.length<2&&root.parent&&root.parent!==root)return '';
     return '<ol>'+trail.map(([path,label],index)=>'<li>'+(index?'<span class="breadcrumb-separator" aria-hidden="true">'+icon('right')+'</span>':'')+(index===trail.length-1?'<span class="breadcrumb-current" aria-current="page">'+e(label)+'</span>':link(path,e(label),'breadcrumb-link'))+'</li>').join('')+'</ol>';
   }
-  const pageSize=(ui,kind='rows')=>kind==='cards'?(ui.compact?2:4):kind==='dashboard'?Math.max(3,(ui.pageSize||6)-3):ui.pageSize||6;
+  const pageSize=(ui,kind='rows')=>kind==='cards'?(ui.compact?2:4):kind==='dashboard'?(ui.pageSize||4):ui.pageSize||6;
   function pageItems(items,ui,size=pageSize(ui)) {ui.page=Math.max(1,Math.min(Number(ui.page)||1,Math.ceil(items.length/size)||1));return items.slice((ui.page-1)*size,ui.page*size);}
   const pager=(ui,total,size=pageSize(ui))=>{const pages=Math.max(1,Math.ceil(total/size));return `<div class="pagination">${button('page','Previous',String(ui.page-1),'secondary compact',ui.page===1?'disabled aria-label="Previous page"':'aria-label="Previous page"')}<span>Page ${ui.page} of ${pages}</span>${button('page','Next',String(ui.page+1),'secondary compact',ui.page>=pages?'disabled aria-label="Next page"':'aria-label="Next page"')}</div>`;};
   const pageFooter=(ui,total,size=pageSize(ui),noun='records')=>`<footer class="table-footer"><p>Showing ${total?((ui.page-1)*size+1):0}–${Math.min(ui.page*size,total)} of ${total} ${noun}</p>${pager(ui,total,size)}</footer>`;

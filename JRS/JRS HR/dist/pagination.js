@@ -6,6 +6,8 @@
  }
  function measure(host,available,minimumRowHeight=0){
   const rows=[...host.querySelectorAll('table tbody > tr')];
+  // Lists that are not tables mark each paged item with data-fit-row.
+  if(!rows.length)rows.push(...host.querySelectorAll('[data-fit-row]'));
   if(!rows.length)rows.push(...host.querySelectorAll('.panel > .task-item'));
   const height=host.getBoundingClientRect().height;
   if(!height||!rows.length)return null;

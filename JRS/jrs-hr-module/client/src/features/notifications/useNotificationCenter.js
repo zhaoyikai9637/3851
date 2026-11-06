@@ -7,7 +7,7 @@ import {
   notificationTypeLabel,
 } from "./notificationUtils";
 
-export function useNotificationCenter() {
+export function useNotificationCenter(pageSize) {
   const [filters, setFilters] = useState(INITIAL_NOTIFICATION_FILTERS);
   const [draft, setDraft] = useState(INITIAL_NOTIFICATION_FILTERS);
   const [showDates, setShowDates] = useState(false);
@@ -16,13 +16,15 @@ export function useNotificationCenter() {
   const [filterError, setFilterError] = useState(null);
   const [application, setApplication] = useState(null);
   const [undoIds, setUndoIds] = useState([]);
-  const load = useLoad(`/api/hr/notifications?${query(filters)}`);
+  // The page passes a page size measured from the window; filters keep the default otherwise.
+  const size = pageSize || filters.pageSize;
+  const load = useLoad(`/api/hr/notifications?${query({ ...filters, pageSize: size })}`);
 
   useEffect(() => {
     if (load.data && filters.page > 1 && !load.data.items.length)
       setFilters((value) => ({
         ...value,
-        page: Math.max(1, Math.ceil(load.data.total / value.pageSize)),
+        page: Math.max(1, Math.ceil(load.data.total / size)),
       }));
   }, [load.data, filters.page]);
 

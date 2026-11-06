@@ -83,7 +83,7 @@ function NotificationItem({ item, group, busy, onOpen, onToggleRead }) {
   );
 
   return (
-    <li className={`notification-card${item.isRead ? "" : " unread"}`}>
+    <li className={`notification-card${item.isRead ? "" : " unread"}`} data-fit-row>
       {item.applicationId ? (
         <button
           type="button"

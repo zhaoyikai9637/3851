@@ -166,6 +166,14 @@
   :is(#content, .workspace-body) .notification-cta { min-height:36px; padding:7px 10px; font-size:var(--jrs-text-xs); }
 }
 
+/* Dashboard: the top cards take the height they need (no inner scrollbar);
+   the Recent Applications list is paged to fit the remaining viewport. */
+@media (min-width: 1001px) and (min-height: 620px) {
+  .dashboard-grid { grid-template-rows: auto minmax(0, 1fr); }
+  .dashboard-grid > .performance,
+  .dashboard-grid > .overview { overflow: visible; }
+}
+
 /* Unified panel headings and accents (shared tokens). */
 .panel h3,
 .performance h3,

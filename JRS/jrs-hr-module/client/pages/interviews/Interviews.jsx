@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "../../src/icons";
 import { Modal } from "../../src/shared";
+import { useViewportRows } from "../../src/useViewportRows";
 import { DateField } from "../jobs/DateField";
 import { displayDate, isoDate } from "../jobs/model";
 import { candidateOf, formatDate, initials, jobOf, singaporeToday, useWorkspace } from "../recruitment/workspaceClient";
@@ -12,7 +13,6 @@ import "./interviews.css";
 // It reads the same workspace snapshot and sends the same commands
 // (schedule, cancel-interview, feedback), so server rules are unchanged.
 
-const PAGE_SIZE = 8;
 const STATUSES = ["Scheduled", "Completed", "Cancelled"];
 const DURATIONS = ["15", "30", "45", "60", "90", "120"];
 const FORMATS = ["Video", "On-site", "Phone"];
@@ -312,6 +312,9 @@ export function Interviews({ fetcher, now }) {
   const navigate = useNavigate();
   const [dialog, setDialog] = useState(null);
   const [notice, setNotice] = useState("");
+  // Rows per page follow the space left in the window, so the page never needs scrolling.
+  const host = useRef(null);
+  const PAGE_SIZE = useViewportRows(host, db ? db.revision : -1, 8);
   const q = params.get("q") || "";
   const status = params.has("status") ? params.get("status") : "Scheduled";
   const date = params.get("date") || "";
@@ -377,7 +380,7 @@ export function Interviews({ fetcher, now }) {
   if (!db) return <div className="loading-state" role="status"><span className="spinner-border spinner-border-sm" aria-hidden="true" /> Loading…</div>;
 
   return (
-    <div className="jobs-workspace interviews-page">
+    <div className="jobs-workspace interviews-page" ref={host}>
       <div className="jobs-toolbar" role="toolbar" aria-label="Interview filters and actions">
         <label className="jobs-search">
           <Icon name="search" />

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useViewportRows } from "../../src/useViewportRows";
 import { api, query } from "../../src/api";
 import { LogActivity } from "../../src/features/logs/LogActivity";
 import { LogFilters } from "../../src/features/logs/LogFilters";
@@ -19,7 +20,12 @@ export function Logs() {
     [datesOpen, setDatesOpen] = useState(false),
     [error, setError] = useState(null),
     [selected, setSelected] = useState(null);
-  const load = useLoad(`/api/hr/logs?${query(filters)}`);
+  // Rows per page follow the space left in the window, so the page never needs scrolling.
+  const host = useRef(null),
+    loaded = useRef(null);
+  const fit = useViewportRows(host, loaded.current, initialLogFilters.pageSize);
+  const load = useLoad(`/api/hr/logs?${query({ ...filters, pageSize: fit })}`);
+  loaded.current = load.data;
   const hasFilters = Boolean(filters.search || filters.trigger || filters.from || filters.to);
   function apply(event) {
     event.preventDefault();
@@ -44,7 +50,7 @@ export function Logs() {
   return (
     <>
       <PageHeading eyebrow={null} className="workspace-page-heading" title="Logs" />
-      <section className="surface log-surface">
+      <section className="surface log-surface" ref={host}>
         <LogFilters
           draft={draft}
           setDraft={setDraft}
