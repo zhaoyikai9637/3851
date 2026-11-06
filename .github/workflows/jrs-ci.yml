@@ -1,0 +1,86 @@
+name: JRS test server CI
+
+# Builds and tests the JRS (test server) folder. Database-backed suites
+# (*.mysql.*) are excluded because CI has no MySQL instance.
+on:
+  push:
+    paths:
+      - "JRS/**"
+      - ".github/workflows/jrs-ci.yml"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: JRS
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: JRS/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  root-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: JRS/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  hr-shell-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: JRS/package-lock.json
+      - run: npm ci
+      - run: npx vitest run --root jrs-hr-module/client
+
+  hr-legacy-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: JRS/JRS HR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx jest --testPathIgnorePatterns integration
+
+  login-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: JRS/JRS Login and profile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test
+
+  english-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm run check:english
