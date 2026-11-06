@@ -1382,3 +1382,8 @@ button:disabled {
   font-weight: 600;
   text-align: left;
 }
+
+/* Sidebar sections (Recruitment / Communication). */
+.sidebar-group + .sidebar-group {
+  margin-top: var(--jrs-space-5);
+}

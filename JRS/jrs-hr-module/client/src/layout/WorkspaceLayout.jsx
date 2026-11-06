@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../auth";
 import { Icon } from "../icons";
 import { Avatar, ErrorBox, Modal } from "../shared";
-import { communicationLinks, pageName, workspaceLinks } from "./navigation";
+import { communicationLinks, navigationGroups, pageName } from "./navigation";
 import { WorkspacePath } from "./WorkspacePath";
 
 function SidebarNavigation({ pathname, onNavigate }) {
@@ -16,22 +16,25 @@ function SidebarNavigation({ pathname, onNavigate }) {
           JRS<span className="brand-subtitle">HR WORKSPACE</span>
         </span>
       </div>
-      <p className="sidebar-label">WORKSPACE</p>
       <nav aria-label="Main navigation">
-        {workspaceLinks.map(([path, name, icon]) => (
-          <NavLink key={path} to={path} end onClick={onNavigate}>
-            <Icon name={icon} />
-            {name}
-          </NavLink>
+        {navigationGroups.map(([label, links]) => (
+          <div className="sidebar-group" key={label}>
+            <p className="sidebar-label">{label}</p>
+            {/* Notifications stays highlighted on its Templates and Logs tabs. */}
+            {links.map(([path, name, icon]) => (
+              <NavLink
+                key={path}
+                to={path}
+                end
+                onClick={onNavigate}
+                className={({ isActive }) => (isActive || (path === "/notifications" && communicationPage) ? "active" : "")}
+              >
+                <Icon name={icon} />
+                {name}
+              </NavLink>
+            ))}
+          </div>
         ))}
-        <NavLink
-          to="/notifications"
-          onClick={onNavigate}
-          className={() => (communicationPage ? "active" : "")}
-        >
-          <Icon name="bell" />
-          Notifications
-        </NavLink>
       </nav>
       <div className="sidebar-foot">
         <span>HR workspace</span>

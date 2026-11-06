@@ -13,6 +13,22 @@ export const workspaceLinks = [
   ["/reports", "Reports", "reports"],
 ];
 
+// Sidebar sections. Templates and Logs are reached from the Notifications page tabs,
+// so the sidebar keeps one entry per area.
+export const navigationGroups = [
+  ["RECRUITMENT", [
+    ["/dashboard", "Dashboard", "dashboard"],
+    ["/job-postings", "Job Postings", "jobs"],
+    ["/applications", "Applications", "applications"],
+    ["/candidates", "Candidates", "candidates"],
+    ["/interviews", "Interviews", "calendar"],
+  ]],
+  ["COMMUNICATION", [
+    ["/notifications", "Notifications", "bell"],
+    ["/reports", "Reports", "reports"],
+  ]],
+];
+
 export function pageName(pathname) {
   if(pathname === "/notifications") return "Notification Center";
   if(pathname === "/templates") return "Email Templates";
