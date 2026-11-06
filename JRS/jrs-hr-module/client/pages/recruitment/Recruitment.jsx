@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Candidates } from "./Candidates";
+import { fitsWindow } from "../../src/useViewportRows";
 
 const validRoute = (value) =>
   typeof value === "string" &&
@@ -41,7 +42,8 @@ export function Recruitment({ page, title }) {
     if(!element)return;
     const main=element.closest('main'),footer=document.querySelector('.workspace-footer');
     const bottom=main?parseFloat(getComputedStyle(main).paddingBottom)||0:0;
-    const availableHeight=Math.max(80,Math.floor(window.innerHeight-(element.getBoundingClientRect().top+window.scrollY)-bottom-(footer?.getBoundingClientRect().height||0)-8));
+    // Narrow screens scroll normally, so the embedded lists get room for a full page.
+    const availableHeight=fitsWindow()?Math.max(80,Math.floor(window.innerHeight-(element.getBoundingClientRect().top+window.scrollY)-bottom-(footer?.getBoundingClientRect().height||0)-8)):10000;
     element.contentWindow?.postMessage({type:'jrs:viewport',height:window.innerHeight,availableHeight},window.location.origin);
   }
   useEffect(() => {

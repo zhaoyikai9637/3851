@@ -16,7 +16,7 @@ export function Candidates({ onOpen }) {
   const load = useLoad(
     `/recruitment/api/hr/candidates?${new URLSearchParams({ q: search, page: String(page), limit: String(limit) })}`,
   );
-  const size=useViewportRows(list,load.data,limit);
+  const size=useViewportRows(list,load.data,10);
   useEffect(()=>{
     if(size===limit)return;
     const nextPage=Math.floor((page-1)*limit/size)+1;
