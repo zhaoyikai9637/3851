@@ -1,19 +1,21 @@
-import { BriefcaseBusiness, FileText, LogOut, Menu, Search, UserRoundSearch, X } from "lucide-react";
+import { BriefcaseBusiness, CircleUserRound, FileText, LogOut, Menu, Search, UserRoundSearch, X } from "lucide-react";
 import { useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const pageTitles = {
   "/applicant/jobs": "Find a Suitable Role",
-  "/applicant/resume": "Resume and Profile",
+  "/applicant/profile": "My Profile",
+  "/applicant/resume": "My Resume",
   "/applicant/resume/upload": "Upload Resume",
   "/applicant/status": "Application Status",
 };
 
 const navItems = [
   { to: "/applicant/jobs", label: "Jobs", icon: Search },
+  { to: "/applicant/status", label: "My Application", icon: UserRoundSearch },
   { to: "/applicant/resume", label: "My Resume", icon: FileText },
-  { to: "/applicant/status", label: "Application Status", icon: UserRoundSearch },
+  { to: "/applicant/profile", label: "My Profile", icon: CircleUserRound },
 ];
 
 function titleForPath(pathname) {
@@ -73,14 +75,14 @@ export default function AppLayout() {
             <h1>{titleForPath(location.pathname)}</h1>
           </div>
 
-          <div className="applicant-identity">
+          <Link className="applicant-identity" to="/applicant/profile" aria-label="Open my profile">
             <div className="avatar" aria-hidden="true">{user?.fullName?.split(" ").map((part) => part[0]).join("").slice(0, 2)}</div>
             <div className="identity-copy d-none d-sm-block">
               <strong>{user?.fullName}</strong>
               <span>Applicant</span>
             </div>
             <BriefcaseBusiness className="identity-icon d-none d-md-block" size={22} aria-hidden="true" />
-          </div>
+          </Link>
         </header>
 
         <main className="page-content">

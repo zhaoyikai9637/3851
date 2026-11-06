@@ -69,6 +69,12 @@ export default function JobsPage({ authenticated = false }) {
   return (
     <div className="page-stack">
       {authenticated && current.active && <ActiveApplicationNotice application={current.application} />}
+      {!authenticated && (
+        <section className="jobs-hero">
+          <h1>Find your next role</h1>
+          <p>Browse open positions, then sign in to apply and follow your application in one place.</p>
+        </section>
+      )}
       <section className="search-surface surface">
         <form className="job-search-form" onSubmit={handleSearch}>
           <label className="visually-hidden" htmlFor="job-search">Search roles</label>
@@ -120,7 +126,13 @@ export default function JobsPage({ authenticated = false }) {
         </aside>
 
         <section className="jobs-results" aria-live="polite">
-          {loading && <div role="status"><span className="spinner-border text-primary" aria-hidden="true" /><span className="visually-hidden">Loading jobs...</span></div>}
+          {loading && (
+            <div role="status" className="job-list">
+              <span className="visually-hidden">Loading jobs...</span>
+              {[0, 1, 2].map((item) => <span key={item} className="jrs-skeleton" style={{ height: 132 }} aria-hidden="true" />)}
+            </div>
+          )}
+          {!loading && !error && jobs.length > 0 && <p className="jobs-count">{jobs.length} open role{jobs.length === 1 ? "" : "s"}</p>}
 
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
           {!loading && !error && jobs.length === 0 && (
@@ -132,7 +144,7 @@ export default function JobsPage({ authenticated = false }) {
             </div>
           )}
 
-          <div className="job-list">
+          <div className="job-list" hidden={loading}>
             {jobs.map((job) => (
               <article className="job-card surface" key={job.id}>
                 <div className="job-card-main">

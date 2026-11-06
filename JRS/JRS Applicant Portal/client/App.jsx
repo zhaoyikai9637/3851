@@ -9,6 +9,7 @@ import AuthConnectPage from "./pages/auth/AuthConnectPage";
 import JobDetailsPage from "./pages/jobs/JobDetailsPage";
 import JobsPage from "./pages/jobs/JobsPage";
 import NotFoundPage from "./pages/not-found/NotFoundPage";
+import ProfilePage from "./pages/profile/ProfilePage";
 import ResumePage from "./pages/resume/ResumePage";
 import ResumeUploadPage from "./pages/resume/ResumeUploadPage";
 
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/applicant/jobs" element={<JobsPage authenticated />} />
           <Route path="/applicant/jobs/:jobId" element={<JobDetailsPage authenticated />} />
           <Route path="/applicant/apply/:jobId" element={<ApplicationPage />} />
+          <Route path="/applicant/profile" element={<ProfilePage />} />
           <Route path="/applicant/resume" element={<ResumePage />} />
           <Route path="/applicant/resume/upload" element={<ResumeUploadPage />} />
           <Route path="/applicant/status" element={<ApplicationStatusPage />} />

@@ -101,7 +101,7 @@ export async function createRuntime({mailTransport}={}) {
     for (const feature of ['job-management', 'create-job', 'edit-job', 'interview-schedule', 'interview-feedback']) {
       app.get(`/pages/${feature}/${feature}.html`, (req, res) => res.redirect(feature.startsWith('interview-') ? '/hr/interviews' : '/hr/job-postings'));
     }
-    if (experimental) for (const [old, target] of [['jobs', '/applicant/jobs'], ['resume', '/applicant/resume'], ['application-status', '/applicant/status']]) app.get(`/pages/${old}/${old}.html`, (req, res) => res.redirect(target));
+    if (experimental) for (const [old, target] of [['jobs', '/applicant/jobs'], ['resume', '/applicant/resume'], ['application-status', '/applicant/status'], ['profile', '/applicant/profile']]) app.get(`/pages/${old}/${old}.html`, (req, res) => res.redirect(target));
     app.use((req, res, next) => {
       res.set('X-Content-Type-Options', 'nosniff');
       res.set('Referrer-Policy', 'same-origin');
