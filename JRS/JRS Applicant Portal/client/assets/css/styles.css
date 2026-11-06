@@ -15,7 +15,7 @@ body {
   margin: 0;
   background: var(--jrs-bg);
   color: var(--jrs-text);
-  font-size: 17px;
+  font-size: var(--jrs-text-lg);
   line-height: 1.55;
 }
 
@@ -44,7 +44,7 @@ textarea {
 .btn-lg {
   min-height: 52px;
   padding-inline: 24px;
-  font-size: 17px;
+  font-size: var(--jrs-text-lg);
 }
 
 .btn-primary {
@@ -66,16 +66,16 @@ textarea {
 .form-control,
 .form-select {
   min-height: 48px;
-  border-color: #c9d5e5;
+  border-color: var(--jrs-border-strong);
   border-radius: 6px;
   color: var(--jrs-text);
-  font-size: 17px;
+  font-size: var(--jrs-text-lg);
 }
 
 .form-control-lg,
 .form-select-lg {
   min-height: 54px;
-  font-size: 17px;
+  font-size: var(--jrs-text-lg);
 }
 
 .form-control:focus,
@@ -85,7 +85,7 @@ textarea {
 }
 
 .form-control::placeholder {
-  color: #8793a6;
+  color: var(--jrs-muted);
 }
 
 textarea.form-control {
@@ -127,7 +127,7 @@ textarea.form-control {
   display: block;
   margin-top: 8px;
   color: #aab8cd;
-  font-size: 10px;
+  font-size: var(--jrs-text-xs);
   font-weight: 700;
 }
 
@@ -151,7 +151,7 @@ textarea.form-control {
 
 .brand-mark::before {
   left: 0;
-  background: #fff;
+  background: var(--jrs-surface);
 }
 
 .brand-mark::after {
@@ -182,9 +182,9 @@ textarea.form-control {
 
 .sidebar-label {
   margin: 52px 12px 14px;
-  color: #8ea0ba;
-  font-size: 12px;
-  font-weight: 800;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-xs);
+  font-weight: 700;
 }
 
 .sidebar-nav {
@@ -202,7 +202,7 @@ textarea.form-control {
   border-radius: 7px;
   background: transparent;
   color: #c6d2e2;
-  font-size: 16px;
+  font-size: var(--jrs-text-md);
   font-weight: 700;
   text-align: left;
   text-decoration: none;
@@ -263,8 +263,8 @@ textarea.form-control {
 .topbar-kicker {
   margin: 0 0 2px;
   color: var(--jrs-blue);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--jrs-text-xs);
+  font-weight: 700;
 }
 
 .applicant-identity {
@@ -281,8 +281,8 @@ textarea.form-control {
   border-radius: 50%;
   background: var(--jrs-soft);
   color: var(--jrs-blue);
-  font-size: 15px;
-  font-weight: 800;
+  font-size: var(--jrs-text-md);
+  font-weight: 700;
 }
 
 .identity-copy strong,
@@ -291,12 +291,12 @@ textarea.form-control {
 }
 
 .identity-copy strong {
-  font-size: 15px;
+  font-size: var(--jrs-text-md);
 }
 
 .identity-copy span {
   color: var(--jrs-muted);
-  font-size: 13px;
+  font-size: var(--jrs-text-sm);
 }
 
 .identity-icon {
@@ -362,7 +362,7 @@ textarea.form-control {
 }
 
 .public-brand .brand-mark::before {
-  border: 1px solid #c8d4e6;
+  border: 1px solid var(--jrs-border-strong);
 }
 
 .public-brand strong,
@@ -371,15 +371,15 @@ textarea.form-control {
 }
 
 .public-brand strong {
-  font-size: 25px;
+  font-size: var(--jrs-text-xl);
   line-height: 1;
 }
 
 .public-brand small {
   margin-top: 6px;
   color: var(--jrs-muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: var(--jrs-text-xs);
+  font-weight: 700;
 }
 
 .public-navigation {
@@ -395,8 +395,8 @@ textarea.form-control {
   gap: 9px;
   padding: 0 16px;
   border-bottom: 3px solid transparent;
-  color: #4d5d74;
-  font-weight: 750;
+  color: var(--jrs-muted);
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -420,9 +420,9 @@ textarea.form-control {
   gap: 24px;
   padding: 18px max(28px, calc((100vw - 1480px) / 2));
   border-top: 1px solid var(--jrs-border);
-  background: #fff;
+  background: var(--jrs-surface);
   color: var(--jrs-muted);
-  font-size: 14px;
+  font-size: var(--jrs-text-sm);
 }
 
 .public-footer strong {
@@ -432,15 +432,15 @@ textarea.form-control {
 .eyebrow {
   margin: 0 0 6px;
   color: var(--jrs-muted);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: var(--jrs-text-xs);
+  font-weight: 700;
 }
 
 .section-heading h2,
 .panel-title-row h2,
 .results-heading h2 {
   margin: 0;
-  font-size: 25px;
+  font-size: var(--jrs-text-xl);
   line-height: 1.25;
 }
 
@@ -492,7 +492,7 @@ textarea.form-control {
   position: absolute;
   top: 50%;
   left: 16px;
-  color: #718198;
+  color: var(--jrs-muted);
   transform: translateY(-50%);
   pointer-events: none;
   z-index: 2;
@@ -536,12 +536,12 @@ textarea.form-control {
   position: relative;
   display: grid;
   gap: 8px;
-  color: #344055;
+  color: var(--jrs-text);
   font-weight: 700;
 }
 
 .form-label-group > span:first-child {
-  font-size: 15px;
+  font-size: var(--jrs-text-md);
 }
 
 .form-label-group b {
@@ -569,7 +569,7 @@ textarea.form-control {
 
 .results-note {
   color: var(--jrs-muted);
-  font-size: 14px;
+  font-size: var(--jrs-text-sm);
 }
 
 .job-list {
@@ -587,7 +587,7 @@ textarea.form-control {
 }
 
 .job-card:hover {
-  border-color: #abc0e4;
+  border-color: var(--jrs-border-strong);
   box-shadow: 0 10px 25px rgb(20 35 59 / 8%);
 }
 
@@ -600,7 +600,7 @@ textarea.form-control {
 
 .job-title-row h3 {
   margin: 8px 0 0;
-  font-size: 24px;
+  font-size: var(--jrs-text-xl);
 }
 
 .department-badge,
@@ -611,25 +611,25 @@ textarea.form-control {
   min-height: 28px;
   padding: 3px 10px;
   border-radius: 4px;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--jrs-text-sm);
+  font-weight: 700;
 }
 
 .department-badge {
-  background: #e8f0ff;
+  background: var(--jrs-blue-soft);
   color: var(--jrs-blue-dark);
 }
 
 .job-type {
   flex: 0 0 auto;
   background: var(--jrs-green-soft);
-  color: #0d6946;
+  color: var(--jrs-green);
 }
 
 .job-summary {
   max-width: 820px;
   margin: 12px 0 15px;
-  color: #40506a;
+  color: var(--jrs-muted);
 }
 
 .job-meta-list {
@@ -637,8 +637,8 @@ textarea.form-control {
   flex-wrap: wrap;
   gap: 10px 22px;
   color: var(--jrs-muted);
-  font-size: 14px;
-  font-weight: 650;
+  font-size: var(--jrs-text-sm);
+  font-weight: 600;
 }
 
 .job-meta-list span {
@@ -653,7 +653,7 @@ textarea.form-control {
 
 .job-meta-list.prominent {
   margin-top: 20px;
-  font-size: 15px;
+  font-size: var(--jrs-text-md);
 }
 
 .job-card-action {
@@ -696,8 +696,8 @@ textarea.form-control {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #33415a;
-  font-weight: 750;
+  color: var(--jrs-text);
+  font-weight: 700;
   text-decoration: none;
 }
 
@@ -772,7 +772,7 @@ textarea.form-control {
 .public-apply-panel h3,
 .withdrawn-panel h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--jrs-text-xl);
 }
 
 .detail-list {
@@ -780,7 +780,7 @@ textarea.form-control {
   gap: 11px;
   margin: 14px 0 0;
   padding-left: 22px;
-  color: #3b4a61;
+  color: var(--jrs-text);
 }
 
 .check-list {
@@ -855,15 +855,15 @@ textarea.form-control {
   margin-bottom: 16px;
   padding: 12px;
   border-radius: 6px;
-  background: #f7f0e7;
+  background: var(--jrs-amber-soft);
   color: var(--jrs-amber);
-  font-size: 14px;
-  font-weight: 750;
+  font-size: var(--jrs-text-sm);
+  font-weight: 700;
 }
 
 .fit-result.complete {
   background: var(--jrs-green-soft);
-  color: #0c6a46;
+  color: var(--jrs-green);
 }
 
 .application-heading {
@@ -873,7 +873,7 @@ textarea.form-control {
 .step-position {
   flex: 0 0 auto;
   color: var(--jrs-muted);
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .application-steps {
@@ -892,9 +892,9 @@ textarea.form-control {
   padding: 14px;
   border: 0;
   border-right: 1px solid var(--jrs-border);
-  background: #fff;
+  background: var(--jrs-surface);
   color: var(--jrs-muted);
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .application-step:last-child {
@@ -909,11 +909,11 @@ textarea.form-control {
   flex: 0 0 auto;
   border: 2px solid #aab6c8;
   border-radius: 50%;
-  font-size: 14px;
+  font-size: var(--jrs-text-sm);
 }
 
 .application-step.active {
-  background: #edf3ff;
+  background: var(--jrs-blue-soft);
   color: var(--jrs-blue-dark);
 }
 
@@ -960,8 +960,8 @@ textarea.form-control {
   padding: 1px 6px;
   border-radius: 3px;
   background: rgb(255 255 255 / 92%);
-  color: #76849a;
-  font-size: 12px;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-xs);
   font-weight: 600;
 }
 
@@ -972,7 +972,7 @@ textarea.form-control {
   padding: 16px;
   border: 1px solid #d3a958;
   border-radius: 6px;
-  background: #fff9ed;
+  background: var(--jrs-amber-soft);
 }
 
 .resume-required-box > svg {
@@ -986,7 +986,7 @@ textarea.form-control {
 .resume-required-box p {
   margin: 2px 0 0;
   color: var(--jrs-muted);
-  font-size: 14px;
+  font-size: var(--jrs-text-sm);
   font-weight: 500;
 }
 
@@ -997,7 +997,7 @@ textarea.form-control {
   gap: 14px;
   margin-top: 8px;
   color: var(--jrs-muted);
-  font-size: 14px;
+  font-size: var(--jrs-text-sm);
   font-weight: 600;
 }
 
@@ -1006,7 +1006,7 @@ textarea.form-control {
   align-items: center;
   gap: 6px;
   color: var(--jrs-blue-dark);
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .experience-list,
@@ -1021,9 +1021,9 @@ textarea.form-control {
   gap: 22px;
   margin: 0;
   padding: 24px;
-  border: 1px solid #cbd8e9;
+  border: 1px solid var(--jrs-border-strong);
   border-radius: 7px;
-  background: #fbfcfe;
+  background: var(--jrs-surface);
 }
 
 .experience-entry-heading {
@@ -1036,8 +1036,8 @@ textarea.form-control {
 .experience-entry-heading legend {
   width: auto;
   margin: 0;
-  font-size: 20px;
-  font-weight: 800;
+  font-size: var(--jrs-text-lg);
+  font-weight: 700;
 }
 
 .large-textarea {
@@ -1048,7 +1048,7 @@ textarea.form-control {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .current-role-check .form-check-input {
@@ -1060,7 +1060,7 @@ textarea.form-control {
 .field-help {
   margin: -12px 0 0;
   color: var(--jrs-muted);
-  font-size: 13px;
+  font-size: var(--jrs-text-sm);
 }
 
 .skill-selector {
@@ -1072,8 +1072,8 @@ textarea.form-control {
 
 .skill-selector legend {
   margin-bottom: 10px;
-  font-size: 18px;
-  font-weight: 750;
+  font-size: var(--jrs-text-lg);
+  font-weight: 700;
 }
 
 .skill-add-row {
@@ -1095,9 +1095,9 @@ textarea.form-control {
   align-items: center;
   gap: 5px;
   padding: 5px 8px;
-  border: 1px solid #b8ccec;
+  border: 1px solid var(--jrs-border-strong);
   border-radius: 5px;
-  background: #edf4ff;
+  background: var(--jrs-blue-soft);
   color: var(--jrs-blue-dark);
   font-weight: 700;
 }
@@ -1140,14 +1140,14 @@ textarea.form-control {
 
 .review-grid dt {
   color: var(--jrs-muted);
-  font-size: 13px;
-  font-weight: 750;
+  font-size: var(--jrs-text-sm);
+  font-weight: 700;
 }
 
 .review-grid dd {
   margin: 4px 0 0;
-  font-size: 17px;
-  font-weight: 750;
+  font-size: var(--jrs-text-lg);
+  font-weight: 700;
   overflow-wrap: anywhere;
 }
 
@@ -1158,7 +1158,7 @@ textarea.form-control {
   padding: 16px;
   border-radius: 6px;
   background: var(--jrs-green-soft);
-  color: #175d45;
+  color: var(--jrs-green);
 }
 
 .submission-note p {
@@ -1179,8 +1179,8 @@ textarea.form-control {
   padding: 18px;
   border: 1px solid #e2b448;
   border-radius: 6px;
-  background: #fff8e6;
-  color: #654b0b;
+  background: var(--jrs-amber-soft);
+  color: var(--jrs-amber);
   cursor: pointer;
 }
 
@@ -1221,7 +1221,7 @@ textarea.form-control {
 }
 
 .icon-button:hover {
-  background: #edf1f7;
+  background: var(--jrs-soft);
 }
 
 .icon-button.danger {
@@ -1229,7 +1229,7 @@ textarea.form-control {
 }
 
 .icon-button.danger:hover {
-  background: #fdeef0;
+  background: var(--jrs-danger-soft);
 }
 
 .visibility-section {
@@ -1243,7 +1243,7 @@ textarea.form-control {
 
 .visibility-section h2 {
   margin: 0;
-  font-size: 26px;
+  font-size: var(--jrs-text-xl);
 }
 
 .visibility-section > div > p:not(.eyebrow) {
@@ -1265,14 +1265,14 @@ textarea.form-control {
   padding: 14px;
   border: 2px solid var(--jrs-border);
   border-radius: 7px;
-  background: #fff;
+  background: var(--jrs-surface);
   color: var(--jrs-muted);
   text-align: left;
 }
 
 .visibility-option.selected {
   border-color: var(--jrs-blue);
-  background: #edf3ff;
+  background: var(--jrs-blue-soft);
   color: var(--jrs-blue-dark);
 }
 
@@ -1283,7 +1283,7 @@ textarea.form-control {
 
 .visibility-option small {
   margin-top: 3px;
-  font-size: 12px;
+  font-size: var(--jrs-text-xs);
 }
 
 .resume-summary-section {
@@ -1309,7 +1309,7 @@ textarea.form-control {
 .resume-summary-section h2,
 .resume-upload-intro h2 {
   margin: 0;
-  font-size: 26px;
+  font-size: var(--jrs-text-xl);
 }
 
 .resume-summary-section p:not(.eyebrow),
@@ -1342,12 +1342,12 @@ textarea.form-control {
 
 .upload-rules span {
   padding: 5px 10px;
-  border: 1px solid #cbd8e9;
+  border: 1px solid var(--jrs-border-strong);
   border-radius: 5px;
-  background: #f8fafc;
-  color: #53627a;
-  font-size: 13px;
-  font-weight: 750;
+  background: var(--jrs-bg);
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-sm);
+  font-weight: 700;
 }
 
 .upload-workspace {
@@ -1370,8 +1370,8 @@ textarea.form-control {
   padding: 30px;
   border: 2px dashed #aabbd2;
   border-radius: 8px;
-  background: #f8fafc;
-  color: #53627a;
+  background: var(--jrs-bg);
+  color: var(--jrs-muted);
   text-align: center;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease;
@@ -1380,7 +1380,7 @@ textarea.form-control {
 .resume-dropzone:hover,
 .resume-dropzone.drag-active {
   border-color: var(--jrs-blue);
-  background: #edf3ff;
+  background: var(--jrs-blue-soft);
 }
 
 .resume-dropzone.has-file {
@@ -1400,14 +1400,14 @@ textarea.form-control {
   max-width: 100%;
   overflow: hidden;
   color: var(--jrs-text);
-  font-size: 20px;
+  font-size: var(--jrs-text-lg);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .resume-dropzone > span:not(.btn) {
   color: var(--jrs-muted);
-  font-size: 15px;
+  font-size: var(--jrs-text-md);
 }
 
 .resume-dropzone input {
@@ -1420,7 +1420,7 @@ textarea.form-control {
 
 .resume-browse-button {
   margin-top: 8px;
-  background: #fff;
+  background: var(--jrs-surface);
 }
 
 .selected-resume-row {
@@ -1455,7 +1455,7 @@ textarea.form-control {
 .selected-resume-row span {
   margin-top: 3px;
   color: var(--jrs-muted);
-  font-size: 13px;
+  font-size: var(--jrs-text-sm);
 }
 
 .upload-progress {
@@ -1467,12 +1467,12 @@ textarea.form-control {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  font-size: 14px;
+  font-size: var(--jrs-text-sm);
 }
 
 .upload-progress .progress {
   height: 10px;
-  background: #e5ebf4;
+  background: var(--jrs-soft);
 }
 
 .upload-progress .progress-bar {
@@ -1492,8 +1492,8 @@ textarea.form-control {
   border-radius: 5px;
   background: var(--jrs-soft);
   color: var(--jrs-blue-dark);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--jrs-text-sm);
+  font-weight: 700;
 }
 
 .resume-count {
@@ -1557,7 +1557,7 @@ textarea.form-control {
 .resume-row small {
   margin-top: 3px;
   color: var(--jrs-muted);
-  font-size: 12px;
+  font-size: var(--jrs-text-xs);
 }
 
 .empty-inline {
@@ -1577,7 +1577,7 @@ textarea.form-control {
   justify-content: space-between;
   gap: 20px;
   padding: 14px 18px;
-  border: 1px solid #b9c9df;
+  border: 1px solid var(--jrs-border-strong);
   border-radius: 8px;
   background: rgb(255 255 255 / 96%);
   box-shadow: 0 12px 32px rgb(20 35 59 / 15%);
@@ -1597,20 +1597,20 @@ textarea.form-control {
   flex: 0 0 auto;
   min-height: 36px;
   padding: 6px 13px;
-  background: #e8f0ff;
+  background: var(--jrs-blue-soft);
   color: var(--jrs-blue-dark);
-  font-size: 15px;
+  font-size: var(--jrs-text-md);
 }
 
 .status-accepted {
   background: var(--jrs-green-soft);
-  color: #0c6a46;
+  color: var(--jrs-green);
 }
 
 .status-rejected,
 .status-withdrawn {
-  background: #fdecef;
-  color: #a92e3b;
+  background: var(--jrs-danger-soft);
+  color: var(--jrs-danger);
 }
 
 .progress-section {
@@ -1633,7 +1633,7 @@ textarea.form-control {
   left: 12.5%;
   right: 12.5%;
   height: 3px;
-  background: #d4deeb;
+  background: var(--jrs-border-strong);
   content: "";
 }
 
@@ -1642,7 +1642,7 @@ textarea.form-control {
   display: grid;
   justify-items: center;
   gap: 10px;
-  color: #7d899a;
+  color: var(--jrs-muted);
   text-align: center;
   z-index: 1;
 }
@@ -1652,11 +1652,11 @@ textarea.form-control {
   height: 38px;
   display: grid;
   place-items: center;
-  border: 3px solid #c6d1df;
+  border: 3px solid var(--jrs-border-strong);
   border-radius: 50%;
-  background: #fff;
-  font-size: 14px;
-  font-weight: 800;
+  background: var(--jrs-surface);
+  font-size: var(--jrs-text-sm);
+  font-weight: 700;
 }
 
 .status-timeline li.reached {
@@ -1689,13 +1689,13 @@ textarea.form-control {
 .application-summary h2,
 .applicant-actions h2 {
   margin: 0;
-  font-size: 23px;
+  font-size: var(--jrs-text-xl);
 }
 
 .status-message {
   margin: 22px 0;
-  font-size: 19px;
-  font-weight: 650;
+  font-size: var(--jrs-text-lg);
+  font-weight: 600;
 }
 
 .status-update small {
@@ -1721,7 +1721,7 @@ textarea.form-control {
 
 .application-summary dt {
   color: var(--jrs-muted);
-  font-size: 12px;
+  font-size: var(--jrs-text-xs);
 }
 
 .application-summary dd {
@@ -1729,7 +1729,7 @@ textarea.form-control {
   align-items: center;
   gap: 7px;
   margin: 0;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .applicant-actions {
@@ -1812,7 +1812,7 @@ textarea.form-control {
 .auth-connect-panel > p:not(.eyebrow) {
   margin: 0;
   color: var(--jrs-muted);
-  font-size: 18px;
+  font-size: var(--jrs-text-lg);
 }
 
 .auth-connect-actions {
@@ -1890,7 +1890,7 @@ textarea.form-control {
 
 @media (max-width: 720px) {
   body {
-    font-size: 16px;
+    font-size: var(--jrs-text-md);
   }
 
   .topbar {
@@ -1899,7 +1899,7 @@ textarea.form-control {
   }
 
   .topbar h1 {
-    font-size: 24px;
+    font-size: var(--jrs-text-xl);
   }
 
   .page-content {
@@ -1930,7 +1930,7 @@ textarea.form-control {
   .public-header > .btn {
     min-height: 44px;
     padding-inline: 12px;
-    font-size: 15px;
+    font-size: var(--jrs-text-md);
   }
 
   .public-content {

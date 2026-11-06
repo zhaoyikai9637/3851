@@ -9,7 +9,7 @@
   --jrs-button-height: 40px;
 }
 
-body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text) {
+body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link) {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -21,10 +21,10 @@ body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .b
   padding: 8px 14px;
   border: 1px solid var(--jrs-button-border);
   border-radius: var(--jrs-button-radius);
-  background: #fff;
+  background: var(--jrs-surface);
   color: var(--jrs-button-text);
   font-family: var(--jrs-font);
-  font-size: 13px;
+  font-size: var(--jrs-text-sm);
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: normal;
@@ -35,9 +35,9 @@ body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .b
   cursor: pointer;
   transition: background-color .15s, border-color .15s, color .15s;
 }
-body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text):hover:not(:disabled):not(.disabled) {
+body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link):hover:not(:disabled):not(.disabled) {
   background: var(--jrs-button-soft);
-  border-color: #b8c7dd;
+  border-color: var(--jrs-border-strong);
   color: var(--jrs-button-text);
   box-shadow: none;
   transform: none;
@@ -52,13 +52,13 @@ body :is(.btn-primary, .btn-primary-small, .btn-success):not(.btn-link):hover:no
   border-color: var(--jrs-button-primary-hover);
   color: #fff;
 }
-body :is(.btn-danger, .btn-outline-danger):not(.btn-link) { background:#fff; border-color:#e8b8c0; color:#b22f42; }
-body :is(.btn-danger, .btn-outline-danger):not(.btn-link):hover:not(:disabled):not(.disabled) { background:#fff1f3; border-color:#c13d4d; color:#a92e3e; }
-body .btn-link { min-height:40px; padding:8px 14px; color:var(--jrs-button-primary); font-size:13px; font-weight:600; }
-body :is(.btn, .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text):is(:disabled, .disabled, [aria-disabled="true"]) {
+body :is(.btn-danger, .btn-outline-danger):not(.btn-link) { background:var(--jrs-surface); border-color:#e8b8c0; color:var(--jrs-danger); }
+body :is(.btn-danger, .btn-outline-danger):not(.btn-link):hover:not(:disabled):not(.disabled) { background:var(--jrs-danger-soft); border-color:var(--jrs-danger); color:var(--jrs-danger); }
+body .btn-link { min-height:40px; padding:8px 14px; color:var(--jrs-button-primary); font-size:var(--jrs-text-sm); font-weight:600; }
+body :is(.btn, .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link):is(:disabled, .disabled, [aria-disabled="true"]) {
   opacity:.45; cursor:not-allowed; box-shadow:none; pointer-events:none;
 }
-body :is(.btn, .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text):focus-visible {
+body :is(.btn, .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link):focus-visible {
   outline:2px solid var(--jrs-button-primary); outline-offset:3px; box-shadow:none;
 }
 body :is(.btn, .btn-primary-small, .btn-outline, .btn-secondary-link) > svg { width:17px; height:17px; flex-shrink:0; }
@@ -70,5 +70,22 @@ body :is(.icon-button, .drawer-close, .card-edit-btn) {
 body :is(.icon-button, .drawer-close, .card-edit-btn):focus-visible { outline:2px solid var(--jrs-button-primary); outline-offset:3px; }
 
 @media(max-width:600px) {
-  body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link, .btn-text) { white-space:normal; overflow-wrap:anywhere; }
+  body :is(.btn:not(.btn-link), .btn-primary, .btn-primary-small, .btn-outline, .btn-secondary-link) { white-space:normal; overflow-wrap:anywhere; }
+}
+
+/* Text buttons read as links: no box, brand colour. */
+body .btn-text {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--jrs-blue);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+body .btn-text:hover:not(:disabled) {
+  color: var(--jrs-blue-dark);
+  text-decoration: underline;
 }

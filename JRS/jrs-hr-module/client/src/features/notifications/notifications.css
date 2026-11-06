@@ -2,18 +2,18 @@
   display: flex;
   gap: 4px;
   padding: 3px;
-  border: 1px solid #d9e1ec;
+  border: 1px solid var(--jrs-border);
   border-radius: 9px;
-  background: #f4f7fb;
+  background: var(--jrs-bg);
 }
 
 .filter-tabs button {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #52647d;
-  font-size: 12px;
-  font-weight: 650;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-xs);
+  font-weight: 600;
   padding: 6px 9px;
   white-space: nowrap;
 }
@@ -21,7 +21,7 @@
 .filter-tabs button.active,
 .filter-tabs button:hover {
   color: var(--jrs-blue-dark);
-  background: #fff;
+  background: var(--jrs-surface);
   box-shadow: 0 1px 3px #1d35571a;
 }
 
@@ -66,7 +66,7 @@
   height: 36px;
   padding-top: 6px;
   padding-bottom: 6px;
-  font-size: 12px;
+  font-size: var(--jrs-text-xs);
   border-radius: 8px;
 }
 
@@ -77,8 +77,8 @@
 }
 
 .notification-filter-toggle.active {
-  border-color: #9db4e8;
-  background: #edf3ff;
+  border-color: var(--jrs-border-strong);
+  background: var(--jrs-blue-soft);
   color: var(--jrs-blue-dark);
 }
 
@@ -88,7 +88,7 @@
   gap: 12px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--line);
-  background: #f7f9fc;
+  background: var(--jrs-bg);
 }
 
 .notification-date-panel .field {
@@ -105,16 +105,16 @@
   gap: 7px;
   padding: 9px 16px;
   border-bottom: 1px solid var(--line);
-  background: #fbfcfe;
+  background: var(--jrs-surface);
 }
 
 .active-filter-list button {
-  border: 1px solid #cad7ed;
+  border: 1px solid var(--jrs-border-strong);
   border-radius: 7px;
-  background: #fff;
-  color: #3f5677;
+  background: var(--jrs-surface);
+  color: var(--jrs-muted);
   padding: 4px 8px;
-  font-size: 11px;
+  font-size: var(--jrs-text-xs);
 }
 
 .active-filter-list button:hover {
@@ -136,9 +136,9 @@
 
 .notification-group > h2 {
   margin: 0 0 4px;
-  color: #6a7890;
-  font-size: 10px;
-  font-weight: 760;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-xs);
+  font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
@@ -178,7 +178,7 @@
 }
 
 button.notification-card-main:hover {
-  background: #f7f9fc;
+  background: var(--jrs-bg);
 }
 
 .notification-card-main:focus-visible {
@@ -203,12 +203,12 @@ button.notification-card-main:hover {
   width: 36px;
   height: 36px;
   border-radius: 9px;
-  background: #edf1f6;
-  color: #607189;
+  background: var(--jrs-soft);
+  color: var(--jrs-muted);
 }
 
 .notification-card.unread .notification-symbol {
-  background: #e8efff;
+  background: var(--jrs-blue-soft);
   color: var(--jrs-blue-dark);
 }
 
@@ -219,22 +219,22 @@ button.notification-card-main:hover {
 }
 
 .notification-title {
-  color: #293e5c;
-  font-size: 13px;
-  font-weight: 620;
+  color: var(--jrs-text);
+  font-size: var(--jrs-text-sm);
+  font-weight: 600;
   line-height: 1.35;
 }
 
 .notification-card.unread .notification-title {
-  color: #172f53;
-  font-weight: 760;
+  color: var(--jrs-text);
+  font-weight: 700;
 }
 
 .notification-message {
   overflow: hidden;
   margin-top: 2px;
-  color: #52647d;
-  font-size: 12px;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-xs);
   line-height: 1.45;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -242,15 +242,15 @@ button.notification-card-main:hover {
 
 .notification-meta {
   margin-top: 4px;
-  color: #748197;
-  font-size: 10px;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-xs);
   line-height: 1.4;
 }
 
 .notification-cta {
   padding-left: 10px;
   color: var(--jrs-blue-dark);
-  font-size: 11px;
+  font-size: var(--jrs-text-xs);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -269,14 +269,14 @@ button.notification-card-main:hover {
   border: 0;
   border-radius: 7px;
   background: transparent;
-  color: #63748b;
-  font-size: 20px;
+  color: var(--jrs-muted);
+  font-size: var(--jrs-text-lg);
   line-height: 1;
 }
 
 .notification-more-trigger:hover,
 .notification-more-trigger[aria-expanded="true"] {
-  background: #edf2f8;
+  background: var(--jrs-soft);
   color: var(--jrs-blue-dark);
 }
 
@@ -291,9 +291,9 @@ button.notification-card-main:hover {
   right: 0;
   width: 154px;
   padding: 5px;
-  border: 1px solid #d7e0ed;
+  border: 1px solid var(--jrs-border);
   border-radius: 9px;
-  background: #fff;
+  background: var(--jrs-surface);
   box-shadow: 0 12px 30px #1b335821;
 }
 
@@ -308,15 +308,15 @@ button.notification-card-main:hover {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #344b6a;
-  font-size: 11px;
-  font-weight: 650;
+  color: var(--jrs-text);
+  font-size: var(--jrs-text-xs);
+  font-weight: 600;
   text-align: left;
 }
 
 .notification-more-menu button:hover,
 .notification-more-menu button:focus-visible {
-  background: #edf3ff;
+  background: var(--jrs-blue-soft);
   color: var(--jrs-blue-dark);
   outline: none;
 }
@@ -338,7 +338,7 @@ button.notification-card-main:hover {
 .notification-skeleton-row i {
   display: block;
   border-radius: 7px;
-  background: #edf1f6;
+  background: var(--jrs-soft);
 }
 
 .notification-skeleton .notification-skeleton-row > span {
@@ -368,10 +368,10 @@ button.notification-card-main:hover {
   padding: 11px 14px;
   border: 1px solid #2d466c;
   border-radius: 10px;
-  background: #172f53;
+  background: var(--jrs-navy);
   box-shadow: 0 12px 30px #10284d33;
   color: #fff;
-  font-size: 12px;
+  font-size: var(--jrs-text-xs);
 }
 
 .mark-all-toast button {
@@ -379,7 +379,7 @@ button.notification-card-main:hover {
   padding: 2px;
   background: transparent;
   color: #bcd0ff;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .mark-all-toast button:hover,
@@ -394,7 +394,7 @@ button.notification-card-main:hover {
   }
 
   .filter-tabs button {
-    font-size: 12px;
+    font-size: var(--jrs-text-xs);
   }
 
   .notification-toolbar {
@@ -454,7 +454,7 @@ button.notification-card-main:hover {
   }
 
   .notification-title {
-    font-size: 12px;
+    font-size: var(--jrs-text-xs);
   }
 
   .notification-message {

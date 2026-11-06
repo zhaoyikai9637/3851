@@ -31,13 +31,10 @@ export default function PublicLayout() {
               Applicant workspace
             </Link>
           ) : (
-            <div className="public-auth-actions">
-              <a className="btn btn-link" href={loginUrl("/applicant/jobs", { register: true })}>Create account</a>
-              <a className="btn btn-outline-primary" href={loginUrl("/applicant/jobs")}>
-                <LogIn size={19} />
-                Sign in
-              </a>
-            </div>
+            <a className="btn btn-outline-primary" href={loginUrl("/applicant/jobs")}>
+              <LogIn size={19} />
+              Sign in
+            </a>
           )
         )}
       </header>
