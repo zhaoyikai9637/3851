@@ -498,6 +498,8 @@ describe("notification workflow", () => {
     expect(
       screen.getByRole("status", { name: "Loading notifications" }),
     ).toBeVisible();
+    // The list request may start a tick after the heading renders; wait for it before answering.
+    await waitFor(() => expect(resolve).toBeTypeOf("function"));
     resolve(
       json({ items: [], total: 0, page: 1, pageSize: 20, unread: 0, all: 0 }),
     );
