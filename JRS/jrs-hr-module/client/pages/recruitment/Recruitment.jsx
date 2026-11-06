@@ -7,6 +7,8 @@ const validRoute = (value) =>
   /^(?:dashboard|jobs|interviews|reports|applications(?:\/(?:applications-review|pending-review|interview|interview-results|offer|rejected|hired))?|(?:review|results)\/[A-Za-z0-9_-]+|candidate\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?)$/.test(
     value,
   );
+const MIN_FRAME_HEIGHT = 640;
+
 export function Recruitment({ page, title }) {
   const frame = useRef(null),
     navigate = useNavigate();
@@ -180,7 +182,10 @@ export function Recruitment({ page, title }) {
         onLoad={reportViewport}
         style={{
           width: "100%",
-          height: contentHeight + "px",
+          // The embedded stylesheets switch layout at a 620px viewport height. Sizing the frame
+          // to its content alone let a page near that height flip between both layouts every
+          // frame (visible as ghosting), so the frame never drops below the breakpoint.
+          height: Math.max(contentHeight, MIN_FRAME_HEIGHT) + "px",
           border: 0,
           display: "block",
           background: "transparent",
