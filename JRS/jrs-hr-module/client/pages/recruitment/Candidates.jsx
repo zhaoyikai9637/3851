@@ -36,7 +36,7 @@ export function Candidates({ onOpen }) {
     );
   }
   return (
-    <div className="candidate-list-workspace" ref={list}>
+    <div className="candidate-list-workspace fit-page" ref={list}>
       <div className="workspace-toolbar" role="search" aria-label="Candidate filters">
         <label className="jrs-search">
         <Icon name="search" />
@@ -55,7 +55,7 @@ export function Candidates({ onOpen }) {
           </button>
         )}
       </div>
-      <section className="surface candidate-surface">
+      <section className="surface candidate-surface fit-panel fit-body">
         {load.busy ? (
           <Loading />
         ) : load.error ? (

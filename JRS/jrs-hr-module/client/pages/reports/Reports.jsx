@@ -203,7 +203,7 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
   const tasksPage = stats.tasks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="reports-page" ref={host}>
+    <div className="reports-page fit-page" ref={host}>
       <div className="report-heading">
         <button className="btn btn-primary" type="button" onClick={exportReport}><Download size={18} aria-hidden="true" />Export Report</button>
       </div>
@@ -228,9 +228,9 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
               </section>
             ))}
           </div>
-          <section className="report-card">
+          <section className="report-card fit-panel">
             <h3>Applications by stage</h3>
-            <div className="report-stage-bars">
+            <div className="report-stage-bars fit-body">
               {stats.stages.map(([stage, count]) => (
                 <div key={stage}>
                   <div className="report-stage-label"><span>{stage}</span><strong>{count}</strong></div>
@@ -245,8 +245,8 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
       )}
 
       {section === "jobs" && (
-        <section className="report-card flush">
-          <div className="table-responsive">
+        <section className="report-card flush fit-panel">
+          <div className="table-responsive fit-body">
             <table className="report-table">
               <thead>
                 <tr><th>Position</th><th>Applications</th><th>In review</th><th>Offers</th><th>Hired</th></tr>
@@ -273,14 +273,14 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
       )}
 
       {section === "tasks" && (
-        <section className="report-card">
+        <section className="report-card fit-panel">
           {stats.tasks.length === 0 ? (
             <div className="report-empty">
               <strong>No open tasks</strong>
               <p>Tasks created from candidate records appear here.</p>
             </div>
           ) : (
-            <ul className="report-tasks">
+            <ul className="report-tasks fit-body">
               {tasksPage.map((task) => (
                 <li key={task.id} data-fit-row>
                   <div>

@@ -1387,3 +1387,17 @@ button:disabled {
 .sidebar-group + .sidebar-group {
   margin-top: var(--jrs-space-5);
 }
+
+/* Fill the window on paged pages: the page's main card stretches to the bottom of the
+   content area, the pager sits on the card's bottom edge and the spare height is shared
+   by the rows. Row counting measures with .fit-measuring set, which switches this off. */
+@media (min-width: 1001px) and (min-height: 620px) {
+  html:not(.fit-measuring) .main-content { display: flex; flex-direction: column; }
+  html:not(.fit-measuring) :is(.fit-page, .fit-panel, .fit-body):not([hidden]) { flex: 1 0 auto; display: flex; flex-direction: column; }
+  html:not(.fit-measuring) .fit-frame { flex: 1 0 auto; }
+  html:not(.fit-measuring) .fit-body > :is(table, .table-responsive, .notification-groups) { flex: 1 0 auto; }
+  html:not(.fit-measuring) .fit-body > .table-responsive { display: flex; flex-direction: column; }
+  html:not(.fit-measuring) .fit-body > .table-responsive > table { flex: 1 0 auto; }
+  html:not(.fit-measuring) .fit-body > [data-fit-row] { flex: 1 0 auto; }
+  html:not(.fit-measuring) .report-stage-bars.fit-body { justify-content: space-between; }
+}

@@ -47,7 +47,7 @@ export function Notifications() {
         description={summary}
         className="workspace-page-heading"
       />
-      <section className="surface notification-surface" ref={host}>
+      <section className="surface notification-surface fit-panel" ref={host}>
         <NotificationToolbar
           activeFilters={activeFilters}
           allCount={allCount}
@@ -64,7 +64,7 @@ export function Notifications() {
           showDates={showDates}
           unreadCount={unreadCount}
         />
-        <div className="surface-content notification-content">
+        <div className="surface-content notification-content fit-body">
           <ErrorBox error={filterError || error} />
           {load.busy ? (
             <NotificationSkeleton />

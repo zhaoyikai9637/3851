@@ -65,7 +65,7 @@ export function JobPostings() {
   }
   return (
     <>
-    <div className="jobs-workspace" ref={list} hidden={!!details}>
+    <div className="jobs-workspace fit-page" ref={list} hidden={!!details}>
       <div className="jobs-toolbar" role="toolbar" aria-label="Job filters and actions">
         <label className="jobs-search">
           <Icon name="search" />
@@ -123,8 +123,8 @@ export function JobPostings() {
         <Loading />
       ) : (
         data && (
-          <section className="jobs-table-panel">
-            <div className="jobs-table-scroll">
+          <section className="jobs-table-panel fit-panel">
+            <div className="jobs-table-scroll fit-body">
               <table className="jobs-table" aria-label="Job postings">
                 <thead>
                   <tr>

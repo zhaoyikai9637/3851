@@ -162,7 +162,7 @@ export function Recruitment({ page, title }) {
   }, [embeddedPage, frameVisible]);
   return (
     <>
-      {page==='candidates'&&<div hidden={Boolean(candidate)}><Candidates onOpen={setCandidate}/></div>}
+      {page==='candidates'&&<div className="fit-page" hidden={Boolean(candidate)}><Candidates onOpen={setCandidate}/></div>}
       {candidate && (
         <button
           className="btn btn-outline-secondary mb-3"
@@ -176,6 +176,7 @@ export function Recruitment({ page, title }) {
       )}
       {(page!=='candidates'||candidate)&&<iframe
         ref={frame}
+        className="fit-frame"
         title={title}
         src={source}
         scrolling="no"

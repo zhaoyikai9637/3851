@@ -209,3 +209,14 @@
   border: 1px solid var(--jrs-line);
   border-radius: var(--jrs-control-radius);
 }
+
+/* Fill the frame: the shell stretches the frame to the bottom of the window, so the
+   list card grows to meet it and the spare height is shared by the rows. Paging and
+   frame sizing measure with .fit-measuring set, which switches these rules off. */
+@media (min-width: 700px) {
+  html.fit-fill:not(.fit-measuring) #content { min-height: 100vh !important; display: flex !important; flex-direction: column; }
+  html.fit-fill:not(.fit-measuring) #content > :is(.queue-panel, .dashboard-grid) { flex: 1 0 auto; }
+  html.fit-fill:not(.fit-measuring) #content :is(.queue-panel, .dashboard-grid > .panel:has(> .table-scroll)) { display: flex; flex-direction: column; }
+  html.fit-fill:not(.fit-measuring) #content .panel > .table-scroll { flex: 1 0 auto; display: flex; flex-direction: column; }
+  html.fit-fill:not(.fit-measuring) #content .panel > .table-scroll > table { flex: 1 0 auto; }
+}

@@ -380,7 +380,7 @@ export function Interviews({ fetcher, now }) {
   if (!db) return <div className="loading-state" role="status"><span className="spinner-border spinner-border-sm" aria-hidden="true" /> Loading…</div>;
 
   return (
-    <div className="jobs-workspace interviews-page" ref={host}>
+    <div className="jobs-workspace interviews-page fit-page" ref={host}>
       <div className="jobs-toolbar" role="toolbar" aria-label="Interview filters and actions">
         <label className="jobs-search">
           <Icon name="search" />
@@ -412,7 +412,7 @@ export function Interviews({ fetcher, now }) {
         </div>
       )}
 
-      <section className="jobs-table-panel">
+      <section className="jobs-table-panel fit-panel">
         {visible.length === 0 ? (
           <div className="jobs-empty">
             <Icon name="calendar" />
@@ -420,7 +420,7 @@ export function Interviews({ fetcher, now }) {
             <p>Schedule a candidate in the Interview stage, or change your filters.</p>
           </div>
         ) : (
-          <div className="jobs-table-scroll">
+          <div className="jobs-table-scroll fit-body">
             <table className="jobs-table" aria-label="Interviews">
               <thead>
                 <tr><th>Applicant</th><th>Interview status</th><th>Date &amp; time</th><th>Meeting</th><th>Action</th></tr>

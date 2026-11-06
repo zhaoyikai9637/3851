@@ -50,7 +50,7 @@ export function Logs() {
   return (
     <>
       <PageHeading eyebrow={null} className="workspace-page-heading" title="Logs" />
-      <section className="surface log-surface" ref={host}>
+      <section className="surface log-surface fit-panel" ref={host}>
         <LogFilters
           draft={draft}
           setDraft={setDraft}
@@ -60,7 +60,7 @@ export function Logs() {
           onClear={clear}
           hasFilters={hasFilters}
         />
-        <div className="log-content">
+        <div className="log-content fit-body">
           <ErrorBox error={error} />
           {load.busy ? (
             <Loading />
