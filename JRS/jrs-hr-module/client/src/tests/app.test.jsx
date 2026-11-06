@@ -51,7 +51,7 @@ beforeEach(() => {
     if (path === "/api/auth/config") return json({loginUrl:null,adapterConfigured:true});
     if (path === '/recruitment/api/auth/me') return json({user:{id:'hr-test'},csrfToken:'shared-token'});
     if (path === '/recruitment/api/hr/job-postings') return json({revision:0,items:[],templates:[]});
-    if (path === '/recruitment/api/hr/workspace') return json({revision:1,jobs:[],applications:[],interviews:[],tasks:[]});
+    if (path === '/recruitment/api/hr/workspace') return json({revision:1,jobs:[],candidates:[],applications:[],interviews:[],tasks:[]});
     if (path === "/api/auth/logout") {
       state.signedIn = false;
       return json(null, 204);
@@ -196,8 +196,8 @@ describe("authentication and navigation", () => {
   });
 
   it('lets the browser scroll the full embedded content and rejects untrusted or invalid sizes', async () => {
-    mount('/interviews');
-    const frame = await screen.findByTitle('Interviews');
+    mount('/dashboard');
+    const frame = await screen.findByTitle('Dashboard');
     for (const next of [1600, 820, 1600]) {
       fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:frame',height:next}}));
       await waitFor(()=>expect(frame.style.height).toBe(next+'px'));
@@ -232,7 +232,7 @@ describe("authentication and navigation", () => {
   });
 
   it('opens embedded dialogs at the browser viewport top so footer actions remain reachable',async()=>{
-    mount('/interviews');const frame=await screen.findByTitle('Interviews');
+    mount('/applications');const frame=await screen.findByTitle('Applications');
     frame.getBoundingClientRect=()=>({top:120});frame.scrollIntoView=vi.fn();
     fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:dialog'}}));
     expect(frame.scrollIntoView).toHaveBeenCalledWith({block:'start'});
