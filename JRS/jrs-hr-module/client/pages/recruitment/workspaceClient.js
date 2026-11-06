@@ -21,6 +21,15 @@ async function readJson(response) {
   return data;
 }
 
+// Every list the native pages read is present, even when a snapshot omits an empty one.
+const LISTS = ["jobs", "candidates", "applications", "interviews", "tasks", "activity", "notifications", "templates"];
+export function normalizeWorkspace(snapshot) {
+  if (!snapshot) return snapshot;
+  const result = { ...snapshot };
+  for (const name of LISTS) if (!Array.isArray(result[name])) result[name] = [];
+  return result;
+}
+
 const requestKey = () => "request-" + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2));
 
 export function useWorkspace(fetcher = (...args) => fetch(...args), returnTo = "/hr/dashboard") {
@@ -38,7 +47,7 @@ export function useWorkspace(fetcher = (...args) => fetch(...args), returnTo = "
         fetcher("/recruitment/api/hr/workspace", { credentials: "same-origin" }).then(readJson),
       ]);
       csrf.current = me.csrfToken || "";
-      setDb(workspace);
+      setDb(normalizeWorkspace(workspace));
       setError("");
       return workspace;
     } catch (requestError) {
@@ -72,7 +81,7 @@ export function useWorkspace(fetcher = (...args) => fetch(...args), returnTo = "
           body: JSON.stringify(payload),
         }).then(readJson);
         pending.current = null;
-        setDb(result.db);
+        setDb(normalizeWorkspace(result.db));
         return result.result;
       } catch (requestError) {
         if (requestError.status && requestError.status < 500) pending.current = null;
@@ -107,7 +116,7 @@ export function useWorkspace(fetcher = (...args) => fetch(...args), returnTo = "
           ...options,
           headers: { "X-CSRF-Token": csrf.current, "If-Match": String(dbRef.current?.revision ?? 0), ...options.headers },
         }).then(readJson);
-        setDb(result.db);
+        setDb(normalizeWorkspace(result.db));
         return result;
       } catch (requestError) {
         if (requestError.code === "REVISION_CONFLICT") {

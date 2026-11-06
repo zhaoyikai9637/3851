@@ -68,9 +68,9 @@ export function CandidateProfile({ candidateId, applicationId, applicationLink, 
   }
   if (!db) return <div className="loading-state" role="status"><span className="spinner-border spinner-border-sm" aria-hidden="true" /> Loading…</div>;
 
-  const person = db.candidates.find((item) => item.id === candidateId);
+  const person = (db.candidates || []).find((item) => item.id === candidateId);
   if (!person) return <div className="hr-legacy"><Empty title="Candidate not found" /></div>;
-  const applications = db.applications.filter((item) => item.candidateId === person.id);
+  const applications = (db.applications || []).filter((item) => item.candidateId === person.id);
   const application = applications.find((item) => !applicationId || item.id === applicationId);
 
   if (!application) {

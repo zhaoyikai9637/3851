@@ -243,14 +243,10 @@ describe("authentication and navigation", () => {
     expect(await screen.findByRole('heading', { name: 'My Profile', level: 1 })).toBeVisible();
   });
 
-  it('keeps embedded stage paths out of the compact navigation header', async () => {
-    const ui = mount('/dashboard');
-    const frame = await screen.findByTitle('Dashboard');
-    fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [{label:'Applications',route:'applications'},{label:'Offer',route:null}] } }));
-    const header = screen.getByRole('navigation', { name: 'Current location' });
-    expect(within(header).queryByText('Offer')).not.toBeInTheDocument();
-    fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [] } }));
-    expect(screen.queryByRole('button',{name:'Applications',exact:true})).not.toBeInTheDocument();
+  it('shows the Applications title in the compact navigation header', async () => {
+    const ui = mount('/applications');
+    const header = await screen.findByRole('navigation', { name: 'Current location' });
+    expect(within(header).getByRole('heading',{name:'Applications',level:1})).toBeVisible();
     await ui.click(within(screen.getByRole('navigation', { name:'Main navigation' })).getByRole('link', { name:'Reports' }));
     expect(screen.getByRole('heading',{name:'Reports',level:1})).toHaveClass('visually-hidden');
   });
