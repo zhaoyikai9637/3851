@@ -120,17 +120,20 @@ for (const submit of ['button', 'form']) test(`registration ${submit} submission
     }
   } finally {w.close();}
 });
-test('registration uses the shared endpoint and returns to sign-in without trimming passwords', async () => {
+test('registration uses the shared endpoint, then falls back to sign-in when automatic sign-in fails', async () => {
   const dom = await loginPage(), w = dom.window, d = w.document;
   try {
     let submitted;
-    w.JRS = {request: async (path, options) => { submitted = {path, ...options}; return {}; }};
+    const paths = [];
+    // Registration succeeds; the follow-up sign-in returns no user, so the page asks the user to log in.
+    w.JRS = {request: async (path, options) => { paths.push(path); if (path === '/register') submitted = {path, ...options}; return {}; }};
     d.getElementById('registerToggle').click();
     d.getElementById('registerFirstName').value = 'Example';
     d.getElementById('email').value = 'candidate@example.test';
     d.getElementById('password').value = ' Password123 ';
     d.getElementById('loginForm').dispatchEvent(new w.Event('submit', {cancelable:true}));
     await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(paths[0], '/register');
     assert.equal(submitted.path, '/register');
     assert.equal(submitted.body.password, ' Password123 ');
     assert.equal(d.getElementById('registerNames').hidden, true);

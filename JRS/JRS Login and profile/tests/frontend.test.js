@@ -79,6 +79,10 @@ test('all local HTML resources exist and no inline event handlers remain', () =>
             expect(html).not.toMatch(/\son\w+\s*=/i);
             for (const match of html.matchAll(/(?:src|href|action)="([^"]+)"/g)) {
                 if (/^(https?:|#)/.test(match[1]) || match[1] === '/jobs') continue; // Public route supplied by the integrated server.
+                if (match[1].startsWith('/shared-ui/')) { // Shared design tokens served by the integrated server from shared/ui.
+                    expect(fs.existsSync(path.join(root, '../../shared/ui', match[1].slice('/shared-ui/'.length)))).toBe(true);
+                    continue;
+                }
                 expect(fs.existsSync(match[1].startsWith('/') ? path.join(root, match[1].slice(1)) : path.resolve(folder, match[1]))).toBe(true);
             }
             const script = filename.replace(/\.html$/, '.js');
