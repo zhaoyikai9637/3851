@@ -98,7 +98,50 @@ export function useWorkspace(fetcher = (...args) => fetch(...args), returnTo = "
     [fetcher],
   );
 
-  return { db, error, load, commit, request };
+  // Revision-checked calls outside the command endpoint; both return a new snapshot.
+  const replace = useCallback(
+    async (path, options) => {
+      try {
+        const result = await fetcher("/recruitment/api/" + path, {
+          credentials: "same-origin",
+          ...options,
+          headers: { "X-CSRF-Token": csrf.current, "If-Match": String(dbRef.current?.revision ?? 0), ...options.headers },
+        }).then(readJson);
+        setDb(result.db);
+        return result;
+      } catch (requestError) {
+        if (requestError.code === "REVISION_CONFLICT") {
+          await load();
+          requestError.message = "Newer changes were loaded. Review them, then try again.";
+        }
+        throw requestError;
+      }
+    },
+    [fetcher, load],
+  );
+  const upload = useCallback(
+    (candidateId, file) => {
+      if (!file || (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) || file.size > 5242880)
+        return Promise.reject(new Error("Choose a PDF resume up to 5 MB."));
+      return replace("hr/candidates/" + encodeURIComponent(candidateId) + "/resume", {
+        method: "PUT",
+        headers: { "Content-Type": "application/pdf", "X-Filename": encodeURIComponent(file.name) },
+        body: file,
+      });
+    },
+    [replace],
+  );
+  const send = useCallback(
+    (notificationId, attachResume) =>
+      replace("hr/notifications/" + encodeURIComponent(notificationId) + "/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attachResume }),
+      }),
+    [replace],
+  );
+
+  return { db, error, load, commit, request, upload, send };
 }
 
 export const candidateOf = (db, application) => db.candidates.find((item) => item.id === application?.candidateId) || { name: "Unknown candidate", email: "" };

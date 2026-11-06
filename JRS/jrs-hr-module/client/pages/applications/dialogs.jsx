@@ -198,11 +198,17 @@ export function RejectionReview({ db, application, onSubmit, onMessage, onClose 
   );
 }
 
-export function MessageForm({ db, application, request, onSubmit, onClose }) {
+export function draftFile(notification) {
+  const subject = notification.subject.replace(/[\r\n]/g, " ");
+  const to = notification.to.replace(/[\r\n]/g, "");
+  return "To: " + to + "\r\nSubject: " + subject + "\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nX-Unsent: 1\r\n\r\n" + notification.body.replace(/\r?\n/g, "\r\n");
+}
+
+export function MessageForm({ db, application, notification, request, onSubmit, onDownload, onClose }) {
   const person = candidateOf(db, application);
   const job = jobOf(db, application);
   const rejected = application.stage === "Rejected";
-  const [values, setValues] = useState({
+  const [values, setValues] = useState(notification ? { templateId: notification.templateId || "", subject: notification.subject, body: notification.body } : {
     templateId: "",
     subject: (rejected ? "Application update — " : "Next steps — ") + job.title,
     body:
@@ -231,7 +237,7 @@ export function MessageForm({ db, application, request, onSubmit, onClose }) {
   const templates = (db.templates || []).filter((template) => template.active);
   return (
     <Modal title="Candidate Message" onClose={onClose} footer={<Footer form="application-message-form" busy={busy} onClose={onClose} label="Save Email Draft" />}>
-      <form id="application-message-form" className="interview-form" onSubmit={(event) => submit(event, { applicationId: application.id, templateId: values.templateId, to: person.email, subject: values.subject, body: values.body })}>
+      <form id="application-message-form" className="interview-form" onSubmit={(event) => submit(event, { applicationId: application.id, templateId: values.templateId, to: person.email, subject: values.subject, body: values.body, notificationId: notification?.id || undefined })}>
         <p className="subtle">Prepare and review a draft. Send the saved message from Email Outbox.</p>
         <ApplicantCard db={db} application={application} />
         <FormError message={error || previewError} />
@@ -244,6 +250,7 @@ export function MessageForm({ db, application, request, onSubmit, onClose }) {
         <label>To<input type="email" readOnly value={person.email} /></label>
         <label>Subject<input required maxLength={200} value={values.subject} onChange={set("subject")} /></label>
         <label>Message<textarea required maxLength={6000} rows={9} value={values.body} onChange={set("body")} /></label>
+        {notification && <div><button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => onDownload(notification)}>Download saved draft (.eml)</button></div>}
         <p className="subtle mb-0">Private rejection reasons and internal notes are not added to the candidate email.</p>
       </form>
     </Modal>
@@ -377,6 +384,66 @@ export function ApplicationDetails({ db, application, onInterview, onClose }) {
           </ul>
         </>
       )}
+    </Modal>
+  );
+}
+
+export function MessageView({ notification, onClose }) {
+  return (
+    <Modal title={notification.status + " Message"} onClose={onClose}>
+      <p className="subtle">{notification.status === "Sent" ? "This message was accepted by the email server." : "This message is read-only."}</p>
+      <h3 className="interview-subheading">{notification.subject}</h3>
+      <p className="subtle">{notification.to}</p>
+      <div className="interview-note">{notification.body}</div>
+    </Modal>
+  );
+}
+
+export function SendEmail({ db, notification, onSubmit, onClose }) {
+  const application = db.applications.find((item) => item.id === notification.applicationId);
+  const person = candidateOf(db, application);
+  const [attach, setAttach] = useState(false);
+  const { error, busy, submit } = useSubmit(onSubmit);
+  const payload = () => {
+    if (!db.mailEnabled) throw new Error("Email sending is not configured. The message remains a draft.");
+    return { id: notification.id, attachResume: attach };
+  };
+  return (
+    <Modal
+      title="Send Candidate Email"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={busy}>Cancel</button>
+          <button type="submit" form="application-send-form" className="btn btn-primary" disabled={busy || !db.mailEnabled}>Send Email</button>
+        </>
+      }
+    >
+      <form id="application-send-form" className="interview-form" onSubmit={(event) => submit(event, payload)}>
+        <p className="subtle">Review the recipient and message before sending.</p>
+        <FormError message={error} />
+        <dl className="interview-details">
+          <dt>To</dt><dd>{notification.to}</dd>
+          <dt>Subject</dt><dd>{notification.subject}</dd>
+        </dl>
+        <div className="interview-note">{notification.body}</div>
+        {person.resume && <label className="interview-check"><input type="checkbox" checked={attach} onChange={(event) => setAttach(event.target.checked)} /><span>Attach the candidate’s uploaded resume</span></label>}
+        {!db.mailEnabled && <p className="text-danger mb-0">Email sending has not been configured. This message remains a draft.</p>}
+      </form>
+    </Modal>
+  );
+}
+
+export function UploadResume({ onSubmit, onClose }) {
+  const [file, setFile] = useState(null);
+  const { error, busy, submit } = useSubmit(onSubmit);
+  return (
+    <Modal title="Upload Resume" onClose={onClose} footer={<Footer form="application-upload-form" busy={busy} onClose={onClose} label="Upload Resume" />}>
+      <form id="application-upload-form" className="interview-form" onSubmit={(event) => submit(event, () => file)}>
+        <p className="subtle">PDF, maximum 5 MB.</p>
+        <FormError message={error} />
+        <label>Resume file<input type="file" accept=".pdf,application/pdf" required onChange={(event) => setFile(event.target.files[0] || null)} /></label>
+      </form>
     </Modal>
   );
 }

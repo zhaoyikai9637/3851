@@ -160,7 +160,7 @@ describe("authentication and navigation", () => {
   });
 
   it('hosts trusted embedded sections in the header and sends selection to their source frame',async()=>{
-    const ui=mount('/applications?view=review/app-1'),frame=await screen.findByTitle('Applications');
+    const ui=mount('/applications?view=candidate/candidate-1/app-1'),frame=await screen.findByTitle('Applications');
     const data={type:'jrs:sections',key:'reports-tabs',label:'Report sections',items:[{label:'Overview',selected:true},{label:'Job performance',selected:false}]};
     fireEvent(window,new MessageEvent('message',{origin:'https://untrusted.example',source:frame.contentWindow,data}));
     expect(screen.queryByRole('navigation',{name:'Report sections'})).not.toBeInTheDocument();
@@ -217,7 +217,7 @@ describe("authentication and navigation", () => {
     expect(await screen.findByTitle('Dashboard')).toBeVisible();
   });
   it('sends a stable list budget after reserving outer header, padding and footer space',async()=>{
-    mount('/applications?view=review/app-1');const frame=await screen.findByTitle('Applications');
+    mount('/applications?view=candidate/candidate-1/app-1');const frame=await screen.findByTitle('Applications');
     frame.getBoundingClientRect=()=>({top:120});
     const footer=document.querySelector('.workspace-footer');footer.getBoundingClientRect=()=>({height:55});
     const post=vi.spyOn(frame.contentWindow,'postMessage');
@@ -232,7 +232,7 @@ describe("authentication and navigation", () => {
   });
 
   it('opens embedded dialogs at the browser viewport top so footer actions remain reachable',async()=>{
-    mount('/applications?view=review/app-1');const frame=await screen.findByTitle('Applications');
+    mount('/applications?view=candidate/candidate-1/app-1');const frame=await screen.findByTitle('Applications');
     frame.getBoundingClientRect=()=>({top:120});frame.scrollIntoView=vi.fn();
     fireEvent(window,new MessageEvent('message',{origin:window.location.origin,source:frame.contentWindow,data:{type:'jrs:dialog'}}));
     expect(frame.scrollIntoView).toHaveBeenCalledWith({block:'start'});
@@ -246,7 +246,7 @@ describe("authentication and navigation", () => {
   });
 
   it('keeps embedded stage paths out of the compact navigation header', async () => {
-    const ui = mount('/applications?view=review/app-1');
+    const ui = mount('/applications?view=candidate/candidate-1/app-1');
     const frame = await screen.findByTitle('Applications');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [{label:'Applications',route:'applications'},{label:'Offer',route:null}] } }));
     const header = screen.getByRole('navigation', { name: 'Current location' });
@@ -266,14 +266,14 @@ describe("authentication and navigation", () => {
   });
 
   it.each([['/templates', 'Email Templates'], ['/logs', 'Logs']])('routes embedded navigation to %s without falling back to Notifications', async (path, title) => {
-    mount('/applications?view=review/app-1');
+    mount('/applications?view=candidate/candidate-1/app-1');
     const frame = await screen.findByTitle('Applications');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:navigate', path } }));
     expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeVisible();
   });
 
   it('ignores frame sizing routes and untrusted navigation messages', async () => {
-    mount('/applications?view=review/app-1');
+    mount('/applications?view=candidate/candidate-1/app-1');
     const frame = await screen.findByTitle('Applications');
     for (const [origin, source, data] of [
       [window.location.origin, frame.contentWindow, { type: 'jrs:frame', height: 850, route: 'notifications' }],
