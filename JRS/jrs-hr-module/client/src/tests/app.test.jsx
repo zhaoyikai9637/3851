@@ -210,8 +210,8 @@ describe("authentication and navigation", () => {
   });
 
   it('uses the sidebar to return to Dashboard without an artificial breadcrumb parent', async () => {
-    const ui = mount('/interviews');
-    expect(await screen.findByRole('heading',{name:'Interviews',level:1})).toHaveClass('visually-hidden');
+    const ui = mount('/reports');
+    expect(await screen.findByRole('heading',{name:'Reports',level:1})).toHaveClass('visually-hidden');
     expect(screen.queryByRole('navigation', { name: 'Current location' })).not.toBeInTheDocument();
     await ui.click(within(screen.getByRole('navigation',{name:'Main navigation'})).getByRole('link',{name:'Dashboard'}));
     expect(await screen.findByTitle('Dashboard')).toBeVisible();
@@ -249,8 +249,9 @@ describe("authentication and navigation", () => {
     const ui = mount('/applications');
     const frame = await screen.findByTitle('Applications');
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [{label:'Applications',route:'applications'},{label:'Offer',route:null}] } }));
-    expect(screen.queryByRole('navigation', { name: 'Current location' })).not.toBeInTheDocument();
-    expect(screen.getByRole('heading',{name:'Applications',level:1})).toHaveClass('visually-hidden');
+    const header = screen.getByRole('navigation', { name: 'Current location' });
+    expect(within(header).getByRole('heading',{name:'Applications',level:1})).toBeVisible();
+    expect(within(header).queryByText('Offer')).not.toBeInTheDocument();
     fireEvent(window, new MessageEvent('message', { origin: window.location.origin, source: frame.contentWindow, data: { type: 'jrs:location', items: [] } }));
     expect(screen.queryByRole('button',{name:'Applications',exact:true})).not.toBeInTheDocument();
     await ui.click(within(screen.getByRole('navigation', { name:'Main navigation' })).getByRole('link', { name:'Reports' }));
@@ -292,7 +293,7 @@ describe("authentication and navigation", () => {
     expect(await screen.findByRole("navigation", { name: "Main navigation" })).toBeVisible();
     expect(screen.queryByRole("navigation", { name: "Communication pages" })).not.toBeInTheDocument();
     const location = screen.queryByRole("navigation", { name: "Current location" });
-    if(['/applications','/interviews','/outbox','/reports'].includes(route)) {
+    if(route==='/reports') {
       expect(location).not.toBeInTheDocument();
       expect(screen.getByRole('heading',{level:1})).toHaveClass('visually-hidden');
     } else {
@@ -762,7 +763,7 @@ describe("email templates", () => {
   it.each([0, 1, 37])("uses the API total rather than the current log page length for %i emails", async (total) => {
     overrides["GET /api/hr/logs"] = () => json({ items: total ? [state.log] : [], total, page: 1, pageSize: 10 });
     mount("/logs");
-    if(total) expect(await screen.findByText(total===37?"1–10 of 37":"1–1 of 1")).toBeVisible(); else expect(await screen.findByText("No sent emails found")).toBeVisible();
+    if(total) expect(await screen.findByText(total===37?"Showing 1–10 of 37 emails":"Showing 1–1 of 1 emails")).toBeVisible(); else expect(await screen.findByText("No sent emails found")).toBeVisible();
     const heading = screen.getByRole("heading", { level: 1, name: "Logs" });
     expect(heading.parentElement.querySelector("p")).toBeNull();
   });
@@ -1085,16 +1086,16 @@ it('fits Candidates to the viewport and requests the remaining records on the ne
  });
  try{
   const ui=mount('/candidates');
-  await waitFor(()=>expect(screen.getByText('1–4 of 18')).toBeVisible());
+  await waitFor(()=>expect(screen.getByText('Showing 1–4 of 18 candidates')).toBeVisible());
   expect(screen.getByRole('searchbox',{name:'Search candidates'})).toBeVisible();
   await ui.click(screen.getByRole('button',{name:'Next',exact:true}));
   expect(await screen.findByRole('button',{name:'View profile for Person 5',exact:true})).toBeVisible();
-  expect(screen.getByText('5–8 of 18')).toBeVisible();
+  expect(screen.getByText('Showing 5–8 of 18 candidates')).toBeVisible();
   const reads=()=>fetcher.mock.calls.filter(([url])=>url.startsWith('/recruitment/api/hr/candidates?')).length;
   const beforeReturn=reads();
   await ui.click(screen.getByRole('button',{name:'View profile for Person 5',exact:true}));
   await ui.click(screen.getByRole('button',{name:'Back to candidates',exact:true}));
-  expect(await screen.findByText('5–8 of 18')).toBeVisible();
+  expect(await screen.findByText('Showing 5–8 of 18 candidates')).toBeVisible();
   expect(reads()).toBe(beforeReturn);
  }finally{rect.mockRestore();}
 });
@@ -1117,7 +1118,7 @@ it("leaves the candidate profile when switching to another HR workspace", async 
   await ui.click(await screen.findByRole("button", {name:"View profile for Casey"}));
   expect(screen.getByTitle("Candidates")).toHaveAttribute("src","/recruitment/#/candidate/person-1");
   await ui.click(screen.getByRole("link", {name:"Reports",exact:true}));
-  expect(await screen.findByRole("heading",{name:"Reports",level:2})).toBeVisible();
+  expect(await screen.findByRole("button",{name:"Export Report"})).toBeVisible();
   expect(screen.queryByRole("button",{name:"Back to candidates"})).not.toBeInTheDocument();
   await ui.click(screen.getByRole("link", {name:"Candidates",exact:true}));
   expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();

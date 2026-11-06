@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useOutletContext, useSearchParams } from "react-router-dom";
 import { Download } from "lucide-react";
 import "./reports.css";
 
@@ -14,7 +14,7 @@ const SECTIONS = [
   ["tasks", "Follow-up tasks"],
 ];
 const PAGE_SIZE = 6;
-const TONE = { "Pending Review": "amber", Interview: "blue", "Interview Results": "blue", Offer: "green", Rejected: "red", Hired: "green" };
+const TONE = { "Pending Review": "amber", Interview: "purple", "Interview Results": "purple", Offer: "green", Rejected: "red", Hired: "green" };
 
 async function readJson(response) {
   let data;
@@ -68,6 +68,10 @@ function Pager({ page, total, onChange }) {
 
 export function Reports({ fetcher = (...args) => fetch(...args) }) {
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  // Inside the HR workspace the section tabs live in the page header, like the other
+  // pages with sections; rendered on its own (tests) the tabs stay in the page.
+  const setSections = useOutletContext()?.setSections;
   const section = SECTIONS.some(([id]) => id === params.get("section")) ? params.get("section") : "summary";
   const [db, setDb] = useState(null);
   const [csrf, setCsrf] = useState("");
@@ -101,6 +105,24 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
   useEffect(() => {
     setPage(1);
   }, [section]);
+
+  useEffect(() => {
+    if (!setSections) return undefined;
+    setSections({
+      owner: location.key,
+      label: "Report sections",
+      items: SECTIONS.map(([id, label]) => ({ label, selected: id === section })),
+      select(index) {
+        const id = SECTIONS[index]?.[0];
+        if (!id) return;
+        const next = new URLSearchParams(window.location.search);
+        if (id === "summary") next.delete("section");
+        else next.set("section", id);
+        setParams(next);
+      },
+    });
+    return () => setSections(null);
+  }, [setSections, location.key, section, setParams]);
 
   const stats = useMemo(() => {
     if (!db) return null;
@@ -180,18 +202,16 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
   return (
     <div className="reports-page">
       <div className="report-heading">
-        <div>
-          <h2>Reports</h2>
-          <p>Recruitment totals calculated from this workspace.</p>
-        </div>
         <button className="btn btn-primary" type="button" onClick={exportReport}><Download size={18} aria-hidden="true" />Export Report</button>
       </div>
 
-      <nav className="report-tabs" aria-label="Report sections">
-        {SECTIONS.map(([id, label]) => (
-          <button key={id} type="button" className={section === id ? "selected" : ""} aria-pressed={section === id} onClick={() => chooseSection(id)}>{label}</button>
-        ))}
-      </nav>
+      {!setSections && (
+        <nav className="report-tabs" aria-label="Report sections">
+          {SECTIONS.map(([id, label]) => (
+            <button key={id} type="button" className={section === id ? "selected" : ""} aria-pressed={section === id} onClick={() => chooseSection(id)}>{label}</button>
+          ))}
+        </nav>
+      )}
 
       {notice && <div className="alert alert-info" role="status">{notice}</div>}
 

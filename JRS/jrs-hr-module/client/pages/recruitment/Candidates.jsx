@@ -4,6 +4,10 @@ import {useViewportRows} from '../../src/useViewportRows';
 import { ErrorBox, Loading, Pagination, useLoad } from "../../src/shared";
 import { Icon } from "../../src/icons";
 
+function initials(name = "") {
+  return name.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+}
+
 export function Candidates({ onOpen }) {
   const [params, setParams] = useSearchParams();
   const list=useRef(null),[limit,setLimit]=useState(()=>Math.max(1,Math.min(10,Number(params.get('pageSize'))||10)));
@@ -64,7 +68,7 @@ export function Candidates({ onOpen }) {
                   <thead>
                     <tr>
                       <th>Candidate</th>
-                      <th>Contact</th>
+                      <th>Phone</th>
                       <th>Location</th>
                       <th>Action</th>
                     </tr>
@@ -73,11 +77,17 @@ export function Candidates({ onOpen }) {
                     {load.data.items.map((row) => (
                       <tr key={row.id}>
                         <td>
-                          <button type="button" className="candidate-name" aria-label={`View profile for ${row.name}`} onClick={()=>onOpen(row.id)}>{row.name}</button>
+                          {/* Same person cell as the Applications and Interviews tables. */}
+                          <div className="person-cell">
+                            <span className="avatar" aria-hidden="true">{initials(row.name)}</span>
+                            <span>
+                              <button type="button" className="candidate-name" aria-label={`View profile for ${row.name}`} onClick={()=>onOpen(row.id)}>{row.name}</button>
+                              {row.email && <small className="d-block subtle">{row.email}</small>}
+                            </span>
+                          </div>
                         </td>
                         <td>
-                          {row.email}
-                          {row.phone && <small className="d-block subtle">{row.phone}</small>}
+                          {row.phone || <span className="subtle">Not provided</span>}
                         </td>
                         <td>{row.location || "Not provided"}</td>
                         <td>
@@ -100,6 +110,7 @@ export function Candidates({ onOpen }) {
               )}
               <Pagination
                 data={{ ...load.data, pageSize: load.data.limit }}
+                noun="candidates"
                 onPage={(value) => update("page", value)}
               />
             </>

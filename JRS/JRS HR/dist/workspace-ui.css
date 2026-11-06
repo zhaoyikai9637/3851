@@ -183,3 +183,21 @@
   --tone: var(--jrs-blue);
   --pale: var(--jrs-blue-soft);
 }
+
+/* Filters: one row, one control height, no stacked labels (the label text stays as the accessible name). */
+.page-filters .inline-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-size: 0;
+}
+.page-filters .inline-label input,
+.page-filters .inline-label .english-date-control {
+  height: var(--jrs-control-height);
+  min-height: var(--jrs-control-height);
+  font-size: var(--jrs-text-sm);
+}
+.page-filters .inline-label input {
+  border: 1px solid var(--jrs-line);
+  border-radius: var(--jrs-control-radius);
+}

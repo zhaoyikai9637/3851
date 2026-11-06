@@ -94,7 +94,7 @@ export function Notifications() {
                   </Empty>
                 )}
                 {load.data.total > load.data.pageSize && (
-                  <Pagination data={load.data} onPage={actions.setPage} />
+                  <Pagination data={load.data} onPage={actions.setPage} noun="notifications" />
                 )}
               </>
             )

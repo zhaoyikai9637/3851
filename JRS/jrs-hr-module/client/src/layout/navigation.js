@@ -10,25 +10,7 @@ export const workspaceLinks = [
   ["/candidates", "Candidates", "person"],
   ["/job-postings", "Job Postings", "jobs"],
   ["/interviews", "Interviews", "calendar"],
-  ["/reports", "Reports", "applications"],
-];
-
-// Sidebar groups: day-to-day recruitment work first, then communication and records.
-// Every page is one click away; nothing is hidden behind another page's tabs.
-export const navigationGroups = [
-  ["RECRUITMENT", [
-    ["/dashboard", "Dashboard", "dashboard"],
-    ["/job-postings", "Job Postings", "jobs"],
-    ["/applications", "Applications", "applications"],
-    ["/candidates", "Candidates", "candidates"],
-    ["/interviews", "Interviews", "calendar"],
-  ]],
-  ["COMMUNICATION", [
-    ["/notifications", "Notifications", "bell"],
-    ["/templates", "Templates", "templates"],
-    ["/reports", "Reports", "reports"],
-    ["/logs", "Logs", "log"],
-  ]],
+  ["/reports", "Reports", "reports"],
 ];
 
 export function pageName(pathname) {

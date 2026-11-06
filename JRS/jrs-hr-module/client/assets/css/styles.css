@@ -1368,7 +1368,17 @@ button:disabled {
   .compact-topbar .account-button .avatar {width:32px;height:32px;}
 }
 
-/* Sidebar groups (Recruitment / Communication). */
-.sidebar-group + .sidebar-group {
-  margin-top: var(--jrs-space-5);
+/* Person cell shared by HR tables: avatar, name and email, like the Applications table. */
+.person-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--jrs-space-3);
+}
+.person-cell .candidate-name {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--jrs-text);
+  font-weight: 600;
+  text-align: left;
 }

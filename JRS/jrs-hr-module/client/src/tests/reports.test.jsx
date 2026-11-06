@@ -59,7 +59,7 @@ function standardFetcher(db = workspace()) {
 
 it("shows the same overview totals as the previous embedded page", async () => {
   mount(standardFetcher());
-  expect(await screen.findByRole("heading", { name: "Reports", level: 2 })).toBeVisible();
+  expect(await screen.findByRole("button", { name: "Export Report" })).toBeVisible();
   const card = (name) => screen.getByText(name, { selector: "p" }).closest("section");
   expect(within(card("Applications")).getByText("4")).toBeVisible();
   expect(within(card("Active jobs")).getByText("1")).toBeVisible();

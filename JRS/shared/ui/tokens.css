@@ -33,6 +33,8 @@
   --jrs-amber-soft: #fffbeb;
   --jrs-danger: #dc2626;
   --jrs-danger-soft: #fef2f2;
+  --jrs-purple: #7250e8;
+  --jrs-purple-soft: #eee7ff;
   --jrs-info: #0284c7;
   --jrs-info-soft: #f0f9ff;
 
@@ -83,7 +85,7 @@
   color: var(--jrs-muted);
 }
 .jrs-status[data-status="Submitted"], .jrs-status[data-status="In Review"] { background: var(--jrs-info-soft); color: var(--jrs-info); }
-.jrs-status[data-status="Interview"] { background: var(--jrs-blue-soft); color: var(--jrs-blue-dark); }
+.jrs-status[data-status="Interview"] { background: var(--jrs-purple-soft); color: var(--jrs-purple); }
 .jrs-status[data-status="Decision"] { background: var(--jrs-amber-soft); color: var(--jrs-amber); }
 .jrs-status[data-status="Accepted"] { background: var(--jrs-green-soft); color: var(--jrs-green); }
 .jrs-status[data-status="Rejected"] { background: var(--jrs-danger-soft); color: var(--jrs-danger); }
@@ -104,7 +106,9 @@
   .jrs-skeleton { animation: none; }
 }
 
-:focus-visible {
+/* Focus ring for interactive controls only. Containers that receive focus
+   programmatically (tabindex="-1", e.g. the main region after navigation) keep none. */
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
   outline: none;
   box-shadow: var(--jrs-focus-ring);
 }

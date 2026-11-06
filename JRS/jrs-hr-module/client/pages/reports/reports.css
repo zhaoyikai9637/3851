@@ -7,7 +7,7 @@
 .report-heading {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--jrs-space-4);
   flex-wrap: wrap;
 }
@@ -69,22 +69,22 @@
 }
 .report-card > strong {
   display: block;
-  margin-top: var(--jrs-space-2);
+  margin-top: var(--jrs-space-4);
   color: var(--jrs-text);
-  font-size: var(--jrs-text-2xl);
+  font-size: 48px;
   font-weight: 700;
   line-height: 1.1;
 }
 .report-card h3 {
-  margin: 0 0 var(--jrs-space-4);
+  margin: 0 0 var(--jrs-space-5);
   color: var(--jrs-text);
-  font-size: var(--jrs-text-md);
+  font-size: var(--jrs-text-lg);
   font-weight: 600;
 }
 .report-stage-bars {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--jrs-space-4) var(--jrs-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--jrs-space-5);
 }
 .report-stage-label {
   display: flex;
@@ -106,7 +106,7 @@
   background: var(--jrs-muted);
 }
 .report-bar-track .tone-amber { background: var(--jrs-amber); }
-.report-bar-track .tone-blue { background: var(--jrs-blue); }
+.report-bar-track .tone-purple { background: var(--jrs-purple); }
 .report-bar-track .tone-green { background: var(--jrs-green); }
 .report-bar-track .tone-red { background: var(--jrs-danger); }
 .report-table {
@@ -181,4 +181,10 @@
 }
 .report-loading {
   color: var(--jrs-muted);
+}
+.report-stage-label strong {
+  font-weight: 700;
+}
+.report-card {
+  padding: var(--jrs-space-6);
 }

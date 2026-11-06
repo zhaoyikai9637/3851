@@ -97,13 +97,13 @@ export function Field({ label, children, help }) {
     </div>
   );
 }
-export function Pagination({ data, onPage }) {
+export function Pagination({ data, onPage, noun = "" }) {
   const pages = Math.max(1, Math.ceil(data.total / data.pageSize));
   return (
     <nav className="pagination-row" aria-label="Results pages">
       <span className="subtle">
         {data.total
-          ? `${(data.page - 1) * data.pageSize + 1}–${Math.min(data.page * data.pageSize, data.total)} of ${data.total}`
+          ? `Showing ${(data.page - 1) * data.pageSize + 1}–${Math.min(data.page * data.pageSize, data.total)} of ${data.total}${noun ? " " + noun : ""}`
           : "0 results"}
       </span>
       <div className="d-flex gap-2 align-items-center">

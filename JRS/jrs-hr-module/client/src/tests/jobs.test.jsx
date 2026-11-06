@@ -320,7 +320,7 @@ it("keeps 100 jobs usable across paging, filtering and returning from edits", as
   const ui = mount();
   const table = await screen.findByRole("table", { name: "Job postings" });
   expect(within(table).getAllByRole("row")).toHaveLength(11);
-  expect(screen.getByText("1–10 of 100 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–10 of 100 jobs")).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Next", exact: true }));
   await ui.click(
     screen.getByRole("button", { name: "View Role 011 with a long specialist position title" }),
@@ -333,16 +333,16 @@ it("keeps 100 jobs usable across paging, filtering and returning from edits", as
       name: "View Role 011 with a long specialist position title revised",
     }),
   ).toBeVisible();
-  expect(screen.getByText("11–20 of 100 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 11–20 of 100 jobs")).toBeVisible();
   await ui.selectOptions(
     screen.getByRole("combobox", { name: "Filter by recruitment status" }),
     "Draft",
   );
-  expect(screen.getByText("1–10 of 50 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–10 of 50 jobs")).toBeVisible();
   await ui.type(screen.getByRole("searchbox", { name: "Search jobs" }), "Role 100");
-  expect(screen.getByText("1–1 of 1 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–1 of 1 jobs")).toBeVisible();
   await ui.clear(screen.getByRole("searchbox", { name: "Search jobs" }));
-  expect(screen.getByText("1–10 of 50 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–10 of 50 jobs")).toBeVisible();
 });
 
 it("combines department, status and search and clears all filters from an empty result", async () => {
@@ -364,7 +364,7 @@ it("combines department, status and search and clears all filters from an empty 
     screen.getByRole("combobox", { name: "Filter by department" }),
     "Operations",
   );
-  expect(screen.getByText("1–2 of 2 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–2 of 2 jobs")).toBeVisible();
   await ui.selectOptions(
     screen.getByRole("combobox", { name: "Filter by recruitment status" }),
     "Draft",
@@ -375,5 +375,5 @@ it("combines department, status and search and clears all filters from an empty 
   await ui.click(screen.getByRole("button", { name: "Clear filters" }));
   expect(screen.getByRole("combobox", { name: "Filter by department" })).toHaveValue("");
   expect(screen.getByRole("combobox", { name: "Filter by recruitment status" })).toHaveValue("All");
-  expect(screen.getByText("1–3 of 3 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–3 of 3 jobs")).toBeVisible();
 });

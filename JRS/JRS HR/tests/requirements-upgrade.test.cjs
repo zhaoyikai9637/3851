@@ -45,14 +45,14 @@ test('requirements upgrade preserves edited criteria and custom postings even wi
 
 test('requirements upgrade changes requirements only and leaves subsequent runs empty',()=>{
   const jobs=legacyJobs();jobs[0].description='Edited description';jobs[0].location='A different office';jobs[0].status='Closed';
-  const before=structuredClone(jobs),plan=planUpgrade(jobs);
+  const before=JSON.parse(JSON.stringify(jobs)),plan=planUpgrade(jobs);// JSON clone: structuredClone returns objects from another realm under Jest, which strict deep equality rejects.
   const after=jobs.map(job=>({...job,requirements:plan.updates.find(update=>update.id===job.id).requirements}));
   for(let i=0;i<after.length;i++)assert.deepEqual({...after[i],requirements:before[i].requirements},before[i]);
   assert.equal(planUpgrade(after).count,0);assert.deepEqual(planUpgrade(after).skippedShortIds,[]);
 });
 
 test('requirements upgrade reports short custom lists but does not overwrite complete or ambiguous postings',()=>{
-  const job=legacyJobs()[0],duplicate=structuredClone(job),complete={...legacyJobs()[1],id:'custom-complete',requirements:R.forTitle('UI Designer')};
+  const job=legacyJobs()[0],duplicate=JSON.parse(JSON.stringify(job)),complete={...legacyJobs()[1],id:'custom-complete',requirements:R.forTitle('UI Designer')};
   const plan=planUpgrade([job,duplicate,complete,{id:'short-custom',title:'Custom',requirements:['Existing custom criterion']}]);
   assert.equal(plan.count,0);assert.deepEqual(plan.skippedShortIds,['job-0','short-custom']);
   assert.throws(()=>planUpgrade(null),/array/);

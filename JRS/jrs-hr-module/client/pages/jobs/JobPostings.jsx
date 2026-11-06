@@ -215,7 +215,7 @@ export function JobPostings() {
             <footer className="jobs-table-footer">
               <span>
                 {filtered.length
-                  ? `${(current - 1) * pageSize + 1}–${Math.min(current * pageSize, filtered.length)} of ${filtered.length} jobs`
+                  ? `Showing ${(current - 1) * pageSize + 1}–${Math.min(current * pageSize, filtered.length)} of ${filtered.length} jobs`
                   : "0 jobs"}
               </span>
               <nav aria-label="Job result pages">
