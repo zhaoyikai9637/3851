@@ -132,8 +132,9 @@ it("rejects an application with an Other reason and prepares the notification", 
   await ui.click(within(within(table).getAllByRole("row")[1]).getByRole("button", { name: "Reject" }));
   const dialog = screen.getByRole("dialog", { name: "Reject Application" });
   await ui.selectOptions(within(dialog).getByRole("combobox", { name: /Rejection Reason/ }), "Other");
+  // The detail field is required, so the browser blocks an empty Other reason.
   await ui.click(within(dialog).getByRole("button", { name: "Confirm Rejection" }));
-  expect(await within(dialog).findByRole("alert")).toHaveTextContent("Specify the rejection reason.");
+  expect(reject).not.toHaveBeenCalled();
   await ui.type(within(dialog).getByRole("textbox", { name: "Specify reason" }), "Role paused");
   await ui.click(within(dialog).getByRole("button", { name: "Confirm Rejection" }));
   await waitFor(() => expect(reject).toHaveBeenCalledWith({ applicationId: "app-1", reason: "Other: Role paused", notes: "", notify: true }));
@@ -184,7 +185,11 @@ it("exports the matching applications as CSV", async () => {
   const ui = mount(fetcherFor(workspace()));
   await screen.findByRole("table", { name: "Applications" });
   await ui.click(screen.getByRole("button", { name: "Export" }));
-  const text = await created.mock.calls[0][0].text();
+  const text = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsText(created.mock.calls[0][0]);
+  });
   expect(text.split("\r\n")).toHaveLength(4);
   expect(text).toContain('"app-2","Sarah Lim","sarah@example.test","Software Developer","Interview","Normal","2026-10-20"');
   expect(screen.getByText("Exported 3 matching applications.")).toBeVisible();
