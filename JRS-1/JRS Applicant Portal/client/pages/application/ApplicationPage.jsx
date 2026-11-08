@@ -9,7 +9,7 @@ import SkillSelector from "../../components/SkillSelector";
 import { canonicalPhone, locationParts, locationLabel } from "../../../shared/contactFields";
 import { experienceError, experienceMonths } from "../../../shared/applicantFields";
 
-const steps = ["Basic information", "Work experience", "Role questions", "Review"];
+const steps = ["Personal information", "Work experience", "Role questions", "Review"];
 
 function newExperience() {
   return {
@@ -212,7 +212,7 @@ export default function ApplicationPage() {
       {step === 0 && (
         <section className="surface form-section">
           <div className="section-heading">
-            <h2>Basic information</h2>
+            <h2>Personal information</h2>
             <p>Confirm your contact details and select the resume for this role.</p>
           </div>
           <div className="form-grid two-columns">
@@ -357,7 +357,7 @@ export default function ApplicationPage() {
             <div><dt>Role questions</dt><dd>{job.roleQuestions.length} completed</dd></div>
           </dl>
           <div className="review-edit-actions" aria-label="Edit application sections">
-            <button className="btn btn-outline-primary" type="button" onClick={() => goToStep(0)}><Pencil size={17} />Edit basic information</button>
+            <button className="btn btn-outline-primary" type="button" onClick={() => goToStep(0)}><Pencil size={17} />Edit personal information</button>
             <button className="btn btn-outline-primary" type="button" onClick={() => goToStep(1)}><Pencil size={17} />Edit work experience</button>
             <button className="btn btn-outline-primary" type="button" onClick={() => goToStep(2)}><Pencil size={17} />Edit role questions</button>
           </div>

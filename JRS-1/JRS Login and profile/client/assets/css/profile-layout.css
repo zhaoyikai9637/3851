@@ -79,7 +79,7 @@
     .record-edit { top: 16px; right: 14px; }
 }
 
-/* Keep edit and delete available on the card and inside its editing drawer. */
+/* Keep edit and delete available on the card and inside its inline editor. */
 .record-actions { position: absolute; top: 20px; right: 20px; display: grid; gap: 4px; }
 .record-actions .record-edit { position: static; }
 .record-actions .record-trash:hover { color: #b42318; background: #fff1f2; }
@@ -87,13 +87,13 @@
 @media (max-width: 720px) { .record-actions { top: 16px; right: 14px; } }
 
 /* Reserve the same checkbox column on every date row to align both date pairs. */
-.drawer .date-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 104px; gap: 16px; align-items: center; }
-.drawer .date-fields > select { width: 100%; min-width: 0; height: 48px; margin: 0; padding: 0 12px; font: inherit; font-size: 14px; }
-.drawer .date-fields .checkbox-label { margin: 0; font-size: 13px; }
+.profile-inline-editor .date-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 104px; gap: 16px; align-items: center; }
+.profile-inline-editor .date-fields > select { width: 100%; min-width: 0; height: 48px; margin: 0; padding: 0 12px; font: inherit; font-size: 14px; }
+.profile-inline-editor .date-fields .checkbox-label { margin: 0; font-size: 13px; }
 @media (max-width: 520px) {
     .drawer { width: 100%; max-width: 480px; padding: 24px 20px; }
-    .drawer .date-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .drawer .date-fields .checkbox-label { grid-column: 1 / -1; }
+    .profile-inline-editor .date-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .profile-inline-editor .date-fields .checkbox-label { grid-column: 1 / -1; }
 }
 
 .profile-record-summary { min-height: 128px; }
@@ -237,3 +237,19 @@
 .public-brand .brand-mark::before { background:#0f172a; border:1px solid #8293b2; }
 .public-brand .brand-mark::after { left:15px; background:#416be0; }
 .public-brand .brand-mark span { display:none; }
+
+/* Profile editors remain in document flow within the section being edited. */
+.dashboard-body .profile-inline-editor { grid-column: 1 / -1; grid-row: 3; flex: 0 0 100%; min-width: 0; width: 100%; margin-top: 20px; padding: 20px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
+.dashboard-body .user-info-card:has(> .profile-inline-editor:not([hidden])) { flex-wrap: wrap; }
+.dashboard-body .profile-inline-editor .drawer-header { margin-bottom: 20px; gap: 12px; }
+.dashboard-body .profile-inline-editor .drawer-header h2 { margin: 0; font-size: 18px; color: #1e293b; }
+.dashboard-body .profile-inline-editor .drawer-close { order: 2; margin-left: auto; }
+.dashboard-body .profile-inline-editor .drawer-footer { flex-wrap: wrap; gap: 16px; }
+.dashboard-body .profile-inline-editor .safety-notice { margin: 20px 0; font-weight: 400; }
+.dashboard-body .profile-inline-editor .form-row > * { min-width: 0; }
+.dashboard-body .profile-inline-feedback { color: #b91c1c; margin-bottom: 16px; }
+@media(max-width:720px) {
+ .dashboard-body .profile-inline-editor { padding: 16px; }
+ .dashboard-body .profile-inline-editor .form-row:not(:has(#addSkillTagBtn)) { flex-direction: column; }
+}
+@media(max-width:380px) { .dashboard-body .profile-section > .profile-inline-editor { grid-row: 5; } }

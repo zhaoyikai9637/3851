@@ -56,37 +56,41 @@
 <button disabled class="btn-outline" id="editMaterialsBtn">Edit Profile</button>
                 </section>
             <section class="profile-section profile-section-wide">
-                    <h3>Personal Summary</h3>                    <div id="summaryContent" class="section-data"></div>
+                    <h3>Personal Summary</h3>
+                    <div id="summaryContent" class="section-data"></div>
                     <button disabled class="btn-secondary-link" id="addSummaryBtn">Add summary</button>
                 </section>
             <section class="profile-section profile-section-wide">
-                    <h3>Career History</h3>                    <div id="careerList" class="section-data"></div>
+                    <h3>Career History</h3>
+                    <div id="careerList" class="section-data"></div>
                     <button disabled class="btn-secondary-link" id="addRoleBtn">Add role</button>
                 </section>
             <section class="profile-section">
-                    <h3>Education</h3>                    <div id="educationList" class="section-data"></div>
+                    <h3>Education</h3>
+                    <div id="educationList" class="section-data"></div>
                     <button disabled class="btn-secondary-link" id="addEducationBtn">Add education</button>
                 </section>
             <section class="profile-section">
-                    <h3>Licences & Certifications</h3>                    <div id="certList" class="section-data"></div>
+                    <h3>Licences & Certifications</h3>
+                    <div id="certList" class="section-data"></div>
                     <button disabled class="btn-secondary-link" id="addCertBtn">Add licence or certification</button>
                 </section>
             <section class="profile-section profile-section-wide">
-                    <h3>Skills</h3>                    <div id="skillTags" class="tag-container"></div>
+                    <h3>Skills</h3>
+                    <div id="skillTags" class="tag-container"></div>
                     <button disabled class="btn-secondary-link" id="addSkillBtn">Add skills</button>
                 </section>
             <section class="profile-section profile-section-wide">
-                    <h3>Languages</h3>                    <div id="languageList" class="section-data"></div>
+                    <h3>Languages</h3>
+                    <div id="languageList" class="section-data"></div>
                     <button disabled class="btn-secondary-link" id="addLanguageBtn">Add language</button>
                 </section>
         </div>
     </main>
 
-    <!-- Slide-over Drawer Backdrop -->
-    <div class="drawer-backdrop" id="drawerBackdrop"></div>
-
-    <!-- 1. Editing Materials Drawer -->
-    <div class="drawer" id="materialsDrawer">
+    <!-- Inline editors are mounted within their matching profile cards. -->
+    <!-- 1. Editing Materials Editor -->
+    <div class="profile-inline-editor" hidden id="materialsDrawer">
         <div class="drawer-header">
             <button type="button" class="drawer-close" id="closeMaterialsBtn">&times;</button>
             <h2>Edit personal details</h2>
@@ -350,8 +354,8 @@
         </div>
     </div>
 
-    <!-- 2. Add Personal Summary Drawer -->
-    <div class="drawer" id="summaryDrawer">
+    <!-- 2. Add Personal Summary Editor -->
+    <div class="profile-inline-editor" hidden id="summaryDrawer">
         <div class="drawer-header">
             <button type="button" class="drawer-close" id="closeSummaryBtn">&times;</button>
             <h2>Add personal summary</h2>
@@ -377,8 +381,8 @@
         </div>
     </div>
 
-    <!-- 3. Add Role Drawer -->
-    <div class="drawer" id="roleDrawer">
+    <!-- 3. Add Role Editor -->
+    <div class="profile-inline-editor" hidden id="roleDrawer">
         <div class="drawer-header">
             <button type="button" class="drawer-close" id="closeRoleBtn">&times;</button>
             <h2>Add role</h2>
@@ -460,8 +464,8 @@
         </div>
     </div>
 
-    <!-- 4. Add Education Drawer -->
-    <div class="drawer" id="educationDrawer">
+    <!-- 4. Add Education Editor -->
+    <div class="profile-inline-editor" hidden id="educationDrawer">
         <div class="drawer-header">
             <button type="button" class="drawer-close" id="closeEducationBtn">&times;</button>
             <h2>Add education</h2>
@@ -531,8 +535,8 @@
         </div>
     </div>
 
-    <!-- 5. Add Licence or Certification Drawer -->
-    <div class="drawer" id="licenceDrawer">
+    <!-- 5. Add Licence or Certification Editor -->
+    <div class="profile-inline-editor" hidden id="licenceDrawer">
         <div class="drawer-header">
             <button type="button" class="drawer-close" id="closeLicenceBtn">&times;</button>
             <h2>Add licence or certification</h2>
@@ -616,8 +620,8 @@
         </div>
     </div>
 
-    <!-- 6. Add Skills Drawer -->
-    <div class="drawer" id="skillsDrawer">
+    <!-- 6. Add Skills Editor -->
+    <div class="profile-inline-editor" hidden id="skillsDrawer">
         <div class="drawer-header">
             <button type="button" class="drawer-close" id="closeSkillsBtn">&times;</button>
             <h2>Add skills</h2>
@@ -652,8 +656,8 @@
         </div>
     </div>
 
-    <!-- 7. Add Language Drawer -->
-    <div class="drawer" id="languageDrawer">
+    <!-- 7. Add Language Editor -->
+    <div class="profile-inline-editor" hidden id="languageDrawer">
         <div class="drawer-header">
             <button type="button" class="drawer-close" id="closeLanguageBtn">&times;</button>
             <h2>Add language</h2>

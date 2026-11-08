@@ -59,7 +59,7 @@ test('skills draft changes are discarded by Cancel', () => {
     expect(doc.getElementById('addedSkillsContainer').textContent).not.toContain('JavaScript');
     expect(state.skills).toEqual(['SQL']);
 });
-test('basic details submit phone and home location; failed saves keep the drawer open', async () => {
+test('basic details submit phone and home location; failed saves keep the inline editor open', async () => {
     const doc = dom.window.document;
     doc.getElementById('editMaterialsBtn').click();
     doc.getElementById('editHomeLocation').value = 'Singapore';
@@ -67,7 +67,7 @@ test('basic details submit phone and home location; failed saves keep the drawer
     request.mockRejectedValueOnce(new Error('Connection lost'));
     doc.getElementById('materialsForm').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
     await settle();
-    expect(doc.getElementById('materialsDrawer').classList.contains('open')).toBe(true);
+    expect(!doc.getElementById('materialsDrawer').hidden).toBe(true);
     expect(doc.getElementById('profileMessage').textContent).toBe('Connection lost');
     expect(request).toHaveBeenCalledWith('/profile', expect.objectContaining({ body: expect.objectContaining({ home_location: 'Singapore', contact_number: '91234567' }) }));
 });

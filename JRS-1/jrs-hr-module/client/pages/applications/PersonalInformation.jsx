@@ -23,5 +23,5 @@ export function CandidatePersonalInformation({person,application,current=false})
  if(!enabled)return null;
  const profile=current?load.data?.currentProfile:load.data?.applications?.find(row=>row.id===application.id)?.profileDetails;
  const content=load.busy?<Loading/>:load.error?<ErrorBox error={load.error} retry={load.reload}/>:<PersonalProfileFields profile={profile} includeName={!current}/>;
- return current?<section className="spaced" aria-label="Current personal information"><h3>Current Personal Information</h3><p className="muted">Maintained by the applicant. Submitted details remain recorded with the application.</p>{content}</section>:<details className="submitted-profile-details"><summary>Submitted Personal Information</summary>{content}</details>;
+ return current?<section className="spaced" aria-label="Current personal information"><h3>Current Personal Information</h3><p className="muted">Maintained by the applicant. Submitted details remain recorded with the application.</p>{content}</section>:<details className="submitted-profile-details"><summary>Candidate personal information</summary>{content}</details>;
 }

@@ -40,7 +40,7 @@
     else if(a.stage==='Interview'){const i=db.interviews.find(i=>i.applicationId===a.id&&i.status==='Scheduled');decisions=(i?button('interview','View Interview',i.id,'primary'):button('schedule','Schedule Interview',a.id,'primary',canAdvance?'':'disabled'))+button('reject','Reject',a.id,'danger');}
     else if(a.stage==='Offer')decisions=button('application','Review Offer',a.id,'primary')+button('reject','Reject',a.id,'danger');
     else decisions=button('application','Details',a.id,'secondary');
-    const submitted='<details class="submitted-profile-details"><summary>Submitted Personal Information</summary>'+V.submittedProfile(a,c)+'</details>';
+    const submitted='<details class="submitted-profile-details"><summary>Candidate personal information</summary>'+V.submittedProfile(a,c)+'</details>';
     const details=results?resultsContent(db,a)+`<details class="result-job-details"><summary>Job Description & Requirements</summary>${jobDetails(j)}</details>`:meetingSummary(db,a)+jobDetails(j);
     return heading(db,a,ui)+`<div class="review-grid ${results?'results-grid':''}">${viewer(db,a,ui)}<aside class="panel requirements"><div class="requirements-body" tabindex="0">${details}${submitted}</div><div class="next-step"><div class="review-decision-actions">${decisions}</div>${j.status!=='Active'?'<p class="danger-text">Activate this job before progressing applicants.</p>':''}</div></aside></div>`;
   }

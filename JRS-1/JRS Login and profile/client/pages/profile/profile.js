@@ -36,16 +36,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         input.addEventListener('input', updateCount); updateCount();
     });
+    const editorTriggers = {
+        materialsDrawer: 'editMaterialsBtn', summaryDrawer: 'addSummaryBtn', roleDrawer: 'addRoleBtn',
+        educationDrawer: 'addEducationBtn', licenceDrawer: 'addCertBtn', skillsDrawer: 'addSkillBtn', languageDrawer: 'addLanguageBtn'
+    };
+    let activeEditor = null, editorTrigger = null;
+    for (const [id, triggerId] of Object.entries(editorTriggers)) {
+        const editor = $(id), trigger = $(triggerId), heading = editor.querySelector('h2');
+        trigger.closest('.profile-section, .user-info-card').append(editor);
+        heading.id = id + 'Heading';
+        editor.setAttribute('role', 'region'); editor.setAttribute('aria-labelledby', heading.id);
+        trigger.setAttribute('aria-controls', id); trigger.setAttribute('aria-expanded', 'false');
+        editor.querySelector('.drawer-close').setAttribute('aria-label', 'Cancel editing');
+    }
     function message(text, error = false) {
         $('profileMessage').textContent = text;
         $('profileMessage').classList.toggle('is-error', error);
         $('profileMessage').hidden = !text;
+        document.querySelectorAll('.profile-inline-feedback').forEach(node => node.remove());
+        if (activeEditor && text && error) {
+            const feedback = element('p', text, 'profile-inline-feedback');
+            feedback.setAttribute('role', 'alert');
+            activeEditor.querySelector('.drawer-body').prepend(feedback);
+        }
     }
-    function close() {
-        document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
-        $('drawerBackdrop').style.display = 'none';
+    function close(restoreFocus = true) {
+        document.querySelectorAll('.profile-inline-editor').forEach(editor => { editor.hidden = true; });
+        Object.values(editorTriggers).forEach(id => $(id).setAttribute('aria-expanded', 'false'));
+        activeEditor = null;
+        if (restoreFocus && editorTrigger?.isConnected && !editorTrigger.hidden) editorTrigger.focus({ preventScroll: true });
     }
-    function open(id) { message(''); $(id).classList.add('open'); $('drawerBackdrop').style.display = 'block'; }
+    function open(id) {
+        const trigger = document.activeElement?.matches('button') ? document.activeElement : $(editorTriggers[id]);
+        close(false); message('');
+        const editor = $(id); activeEditor = editor; editorTrigger = trigger;
+        editor.hidden = false; $(editorTriggers[id]).setAttribute('aria-expanded', 'true');
+        editor.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+        editor.querySelector('input:not([disabled]), textarea, select:not([disabled])')?.focus({ preventScroll: true });
+    }
     async function load() { profile = (await JRS.request('/profile')).profile; render(); }
     async function action(button, work) {
         if (button?.disabled) return;
@@ -215,8 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     }
-    $('drawerBackdrop').addEventListener('click', close);
-    document.querySelectorAll('.drawer-close, .drawer [id^="cancel"]').forEach(button => button.addEventListener('click', close));
+    document.querySelectorAll('.drawer-close, .profile-inline-editor [id^="cancel"]').forEach(button => button.addEventListener('click', close));
     document.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
     $('logoutBtn').addEventListener('click', () => action($('logoutBtn'), async () => {
         await JRS.request('/logout', { method: 'POST' }); window.location.href = '../login/login.html';
