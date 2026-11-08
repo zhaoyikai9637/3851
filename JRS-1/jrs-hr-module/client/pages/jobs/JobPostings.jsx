@@ -72,7 +72,7 @@ export function JobPostings() {
   }
   return (
     <>
-    <div className="jobs-workspace fit-page" ref={list} hidden={!!details}>
+    <div className="jobs-workspace yyb-pages fit-page" ref={list} hidden={!!details}>
       <div className="jobs-toolbar" role="toolbar" aria-label="Job filters and actions">
         <label className="jobs-search">
           <Icon name="search" />
@@ -87,9 +87,10 @@ export function JobPostings() {
             }}
           />
         </label>
-        <label className="jobs-filter">
-          <span className="visually-hidden">Filter by department</span>
+        <div className="jobs-filter">
+          <span>Department</span>
           <select
+            aria-label="Filter by department"
             value={department}
             disabled={!data}
             onChange={(event) => {
@@ -102,10 +103,11 @@ export function JobPostings() {
               <option key={value}>{value}</option>
             ))}
           </select>
-        </label>
-        <label className="jobs-filter">
-          <span className="visually-hidden">Filter by recruitment status</span>
+        </div>
+        <div className="jobs-filter">
+          <span>Status</span>
           <select
+            aria-label="Filter by recruitment status"
             value={status}
             disabled={!data}
             onChange={(event) => {
@@ -119,10 +121,10 @@ export function JobPostings() {
               </option>
             ))}
           </select>
-        </label>
+        </div>
         <button type="button" className="job-primary" disabled={!data} onClick={() => open(null)}>
           <Icon name="plus" />
-          Create job
+          Add posting
         </button>
       </div>
       <ErrorBox error={error} retry={() => refresh().catch(setError)} />
@@ -135,11 +137,11 @@ export function JobPostings() {
               <table className="jobs-table" aria-label="Job postings">
                 <thead>
                   <tr>
-                    <th>Position</th>
+                    <th>Job title</th>
+                    <th>Department</th>
+                    <th>Type</th>
+                    <th>Applicants</th>
                     <th>Status</th>
-                    <th>Applications</th>
-                    <th>Salary range</th>
-                    <th>Application deadline</th>
                     <th>
                       Actions
                     </th>
@@ -157,19 +159,9 @@ export function JobPostings() {
                         >
                           {job.title}
                         </button>
-                        <div className="job-row-meta">
-                          {job.department}
-                          <span>·</span>
-                          {job.location}
-                          <span>·</span>
-                          {job.type}
-                        </div>
                       </td>
-                      <td>
-                        <span className={`job-status job-status-${job.status.toLowerCase()}`}>
-                          {job.status}
-                        </span>
-                      </td>
+                      <td>{job.department}</td>
+                      <td>{job.type}</td>
                       <td>
                         <button
                           type="button"
@@ -183,10 +175,7 @@ export function JobPostings() {
                           <span aria-hidden="true">↗</span>
                         </button>
                       </td>
-                      <td>{job.salaryRange || <span className="job-unset">Not set</span>}</td>
-                      <td className="job-closing-date">
-                        {displayDate(job.closingDate) || <span className="job-unset">Not set</span>}
-                      </td>
+                      <td><span className={`job-status job-status-${job.status.toLowerCase()}`}>{job.status}</span></td>
                       <td>
                         <button
                           type="button"
@@ -215,7 +204,7 @@ export function JobPostings() {
                       : open(null)
                   }
                 >
-                  {items.length ? "Clear filters" : "Create your first job"}
+                  {items.length ? "Clear filters" : "Add posting"}
                 </button>
               </div>
             )}

@@ -78,15 +78,15 @@ function mount() {
   return userEvent.setup();
 }
 
-it("explains that closing blocks intake and progression without offering the removed Stopped status", async () => {
-  const ui=mount();
-  await edit(ui);
-  const status=screen.getByLabelText('Recruitment status');
-  await ui.selectOptions(status,'Closed');
-  expect(screen.getByText('Closed: new applications and application progression are stopped.')).toBeVisible();
-  expect(within(status).queryByRole('option',{name:'Stopped'})).not.toBeInTheDocument();
-  await ui.click(screen.getByRole('button',{name:'Save job',exact:true}));
-  expect(await screen.findByText('Closed',{selector:'.job-status'})).toBeVisible();
+it("uses one Save, no status input and a salary dropdown while preserving existing publication status", async () => {
+ const ui=mount();await edit(ui);
+ expect(screen.queryByLabelText('Recruitment status')).not.toBeInTheDocument();
+ expect(screen.getByLabelText('Salary range').tagName).toBe('SELECT');
+ expect(screen.getByLabelText('Salary range')).toHaveValue('SGD 5,000 - 6,000');
+ await ui.selectOptions(screen.getByLabelText('Salary range'),'SGD 5,000 - 8,000');
+ expect(screen.getAllByRole('button',{name:'Save',exact:true})).toHaveLength(1);
+ await ui.click(screen.getByRole('button',{name:'Save',exact:true}));
+ expect(data.items[0]).toMatchObject({status:'Active',salaryRange:'SGD 5,000 - 8,000'});
 });
 
 it('fits jobs to available height and moves remaining jobs to the next page',async()=>{
@@ -124,17 +124,17 @@ it('opens a normal full-page editor with all fields available together and no mo
 it("presents a table-first jobs workspace without the standalone publishing form or artificial root breadcrumb", async () => {
   mount();
   const table = await screen.findByRole("table", { name: "Job postings" });
-  for (const name of ["Position", "Status", "Applications", "Salary range", "Application deadline"])
+  for (const name of ["Job title", "Department", "Type", "Applicants", "Status"])
     expect(within(table).getByRole("columnheader", { name })).toBeVisible();
-  expect(within(table).getByText("31 12 2030")).toBeVisible();
+  expect(screen.queryByRole("heading",{name:"Job List"})).not.toBeInTheDocument();
   expect(screen.queryByText("Publishing settings")).not.toBeInTheDocument();
-  expect(screen.queryByTitle("Job Postings")).not.toBeInTheDocument();
-  expect(screen.getAllByRole("heading", { name: "Job Postings", level: 1 })).toHaveLength(1);
+  expect(screen.queryByTitle("Job posting")).not.toBeInTheDocument();
+  expect(screen.getAllByRole("heading", { name: "Job posting", level: 1 })).toHaveLength(1);
   expect(
-    within(screen.getByRole("main")).queryByRole("heading", { name: "Job Postings" }),
+    within(screen.getByRole("main")).queryByRole("heading", { name: "Job posting" }),
   ).not.toBeInTheDocument();
   const toolbar = screen.getByRole("toolbar", { name: "Job filters and actions" });
-  expect(within(toolbar).getByRole("button", { name: "Create job" })).toBeVisible();
+  expect(within(toolbar).getByRole("button", { name: "Add posting" })).toBeVisible();
   expect(within(toolbar).getByRole("combobox", { name: "Filter by department" })).toBeVisible();
   expect(
     within(toolbar).getByRole("combobox", { name: "Filter by recruitment status" }),
@@ -156,7 +156,7 @@ it("edits basic and publishing fields together and sends ISO dates with the exis
   expect(document.querySelector('input[type="date"]')).toBeNull();
   await ui.clear(screen.getByLabelText("Application deadline"));
   await ui.type(screen.getByLabelText("Application deadline"), "30 11 2030");
-  await ui.click(screen.getByRole("button", { name: "Save job" }));
+  await ui.click(screen.getByRole("button", { name: "Save" }));
   expect(await screen.findByRole("button", { name: "View Senior Developer" })).toBeVisible();
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
   const [, options] = fetcher.mock.calls.find(
@@ -175,19 +175,19 @@ it("keeps unsaved edits until the user explicitly discards them", async () => {
   const ui = mount();
   await edit(ui);
   await ui.type(screen.getByLabelText("Job title"), " revised");
-  await ui.click(screen.getByRole("button", { name: "Back to job postings" }));
+  await ui.click(within(screen.getByRole('navigation',{name:'Current location'})).getByRole('button',{name:'Job posting'}));
   expect(screen.getByRole("alertdialog", { name: "Discard unsaved changes?" })).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Keep editing" }));
   expect(screen.getByLabelText("Job title")).toHaveValue("Software Developer revised");
   await ui.click(screen.getByRole("button", { name: "Cancel editing" }));
   await ui.click(screen.getByRole("button", { name: "Discard changes" }));
-  expect(screen.queryByRole("region", { name: "Edit job" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "Edit posting" })).not.toBeInTheDocument();
 });
 
-it("returns to the retained job list through the explicit back button", async () => {
+it("returns to the retained job list through its top breadcrumb", async () => {
   const ui = mount();
   await ui.click(await screen.findByRole("button", { name: "View Software Developer" }));
-  await ui.click(screen.getByRole('button',{name:'Back to job postings'}));
+  await ui.click(within(screen.getByRole('navigation',{name:'Current location'})).getByRole('button',{name:'Job posting'}));
   expect(screen.queryByRole('region',{name:'Software Developer'})).not.toBeInTheDocument();
   expect(screen.getByRole("table", { name: "Job postings" })).toBeVisible();
 });
@@ -207,7 +207,7 @@ it("warns before refreshing with unsaved edits and removes the warning after dis
   const unload=new Event('beforeunload',{cancelable:true});
   window.dispatchEvent(unload);
   expect(unload.defaultPrevented).toBe(true);
-  await ui.click(screen.getByRole('button',{name:'Back to job postings'}));
+  await ui.click(within(screen.getByRole('navigation',{name:'Current location'})).getByRole('button',{name:'Job posting'}));
   await ui.click(screen.getByRole("button", { name: "Discard changes" }));
   const after=new Event('beforeunload',{cancelable:true});window.dispatchEvent(after);
   expect(after.defaultPrevented).toBe(false);
@@ -218,7 +218,7 @@ it("rejects impossible day-first dates without sending a save request", async ()
   await edit(ui);
   await ui.clear(screen.getByLabelText("Application deadline"));
   await ui.type(screen.getByLabelText("Application deadline"), "31 02 2030");
-  await ui.click(screen.getByRole("button", { name: "Save job" }));
+  await ui.click(screen.getByRole("button", { name: "Save" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("valid date");
   expect(
     fetcher.mock.calls.filter(([url, options]) => url === endpoint && options.method === "POST"),
@@ -241,7 +241,7 @@ it("preserves edits and displays server conflicts instead of claiming a successf
   failure =
     "Another user changed this workspace. Refresh and review the latest data before saving.";
   await ui.type(screen.getByLabelText("Job title"), " revised");
-  await ui.click(screen.getByRole("button", { name: "Save job" }));
+  await ui.click(screen.getByRole("button", { name: "Save" }));
   expect(await screen.findByRole("alert")).toHaveTextContent("Another user changed");
   expect(screen.getByLabelText("Job title")).toHaveValue("Software Developer revised");
   expect(screen.queryByText("Job saved.")).not.toBeInTheDocument();
@@ -250,7 +250,7 @@ it("preserves edits and displays server conflicts instead of claiming a successf
 it("creates a job from the full-page form with requirement templates and publishing fields", async () => {
   const ui = mount();
   await screen.findByRole("table", { name: "Job postings" });
-  await ui.click(screen.getByRole("button", { name: "Create job" }));
+  await ui.click(screen.getByRole("button", { name: "Add posting" }));
   for (const [label, value] of [
     ["Job title", "New Developer"],
     ["Department", "Engineering"],
@@ -262,7 +262,7 @@ it("creates a job from the full-page form with requirement templates and publish
   await ui.type(screen.getByLabelText("Job description"), "Develop reliable applications.");
   await ui.selectOptions(screen.getByLabelText("Requirement template"), "Software Developer");
   await ui.click(screen.getByRole("button", { name: "Use template" }));
-  await ui.click(screen.getByRole("button", { name: "Save draft" }));
+  await ui.click(screen.getByRole("button", { name: "Save" }));
   expect(await screen.findByRole("button", { name: "View New Developer" })).toBeVisible();
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
   expect(data.items.find((row) => row.id === "job-new")).toMatchObject({
@@ -302,14 +302,14 @@ it("removes retired fields and retains the original hidden work mode when editin
   await edit(ui);
   expect(screen.queryByLabelText("Work arrangement")).not.toBeInTheDocument();
   expect(screen.queryByLabelText("Unpublish date")).not.toBeInTheDocument();
-  await ui.click(screen.getByRole("button",{name:"Save job",exact:true}));
+  await ui.click(screen.getByRole("button",{name:"Save",exact:true}));
   await screen.findByRole("button",{name:"View Software Developer"});
   const [,options]=fetcher.mock.calls.find(([url,o])=>url===endpoint&&o.method==="POST");
   expect(JSON.parse(options.body)).toMatchObject({mode:"Hybrid",status:"Active"});
   expect(JSON.parse(options.body)).not.toHaveProperty("unpublishDate");
 });
 
-it("publishes directly from the editor and retains literal bullet-list text", async()=>{
+it("retains a draft status when saving and retains literal bullet-list text", async()=>{
   data.items[0].status="Draft";
   data.items[0].description="• First responsibility\n- Second responsibility";
   const ui=mount();
@@ -319,9 +319,9 @@ it("publishes directly from the editor and retains literal bullet-list text", as
   expect(screen.queryByText("Work arrangement")).not.toBeInTheDocument();
   expect(screen.queryByText("Unpublish date")).not.toBeInTheDocument();
   await ui.click(screen.getByRole("button",{name:"Edit job"}));
-  await ui.click(screen.getByRole("button",{name:"Save & publish"}));
+  await ui.click(screen.getByRole("button",{name:"Save"}));
   await screen.findByRole("button",{name:"View Software Developer"});
-  expect(data.items[0].status).toBe("Active");
+  expect(data.items[0].status).toBe("Draft");
 });
 
 it("keeps 100 jobs usable across paging, filtering and returning from edits", async () => {
@@ -345,7 +345,7 @@ it("keeps 100 jobs usable across paging, filtering and returning from edits", as
   );
   await ui.click(screen.getByRole("button", { name: "Edit job" }));
   await ui.type(screen.getByLabelText("Job title"), " revised");
-  await ui.click(screen.getByRole("button", { name: "Save job" }));
+  await ui.click(screen.getByRole("button", { name: "Save" }));
   expect(
     await screen.findByRole("button", {
       name: "View Role 011 with a long specialist position title revised",

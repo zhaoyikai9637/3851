@@ -1,4 +1,5 @@
 import {saveWithEmail} from "../recruitment/workspaceClient";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CancelForm, DetailsDialog, download, FeedbackForm, interviewCalendar, ScheduleForm } from "../recruitment/dialogs";
 import {
@@ -11,6 +12,7 @@ import {
 // embedded workspace, then shows the same confirmation message.
 export function useApplicationActions({ workspace, onCreated }) {
   const { db, commit, request, upload, send } = workspace;
+  const navigate = useNavigate();
   const [dialog, setDialog] = useState(null);
   const [toast, setToast] = useState("");
 
@@ -67,6 +69,7 @@ export function useApplicationActions({ workspace, onCreated }) {
 
   function interviewAction(kind, interview) {
     if (kind === "calendar") return download(interviewCalendar(db, interview), "JRS-Interview.ics", "text/calendar;charset=utf-8");
+    if(kind === "feedback") {setDialog(null);navigate(`/interviews?feedback=${encodeURIComponent(interview.id)}`);return;}
     setDialog({ kind, interview });
   }
 
@@ -119,9 +122,7 @@ export function useApplicationActions({ workspace, onCreated }) {
       {kind === "cancel" && (
         <CancelForm db={db} interview={dialog.interview} onClose={close} onSubmit={(payload) => run("cancel-interview", payload, "Interview cancelled.")} />
       )}
-      {kind === "feedback" && (
-        <FeedbackForm db={db} interview={dialog.interview} onClose={close} onSubmit={(payload) => run("feedback", payload, "Feedback saved. The application is now in Interview Results.")} />
-      )}
+
       {kind === "offer-edit" && target && (
         <OfferForm db={db} application={target} onClose={close} onSubmit={(payload) => run("offer", payload, "Offer saved. Manager approval is required.")} />
       )}

@@ -127,12 +127,12 @@ it("only offers feedback after the interview has ended and sends the assessment"
   await ui.click(within(screen.getByRole("dialog", { name: "Interview details" })).getByRole("button", { name: "Close dialog" }));
   await ui.click(within(first).getByRole("button", { name: "View" }));
   await ui.click(within(screen.getByRole("dialog", { name: "Interview details" })).getByRole("button", { name: "Record Feedback" }));
-  const form = screen.getByRole("dialog", { name: "Record Interview Feedback" });
-  for (const select of within(form).getAllByLabelText("Rating")) await ui.selectOptions(select, "4");
+  const form = screen.getByRole("region", { name: "Interview feedback" });
+  for (const input of within(form).getAllByRole("spinbutton")) await ui.type(input, "4");
   await ui.selectOptions(within(form).getByLabelText("Overall rating"), "4");
-  await ui.selectOptions(within(form).getByLabelText("Recommendation"), "Proceed");
+  await ui.click(within(form).getByRole("radio",{name:"Offer",exact:true}));
   await ui.type(within(form).getByLabelText("Interview feedback"), "Clear communicator.");
-  await ui.click(within(form).getByRole("button", { name: "Complete Interview" }));
+  await ui.click(within(form).getByRole("button", { name: "Submit Feedback" }));
   const [payload] = feedback.mock.calls[0];
   expect(payload).toMatchObject({ rating: "4", recommendation: "Proceed", notes: "Clear communicator.", applicationId: "app-1", interviewId: "int-1" });
   expect(JSON.parse(payload.assessment)).toEqual([
@@ -177,4 +177,21 @@ it("produces the same calendar event as the embedded workspace", () => {
     "END:VEVENT",
     "END:VCALENDAR",
   ]);
+});
+
+it("opens feedback directly and adds assessments without a success reminder",async()=>{
+ const ui=mount(fetcherFor(workspace()),'/interviews?feedback=int-1');
+ const page=await screen.findByRole('region',{name:'Interview feedback'});
+ expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+ await ui.type(within(page).getByLabelText('New assessment'),'Problem Solving');
+ await ui.click(within(page).getByRole('button',{name:'Add Assessment'}));
+ expect(within(page).getByRole('spinbutton',{name:'Problem Solving score'})).toBeVisible();
+ expect(screen.queryByText(/Assessment added/)).not.toBeInTheDocument();
+ await ui.click(within(page).getByRole('button',{name:'Problem Solving: 4 out of 5'}));
+ expect(within(page).getByRole('spinbutton',{name:'Problem Solving score'})).toHaveValue(4);
+});
+it("does not expose an editable feedback form before the interview ends",async()=>{
+ mount(fetcherFor(workspace()),'/interviews?feedback=int-2');
+ expect(await screen.findByRole('alert')).toHaveTextContent('ended scheduled interview');
+ expect(screen.queryByRole('button',{name:'Submit Feedback'})).not.toBeInTheDocument();
 });

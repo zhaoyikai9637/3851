@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { useLocation, useOutletContext } from "react-router-dom";
 import { ErrorBox } from "../../src/shared";
 import { DateField } from "./DateField";
 import { displayDate, jobDraft, jobPayload } from "./model";
@@ -42,6 +43,8 @@ export function JobDetails({
   onApplications,
   onRefresh,
 }) {
+  const layout = useOutletContext(), location = useLocation();
+  const closeRef = useRef(null);
   const heading = useRef(null),
     content = useRef(null),
     formId = useId();
@@ -56,7 +59,12 @@ export function JobDetails({
   useEffect(() => {
     if (confirmation) content.current?.scrollIntoView?.({block:'start'});
   }, [confirmation]);
-  const title = editing ? (job ? "Edit job" : "Create job") : job.title;
+  const title = editing ? (job ? "Edit posting" : "Add posting") : job.title;
+  closeRef.current = close;
+  useEffect(() => {
+    layout?.setTrail({owner:location.key, items:[{label:'Job posting',route:'list'},{label:title}],open:()=>closeRef.current()});
+    return () => layout?.setTrail(null);
+  },[layout?.setTrail,location.key,title]);
   useEffect(() => {
     heading.current?.focus({preventScroll:true});
     heading.current?.closest('.job-details-page')?.scrollIntoView?.({block:'start'});
@@ -89,8 +97,7 @@ export function JobDetails({
     if (busy) return;
     setError(null);
     try {
-      const requestedStatus = event.nativeEvent?.submitter?.dataset.status;
-      const payload = jobPayload(["Draft", "Active"].includes(requestedStatus) ? { ...draft, status: requestedStatus } : draft);
+      const payload = jobPayload({ ...draft, status: job ? jobDraft(job).status : "Draft" });
       setBusy(true);
       await onSave(payload);
       onClose();
@@ -117,28 +124,10 @@ export function JobDetails({
   const count = draft.requirements.split(/\r?\n/).filter((row) => row.trim()).length;
   return (
     <section
-      className="job-details-page"
+      className="job-details-page yyb-pages"
       aria-label={title}
     >
-      <header className="job-page-heading">
-        <div>
-          <span className="job-kicker">{editing ? "JOB EDITOR" : "JOB DETAILS"}</span>
-          <h2 ref={heading} tabIndex={-1}>{title}</h2>
-          {!editing && (
-            <span className={`job-status job-status-${job.status.toLowerCase()}`}>
-              {job.status}
-            </span>
-          )}
-        </div>
-        <button
-          type="button"
-          className="job-secondary"
-          disabled={busy}
-          onClick={close}
-        >
-          Back to job postings
-        </button>
-      </header>
+      <h2 ref={heading} tabIndex={-1} className="visually-hidden">{title}</h2>
       <div ref={content} className="job-page-content">
         <ErrorBox error={error} />
         {error?.status === 409 && (
@@ -212,9 +201,6 @@ export function JobDetails({
           <form id={formId} noValidate onSubmit={save}>
             <fieldset disabled={busy || !!confirmation} className="job-editor-fields">
                 <section className="job-form-section" aria-label="Position information">
-                  <div className="job-section-title">
-                    <h3>Position information</h3>
-                  </div>
                   <div className="job-form-grid">
                     <Field
                       label="Job title"
@@ -253,24 +239,32 @@ export function JobDetails({
                       maxLength={500}
                     />
                     <Select
-                      label="Recruitment status"
-                      value={draft.status}
-                      options={["Draft", "Active", "Closed"]}
-                      onChange={change("status")}
+                      label="Salary range"
+                      value={draft.salaryRange}
+                      options={[...new Set(["", "SGD 1,000 - 3,000", "SGD 3,000 - 5,000", "SGD 5,000 - 8,000", "SGD 8,000 - 12,000", "SGD 12,000 - 16,000", "SGD 16,000 - 20,000", job?.salaryRange].filter(value => value != null))]}
+                      onChange={change("salaryRange")}
                     />
-                    <p className="job-field-hint" role="status">
-                      {{Active:'Active: new applications and application processing are enabled.',Closed:'Closed: new applications and application progression are stopped.',Draft:'Draft: new applications and application progression are not enabled.'}[draft.status]}
-                    </p>
+                    {["Application deadline", "Publish date"].map(
+                      (label, index) => {
+                        const key = ["closingDate", "publishDate"][index];
+                        return (
+                          <DateField
+                            key={key}
+                            label={label}
+                            value={draft[key]}
+                            onChange={change(key)}
+                            disabled={busy}
+                          />
+                        );
+                      },
+                    )}
                   </div>
                 </section>
                 <section className="job-form-section" aria-label="Description and requirements">
-                  <div className="job-section-title">
-                    <h3>Description & requirements</h3>
-                  </div>
                   <Field
                     label="Job description"
                     multiline
-                    rows={10}
+                    rows={5}
                     maxLength={3000}
                     value={draft.description}
                     onChange={change("description")}
@@ -304,7 +298,7 @@ export function JobDetails({
                   <Field
                     label="Job requirements"
                     multiline
-                    rows={12}
+                    rows={5}
                     maxLength={3000}
                     value={draft.requirements}
                     onChange={change("requirements")}
@@ -313,34 +307,7 @@ export function JobDetails({
                     {count} / 8–12 requirements · one criterion per line
                   </span>
                 </section>
-                <section className="job-form-section" aria-label="Compensation and publishing">
-                  <div className="job-section-title">
-                    <h3>Compensation & publishing</h3>
-                  </div>
-                  <div className="job-form-grid">
-                    <Field
-                      label="Salary range"
-                      value={draft.salaryRange}
-                      onChange={change("salaryRange")}
-                      maxLength={80}
-                      placeholder="e.g. SGD 5,000 - 6,000"
-                    />
-                    {["Application deadline", "Publish date"].map(
-                      (label, index) => {
-                        const key = ["closingDate", "publishDate"][index];
-                        return (
-                          <DateField
-                            key={key}
-                            label={label}
-                            value={draft[key]}
-                            onChange={change(key)}
-                            disabled={busy}
-                          />
-                        );
-                      },
-                    )}
-                  </div>
-                </section>
+
             </fieldset>
           </form>
         ) : (
@@ -406,14 +373,8 @@ export function JobDetails({
               <button type="button" className="job-secondary" disabled={busy} onClick={close}>
                 Cancel editing
               </button>
-              {job && <button key="save-job" form={formId} className="job-secondary" type="submit" disabled={busy || !!confirmation}>
-                {busy ? "Saving…" : "Save job"}
-              </button>}
-              <button form={formId} className="job-secondary" type="submit" data-status="Draft" disabled={busy || !!confirmation}>
-                Save draft
-              </button>
-              <button form={formId} className="job-primary" type="submit" data-status="Active" disabled={busy || !!confirmation}>
-                {busy ? "Saving…" : job ? "Save & publish" : "Publish job"}
+              <button form={formId} className="job-primary" type="submit" disabled={busy || !!confirmation}>
+                {busy ? "Saving…" : "Save"}
               </button>
             </div>
           </>

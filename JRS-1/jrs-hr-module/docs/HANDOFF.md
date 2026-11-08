@@ -1,3 +1,7 @@
+## YYB job posting and feedback UI restoration - 2026-11-08
+
+Restore YYB-owned job/interview/feedback presentation in a scoped stylesheet while retaining the integrated HR shell and business APIs. New postings save as Draft; existing posting status is preserved. Restore full-page feedback with custom assessments and no addition success reminder. English dates remain. Verified 742 combined unit/API cases, both builds, English, isolated real SQL and Edge desktop/mobile draft/feedback submission. See ../../docs/YYB_JOB_AND_FEEDBACK_UI.md. No applicant, production data, cloud setting or deployment change.
+
 ## HR assessment workflow adjustments - 2026-11-08
 
 Apply the requested assessment/interview/rejection labels, name/status-only result queues, breadcrumbs and removal of Duration input, Back to list and active Hired flow. Selected Save actions now send through the existing email endpoint, preserving revision checks, recipient identity, internal comments and failure handling without repeated decisions. See ../../docs/HR_ASSESSMENT_WORKFLOW.md. Applicant UI, production data and cloud configuration are outside scope.

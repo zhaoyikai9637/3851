@@ -183,80 +183,56 @@ export function CancelForm({ db, interview, onSubmit, onClose }) {
   );
 }
 
-export function FeedbackForm({ db, interview, onSubmit, onClose }) {
+export function FeedbackForm({ db, interview, onSubmit, onClose, page = false }) {
   const application = db.applications.find((item) => item.id === interview.applicationId);
   const [criteria, setCriteria] = useState(DEFAULT_CRITERIA.map((label, index) => ({ key: index, label, rating: "" })));
+  const [assessmentName, setAssessmentName] = useState("");
   const [values, setValues] = useState({ rating: "", recommendation: "", notes: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const set = (name) => (event) => setValues((current) => ({ ...current, [name]: event.target.value }));
-  const updateCriterion = (key, field, value) => setCriteria((rows) => rows.map((row) => (row.key === key ? { ...row, [field]: value } : row)));
-
+  const updateCriterion = (key, rating) => setCriteria(rows => rows.map(row => row.key === key ? {...row, rating} : row));
+  function addAssessment() {
+    const label = assessmentName.trim();
+    if (!label || criteria.some(row => row.label.toLowerCase() === label.toLowerCase())) return setError("Enter a unique assessment name.");
+    if (criteria.length >= 20) return setError("Use no more than 20 assessments.");
+    setCriteria(rows => [...rows, {key:Math.max(-1,...rows.map(row=>row.key))+1,label,rating:""}]);
+    setAssessmentName("");
+    setError("");
+  }
   async function submit(event) {
     event.preventDefault();
-    if (!event.currentTarget.reportValidity()) return;
-    setBusy(true);
+    if (busy || !event.currentTarget.reportValidity()) return;
+    setBusy(true); setError("");
     try {
-      await onSubmit({
-        ...values,
-        assessment: JSON.stringify(criteria.map((row) => ({ label: row.label, rating: Number(row.rating) }))),
-        applicationId: application.id,
-        interviewId: interview.id,
-      });
-    } catch (submitError) {
-      setError(submitError.message);
-      setBusy(false);
-    }
+      await onSubmit({...values, assessment:JSON.stringify(criteria.map(row=>({label:row.label,rating:Number(row.rating)}))),applicationId:application.id,interviewId:interview.id});
+    } catch (submitError) { setError(submitError.message); setBusy(false); }
   }
-
-  return (
-    <Modal
-      title="Record Interview Feedback"
-      onClose={onClose}
-      footer={
-        <>
-          <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={busy}>Cancel</button>
-          <button type="submit" form="interview-feedback-form" className="btn btn-primary" disabled={busy}>Complete Interview</button>
-        </>
-      }
-    >
-      <form id="interview-feedback-form" className="interview-form" onSubmit={submit}>
-        <p className="subtle">Completing feedback moves the application to Interview Results.</p>
-        <div className="interview-candidate"><Person db={db} application={application} /></div>
-        <FormError message={error} />
-        <section className="interview-assessment" aria-label="Assessment criteria">
-          <h3>Assessment criteria</h3>
-          {criteria.map((row) => (
-            <div className="interview-assessment-row" key={row.key}>
-              <label>Criterion name<input required maxLength={80} placeholder="e.g. System design" value={row.label} onChange={(event) => updateCriterion(row.key, "label", event.target.value)} /></label>
-              <label>Rating
-                <select required value={row.rating} onChange={(event) => updateCriterion(row.key, "rating", event.target.value)}>
-                  <option value="">Choose rating</option>
-                  {[1, 2, 3, 4, 5].map((value) => <option key={value} value={value}>{value} / 5</option>)}
-                </select>
-              </label>
-              <button type="button" className="btn btn-link btn-sm" disabled={criteria.length <= 1} onClick={() => setCriteria((rows) => rows.filter((item) => item.key !== row.key))}>Remove</button>
-            </div>
-          ))}
-          <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setCriteria((rows) => [...rows, { key: Math.max(-1, ...rows.map((item) => item.key)) + 1, label: "", rating: "" }])}>Add criterion</button>
-          <p className="subtle mb-0">1 Below expectations · 2 Developing · 3 Meets expectations · 4 Strong · 5 Excellent</p>
-        </section>
-        <label>Overall rating
-          <select required value={values.rating} onChange={set("rating")}>
-            <option value="">Choose overall rating</option>
-            {RATINGS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-          </select>
-        </label>
-        <label>Recommendation
-          <select required value={values.recommendation} onChange={set("recommendation")}>
-            <option value="">Choose recommendation</option>
-            {["Proceed", "Hold", "Reject"].map((value) => <option key={value}>{value}</option>)}
-          </select>
-        </label>
-        <label>Interview feedback<textarea required maxLength={3000} rows={4} value={values.notes} onChange={set("notes")} /></label>
-      </form>
-    </Modal>
-  );
+  const body = <form id="interview-feedback-form" className="yyb-feedback-form" onSubmit={submit}>
+    <fieldset disabled={busy}>
+      <section className="candidate-summary">
+        <h2>{candidateOf(db,application).name}</h2>
+        <dl className="detail-grid">{[["Position",jobOf(db,application).title],["Date / Time",`${formatDate(interview.date)} ${interview.time}`],["Location",interview.location],["Interviewer",interview.interviewer]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value || "Not provided"}</dd></div>)}</dl>
+      </section>
+      <FormError message={error} />
+      <section aria-label="Assessment criteria">
+        <h2>1. Competency Assessment</h2>
+        <p className="field-help">Rate each assessment from 1 to 5.</p>
+        {criteria.map(row=><div className="competency-row" key={row.key}>
+          <label htmlFor={`assessment-${row.key}`}>{row.label}</label>
+          <div className="star-rating" role="group" aria-label={`${row.label} rating`}>{[1,2,3,4,5].map(score=><button type="button" key={score} className={`star-button${Number(row.rating)>=score?' filled':''}`} aria-label={`${row.label}: ${score} out of 5`} aria-pressed={Number(row.rating)===score} onClick={()=>updateCriterion(row.key,String(score))}>★</button>)}</div>
+          <input id={`assessment-${row.key}`} className="rating-input" type="number" min="1" max="5" step="1" required aria-label={`${row.label} score`} value={row.rating} onChange={event=>updateCriterion(row.key,event.target.value)} /><span>/ 5</span>
+          <button type="button" className="yyb-remove" disabled={criteria.length<=1} onClick={()=>setCriteria(rows=>rows.filter(item=>item.key!==row.key))}>Remove</button>
+        </div>)}
+        <div className="assessment-add"><label htmlFor="assessment-name">New assessment</label><input id="assessment-name" maxLength={80} placeholder="e.g. Problem Solving" value={assessmentName} onChange={event=>setAssessmentName(event.target.value)} /><button type="button" className="job-secondary" onClick={addAssessment}>Add Assessment</button></div>
+      </section>
+      <label className="yyb-form-group">2. Detailed Comments &amp; Notes<textarea aria-label="Interview feedback" required maxLength={3000} rows={5} value={values.notes} onChange={set("notes")} /></label>
+      <label className="yyb-form-group">Overall rating<select required value={values.rating} onChange={set("rating")}><option value="">Choose overall rating</option>{RATINGS.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      <fieldset className="recommendation"><legend>3. Overall Recommendation *</legend>{[["Proceed","Offer"],["Reject","Reject"],["Hold","Further Consideration"]].map(([value,label])=><label key={value}><input type="radio" name="recommendation" value={value} required checked={values.recommendation===value} onChange={set("recommendation")} /> {label}</label>)}</fieldset>
+      <div className="form-actions"><button type="button" className="job-secondary" onClick={onClose}>Cancel</button><button type="submit" className="job-primary">{busy?"Saving…":"Submit Feedback"}</button></div>
+    </fieldset>
+  </form>;
+  return page ? <section className="yyb-pages yyb-feedback-page" aria-label="Interview feedback">{body}</section> : <Modal title="Record Interview Feedback" onClose={onClose}><div className="yyb-pages">{body}</div></Modal>;
 }
 
 export function DetailsDialog({ db, interview, onAction, onClose, now }) {

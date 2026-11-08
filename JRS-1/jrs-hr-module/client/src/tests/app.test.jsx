@@ -171,7 +171,7 @@ describe("authentication and navigation", () => {
     const post=vi.spyOn(frame.contentWindow,'postMessage');
     await ui.click(within(nav).getByRole('button',{name:'Job performance'}));
     expect(post).toHaveBeenCalledWith({type:'jrs:select-section',key:'reports-tabs',index:1},window.location.origin);
-    await ui.click(screen.getByRole('link',{name:'Job Postings',exact:true}));
+    await ui.click(screen.getByRole('link',{name:'Job posting',exact:true}));
     expect(screen.queryByRole('navigation',{name:'Report sections'})).not.toBeInTheDocument();
   });
   it('opens Dashboard by default after entering the HR workspace', async () => {
@@ -411,7 +411,7 @@ describe("authentication and navigation", () => {
       "Dashboard",
       "Applications",
       "Candidates",
-      "Job Postings",
+      "Job posting",
       "Interviews",
     ]) {
       expect(within(navigation).getByRole("link", { name })).toBeVisible();

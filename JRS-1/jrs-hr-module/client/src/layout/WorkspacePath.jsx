@@ -5,8 +5,10 @@ import { pageName } from './navigation';
 export function WorkspacePath({ pathname, trail }) {
   const {search}=useLocation(),view=new URLSearchParams(search).get('view')||'';
   const applicationItems=pathname==='/applications'?(/^(review|results)\//.test(view)||new URLSearchParams(search).has('application')?[{label:'Applications',to:'/applications'},{label:'Assess application'}]:view.startsWith('candidate/')?[{label:'Applications',to:'/applications'},{label:'Candidate profile'}]:[{label:'Applications'}]):null;
+  const feedback=new URLSearchParams(search).has('feedback');
   const embedded = trail;
-  const items = applicationItems || embedded?.items || (pathname === '/profile/edit'
+  const feedbackItems=pathname==='/interviews'&&feedback?[{label:'Interviews',to:'/interviews'},{label:'Interview feedback'}]:null;
+  const items = applicationItems || feedbackItems || embedded?.items || (pathname === '/profile/edit'
     ? [{ label: 'My Profile', to: '/profile' }, { label: 'Edit Profile' }]
     : [{ label: pageName(pathname) }]);
   return <nav className="workspace-location" aria-label="Current location">

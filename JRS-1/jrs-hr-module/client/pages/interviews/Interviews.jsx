@@ -6,7 +6,7 @@ import { useViewportRows } from "../../src/useViewportRows";
 import { DateField } from "../jobs/DateField";
 import { isoDate } from "../jobs/model";
 import { candidateOf, formatDate, jobOf, useWorkspace, saveWithEmail } from "../recruitment/workspaceClient";
-import { CancelForm, DetailsDialog, download, FeedbackForm, interviewCalendar, Person, resumePath, ScheduleForm, STATUSES, StatusBadge } from "../recruitment/dialogs";
+import { CancelForm, DetailsDialog, download, FeedbackForm, hasEnded, interviewCalendar, Person, resumePath, ScheduleForm, STATUSES, StatusBadge } from "../recruitment/dialogs";
 
 import "../jobs/jobs.css";
 import "./interviews.css";
@@ -79,6 +79,7 @@ export function Interviews({ fetcher, now }) {
       download(interviewCalendar(db, interview), "JRS-Interview.ics", "text/calendar;charset=utf-8");
       return;
     }
+    if(kind === "feedback") { setDialog(null); const next=new URLSearchParams(params); next.set("feedback",interview.id); setParams(next); return; }
     setDialog({ kind, interview });
   }
 
@@ -92,16 +93,26 @@ export function Interviews({ fetcher, now }) {
   }
   if (!db) return <div className="loading-state" role="status"><span className="spinner-border spinner-border-sm" aria-hidden="true" /> Loading…</div>;
 
+  const feedbackId=params.get("feedback");
+  function closeFeedback() { const next=new URLSearchParams(params); next.delete("feedback"); setParams(next); }
+  if(feedbackId) {
+    const interview=db.interviews.find(item=>item.id===feedbackId);
+    const application=interview&&db.applications.find(item=>item.id===interview.applicationId);
+    const allowed=interview&&application&&application.stage==="Interview"&&interview.status==="Scheduled"&&jobOf(db,application).status==="Active"&&hasEnded(interview,now);
+    if(!allowed)return <section className="yyb-pages yyb-feedback-page"><p role="alert">Feedback is only available for an ended scheduled interview under an active job.</p><button type="button" className="job-secondary" onClick={closeFeedback}>Return to interviews</button></section>;
+    return <FeedbackForm key={interview.id} page db={db} interview={interview} onClose={closeFeedback} onSubmit={async payload=>{await commit("feedback",payload);closeFeedback();setNotice("Feedback saved. The application is now in Interview Results.");}} />;
+  }
+
   return (
-    <div className="jobs-workspace interviews-page fit-page" ref={host}>
+    <div className="jobs-workspace interviews-page yyb-pages fit-page" ref={host}>
       <div className="jobs-toolbar" role="toolbar" aria-label="Interview filters and actions">
         <label className="jobs-search">
           <Icon name="search" />
           <input type="search" aria-label="Search interviews" placeholder="Search interviews" value={q} onChange={(event) => setFilter("q", event.target.value)} />
         </label>
         <label className="jobs-filter">
-          <span className="visually-hidden">Filter interview status</span>
-          <select value={status} onChange={(event) => setFilter("status", event.target.value)}>
+          <span>Status</span>
+          <select aria-label="Filter interview status" value={status} onChange={(event) => setFilter("status", event.target.value)}>
             <option value="">All statuses</option>
             {STATUSES.map((value) => <option key={value}>{value}</option>)}
           </select>
@@ -112,7 +123,7 @@ export function Interviews({ fetcher, now }) {
         <button type="button" className="job-secondary" onClick={() => setParams(new URLSearchParams({ status: "" }))}>Clear filters</button>
         <button type="button" className="job-primary" onClick={() => setDialog({ kind: "choose" })}>
           <Icon name="plus" />
-          Schedule Interview
+          Arrange interview
         </button>
       </div>
 
@@ -136,7 +147,7 @@ export function Interviews({ fetcher, now }) {
           <div className="jobs-table-scroll fit-body">
             <table className="jobs-table" aria-label="Interviews">
               <thead>
-                <tr><th>Applicant</th><th>Interview status</th><th>Date &amp; time</th><th>Meeting</th><th>Action</th></tr>
+                <tr><th>Candidate</th><th>Position</th><th>Location</th><th>Type</th><th>Interviewer</th><th>Date / Time</th><th>Status</th><th>Actions</th></tr>
               </thead>
               <tbody>
                 {visible.map((interview) => {
@@ -147,11 +158,14 @@ export function Interviews({ fetcher, now }) {
                         <button type="button" className="interview-person-link" title="View resume" onClick={() => navigate("/applications?view=" + resumePath(application), { state: { from: location.pathname + location.search } })}>
                           <Person db={db} application={application} />
                         </button>
-                        <small className="d-block subtle interview-job">{jobOf(db, application).title}</small>
+
                       </td>
-                      <td><StatusBadge status={interview.status} /></td>
+                      <td>{jobOf(db,application).title}</td>
+                      <td>{interview.location}</td>
+                      <td>{interview.format}</td>
+                      <td>{interview.interviewer}</td>
                       <td>{formatDate(interview.date)}<small className="d-block subtle">{interview.time} · {interview.duration} min</small></td>
-                      <td>{interview.format}<small className="d-block subtle">{interview.interviewer}</small></td>
+                      <td><StatusBadge status={interview.status} /></td>
                       <td><button type="button" className="job-secondary" onClick={() => setDialog({ kind: "details", interview })}>View</button></td>
                     </tr>
                   );
@@ -202,9 +216,7 @@ export function Interviews({ fetcher, now }) {
       {dialog?.kind === "cancel" && (
         <CancelForm db={db} interview={dialog.interview} onClose={() => setDialog(null)} onSubmit={(payload) => run("cancel-interview", payload, "Interview cancelled.")} />
       )}
-      {dialog?.kind === "feedback" && (
-        <FeedbackForm db={db} interview={dialog.interview} onClose={() => setDialog(null)} onSubmit={(payload) => run("feedback", payload, "Feedback saved. The application is now in Interview Results.")} />
-      )}
+
     </div>
   );
 }

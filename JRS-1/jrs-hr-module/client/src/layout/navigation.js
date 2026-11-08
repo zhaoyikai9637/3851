@@ -9,7 +9,7 @@ export const workspaceLinks = [
   ["/dashboard", "Dashboard", "dashboard"],
   ["/applications", "Applications", "applications"],
   ["/candidates", "Candidates", "person"],
-  ["/job-postings", "Job Postings", "jobs"],
+  ["/job-postings", "Job posting", "jobs"],
   ["/interviews", "Interviews", "calendar"],
   ["/reports", "Reports", "reports"],
 ];
@@ -19,7 +19,7 @@ export const workspaceLinks = [
 export const navigationGroups = [
   ["RECRUITMENT", [
     ["/dashboard", "Dashboard", "dashboard"],
-    ["/job-postings", "Job Postings", "jobs"],
+    ["/job-postings", "Job posting", "jobs"],
     ["/applications", "Applications", "applications"],
     ["/candidates", "Candidates", "candidates"],
     ["/interviews", "Interviews", "calendar"],
