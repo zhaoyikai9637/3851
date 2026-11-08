@@ -9,7 +9,7 @@ import SkillSelector from "../../components/SkillSelector";
 import { canonicalPhone, locationParts, locationLabel } from "../../../shared/contactFields";
 import { experienceError, experienceMonths } from "../../../shared/applicantFields";
 
-const steps = ["Personal information", "Work experience", "Role questions", "Review"];
+const steps = ["Personal information", "Work experience", "Role questions", "Review & Submit"];
 
 function newExperience() {
   return {
