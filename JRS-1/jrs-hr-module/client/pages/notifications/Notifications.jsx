@@ -1,3 +1,5 @@
+import {useRef} from "react";
+import {useViewportRows} from "../../src/useViewportRows";
 import {CommunicationContext} from '../../src/features/communication/ApplicationContext';
 import { ApplicationSummary } from "../../src/features/notifications/ApplicationSummary";
 import {
@@ -14,7 +16,10 @@ import { Empty, ErrorBox, PageHeading, Pagination } from "../../src/shared";
 export { groupNotifications };
 
 export function Notifications() {
-  const { state, actions } = useNotificationCenter();
+  const host=useRef(null),loaded=useRef(null);
+  const fit=useViewportRows(host,loaded.current,20);
+  const { state, actions } = useNotificationCenter(fit);
+  loaded.current=state.load.data;
   const {
     context,
     activeFilters,
@@ -43,7 +48,7 @@ export function Notifications() {
         description={summary}
         className="workspace-page-heading"
       />
-      <section className="surface notification-surface">
+      <section className="surface notification-surface fit-panel" ref={host}>
         <NotificationToolbar
           activeFilters={activeFilters}
           allCount={allCount}
@@ -60,7 +65,7 @@ export function Notifications() {
           showDates={showDates}
           unreadCount={unreadCount}
         />
-        <div className="surface-content notification-content">
+        <div className="surface-content notification-content fit-body">
           <ErrorBox error={filterError || error} />
           {load.busy ? (
             <NotificationSkeleton />

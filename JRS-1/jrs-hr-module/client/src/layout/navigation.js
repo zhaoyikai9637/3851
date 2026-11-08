@@ -11,7 +11,23 @@ export const workspaceLinks = [
   ["/candidates", "Candidates", "person"],
   ["/job-postings", "Job Postings", "jobs"],
   ["/interviews", "Interviews", "calendar"],
-  ["/reports", "Reports", "applications"],
+  ["/reports", "Reports", "reports"],
+];
+
+// Sidebar sections. Templates and Logs are reached from the Notifications page tabs,
+// so the sidebar keeps one entry per area.
+export const navigationGroups = [
+  ["RECRUITMENT", [
+    ["/dashboard", "Dashboard", "dashboard"],
+    ["/job-postings", "Job Postings", "jobs"],
+    ["/applications", "Applications", "applications"],
+    ["/candidates", "Candidates", "candidates"],
+    ["/interviews", "Interviews", "calendar"],
+  ]],
+  ["COMMUNICATION", [
+    ["/notifications", "Notifications", "bell"],
+    ["/reports", "Reports", "reports"],
+  ]],
 ];
 
 export function pageName(pathname) {
@@ -20,6 +36,6 @@ export function pageName(pathname) {
   return (
     communicationLinks.find(([path]) => path === pathname)?.[1] ||
     workspaceLinks.find(([path]) => path === pathname)?.[1] ||
-    "My Profile"
+    (pathname.startsWith("/profile") ? "My Profile" : "HR Workspace")
   );
 }

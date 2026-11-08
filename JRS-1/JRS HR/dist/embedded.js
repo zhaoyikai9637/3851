@@ -32,7 +32,10 @@
     // Measure intrinsic content; root scrollHeight includes the iframe viewport.
     const modalOpen = Boolean(document.querySelector('dialog[open]'));
     const minimum = modalOpen ? Math.max(240, availableHeight || window.innerHeight) : 0;
+    const classes=document.documentElement.classList;
+    classes.add('fit-measuring');
     const height = Math.ceil(Math.max(content.getBoundingClientRect().height, minimum));
+    classes.remove('fit-measuring');
     if (height < 1) return; // The authenticated shell is still hidden during loading.
     if (height === previousHeight) return;
     previousHeight = height;

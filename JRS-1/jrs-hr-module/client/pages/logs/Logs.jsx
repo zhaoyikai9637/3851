@@ -1,6 +1,7 @@
+import {useViewportRows} from "../../src/useViewportRows";
 import {Link} from 'react-router-dom';
 import {CommunicationContext,useApplicationContext,applicationPath} from '../../src/features/communication/ApplicationContext';
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api, query } from "../../src/api";
 import { LogActivity } from "../../src/features/logs/LogActivity";
 import { LogFilters } from "../../src/features/logs/LogFilters";
@@ -22,7 +23,10 @@ export function Logs() {
     [datesOpen, setDatesOpen] = useState(false),
     [error, setError] = useState(null),
     [selected, setSelected] = useState(null);
-  const load = useLoad(`/api/hr/logs?${query({...filters,...(context.id?{applicationId:context.id}:{})})}`);
+  const host=useRef(null),loaded=useRef(null);
+  const fit=useViewportRows(host,loaded.current,initialLogFilters.pageSize);
+  const load = useLoad(`/api/hr/logs?${query({...filters,pageSize:fit,...(context.id?{applicationId:context.id}:{})})}`);
+  loaded.current=load.data;
   const hasFilters = Boolean(filters.search || filters.trigger || filters.from || filters.to);
   function apply(event) {
     event.preventDefault();
@@ -48,7 +52,7 @@ export function Logs() {
     <>
       <CommunicationContext context={context}/>
       <PageHeading eyebrow={null} className="workspace-page-heading" title="Logs" />
-      <section className="surface log-surface">
+      <section className="surface log-surface fit-panel" ref={host}>
         <LogFilters
           draft={draft}
           setDraft={setDraft}
@@ -58,7 +62,7 @@ export function Logs() {
           onClear={clear}
           hasFilters={hasFilters}
         />
-        <div className="log-content">
+        <div className="log-content fit-body">
           <ErrorBox error={error} />
           {load.busy ? (
             <Loading />

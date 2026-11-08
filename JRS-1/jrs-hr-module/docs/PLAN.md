@@ -1,3 +1,7 @@
+## HR reference style adaptation - 2026-11-08
+
+Apply the latest desktop JRS HR visual reference to the maintained HR shell, native business pages and editing dialogs. Keep applicant/login files byte-identical and isolate the design tokens to HR. Retain protected resumes, current/submitted personal information, read-only applicant ownership, the original Outbox, application communication context, explicit sending, permissions and simplified rejection. See ../../docs/HR_REFERENCE_STYLE_ADAPTATION.md for scope and verification, including 826 combined test cases, both builds, isolated SQL and Edge desktop/mobile journeys. No production data, cloud settings or deployment changed.
+
 ## Show interview options directly - 2026-11-04
 
 Remove the More options disclosure from the shared schedule/reschedule form. Duration, meeting format and internal notes are always visible. Keep all values, validation, draft preparation and scheduling behavior unchanged.

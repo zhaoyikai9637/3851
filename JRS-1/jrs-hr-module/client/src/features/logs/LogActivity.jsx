@@ -45,7 +45,7 @@ export function LogActivity({ data, onSelect, onPage }) {
           </tbody>
         </table>
       </div>
-      <Pagination data={data} onPage={onPage} />
+      <Pagination noun="emails" data={data} onPage={onPage} />
     </>
   );
 }

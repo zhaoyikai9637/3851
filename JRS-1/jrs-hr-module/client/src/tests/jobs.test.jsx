@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { App } from "../App";
 import { user } from "./fixtures";
 
@@ -40,6 +40,7 @@ beforeEach(() => {
     if (url === "/api/auth/me") return json({ user, csrfToken: "hr-token", mode: "team" });
     if (url === "/recruitment/api/auth/me")
       return json({ user: { id: "hr-a", role: "HR_MANAGER" }, csrfToken: "shared-token" });
+    if(url==='/recruitment/api/hr/workspace')return json({revision:4,jobs:data.items,candidates:[],applications:[],interviews:[],tasks:[]});
     if (url === endpoint && (!options.method || options.method === "GET"))
       return json(structuredClone(data));
     if (url === endpoint && options.method === "POST") {
@@ -291,10 +292,8 @@ it("opens applications filtered to the selected job", async () => {
   await ui.click(
     await screen.findByRole("button", { name: "View 12 applications for Software Developer" }),
   );
-  expect(await screen.findByTitle("Applications")).toHaveAttribute(
-    "src",
-    "/recruitment/?job=job-a#/applications",
-  );
+  expect(await screen.findByRole('searchbox',{name:'Search applications'})).toBeVisible();
+  expect(screen.getByRole('combobox',{name:'Filter by position'})).toHaveValue('job-a');
 });
 
 it("removes retired fields and retains the original hidden work mode when editing", async () => {
@@ -339,7 +338,7 @@ it("keeps 100 jobs usable across paging, filtering and returning from edits", as
   const ui = mount();
   const table = await screen.findByRole("table", { name: "Job postings" });
   expect(within(table).getAllByRole("row")).toHaveLength(11);
-  expect(screen.getByText("1–10 of 100 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–10 of 100 jobs")).toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Next", exact: true }));
   await ui.click(
     screen.getByRole("button", { name: "View Role 011 with a long specialist position title" }),
@@ -352,16 +351,16 @@ it("keeps 100 jobs usable across paging, filtering and returning from edits", as
       name: "View Role 011 with a long specialist position title revised",
     }),
   ).toBeVisible();
-  expect(screen.getByText("11–20 of 100 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 11–20 of 100 jobs")).toBeVisible();
   await ui.selectOptions(
     screen.getByRole("combobox", { name: "Filter by recruitment status" }),
     "Draft",
   );
-  expect(screen.getByText("1–10 of 50 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–10 of 50 jobs")).toBeVisible();
   await ui.type(screen.getByRole("searchbox", { name: "Search jobs" }), "Role 100");
-  expect(screen.getByText("1–1 of 1 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–1 of 1 jobs")).toBeVisible();
   await ui.clear(screen.getByRole("searchbox", { name: "Search jobs" }));
-  expect(screen.getByText("1–10 of 50 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–10 of 50 jobs")).toBeVisible();
 });
 
 it("combines department, status and search and clears all filters from an empty result", async () => {
@@ -383,7 +382,7 @@ it("combines department, status and search and clears all filters from an empty 
     screen.getByRole("combobox", { name: "Filter by department" }),
     "Operations",
   );
-  expect(screen.getByText("1–2 of 2 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–2 of 2 jobs")).toBeVisible();
   await ui.selectOptions(
     screen.getByRole("combobox", { name: "Filter by recruitment status" }),
     "Draft",
@@ -394,5 +393,5 @@ it("combines department, status and search and clears all filters from an empty 
   await ui.click(screen.getByRole("button", { name: "Clear filters" }));
   expect(screen.getByRole("combobox", { name: "Filter by department" })).toHaveValue("");
   expect(screen.getByRole("combobox", { name: "Filter by recruitment status" })).toHaveValue("All");
-  expect(screen.getByText("1–3 of 3 jobs")).toBeVisible();
+  expect(screen.getByText("Showing 1–3 of 3 jobs")).toBeVisible();
 });

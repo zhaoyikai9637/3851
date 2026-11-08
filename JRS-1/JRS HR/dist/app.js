@@ -9,7 +9,7 @@
   let listBudget=window.innerHeight-180,fitTimer,rowHeight=0,fitKey='';
   function fitList(){
     if(composingSearch)return;
-    if(!['applications','interviews','reports','jobs'].includes(route[0]))return;
+    if(!['dashboard','applications','interviews','reports','jobs'].includes(route[0]))return;
     const key=route.join('/')+':'+(ui.section||'')+':'+window.innerWidth;
     if(key!==fitKey){fitKey=key;rowHeight=0;}
     const result=window.HRPagination?.measure($('#content'),listBudget,rowHeight);
@@ -55,6 +55,7 @@
     const names={dashboard:'Dashboard',applications:'Applications',review:'Resume Review',results:'Interview Results',success:'Status Update',candidate:'Candidate Profile',jobs:'Job Postings',interviews:'Interviews',reports:'Reports',notifications:'Notification Center',outbox:'Email Outbox',templates:'Email Templates','mail-log':'Notification Log','hr-profile':'My Profile'};
     const label=page==='applications'&&V.stageForRoute(route)?'Applications / '+V.stageLabel(V.stageForRoute(route)):names[page]||'HR Workspace';document.title='JRS | '+label;$('#page-label').textContent=label;
     renderNavigation();
+    document.documentElement.classList.toggle('fit-fill',embedded&&['dashboard','applications'].includes(page));
     $('#content').innerHTML=V.render(route,db,ui);window.HRLayout?.apply($('#content'),page,ui);$('#storage-warning').hidden=!store.error;$('#storage-warning').textContent=store.error;
     $('#user-name').textContent=db.currentUser.name;$('#user-role').textContent=db.currentUser.role==='HR_MANAGER'?'HR Manager':'HR Officer';
     if(page==='applications')$('#content .heading-actions')?.insertAdjacentHTML('beforeend',button('application-new',icon('plus')+'Receive Application','','primary'));

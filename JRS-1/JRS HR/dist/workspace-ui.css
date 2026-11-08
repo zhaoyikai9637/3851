@@ -1,14 +1,12 @@
 /* Shared by the React shell and the native recruitment document. */
 :root {
-  --jrs-accent: #315fd2;
-  --jrs-accent-hover: #244daf;
-  --jrs-ink: #24344e;
-  --jrs-muted: #5b6b82;
-  --jrs-line: #dfe7f0;
-  --jrs-soft: #f8fafd;
+  --jrs-accent: var(--jrs-blue);
+  --jrs-accent-hover: var(--jrs-blue-dark);
+  --jrs-ink: var(--jrs-text);
+  --jrs-line: var(--jrs-border);
   --jrs-control-height: 40px;
-  --jrs-control-radius: 8px;
-  --jrs-panel-radius: 14px;
+  --jrs-control-radius: var(--jrs-radius-sm);
+  --jrs-panel-radius: var(--jrs-radius-md);
 }
 
 /* One control scale; links, tabs and destructive actions keep their semantics. */
@@ -21,9 +19,9 @@
   padding: 8px 14px;
   border: 1px solid var(--jrs-line);
   border-radius: var(--jrs-control-radius);
-  background: #fff;
+  background: var(--jrs-surface);
   color: var(--jrs-ink);
-  font-size: 13px;
+  font-size: var(--jrs-text-sm);
   font-weight: 600;
   line-height: 1.4;
   text-decoration: none;
@@ -32,7 +30,7 @@
 }
 :is(#content, .workspace-body) :is(.button, .btn:not(.btn-link), .job-secondary, .job-row-open, .row-menu summary):hover:not(:disabled) {
   background: var(--jrs-soft);
-  border-color: #b8c7dd;
+  border-color: var(--jrs-border-strong);
   color: var(--jrs-ink);
   transform: none;
 }
@@ -46,8 +44,8 @@
   border-color: var(--jrs-accent-hover);
   color: #fff;
 }
-:is(#content, .workspace-body) .button.danger { background:#c13d4d; border-color:#c13d4d; color:#fff; }
-:is(#content, .workspace-body) .button.danger:hover:not(:disabled) { background:#a92e3e; border-color:#a92e3e; color:#fff; }
+:is(#content, .workspace-body) .button.danger { background:var(--jrs-danger); border-color:var(--jrs-danger); color:#fff; }
+:is(#content, .workspace-body) .button.danger:hover:not(:disabled) { background:var(--jrs-danger); border-color:var(--jrs-danger); color:#fff; }
 :is(#content, .workspace-body) :is(.button, .btn, .job-primary, .job-secondary):disabled { opacity:.45; cursor:not-allowed; }
 :is(#content, .workspace-body) :is(.button, .btn, .job-primary, .job-secondary, .job-row-open, .row-menu summary):focus-visible {
   outline: 2px solid var(--jrs-accent);
@@ -55,14 +53,14 @@
 }
 /* Viewing a row always uses a secondary action, regardless of its workflow stage. */
 #content .row-actions > .button, #content [data-action="filters"] {
-  background:#fff; border-color:var(--jrs-line); color:var(--jrs-ink);
+  background:var(--jrs-surface); border-color:var(--jrs-line); color:var(--jrs-ink);
 }
 #content .row-menu summary { list-style:none; }
-#content .row-menu summary::after { content:"\2026"; font-size:16px; line-height:1; }
+#content .row-menu summary::after { content:"\2026"; font-size:var(--jrs-text-md); line-height:1; }
 #content .row-menu summary::-webkit-details-marker { display:none; }
 #content .section-tabs .button { border:0; border-bottom:3px solid transparent; background:transparent; color:var(--jrs-muted); }
-#content .section-tabs .button.selected { border-bottom-color:var(--jrs-accent); background:#ebf1ff; color:var(--jrs-accent); }
-:is(#content, .workspace-body) :is(.notification-filter-toggle, .log-date-toggle)[aria-expanded="true"] { background:#ebf1ff; border-color:#b5c8ef; color:var(--jrs-accent); }
+#content .section-tabs .button.selected { border-bottom-color:var(--jrs-accent); background:var(--jrs-blue-soft); color:var(--jrs-accent); }
+:is(#content, .workspace-body) :is(.notification-filter-toggle, .log-date-toggle)[aria-expanded="true"] { background:var(--jrs-blue-soft); border-color:var(--jrs-border-strong); color:var(--jrs-accent); }
 
 /* Search wrappers reuse the existing search icon in each renderer. */
 :is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search) {
@@ -77,34 +75,33 @@
   min-height:var(--jrs-control-height);
   margin:0;
   padding:0 12px;
-  background:#fff;
+  background:var(--jrs-surface);
   border:1px solid var(--jrs-line);
   border-radius:var(--jrs-control-radius);
   box-shadow:none;
-  font-size:13px;
+  font-size:var(--jrs-text-sm);
 }
 :is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search) input {
   width:100%; min-width:0; max-width:none;
   height:38px; min-height:0;
   padding:0; margin:0; border:0; border-radius:0;
   background:transparent; color:var(--jrs-ink);
-  font-size:13px; line-height:1.4;
+  font-size:var(--jrs-text-sm); line-height:1.4;
   box-shadow:none; outline:none;
 }
 :is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search) svg {
-  width:17px; height:17px; flex-shrink:0; color:#7b8da7;
+  width:17px; height:17px; flex-shrink:0; color:var(--jrs-muted);
 }
-:is(#content, .workspace-body) input::placeholder { color:#7b8da7; opacity:1; }
+:is(#content, .workspace-body) input::placeholder { color:var(--jrs-muted); opacity:1; }
 :is(#content, .workspace-body) :is(.search, .jobs-search, .jrs-search):focus-within {
   border-color:var(--jrs-accent); outline:2px solid #315fd233; outline-offset:1px;
 }
 :is(#content, .workspace-body) :is(.queue-filters, .page-filters, .jobs-filter, .notification-type) select,
-:is(#content, .workspace-body) .hr-date-control > input,
-:is(#content, .workspace-body) .page-filters .english-date-control input[data-english-date] {
+:is(#content, .workspace-body) .hr-date-control > input {
   height:var(--jrs-control-height); min-height:var(--jrs-control-height);
   border:1px solid var(--jrs-line); border-radius:var(--jrs-control-radius);
-  padding:8px 32px 8px 12px; background-color:#fff;
-  color:var(--jrs-ink); font-size:13px; line-height:1.4;
+  padding:8px 32px 8px 12px; background-color:var(--jrs-surface);
+  color:var(--jrs-ink); font-size:var(--jrs-text-sm); line-height:1.4;
 }
 :is(#content, .workspace-body) :is(.workspace-toolbar, .jobs-toolbar, .notification-toolbar, .queue-toolbar, .page-filters) {
   gap:12px; align-items:center;
@@ -114,25 +111,25 @@
 :is(#content, .workspace-body) .notification-toolbar { flex-wrap:wrap; padding:16px 20px; }
 :is(#content, .workspace-body) .notification-type { width:160px; }
 :is(#content, .workspace-body) .filter-tabs { min-height:40px; margin:0; }
-:is(#content, .workspace-body) .filter-tabs button { min-height:32px; font-size:13px; }
+:is(#content, .workspace-body) .filter-tabs button { min-height:32px; font-size:var(--jrs-text-sm); }
 
 /* Tables have the same edge, header, density and quiet hover treatment. */
 :is(#content, .workspace-body) :is(.panel, .candidate-surface, .jobs-table-panel, .notification-surface) {
   border-color:var(--jrs-line); border-radius:var(--jrs-panel-radius); box-shadow:none;
 }
 :is(#content, .workspace-body) :is(.table-scroll, .table-responsive, .jobs-table-scroll) > table {
-  width:100%; margin:0; border-collapse:collapse; color:var(--jrs-ink); font-size:13px;
+  width:100%; margin:0; border-collapse:collapse; color:var(--jrs-ink); font-size:var(--jrs-text-sm);
 }
 :is(#content, .workspace-body) table thead { background:var(--jrs-soft); box-shadow:none; }
 :is(#content, .workspace-body) table th {
   height:44px; padding:12px 20px; background:var(--jrs-soft);
-  color:var(--jrs-muted); font-size:11px; font-weight:600; line-height:1.4;
+  color:var(--jrs-muted); font-size:var(--jrs-text-xs); font-weight:600; line-height:1.4;
   text-transform:uppercase; letter-spacing:.025em;
   border-bottom:1px solid var(--jrs-line); vertical-align:middle;
 }
 :is(#content, .workspace-body) table td {
   height:80px; padding:16px 20px; border-bottom:1px solid var(--jrs-line);
-  background:#fff; color:var(--jrs-ink); font-size:13px; line-height:1.5; vertical-align:middle;
+  background:var(--jrs-surface); color:var(--jrs-ink); font-size:var(--jrs-text-sm); line-height:1.5; vertical-align:middle;
   box-shadow:none;
 }
 :is(#content, .workspace-body) table tbody tr:hover > td { background:var(--jrs-soft); }
@@ -141,21 +138,21 @@
 :is(#content, .workspace-body) table th:last-child { border-top-right-radius:var(--jrs-panel-radius); }
 :is(#content, .workspace-body) table th:last-child,
 :is(#content, .workspace-body) table td:last-child { text-align:right; }
-:is(#content, .workspace-body) :is(.candidate-name, .job-title-button, .person strong) { font-size:14px; font-weight:600; color:var(--jrs-ink); }
-:is(#content, .workspace-body) :is(.job-row-meta, .person small, td > small) { font-size:12px; color:var(--jrs-muted); margin-top:4px; }
-:is(#content, .workspace-body) :is(.badge, .job-status) { border-radius:20px; padding:5px 9px; font-size:11px; font-weight:600; line-height:1.4; }
+:is(#content, .workspace-body) :is(.candidate-name, .job-title-button, .person strong) { font-size:var(--jrs-text-sm); font-weight:600; color:var(--jrs-ink); }
+:is(#content, .workspace-body) :is(.job-row-meta, .person small, td > small) { font-size:var(--jrs-text-xs); color:var(--jrs-muted); margin-top:4px; }
+:is(#content, .workspace-body) :is(.badge, .job-status) { border-radius:20px; padding:5px 9px; font-size:var(--jrs-text-xs); font-weight:600; line-height:1.4; }
 
 /* All list pagers use the same footer and text navigation. */
 :is(#content, .workspace-body) :is(.table-footer, .pagination-row, .jobs-table-footer) {
   display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;
   gap:12px; min-height:64px; margin:0; padding:12px 20px;
-  border-top:1px solid var(--jrs-line); background:#fff;
-  color:var(--jrs-muted); font-size:12px;
+  border-top:1px solid var(--jrs-line); background:var(--jrs-surface);
+  color:var(--jrs-muted); font-size:var(--jrs-text-xs);
   border-radius:0 0 var(--jrs-panel-radius) var(--jrs-panel-radius);
 }
-:is(#content, .workspace-body) .table-footer p { margin:0; font-size:12px; color:var(--jrs-muted); }
-:is(#content, .workspace-body) :is(.pagination, .jobs-table-footer nav) { display:flex; align-items:center; gap:10px; color:var(--jrs-muted); font-size:12px; }
-:is(#content, .workspace-body) :is(.pagination, .pagination-row, .jobs-table-footer) button { min-height:36px; padding:7px 12px; font-size:12px; }
+:is(#content, .workspace-body) .table-footer p { margin:0; font-size:var(--jrs-text-xs); color:var(--jrs-muted); }
+:is(#content, .workspace-body) :is(.pagination, .jobs-table-footer nav) { display:flex; align-items:center; gap:10px; color:var(--jrs-muted); font-size:var(--jrs-text-xs); }
+:is(#content, .workspace-body) :is(.pagination, .pagination-row, .jobs-table-footer) button { min-height:36px; padding:7px 12px; font-size:var(--jrs-text-xs); }
 :is(#content, .workspace-body) .notification-cta { pointer-events:none; }
 
 @media(max-width:700px) {
@@ -166,59 +163,60 @@
   :is(#content, .workspace-body) table td { padding:14px 12px; height:auto; }
   #content .table-scroll td { min-height:0; height:auto; padding:10px 12px; border:0; text-align:left; }
   :is(#content, .workspace-body) :is(.table-footer, .pagination-row, .jobs-table-footer) { padding:12px; gap:10px; }
-  :is(#content, .workspace-body) .notification-cta { min-height:36px; padding:7px 10px; font-size:12px; }
+  :is(#content, .workspace-body) .notification-cta { min-height:36px; padding:7px 10px; font-size:var(--jrs-text-xs); }
 }
 
-/* Match applicant navigation typography without changing HR content panels. */
-.workspace > .sidebar { font-family:Inter,"Segoe UI",Arial,sans-serif; background:#14233b; overflow-y:auto; }
-.workspace > .sidebar nav, .mobile-navigation nav { display:grid; gap:10px; }
-.workspace > .sidebar nav a, .mobile-navigation nav a {
-  min-height:54px;
-  gap:14px;
-  padding:0 15px;
-  margin:0;
-  border-radius:7px;
-  color:#c6d2e2;
-  font-size:16px;
-  font-weight:700;
-  line-height:1.55;
+/* Dashboard: the top cards take the height they need (no inner scrollbar);
+   the Recent Applications list is paged to fit the remaining viewport. */
+@media (min-width: 1001px) and (min-height: 620px) {
+  .dashboard-grid { grid-template-rows: auto minmax(0, 1fr); }
+  .dashboard-grid > .performance,
+  .dashboard-grid > .overview { overflow: visible; }
 }
-.workspace > .sidebar nav a svg, .mobile-navigation nav a svg { width:22px; height:22px; flex-shrink:0; }
-.workspace > .sidebar nav a:hover, .mobile-navigation nav a:hover { background:#203553; color:#fff; }
-.workspace > .sidebar nav a.active, .mobile-navigation nav a.active { background:#2563eb; color:#fff; box-shadow:none; }
-.workspace > .sidebar .sidebar-label, .mobile-navigation .sidebar-label { font-size:12px; font-weight:800; letter-spacing:0; color:#8ea0ba; }
 
-/* Calendar triggers stay inside converted text date fields. */
-:is(#content, .workspace-body) .page-filters .english-date-control input[data-english-date]{padding-right:40px}
+/* Unified panel headings and accents (shared tokens). */
+.panel h3,
+.performance h3,
+.overview h3,
+.schedule h3,
+.section-heading h3 {
+  color: var(--jrs-text);
+  font-size: var(--jrs-text-md);
+  font-weight: 600;
+}
+.segmented button.selected {
+  color: var(--jrs-blue);
+}
+.overview .icon-disc.purple {
+  --tone: var(--jrs-blue);
+  --pale: var(--jrs-blue-soft);
+}
 
-/* Read-only applicant details live inside the existing candidate panels. */
-.candidate-information-grid{align-items:start}
-.candidate-information-grid>section{min-width:0}
-.candidate-information-grid>.panel>h3{margin-bottom:18px}
-.hr-personal-profile,.hr-profile-section,.hr-profile-record{min-width:0;max-width:100%}
-.hr-profile-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--jrs-line)}
-.hr-profile-section h4{margin:0 0 12px;font-size:14px;color:var(--jrs-ink)}
-.hr-profile-record{margin-top:10px;padding:14px;border:1px solid var(--jrs-line);border-radius:10px;background:#fff}
-.hr-profile-record h5{margin:0 0 6px;font-size:14px;color:var(--jrs-ink)}
-.hr-profile-record p{margin:5px 0;overflow-wrap:anywhere}
-.hr-profile-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
-.hr-personal-profile .details{grid-template-columns:90px minmax(0,1fr)}
-.hr-personal-profile dd{overflow-wrap:anywhere;min-width:0}
-.submitted-profile-details{margin-top:18px;padding-top:14px;border-top:1px solid var(--jrs-line)}
-.submitted-profile-details>summary{font-size:14px;font-weight:600;color:var(--jrs-ink);cursor:pointer;padding:6px 0}
-.submitted-profile-details[open]>summary{margin-bottom:12px}
-@media(max-width:850px){.candidate-information-grid{grid-template-columns:minmax(0,1fr)}}
+/* Filters: one row, one control height, no stacked labels (the label text stays as the accessible name). */
+.page-filters .inline-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-size: 0;
+}
+.page-filters .inline-label input,
+.page-filters .inline-label .english-date-control {
+  height: var(--jrs-control-height);
+  min-height: var(--jrs-control-height);
+  font-size: var(--jrs-text-sm);
+}
+.page-filters .inline-label input {
+  border: 1px solid var(--jrs-line);
+  border-radius: var(--jrs-control-radius);
+}
 
-.candidate-information-grid.single-section .details{grid-template-columns:100px minmax(0,1fr)}
-.candidate-information-grid dd,.candidate-information-grid h3,.hr-profile-record h5{overflow-wrap:anywhere;min-width:0}
-.hr-personal-profile .skill-tags span{max-width:100%;white-space:normal;overflow-wrap:anywhere}
-
-/* Review shortcuts form one right-aligned toolbar; narrow screens may wrap. */
-.review-heading>.review-person{flex:1 1 280px}
-.review-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
-.review-actions>.button{min-height:40px;margin:0;vertical-align:middle}
-@media(max-width:700px){.review-heading>.review-person{flex-basis:100%}.review-actions{width:100%;margin-left:0}.review-actions>.button{flex:1 1 auto}}
-
-.communication-context{padding:16px 20px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}.communication-context-links{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:0 0 16px}.communication-context .communication-context-links{flex-basis:100%;margin:0}.communication-context-links [aria-current=page]{font-weight:700;text-decoration:underline}
-
-[aria-label="Candidate emails"] .section-heading{flex-wrap:wrap;gap:12px;align-items:flex-start}[aria-label="Candidate emails"] .card-actions{display:flex;flex-wrap:wrap;gap:8px}.communication-context-links>a{display:inline-flex;align-items:center;min-height:36px}
+/* Fill the frame: the shell stretches the frame to the bottom of the window, so the
+   list card grows to meet it and the spare height is shared by the rows. Paging and
+   frame sizing measure with .fit-measuring set, which switches these rules off. */
+@media (min-width: 700px) {
+  html.fit-fill:not(.fit-measuring) #content { min-height: 100vh !important; display: flex !important; flex-direction: column; }
+  html.fit-fill:not(.fit-measuring) #content > :is(.queue-panel, .dashboard-grid) { flex: 1 0 auto; }
+  html.fit-fill:not(.fit-measuring) #content :is(.queue-panel, .dashboard-grid > .panel:has(> .table-scroll)) { display: flex; flex-direction: column; }
+  html.fit-fill:not(.fit-measuring) #content .panel > .table-scroll { flex: 1 0 auto; display: flex; flex-direction: column; }
+  html.fit-fill:not(.fit-measuring) #content .panel > .table-scroll > table { flex: 1 0 auto; }
+}

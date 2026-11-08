@@ -1,0 +1,29 @@
+/* Applications list: the queue itself is styled by the scoped legacy stylesheet
+   (src/legacy/legacy-scope.css); only parts that differ from the iframe are here. */
+
+/* The legacy toast; Bootstrap also defines .toast, so this one has its own name. */
+.applications-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70;
+  max-width: min(600px, 90vw);
+  padding: 14px 20px;
+  border-radius: 9px;
+  background: var(--jrs-navy);
+  box-shadow: 0 8px 25px #0002;
+  color: white;
+  font-size: var(--jrs-text-sm);
+}
+.applications-toast[hidden] {
+  display: none;
+}
+.application-label-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--jrs-space-2);
+}
+@media(max-width:600px){.hr-legacy .email-outbox-item{display:block}.hr-legacy .email-outbox-item .card-actions{margin-top:12px;justify-content:flex-start;flex-wrap:wrap}.hr-legacy .review-actions{flex-wrap:wrap;gap:8px}}
+
+@media(max-width:700px){.hr-legacy .row-actions{flex-wrap:wrap;white-space:normal;justify-content:flex-start}}

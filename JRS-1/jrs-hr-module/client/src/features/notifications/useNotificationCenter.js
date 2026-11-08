@@ -8,7 +8,7 @@ import {
   notificationTypeLabel,
 } from "./notificationUtils";
 
-export function useNotificationCenter() {
+export function useNotificationCenter(pageSize = INITIAL_NOTIFICATION_FILTERS.pageSize) {
   const context=useApplicationContext();
   const [filters, setFilters] = useState(INITIAL_NOTIFICATION_FILTERS);
   const [draft, setDraft] = useState(INITIAL_NOTIFICATION_FILTERS);
@@ -18,7 +18,9 @@ export function useNotificationCenter() {
   const [filterError, setFilterError] = useState(null);
   const [application, setApplication] = useState(null);
   const [undoIds, setUndoIds] = useState([]);
-  const load = useLoad(`/api/hr/notifications?${query({...filters,...(context.id?{applicationId:context.id}:{})})}`);
+  const load = useLoad(`/api/hr/notifications?${query({...filters,pageSize,...(context.id?{applicationId:context.id}:{})})}`);
+
+  useEffect(()=>{setFilters(value=>value.pageSize===pageSize?value:{...value,pageSize,page:1});},[pageSize]);
 
   useEffect(() => {
     if (load.data && filters.page > 1 && !load.data.items.length)
