@@ -1,10 +1,12 @@
 import { Fragment } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { pageName } from './navigation';
 
 export function WorkspacePath({ pathname, trail }) {
+  const {search}=useLocation(),view=new URLSearchParams(search).get('view')||'';
+  const applicationItems=pathname==='/applications'?(/^(review|results)\//.test(view)||new URLSearchParams(search).has('application')?[{label:'Applications',to:'/applications'},{label:'Assess application'}]:view.startsWith('candidate/')?[{label:'Applications',to:'/applications'},{label:'Candidate profile'}]:[{label:'Applications'}]):null;
   const embedded = trail;
-  const items = embedded?.items || (pathname === '/profile/edit'
+  const items = applicationItems || embedded?.items || (pathname === '/profile/edit'
     ? [{ label: 'My Profile', to: '/profile' }, { label: 'Edit Profile' }]
     : [{ label: pageName(pathname) }]);
   return <nav className="workspace-location" aria-label="Current location">

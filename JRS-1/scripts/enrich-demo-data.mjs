@@ -23,7 +23,7 @@ const teams = [
   "Digital Experience",
   "Enterprise",
 ];
-const stages = ["Pending Review", "Interview", "Interview Results", "Offer", "Rejected", "Hired"];
+const stages = ["Pending Review", "Interview", "Interview Results", "Offer", "Rejected"];
 
 function unchangedPlaceholder(job, base, index) {
   const original = {

@@ -4,7 +4,8 @@
   const requirements=typeof module==='object'&&module.exports?require('./job-requirements.js'):root.HRJobRequirements;
   const screening=typeof module==='object'&&module.exports?require('./screening.js'):root.HRScreening;
   const KEY='jrs.hr.workspace.v2';
-  const STAGES=['Pending Review','Interview','Interview Results','Offer','Rejected','Hired'];
+  // Historical Hired records remain readable, but no command can create that retired stage.
+  const STAGES=['Pending Review','Interview','Interview Results','Offer','Rejected'];
   const graduateStatuses=['Experienced','Fresh graduate','Not recorded'];
   const uid=p=>p+'-'+(globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2));
   const iso=()=>new Date().toISOString(), clone=v=>JSON.parse(JSON.stringify(v));
@@ -44,7 +45,7 @@
       if(j.acceptedMajors!=null&&(!Array.isArray(j.acceptedMajors)||j.acceptedMajors.some(value=>typeof value!=='string')))throw Error('Invalid accepted fields of study.');
     }
     for(const c of db.candidates)if(c.graduateStatus!=null&&!graduateStatuses.includes(c.graduateStatus))throw Error('Invalid graduate status.');
-    for(const a of db.applications){find(db.candidates,a.candidateId);find(db.jobs,a.jobId);if(!STAGES.includes(a.stage)||!Array.isArray(a.notes)||typeof a.appliedDate!=='string'||(a.stage==='Offer'&&!a.offer))throw Error('Invalid application data.');}
+    for(const a of db.applications){find(db.candidates,a.candidateId);find(db.jobs,a.jobId);if((!STAGES.includes(a.stage)&&a.stage!=='Hired')||!Array.isArray(a.notes)||typeof a.appliedDate!=='string'||(a.stage==='Offer'&&!a.offer))throw Error('Invalid application data.');}
     for(const i of db.interviews){find(db.applications,i.applicationId);if(!['Scheduled','Completed','Cancelled'].includes(i.status)||!Number.isFinite(i.duration))throw Error('Invalid interview data.');}
     for(const t of db.tasks){find(db.applications,t.applicationId);if(!['Open','Completed'].includes(t.status))throw Error('Invalid task data.');}
     for(const n of db.notifications)if(n.applicationId)find(db.applications,n.applicationId);
@@ -104,9 +105,9 @@
       }
       case 'approve-offer':if(a.stage!=='Offer'||a.offer?.status!=='Draft'||a.offer.approval==='Approved'||a.offer.expiry<day())throw Error('Only an unapproved, unexpired draft offer can be approved.');a.offer.approval='Approved';activity('Offer approved');break;
       case 'offer-message':{
-        if(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<day())throw Error('Approve a valid offer before preparing email.');if(db.notifications.some(n=>n.applicationId===a.id&&n.kind==='Offer'&&n.status==='Draft'))throw Error('An offer email is already in the outbox.');const n=message('Employment offer — '+j.title,'Hello '+c.name+',\n\nWe are pleased to offer you the role of '+j.title+'.\nMonthly salary: SGD '+a.offer.salary+'\nStart date: '+a.offer.startDate.slice(8,10)+' '+a.offer.startDate.slice(5,7)+' '+a.offer.startDate.slice(0,4)+'\nPlease respond by: '+a.offer.expiry.slice(8,10)+' '+a.offer.expiry.slice(5,7)+' '+a.offer.expiry.slice(0,4)+'\n\n'+a.offer.terms+'\n\nBest regards,\n'+actor);n.kind='Offer';activity('Offer email prepared');break;
+        if(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<day())throw Error('Approve a valid offer before preparing email.');if(db.notifications.some(n=>n.applicationId===a.id&&n.kind==='Offer'&&n.status==='Draft'))throw Error('An offer email is already in the outbox.');const n=message('Employment offer — '+j.title,'Hello '+c.name+',\n\nWe are pleased to offer you the role of '+j.title+'.\nMonthly salary: SGD '+a.offer.salary+'\nStart date: '+a.offer.startDate.slice(8,10)+' '+a.offer.startDate.slice(5,7)+' '+a.offer.startDate.slice(0,4)+'\nPlease respond by: '+a.offer.expiry.slice(8,10)+' '+a.offer.expiry.slice(5,7)+' '+a.offer.expiry.slice(0,4)+'\n\n'+a.offer.terms+'\n\nBest regards,\n'+actor);n.kind='Offer';result.notification=n;activity('Offer email prepared');break;
       }
-      case 'accept-offer':if(a.stage!=='Offer'||a.offer?.approval!=='Approved'||a.offer.expiry<day())throw Error('Only an approved, unexpired offer can be accepted.');a.offer.status='Accepted';result.activity=transition('Hired',['Offer'],'Offer acceptance recorded',required(p.notes,'Acceptance record',1000));break;
+      case 'accept-offer':throw Error('The Hired stage has been removed.');
       case 'confirm-rejection':if(a.stage!=='Rejected')throw Error('This application is not rejected.');a.rejectionReason=required(p.reason,'Reason');a.rejectionConfirmed=true;activity('Rejection reason confirmed');break;
       case 'message':{if(p.notificationId){const n=find(db.notifications,p.notificationId);if(n.applicationId!==a.id)throw Error('This email belongs to another application.');if(n.status!=='Draft')throw Error('This draft has been superseded by a later change. Prepare a new message instead.');n.subject=required(p.subject,'Subject',200);n.body=required(p.body,'Message',6000);activity('Email draft updated');result.notification=n;}else{result.notification=message(required(p.subject,'Subject',200),required(p.body,'Message',6000));if(a.stage==='Rejected')result.notification.kind='Rejected';activity('Email draft prepared');}break;}
       case 'read-notification':find(db.notifications,p.id).read=true;break;

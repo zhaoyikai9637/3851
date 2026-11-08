@@ -53,7 +53,7 @@ it("shows the applicant, the sample resume, the job requirements and the review 
   expect(within(viewer).getByRole("button", { name: "Download" })).toBeEnabled();
   expect(screen.getAllByRole("listitem").filter((item) => item.closest(".job-requirements-list"))).toHaveLength(8);
   expect(screen.queryByText(/This position needs 8–12 requirements/)).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Move to Interview" })).toBeEnabled();
+  expect(screen.getByRole("button", { name: "Arrange interview" })).toBeEnabled();
   expect(screen.getByText("Email sending is off. Drafts are saved for later.")).toBeVisible();
   expect(screen.getByText("No emails for this application.")).toBeVisible();
 });
@@ -64,7 +64,7 @@ it("flags incomplete requirements and blocks progress on inactive jobs", async (
   mount(fetcherFor(db));
   expect(await screen.findByText(/This position needs 8–12 requirements/)).toBeVisible();
   expect(screen.getByRole("link", { name: "Complete in Job Postings" })).toHaveAttribute("href", "/job-postings");
-  expect(screen.getByRole("button", { name: "Move to Interview" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Arrange interview" })).toBeDisabled();
   expect(screen.getByText("Activate this job before progressing applicants.")).toBeVisible();
 });
 
@@ -119,15 +119,10 @@ it("reports an application that no longer exists", async () => {
   expect(await screen.findByRole("heading", { name: "Application not found" })).toBeVisible();
 });
 
-it("returns to the list it was opened from, or to the full queue", async () => {
-  mount(fetcherFor(workspace()), {}, { pathname: "/applications", search: "?view=review/app-1", state: { from: "/applications?view=applications%2Fpending-review&page=2" } });
-  expect(await screen.findByRole("link", { name: "Back to Applications" })).toHaveAttribute("href", "/applications?view=applications%2Fpending-review&page=2");
-  cleanup();
-  mount(fetcherFor(workspace()), {}, { pathname: "/applications", search: "?view=review/app-1", state: { from: "/interviews?status=" } });
-  expect(await screen.findByRole("link", { name: "Back to Interviews" })).toHaveAttribute("href", "/interviews?status=");
-  cleanup();
-  mount(fetcherFor(workspace()), {}, { pathname: "/applications", search: "?view=review/app-1", state: { from: "https://evil.test" } });
-  expect(await screen.findByRole("link", { name: "Back to Applications" })).toHaveAttribute("href", "/applications");
+it("omits the duplicate back-to-list button from assessment", async () => {
+ mount(fetcherFor(workspace()));await screen.findByRole('navigation',{name:'Application review actions'});
+ expect(screen.queryByRole('link',{name:/Back to/})).not.toBeInTheDocument();
+ expect(screen.getByRole('button',{name:'Application details'})).toBeVisible();
 });
 
 it('keeps protected Word preview and applicant-owned resume readonly',async()=>{

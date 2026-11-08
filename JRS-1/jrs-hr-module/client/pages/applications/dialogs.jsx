@@ -63,10 +63,14 @@ function Footer({ form, busy, onClose, label, danger = false, cancel = "Cancel" 
 
 export function RejectForm({ db, application, onSubmit, onClose }) {
  const {error,busy,submit}=useSubmit(onSubmit);
- return <Modal title="Reject Application" onClose={onClose} footer={<Footer form="application-reject-form" busy={busy} onClose={onClose} label="Confirm Rejection" danger/>}>
-  <form id="application-reject-form" className="interview-form" onSubmit={event=>submit(event,{applicationId:application.id,reason:'Application closed by HR.',notify:true})}>
+ const [notes,setNotes]=useState(''),[notify,setNotify]=useState(Boolean(db.mailEnabled));
+ return <Modal title="Reject application" onClose={onClose} footer={<Footer form="application-reject-form" busy={busy} onClose={onClose} label="Save" danger/>}>
+  <form id="application-reject-form" className="interview-form" onSubmit={event=>submit(event,{applicationId:application.id,reason:'Application closed by HR.',notes,notify})}>
    <ApplicantCard db={db} application={application}/><FormError message={error}/>
-   <p>This application will be closed and scheduled interviews will be cancelled. A rejection email draft will be prepared in Email Outbox. No email will be sent automatically.</p>
+   <p>This application will be closed and scheduled interviews will be cancelled.</p>
+   <label>Comment<textarea maxLength={500} value={notes} onChange={event=>setNotes(event.target.value)}/></label>
+   <label className="interview-check"><input type="checkbox" checked={notify} disabled={!db.mailEnabled} onChange={event=>setNotify(event.target.checked)}/><span>Send email notification</span></label>
+   <p className="subtle">Selecting Send email notification sends the email when you save. Comments stay internal.</p>
   </form>
  </Modal>;
 }
@@ -117,10 +121,9 @@ export function OfferReview({ db, application, onAction, onClose, busy }) {
         <div className="interview-detail-actions">
           <button type="button" className="btn btn-outline-secondary" disabled={busy} onClick={() => onAction("offer-edit")}>Edit Offer</button>
           {!approved && !confirming && <button type="button" className="btn btn-primary" disabled={busy || Boolean(block)} title={block || undefined} onClick={() => setConfirming(true)}>Approve Offer</button>}
-          {!approved && confirming && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => onAction("approve-offer")}>Confirm approval</button>}
-          {approved && <button type="button" className="btn btn-primary" disabled={busy || expired} title={expired ? "Offer expired" : undefined} onClick={() => onAction("offer-message")}>Prepare Offer Email</button>}
-          <button type="button" className="btn btn-outline-secondary" disabled={busy || !approved || expired} title={expired ? "Offer expired" : approved ? undefined : "Approve the offer first"} onClick={() => onAction("offer-accept")}>Record Acceptance</button>
-          <button type="button" className="btn btn-link text-danger" disabled={busy} onClick={() => onAction("reject")}>Reject / Close application</button>
+          {!approved && confirming && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => onAction("approve-offer")}>Save</button>}
+          {approved && <button type="button" className="btn btn-primary" disabled={busy || expired} title={expired ? "Offer expired" : undefined} onClick={() => onAction("offer-message")}>Send offer email</button>}
+          <button type="button" className="btn btn-link text-danger" disabled={busy} onClick={() => onAction("reject")}>Reject application</button>
         </div>
       }
     >
@@ -134,26 +137,12 @@ export function OfferReview({ db, application, onAction, onClose, busy }) {
         <dt>Response</dt><dd>{offer.status}</dd>
       </dl>
       <div className="interview-note">{offer.terms}</div>
-      {confirming && <p className="subtle">Approve these offer terms? Select Confirm approval to continue.</p>}
+      {confirming && <p className="subtle">Approve these offer terms? Select Save to continue.</p>}
       <p className="subtle mb-0">Approval and acceptance are recorded in the application history. Record acceptance only when the candidate has confirmed.</p>
     </Modal>
   );
 }
 
-export function AcceptForm({ db, application, onSubmit, onClose }) {
-  const [notes, setNotes] = useState("");
-  const { error, busy, submit } = useSubmit(onSubmit);
-  return (
-    <Modal title="Record Offer Acceptance" onClose={onClose} footer={<Footer form="application-accept-form" busy={busy} onClose={onClose} label="Confirm Acceptance" />}>
-      <form id="application-accept-form" className="interview-form" onSubmit={(event) => submit(event, { applicationId: application.id, notes })}>
-        <p className="subtle">Use this after the candidate has confirmed acceptance.</p>
-        <ApplicantCard db={db} application={application} />
-        <FormError message={error} />
-        <label>Acceptance record<textarea required maxLength={1000} rows={3} placeholder="Record when and how the candidate accepted." value={notes} onChange={(event) => setNotes(event.target.value)} /></label>
-      </form>
-    </Modal>
-  );
-}
 
 export function draftFile(notification) {
   const subject = notification.subject.replace(/[\r\n]/g, " ");

@@ -1122,7 +1122,7 @@ it("reopens a candidate profile from its address and returns to the list", async
   overrides["GET /recruitment/api/hr/workspace"] = () => json({revision:1,jobs:[{id:"job-a",title:"Analyst",status:"Active"}],candidates:[{id:"person-1",name:"Casey",email:"casey@example.test",skills:[]}],applications:[{id:"app-1",candidateId:"person-1",jobId:"job-a",stage:"Pending Review"}],interviews:[],tasks:[],activity:[],notifications:[]});
   const ui = mount("/candidates?q=Casey&candidate=person-1");
   expect(await screen.findByRole("heading",{name:"Casey",level:2})).toBeVisible();
-  expect(screen.getByRole("link",{name:"View Resume"})).toHaveAttribute("href","/applications?view=review/app-1");
+  expect(screen.getByRole("link",{name:"Assess application"})).toHaveAttribute("href","/applications?view=review/app-1");
   await ui.click(screen.getByRole("button", {name:"Back to candidates"}));
   expect(await screen.findByRole("button",{name:"View profile for Casey"})).toBeVisible();
   expect(screen.getByRole("searchbox",{name:"Search candidates"})).toHaveValue("Casey");

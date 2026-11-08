@@ -99,7 +99,7 @@ export function CandidateProfile({ candidateId, applicationId, applicationLink, 
         <div className="page-heading">
           <div><h2>{person.name}</h2></div>
           <div className="heading-actions">
-            <Link className="button secondary" to={"/applications?view=" + resumePath(application)} state={here}>View Resume</Link>
+            <Link className="button secondary" to={"/applications?view=" + resumePath(application)} state={here}>Assess application</Link>
             <button type="button" className="button primary" onClick={() => act("review", application)}>Manage Application</button>
             {person.canEditProfile!==false && <button type="button" className="button secondary" onClick={() => act("candidate-edit", person)}>Edit Contact Details</button>}
             {person.canUploadResume!==false && <button type="button" className="button secondary" onClick={() => act("resume-upload", person.id)}>Upload Resume</button>}

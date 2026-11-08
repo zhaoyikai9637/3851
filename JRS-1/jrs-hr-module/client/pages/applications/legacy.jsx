@@ -19,6 +19,7 @@ export function LegacyIcon({ name }) {
 }
 
 const TONES = {
+  Passed:"green", Approved:"green", "Not passed":"red", "On hold":"amber", "Awaiting approval":"amber",
   "Pending Review": "amber", Interview: "purple", "Interview Results": "purple", Offer: "green", Rejected: "red", Hired: "green",
   Active: "blue", Draft: "gray", Closed: "gray", Scheduled: "purple", Completed: "green", Cancelled: "gray", Open: "amber",
 };

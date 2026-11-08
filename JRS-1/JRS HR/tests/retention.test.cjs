@@ -101,7 +101,7 @@ test('entering a retained stage starts its clock; edits do not extend it; leavin
   a.retentionStartedAt=START;a.offer.createdAt=START;
   applyCommand(d,'offer',{...payload,salary:6000},user);assert.equal(a.retentionStartedAt,START);assert.equal(a.offer.createdAt,START);
   applyCommand(d,'approve-offer',{applicationId:a.id},user);assert.equal(a.retentionStartedAt,START);
-  applyCommand(d,'accept-offer',{applicationId:a.id,notes:'Accepted by candidate'},user);assert.equal(a.retentionStartedAt,null);
+  assert.throws(()=>applyCommand(d,'accept-offer',{applicationId:a.id,notes:'Accepted by candidate'},user),/Unknown HR action|removed/);assert.equal(a.retentionStartedAt,START);
   const b=d.applications.find(a=>a.stage==='Offer');b.retentionStartedAt=START;
   applyCommand(d,'reject',{applicationId:b.id,reason:'Offer declined'},user);assert.notEqual(b.retentionStartedAt,START);assert.ok(b.retentionStartedAt>=started);
   const rejected=b.retentionStartedAt;applyCommand(d,'confirm-rejection',{applicationId:b.id,reason:'Confirmed'},user);assert.equal(b.retentionStartedAt,rejected);

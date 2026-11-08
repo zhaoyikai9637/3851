@@ -160,8 +160,8 @@ export function WorkspaceLayout() {
           {navigationOnly ? <h1 className="visually-hidden" id="workspace-page-title">{pageName(location.pathname)}</h1> : <div className="workspace-title">
             <WorkspacePath
               pathname={location.pathname}
-              // Applications and Interviews show only their title; embedded stage paths stay out of the header.
-              trail={trail?.owner === location.key && !['/applications', '/interviews'].includes(location.pathname) ? trail : null}
+              // Applications use their native breadcrumb; embedded interview stage paths stay out of the header.
+              trail={trail?.owner === location.key && location.pathname!=='/interviews' ? trail : null}
             />
           </div>}
           <AccountMenu
@@ -177,7 +177,7 @@ export function WorkspaceLayout() {
             {communicationLinks.map(([path,name])=><NavLink key={path} to={path}>{name}</NavLink>)}
           </nav>
         )}
-        {!isCommunicationPage&&sections?.owner===location.key&&sections.items.length>0&&(
+        {!isCommunicationPage&&location.pathname!=='/applications'&&sections?.owner===location.key&&sections.items.length>0&&(
           <nav className="workspace-sections" aria-label={sections.label}>
             {sections.items.map((item,index)=><button type="button" key={index} className={item.selected?'active':''} aria-pressed={item.selected} onClick={()=>sections.select(index)}>{item.label}</button>)}
           </nav>

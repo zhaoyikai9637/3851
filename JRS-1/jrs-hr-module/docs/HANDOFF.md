@@ -1,3 +1,7 @@
+## HR assessment workflow adjustments - 2026-11-08
+
+Apply the requested assessment/interview/rejection labels, name/status-only result queues, breadcrumbs and removal of Duration input, Back to list and active Hired flow. Selected Save actions now send through the existing email endpoint, preserving revision checks, recipient identity, internal comments and failure handling without repeated decisions. See ../../docs/HR_ASSESSMENT_WORKFLOW.md. Applicant UI, production data and cloud configuration are outside scope.
+
 ## Inline applicant profile editing and information labels - 2026-11-08
 
 Replace profile drawers with editors expanded inside their matching cards, including add and edit actions. Preserve save/cancel/delete, draft skills, validation, date selectors and existing endpoints. Rename the application step to Personal information and the HR submitted-profile heading to Candidate personal information. No schema, permissions or email behavior changes. Verification evidence is recorded in ../../docs/INLINE_PROFILE_EDITORS.md.

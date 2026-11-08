@@ -82,7 +82,8 @@ export function useWorkspace(fetcher = defaultFetcher, returnTo = "/hr/dashboard
           body: JSON.stringify(payload),
         }).then(readJson);
         pending.current = null;
-        setDb(normalizeWorkspace(result.db));
+        dbRef.current=normalizeWorkspace(result.db);
+        setDb(dbRef.current);
         return result.result;
       } catch (requestError) {
         if (requestError.status && requestError.status < 500) pending.current = null;
@@ -117,7 +118,8 @@ export function useWorkspace(fetcher = defaultFetcher, returnTo = "/hr/dashboard
           ...options,
           headers: { "X-CSRF-Token": csrf.current, "If-Match": String(dbRef.current?.revision ?? 0), ...options.headers },
         }).then(readJson);
-        setDb(normalizeWorkspace(result.db));
+        dbRef.current=normalizeWorkspace(result.db);
+        setDb(dbRef.current);
         return result;
       } catch (requestError) {
         if (requestError.code === "REVISION_CONFLICT") {
@@ -185,4 +187,14 @@ export function formatDate(value) {
 
 export function singaporeToday(now = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Singapore", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+
+// Save once; an email failure never resubmits the business decision.
+export async function saveWithEmail(workspace,command,payload){
+ if(payload.notify&&!workspace.db?.mailEnabled)throw new Error('Email sending is not enabled. Clear Send email notification to save without sending.');
+ const result=await workspace.commit(command,payload);
+ if(!payload.notify)return {result,notice:''};
+ if(!result?.notification?.id)return {result,notice:'Saved, but no email was created. Check Email Outbox.'};
+ try{await workspace.send(result.notification.id,false);return {result,notice:'The email server accepted the notification.'};}
+ catch(error){return {result,notice:'Saved. Email sending was not confirmed: '+error.message+' Check Email Outbox before sending again.'};}
 }

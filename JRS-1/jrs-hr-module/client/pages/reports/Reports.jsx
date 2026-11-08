@@ -8,13 +8,13 @@ import "./reports.css";
 // embedded HR workspace). It reads the same workspace snapshot and uses the same
 // command endpoint, so totals and task completion behave exactly as before.
 
-export const STAGES = ["Pending Review", "Interview", "Interview Results", "Offer", "Rejected", "Hired"];
+export const STAGES = ["Pending Review", "Interview", "Interview Results", "Offer", "Rejected"];
 const SECTIONS = [
   ["summary", "Overview"],
   ["jobs", "Job performance"],
   ["tasks", "Follow-up tasks"],
 ];
-const TONE = { "Pending Review": "amber", Interview: "purple", "Interview Results": "purple", Offer: "green", Rejected: "red", Hired: "green" };
+const TONE = { "Pending Review": "amber", Interview: "purple", "Interview Results": "purple", Offer: "green", Rejected: "red" };
 
 async function readJson(response) {
   let data;
@@ -136,7 +136,6 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
         ["Applications", total],
         ["Active jobs", db.jobs.filter((job) => job.status === "Active").length],
         ["Scheduled interviews", db.interviews.filter((item) => item.status === "Scheduled").length],
-        ["Hired", db.applications.filter((item) => item.stage === "Hired").length],
       ],
       stages: STAGES.map((stage) => [stage, db.applications.filter((item) => item.stage === stage).length]),
       tasks: db.tasks.filter((task) => task.status === "Open"),
@@ -249,7 +248,7 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
           <div className="table-responsive fit-body">
             <table className="report-table">
               <thead>
-                <tr><th>Position</th><th>Applications</th><th>In review</th><th>Offers</th><th>Hired</th></tr>
+                <tr><th>Position</th><th>Applications</th><th>In review</th><th>Offers</th></tr>
               </thead>
               <tbody>
                 {jobsPage.map((job) => {
@@ -260,7 +259,6 @@ export function Reports({ fetcher = (...args) => fetch(...args) }) {
                       <td>{apps.length}</td>
                       <td>{apps.filter((item) => item.stage === "Pending Review").length}</td>
                       <td>{apps.filter((item) => item.stage === "Offer").length}</td>
-                      <td>{apps.filter((item) => item.stage === "Hired").length}</td>
                     </tr>
                   );
                 })}

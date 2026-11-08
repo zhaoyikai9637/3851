@@ -53,7 +53,7 @@ test("demo enrichment gives every job an application, varied roles and workflow 
     const demoApps = after.applications.filter((row) => row.id.startsWith("demo-20261021-"));
     assert.deepEqual(
       new Set(demoApps.map((row) => row.stage)),
-      new Set(["Pending Review", "Interview", "Interview Results", "Offer", "Rejected", "Hired"]),
+      new Set(["Pending Review", "Interview", "Interview Results", "Offer", "Rejected"]),
     );
     assert.equal(demoApps.length, 101);
     assert.equal(

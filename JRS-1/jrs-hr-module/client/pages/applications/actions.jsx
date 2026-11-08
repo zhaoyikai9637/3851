@@ -1,7 +1,8 @@
+import {saveWithEmail} from "../recruitment/workspaceClient";
 import { useEffect, useState } from "react";
 import { CancelForm, DetailsDialog, download, FeedbackForm, interviewCalendar, ScheduleForm } from "../recruitment/dialogs";
 import {
-  AcceptForm, ApplicationDetails, CandidateForm, draftFile, MessageForm, MessageView, NoteForm, OfferForm, OfferReview,
+  ApplicationDetails, CandidateForm, draftFile, MessageForm, MessageView, NoteForm, OfferForm, OfferReview,
   ReceiveForm, RejectForm, SendEmail, TaskForm, UploadResume,
 } from "./dialogs";
 
@@ -21,9 +22,9 @@ export function useApplicationActions({ workspace, onCreated }) {
 
   const close = () => setDialog(null);
   async function run(command, payload, message, after) {
-    const result = await commit(command, payload);
+    const {result,notice} = await saveWithEmail(workspace,command,payload);
     setDialog(null);
-    setToast(message);
+    setToast(message+(notice?" "+notice:""));
     after?.(result);
   }
 
@@ -81,12 +82,7 @@ export function useApplicationActions({ workspace, onCreated }) {
       return;
     }
     if (kind === "offer-message") {
-      commit("offer-message", { applicationId: application.id })
-        .then(() => {
-          setDialog(null);
-          setToast("Offer email draft prepared in Email Outbox.");
-        })
-        .catch((commandError) => setToast(commandError.message));
+      run("offer-message",{applicationId:application.id,notify:true},"Offer saved.").catch(error=>setToast(error.message));
       return;
     }
     setDialog({ kind, id: application.id });
@@ -107,7 +103,7 @@ export function useApplicationActions({ workspace, onCreated }) {
           db={db}
           application={target}
           interview={null}
-          title={kind === "move-interview" ? "Move to Interview" : undefined}
+          title={kind === "move-interview" ? "Arrange interview" : undefined}
           onClose={close}
           onSubmit={(payload) => (kind === "move-interview"
             ? run("move-interview", payload, "Interview scheduled. The application is now in Interview.")
@@ -131,9 +127,6 @@ export function useApplicationActions({ workspace, onCreated }) {
       )}
       {kind === "offer-review" && target?.offer && (
         <OfferReview db={db} application={target} busy={dialog.busy} onClose={close} onAction={(next) => offerAction(next, target)} />
-      )}
-      {kind === "offer-accept" && target && (
-        <AcceptForm db={db} application={target} onClose={close} onSubmit={(payload) => run("accept-offer", payload, "Acceptance recorded. The application is now Hired.")} />
       )}
       {kind === "message" && target && (
         <MessageForm

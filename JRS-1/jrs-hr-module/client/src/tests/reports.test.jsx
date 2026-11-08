@@ -64,7 +64,7 @@ it("shows the same overview totals as the previous embedded page", async () => {
   expect(within(card("Applications")).getByText("4")).toBeVisible();
   expect(within(card("Active jobs")).getByText("1")).toBeVisible();
   expect(within(card("Scheduled interviews")).getByText("1")).toBeVisible();
-  expect(within(card("Hired")).getByText("1")).toBeVisible();
+  expect(screen.queryByText("Hired")).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Applications by stage" })).toBeVisible();
 });
 
@@ -73,7 +73,7 @@ it("keeps the selected section in the address so Back and refresh reopen it", as
   await ui.click(await screen.findByRole("button", { name: "Job performance" }));
   expect(screen.getByLabelText("Current search")).toHaveTextContent("?section=jobs");
   const row = screen.getByRole("cell", { name: "Software Developer" }).closest("tr");
-  expect(within(row).getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["Software Developer", "2", "1", "0", "1"]);
+  expect(within(row).getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["Software Developer", "2", "1", "0"]);
 });
 
 it("opens a section directly from the address", async () => {
@@ -107,9 +107,9 @@ it("completes a follow-up task through the workspace command with revision and C
 it("exports the same CSV columns and guards spreadsheet formulas", () => {
   const csv = reportCsv(workspace());
   const lines = csv.replace(/^﻿/, "").split("\r\n");
-  expect(lines[0]).toBe('"Position","Total applications","Pending Review","Interview","Interview Results","Offer","Rejected","Hired"');
-  expect(lines[1]).toBe('"Software Developer","2","1","0","0","0","0","1"');
-  expect(lines[2]).toBe('"\'=Data Analyst","2","0","0","0","1","1","0"');
+  expect(lines[0]).toBe('"Position","Total applications","Pending Review","Interview","Interview Results","Offer","Rejected"');
+  expect(lines[1]).toBe('"Software Developer","2","1","0","0","0","0"');
+  expect(lines[2]).toBe('"\'=Data Analyst","2","0","0","0","1","1"');
 });
 
 it("shows an error with a retry when the workspace cannot be loaded", async () => {

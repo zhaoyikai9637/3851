@@ -91,7 +91,7 @@ export function ScheduleForm({ db, application, interview, onSubmit, onClose, ti
     duration: String(interview?.duration || 45),
     format: interview?.format || "Video",
     notes: interview?.notes || "",
-    notify: true,
+    notify: Boolean(db.mailEnabled),
   });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -120,7 +120,7 @@ export function ScheduleForm({ db, application, interview, onSubmit, onClose, ti
         <>
           <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={busy}>Cancel</button>
           <button type="submit" form="interview-schedule-form" className="btn btn-primary" disabled={busy}>
-            {submitLabel || (interview ? "Save New Schedule" : "Confirm Interview")}
+            {submitLabel || "Save"}
           </button>
         </>
       }
@@ -136,12 +136,11 @@ export function ScheduleForm({ db, application, interview, onSubmit, onClose, ti
         <label>Interview venue or meeting link<input required maxLength={300} placeholder="Room, address or video meeting link" value={values.location} onChange={set("location")} /></label>
         <label>Interviewer<input required maxLength={100} placeholder="Enter interviewer" value={values.interviewer} onChange={set("interviewer")} /></label>
         <div className="interview-form-grid">
-          <label>Duration<select value={values.duration} onChange={set("duration")}>{DURATIONS.map((value) => <option key={value} value={value}>{value} minutes</option>)}</select></label>
-          <label>Meeting format<select value={values.format} onChange={set("format")}>{FORMATS.map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label>Meeting venue<select value={values.format} onChange={set("format")}>{FORMATS.map((value) => <option key={value}>{value}</option>)}</select></label>
         </div>
-        <label>Internal notes (optional)<textarea maxLength={500} rows={3} value={values.notes} onChange={set("notes")} /></label>
-        <label className="interview-check"><input type="checkbox" checked={values.notify} onChange={set("notify")} /><span>Prepare interview email draft</span></label>
-        <p className="subtle mb-0">No email is sent automatically.</p>
+        <label>Comment (optional)<textarea maxLength={500} rows={3} value={values.notes} onChange={set("notes")} /></label>
+        <label className="interview-check"><input type="checkbox" checked={values.notify} disabled={!db.mailEnabled} onChange={set("notify")} /><span>Send email notification</span></label>
+        <p className="subtle mb-0">Selecting Send email notification sends the email when you save.</p>
       </form>
     </Modal>
   );

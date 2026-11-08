@@ -41,6 +41,7 @@ test('HR decisions work with missing, differing and current-year education acros
     a.feedback={rating:4,recommendation:'Proceed',notes:'HR reviewed the resume',recordedAt:new Date().toISOString()};
     a.offer=['move-interview','schedule','offer'].includes(command)?null:{salary:5000,startDate:M.day(30),expiry:M.day(10),terms:'Terms',approval:command==='approve-offer'?'Awaiting approval':'Approved',status:'Draft'};
     const originalFacts=JSON.stringify(c),payload={applicationId:a.id,notify:true,salary:5000,startDate:M.day(30),expiry:M.day(10),terms:'Terms',date:M.day(2),time:'10:00',duration:45,format:'Video',location:'Meeting',interviewer:'HR',notes:'Candidate confirmed by phone'};
+    if(command==='accept-offer'){assert.throws(()=>applyCommand(d,command,payload,user),/Unknown HR action|removed/);assert.equal(a.stage,'Offer');continue;}
     const result=applyCommand(d,command,payload,user);
     assert.equal(JSON.stringify(c),originalFacts,'A hiring decision cannot rewrite applicant facts');
     if(command==='move-interview')assert.equal(a.stage,'Interview');
@@ -89,7 +90,7 @@ test('contact edits never infer missing legacy facts or convert unknown educatio
 });
 
 test('a new applicant needs no academic form fields to be reviewed and moved to interview',()=>{
-  const d=setup(),received=run(d,'application-create',{jobId:d.jobs[0].id,candidate:{name:'Resume Review Applicant',email:'resume-review@example.com',phone:'123456789',location:'Singapore',experience:2,skills:'SQL'}});
+  const d=setup(),received=run(d,'application-create',{jobId:d.jobs[0].id,candidate:{name:'Assess application Applicant',email:'resume-review@example.com',phone:'123456789',location:'Singapore',experience:2,skills:'SQL'}});
   const a=received.result.application,c=received.db.candidates.find(c=>c.id===a.candidateId);
   assert.equal(c.educationLevel,'Not recorded');assert.equal(c.graduationDate,null);
   assert.equal(run(received.db,'move-interview',booking(a.id)).db.applications.find(x=>x.id===a.id).stage,'Interview');

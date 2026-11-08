@@ -10,7 +10,7 @@ const text=(v,label,max=500,optional=false)=>{
 };
 const email=v=>{const s=text(v,'Email',254).toLowerCase();if(!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(s)||s.startsWith('.')||s.includes('..')||s.includes('.@'))fail(422,'Enter a single valid email address.');return s;};
 const find=(arr,id)=>{const r=arr.find(r=>r.id===id);if(!r)fail(404,'Record not found.');return r;};
-const standard=new Set(['move-interview','reject','schedule','cancel-interview','feedback','offer','approve-offer','offer-message','accept-offer','confirm-rejection','message','read-notification','read-all','task','complete-task','candidate-notes','job-save','job-status']);
+const standard=new Set(['move-interview','reject','schedule','cancel-interview','feedback','offer','approve-offer','offer-message','confirm-rejection','message','read-notification','read-all','task','complete-task','candidate-notes','job-save','job-status']);
 const custom=new Set(['application-create','candidate-save','profile-save','template-save','template-delete','system-read','system-read-all']);
 const managerOnly=new Set(['approve-offer','template-save','template-delete']);
 const variables=['candidateName','jobTitle','companyName','hrName','date','time','interviewer','location','format','salary','currency','startDate','expiry'];
@@ -50,7 +50,7 @@ function applyCommand(db,command,p,user,{applicantSubmission=false}={}) {
   const activityIds=new Set(db.activity.map(a=>a.id));let result={};
   if(standard.has(command)) {
     if(applicationId&&!db.applications.some(a=>a.id===applicationId))fail(404,'Application not found.');
-    if(['move-interview','reject','schedule','cancel-interview','feedback','offer','approve-offer','offer-message','accept-offer','confirm-rejection','message','task','candidate-notes'].includes(command)&&!p.applicationId)fail(422,'Application ID is required.');
+    if(['move-interview','reject','schedule','cancel-interview','feedback','offer','approve-offer','offer-message','confirm-rejection','message','task','candidate-notes'].includes(command)&&!p.applicationId)fail(422,'Application ID is required.');
     if(command==='message'&&p.templateId){const t=find(db.templates,p.templateId);if(!t.active)fail(409,'This template is archived.');const a=find(db.applications,p.applicationId);
       const rejectionFrom=db.activity.find(event=>event.applicationId===a.id&&event.to==='Rejected')?.from;
       const rejectionTypes={'Application Rejection':['Pending Review'],'Interview Rejection':['Interview','Interview Results'],'Offer Withdrawal':['Offer']};

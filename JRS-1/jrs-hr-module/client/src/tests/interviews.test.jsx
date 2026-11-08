@@ -107,10 +107,10 @@ it("schedules a waiting candidate with the same command payload as before", asyn
   fireEvent.change(within(form).getByLabelText("Interview time"), { target: { value: "14:30" } });
   await ui.type(within(form).getByLabelText("Interview venue or meeting link"), "Room 5");
   await ui.type(within(form).getByLabelText("Interviewer"), "Casey Wong");
-  await ui.click(within(form).getByRole("button", { name: "Confirm Interview" }));
+  await ui.click(within(form).getByRole("button", { name: "Save" }));
   expect(schedule).toHaveBeenCalledTimes(1);
   const [payload, options] = schedule.mock.calls[0];
-  expect(payload).toEqual({ date: "2030-11-20", time: "14:30", location: "Room 5", interviewer: "Casey Wong", duration: "45", format: "Video", notes: "", notify: true, applicationId: "app-3" });
+  expect(payload).toEqual({ date: "2030-11-20", time: "14:30", location: "Room 5", interviewer: "Casey Wong", duration: "45", format: "Video", notes: "", notify: false, applicationId: "app-3" });
   expect(options.headers["If-Match"]).toBe("7");
   expect(options.headers["X-CSRF-Token"]).toBe("csrf-9");
   expect(options.headers["Idempotency-Key"]).toMatch(/^request-/);

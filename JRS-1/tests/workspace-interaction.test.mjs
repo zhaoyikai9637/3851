@@ -109,9 +109,9 @@ test('review shortcuts keep the filtered queue, open read-only details and stop 
   const db=(await w.HRRemote.boot()).db,first=db.applications[0],group=db.applications.filter(a=>a.jobId===first.jobId);
   const field=w.document.querySelector('[data-filter="job"]');field.value=first.jobId;field.dispatchEvent(new w.Event('change',{bubbles:true}));await settled();
   w.location.hash='/review/'+group[0].id;await settled();
-  let nav=w.document.querySelector('.review-actions');assert.ok(nav);assert.equal(nav.querySelectorAll('a,button').length,3);
-  assert.equal(nav.querySelector('a').textContent,'Back to list');
-  assert.equal(nav.querySelectorAll('a')[1].getAttribute('href'),'#/'+w.HRViews.resumePath(group[1]));
+  let nav=w.document.querySelector('.review-actions');assert.ok(nav);assert.equal(nav.querySelectorAll('a,button').length,2);
+  assert.equal(nav.querySelector('a').textContent,'Next application');
+  assert.equal(nav.querySelectorAll('a')[0].getAttribute('href'),'#/'+w.HRViews.resumePath(group[1]));
   const dialog=w.document.querySelector('#modal');
   // JSDOM has no top-layer dialog implementation; Edge acceptance checks the native dialog.
   dialog.showModal=function(){this.open=true;};dialog.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
@@ -120,7 +120,7 @@ test('review shortcuts keep the filtered queue, open read-only details and stop 
   nav.querySelector('[data-action="review-details"]').click();await settled();
   assert.equal(w.document.querySelector('#modal').open,true);assert.equal(w.document.querySelector('#modal-title').textContent,'Application details');assert.ok(w.document.querySelector('#modal-body').textContent.includes(first.id));
   assert.equal(JSON.stringify(db),before);assert.equal(w.location.hash,hash);w.document.querySelector('#modal [data-action="close"]').click();await settled();assert.equal(w.document.querySelector('#modal').open,false);
-  nav.querySelector('a').click();await settled();assert.equal(w.location.hash,'#/applications');assert.equal(w.document.querySelector('[data-filter="job"]').value,first.jobId);
+  w.document.querySelector('#secondary-navigation a').click();await settled();assert.equal(w.location.hash,'#/applications');assert.equal(w.document.querySelector('[data-filter="job"]').value,first.jobId);
   w.location.hash='/review/'+group.at(-1).id;await settled();nav=w.document.querySelector('.review-actions');assert.equal(nav.querySelector('button[disabled]').textContent,'Next application');
  }finally{w.close();}
 });

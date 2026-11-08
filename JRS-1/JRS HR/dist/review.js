@@ -20,7 +20,7 @@
   function heading(db,a,ui){
     const c={...candidate(db,a),...(a.submission?.candidate||{})},j=job(db,a);
     const rows=V.filtered(db,ui.reviewQueueContext||{}),index=rows.findIndex(row=>row.id===a.id),next=index>=0?rows[index+1]:null;
-    const navigation=`<nav class="review-actions" aria-label="Application review actions">${link(ui.returnQueue||'applications','Back to list','button secondary')}${next?link(V.resumePath(next),'Next application','button secondary'):'<button class="button secondary" type="button" disabled aria-disabled="true">Next application</button>'}${button('review-details','Application details',a.id,'secondary')}</nav>`;
+    const navigation=`<nav class="review-actions" aria-label="Application review actions">${next?link(V.resumePath(next),'Next application','button secondary'):'<button class="button secondary" type="button" disabled aria-disabled="true">Next application</button>'}${button('review-details','Application details',a.id,'secondary')}</nav>`;
     return `<div class="review-heading"><div class="review-person">${V.avatar(c)}<div><h2>${e(c.name)}</h2><p>${e(j.title)} · ${e(a.id)}</p></div>${badge(a.stage)}</div>${navigation}</div>`;
   }
   function meetingSummary(db,a){
@@ -35,10 +35,10 @@
     const a=db.applications.find(a=>a.id===route[1]);if(!a)return V.empty('Application not found','Return to Applications and select an existing record.');
     const c=candidate(db,a),j=job(db,a),results=route[0]==='results'||a.stage==='Interview Results'||!!a.feedback,canAdvance=j.status==='Active';
     let decisions;
-    if(results&&a.stage==='Interview Results')decisions=button('offer-edit','Prepare Offer',a.id,'primary',canAdvance&&a.feedback?'':'disabled')+button('reject','Reject',a.id,'danger');
-    else if(!results&&a.stage==='Pending Review')decisions=button('move-interview','Move to Interview',a.id,'primary',canAdvance?'':'disabled')+button('reject','Reject',a.id,'danger');
-    else if(a.stage==='Interview'){const i=db.interviews.find(i=>i.applicationId===a.id&&i.status==='Scheduled');decisions=(i?button('interview','View Interview',i.id,'primary'):button('schedule','Schedule Interview',a.id,'primary',canAdvance?'':'disabled'))+button('reject','Reject',a.id,'danger');}
-    else if(a.stage==='Offer')decisions=button('application','Review Offer',a.id,'primary')+button('reject','Reject',a.id,'danger');
+    if(results&&a.stage==='Interview Results')decisions=button('offer-edit','Prepare Offer',a.id,'primary',canAdvance&&a.feedback?'':'disabled')+button('reject','Reject application',a.id,'danger');
+    else if(!results&&a.stage==='Pending Review')decisions=button('move-interview','Arrange interview',a.id,'primary',canAdvance?'':'disabled')+button('reject','Reject application',a.id,'danger');
+    else if(a.stage==='Interview'){const i=db.interviews.find(i=>i.applicationId===a.id&&i.status==='Scheduled');decisions=(i?button('interview','View Interview',i.id,'primary'):button('schedule','Schedule Interview',a.id,'primary',canAdvance?'':'disabled'))+button('reject','Reject application',a.id,'danger');}
+    else if(a.stage==='Offer')decisions=button('application','Review Offer',a.id,'primary')+button('reject','Reject application',a.id,'danger');
     else decisions=button('application','Details',a.id,'secondary');
     const submitted='<details class="submitted-profile-details"><summary>Candidate personal information</summary>'+V.submittedProfile(a,c)+'</details>';
     const details=results?resultsContent(db,a)+`<details class="result-job-details"><summary>Job Description & Requirements</summary>${jobDetails(j)}</details>`:meetingSummary(db,a)+jobDetails(j);

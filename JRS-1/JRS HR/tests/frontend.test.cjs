@@ -42,7 +42,7 @@ test('review status filter, avatar resume links and right-hand actions work acro
   assert.equal(ui.stage,'Offer');assert.ok(html.includes('data-filter="queue"'));
   assert.ok(V.filtered(db,ui).every(a=>a.stage==='Offer'));
   const review=V.render(['applications','pending-review'],db,ui);
-  assert.ok(review.includes('class="applicant-resume-link"'));assert.ok(review.includes('Move to Interview'));assert.ok(review.includes('Reject'));assert.ok(review.includes('Details'));
+  assert.ok(review.includes('class="applicant-resume-link"'));assert.ok(review.includes('Arrange interview'));assert.ok(review.includes('Reject'));assert.ok(review.includes('Details'));
   assert.ok(!review.includes('Applications in this stage.'));
 });
 
@@ -61,7 +61,7 @@ test('resume and result pages include the document, job description and complete
   const html=V.render(['review',a.id],db,state());
   assert.ok(html.includes('Job Description'));assert.ok(html.includes(j.description));assert.ok(html.includes('Job Requirements'));
   assert.ok(html.includes('resume-pages'));assert.equal((html.match(/class="resume-paper/g)||[]).length,2);
-  assert.ok(!html.includes('Resume Review'));assert.ok(!html.includes('data-action="resume-page"'));
+  assert.ok(!html.includes('Assess application'));assert.ok(!html.includes('data-action="resume-page"'));
   const result=db.applications.find(x=>x.stage==='Interview Results');
   const results=V.render(['results',result.id],db,state());
   assert.ok(results.includes('Scrollable resume'));assert.ok(results.includes('Interview feedback'));assert.ok(results.includes('Prepare Offer'));
@@ -90,7 +90,7 @@ test('review and results share one shortcut toolbar without profile or activity 
     for(const label of ['Previous','Next','Applicant details','View profile','View activity'])assert.ok(!new RegExp('>'+label+'<','i').test(html),'Remove duplicate action: '+label);
     assert.ok(!html.includes('data-action="activity"'));
     assert.equal((html.match(/class="review-actions"/g)||[]).length,1);
-    for(const label of ['Back to list','Next application','Application details'])assert.equal((html.match(new RegExp('>'+label+'<','g'))||[]).length,1);
+    for(const label of ['Next application','Application details'])assert.equal((html.match(new RegExp('>'+label+'<','g'))||[]).length,1);
     assert.ok(!html.includes('class="heading-actions"'),'Keep shortcuts together rather than adding separate action groups');
   }
 });
@@ -100,8 +100,8 @@ test('application lists keep ordinary workflow attention and preserve legacy rec
   db.applications=[pending,offer];for(const c of db.candidates)Object.assign(c,{educationLevel:'Not recorded',educationMajor:'Accounting',graduationDate:null});
   let html=V.render(['applications','pending-review'],db,state());assert.ok(!/data-action="move-interview"[^>]*disabled/.test(html));
   offer.offer.expiry=M.day(-1);const before=JSON.stringify(db);html=V.render(['applications','offer'],db,state());
-  assert.ok(html.includes('Offer expired'));assert.ok(html.includes('Review Offer'));
-  assert.ok(html.includes('Review terms or close application'));assert.ok(!html.includes('Ready for candidate response'),'Expired offers cannot be presented as awaiting acceptance');
+  assert.ok(html.includes('<th>STATUS</th>'));assert.ok(!html.includes('Review Offer'));
+  assert.ok(!html.includes('Review terms or close application'));assert.ok(!html.includes('Ready for candidate response'),'Expired offers cannot be presented as awaiting acceptance');
   for(const text of ['Offer on hold','Awaiting applicant info','Field of study not accepted'])assert.ok(!html.includes(text));
   assert.equal(JSON.stringify(db),before,'Rendering cannot rewrite applicant facts or stages');
 });
@@ -143,13 +143,13 @@ test('each application deep link renders only its stage without repeated cards, 
   }
 });
 
-test('All Applications preserves Interview and Hired records and their actions',()=>{
+test('All Applications excludes the retired Hired stage without deleting history',()=>{
   const {HRViews:V}=views(),db=M.seed();db.applications=db.applications.slice(0,2);
   db.applications[0].stage='Interview';db.applications[1].stage='Hired';
   const html=V.render(['applications'],db,state());
   assert.ok(html.includes('<th>STATUS</th>'));
   assert.ok(html.includes('Schedule Interview'));assert.ok(html.includes('Details'));assert.ok(!/View Profile/i.test(html));
-  assert.ok(html.includes('Showing 1–2 of 2 applications'));
+  assert.ok(html.includes('Showing 1–1 of 1 applications'));
 });
 
 test('sidebar keeps one active Applications entry on list and detail pages without submenus',()=>{
@@ -183,15 +183,15 @@ test('legacy routes keep working while Pending Review is the canonical queue',()
 test('top breadcrumbs follow the current application context and provide parent links',()=>{
   const {HRViews:V}=views(),db=M.seed(),app=db.applications.find(a=>a.stage==='Pending Review');
   const queue=V.secondaryNavigation(['applications','pending-review'],db);
-  assert.ok(queue.includes('href="#/applications"'));
-  assert.ok(queue.includes('aria-current="page">Pending Review</span>'));
+  assert.ok(queue.includes('Applications'));
+  assert.ok(!queue.includes('Pending Review'));
   assert.ok(!queue.includes('Interview Results')&&!queue.includes('Offer'));
   const review=V.secondaryNavigation(['review',app.id],db);
-  assert.ok(review.includes('href="#/applications/pending-review"'));
-  assert.ok(review.includes('aria-current="page">Resume Review</span>'));
+  assert.ok(review.includes('href="#/applications"'));
+  assert.ok(review.includes('aria-current="page">Assess application</span>'));
   assert.equal((review.match(/aria-current="page"/g)||[]).length,1);
   app.stage='Offer';
-  assert.ok(V.secondaryNavigation(['candidate',app.candidateId,app.id],db).includes('href="#/applications/offer"'));
+  assert.ok(V.secondaryNavigation(['candidate',app.candidateId,app.id],db).includes('href="#/applications"'));
   assert.ok(V.secondaryNavigation(['mail-log'],db).includes('href="#/notifications"'));
   const html=V.render(['applications','pending-review'],db,state());
   assert.ok(!html.includes('class="queue-title"'));
@@ -251,7 +251,7 @@ test('new interview forms start with blank date, time, venue and interviewer wit
       const input=html.match(new RegExp('<input\\b(?=[^>]*\\bname="'+name+'")[^>]*>'))?.[0];
       assert.ok(input,'Booking contains '+name);assert.match(input,/\bvalue=""/,'New '+name+' must be deliberately provided');assert.match(input,/\brequired\b/);
     }
-    assert.ok(!html.includes('More options'));assert.ok(!html.includes('<details class="interview-options"'));for(const label of ['Duration','Meeting format','Internal notes (optional)'])assert.ok(html.includes(label));assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
+    assert.ok(!html.includes('More options'));assert.ok(!html.includes('<details class="interview-options"'));for(const label of ['Meeting venue','Comment (optional)'])assert.ok(html.includes(label));assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
     await page.action('close');assert.equal(page.e('#modal').open,false);assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
   }
 });
@@ -264,7 +264,7 @@ test('rescheduling requires a fresh booking while retaining its identity and opt
   for(const name of ['date','time','location','interviewer']){
     const input=html.match(new RegExp('<input\\b(?=[^>]*\\bname="'+name+'")[^>]*>'))?.[0];assert.ok(input);assert.match(input,/\bvalue=""/,'Reschedule requires a fresh '+name);assert.match(input,/\brequired\b/);
   }
-  for(const [name,value] of [['duration','90'],['format','Phone']]){
+  for(const [name,value] of [['format','Phone']]){
     const select=html.match(new RegExp('<select\\b[^>]*name="'+name+'"[^>]*>([\\s\\S]*?)<\\/select>'))?.[1];assert.ok(select);
     assert.match(select,new RegExp('<option\\b(?=[^>]*\\bvalue="'+value+'")[^>]*\\bselected\\b'));
   }
@@ -272,7 +272,7 @@ test('rescheduling requires a fresh booking while retaining its identity and opt
   await page.action('close');assert.equal(page.e('#modal').open,false);assert.equal(page.commits.length,0);assert.equal(JSON.stringify(db),before);
 });
 
-test('Move to Interview collects the booking once and opening or cancelling never changes records',async()=>{
+test('Arrange interview collects the booking once and opening or cancelling never changes records',async()=>{
   const db=M.seed(),application=db.applications.find(a=>a.stage==='Pending Review');db.jobs.find(j=>j.id===application.jobId).status='Active';
   const page=await controller('#/review/'+application.id,{db}),afterBoot=JSON.stringify(db);
   await page.action('move-interview',application.id);const html=page.e('#modal-body').innerHTML;
@@ -378,15 +378,15 @@ test('old success links open the current application detail without recreating a
 
 test('controller supports direct links, legacy review URLs, Back/Forward and clearing filters without leaving the selected stage',async()=>{
   const page=await controller('#/applications/pending-review');
-  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Pending Review</span>'));
+  assert.ok(!page.e('#secondary-navigation').innerHTML.includes('Pending Review'));
   await page.action('clear-filters');
-  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Pending Review</span>'));
+  assert.ok(!page.e('#secondary-navigation').innerHTML.includes('Pending Review'));
   assert.ok(!page.e('#content').innerHTML.includes('<th>WORKFLOW</th>'));
-  page.navigate('#/applications/offer');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Offer</span>'));
-  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Offer</span>'));
-  page.navigate('#/applications/pending-review');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Pending Review</span>'));
+  page.navigate('#/applications/offer');assert.ok(!page.e('#secondary-navigation').innerHTML.includes('>Offer</span>'));
+  assert.ok(!page.e('#secondary-navigation').innerHTML.includes('>Offer</span>'));
+  page.navigate('#/applications/pending-review');assert.ok(!page.e('#secondary-navigation').innerHTML.includes('Pending Review'));
   page.navigate('#/applications/applications-review');assert.equal(page.c.location.hash,'#/applications/pending-review');
-  assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Pending Review</span>'));
+  assert.ok(!page.e('#secondary-navigation').innerHTML.includes('Pending Review'));
   page.navigate('#/applications');assert.ok(page.e('#secondary-navigation').innerHTML.includes('aria-current="page">Applications</span>'));
 });
 

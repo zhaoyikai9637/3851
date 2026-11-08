@@ -5,7 +5,7 @@ import { Modal } from "../../src/shared";
 import { useViewportRows } from "../../src/useViewportRows";
 import { DateField } from "../jobs/DateField";
 import { isoDate } from "../jobs/model";
-import { candidateOf, formatDate, jobOf, useWorkspace } from "../recruitment/workspaceClient";
+import { candidateOf, formatDate, jobOf, useWorkspace, saveWithEmail } from "../recruitment/workspaceClient";
 import { CancelForm, DetailsDialog, download, FeedbackForm, interviewCalendar, Person, resumePath, ScheduleForm, STATUSES, StatusBadge } from "../recruitment/dialogs";
 
 import "../jobs/jobs.css";
@@ -18,7 +18,8 @@ export { interviewCalendar };
 // (schedule, cancel-interview, feedback), so server rules are unchanged.
 
 export function Interviews({ fetcher, now }) {
-  const { db, error, load, commit } = useWorkspace(fetcher, "/hr/interviews");
+  const workspace=useWorkspace(fetcher,"/hr/interviews");
+  const {db,error,load,commit}=workspace;
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,9 +69,9 @@ export function Interviews({ fetcher, now }) {
   const visible = items.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
   async function run(command, payload, message) {
-    await commit(command, payload);
+    const {notice}=await saveWithEmail(workspace,command,payload);
     setDialog(null);
-    setNotice(message);
+    setNotice(message+(notice?" "+notice:""));
   }
 
   function onAction(kind, interview) {

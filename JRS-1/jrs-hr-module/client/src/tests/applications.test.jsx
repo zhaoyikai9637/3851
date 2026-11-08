@@ -96,8 +96,8 @@ it("renders the legacy queue markup with stage badges, row actions and detail li
   const rows = within(table).getAllByRole("row");
   expect(rows).toHaveLength(4);
   expect(within(rows[1]).getByText("Pending Review")).toHaveClass("badge", "amber");
-  expect(within(rows[1]).getByRole("button", { name: "Move to Interview" })).toBeEnabled();
-  expect(within(rows[1]).getByRole("link", { name: "View resume for Alex Tan" })).toHaveAttribute("href", "/applications?view=review/app-1");
+  expect(within(rows[1]).getByRole("button", { name: "Arrange interview" })).toBeEnabled();
+  expect(within(rows[1]).getByRole("link", { name: "Assess application for Alex Tan" })).toHaveAttribute("href", "/applications?view=review/app-1");
   expect(within(rows[1]).getByRole("link", { name: "Details" })).toHaveAttribute("href", "/applications?view=candidate/candidate-1/app-1");
   expect(within(rows[2]).getByRole("button", { name: "Schedule Interview" })).toBeEnabled();
   expect(within(rows[3]).getByRole("button", { name: "Review Offer" })).toBeVisible();
@@ -128,12 +128,12 @@ it("filters by search text and position, and clears every filter", async () => {
 it("rejects with one confirmation and prepares an unsent notification", async () => {
   const reject=vi.fn(()=>({})); const ui=mount(fetcherFor(workspace(),{reject}));
   const table=await screen.findByRole('table',{name:'Applications'});
-  await ui.click(within(within(table).getAllByRole('row')[1]).getByRole('button',{name:'Reject'}));
-  const dialog=screen.getByRole('dialog',{name:'Reject Application'});
+  await ui.click(within(within(table).getAllByRole('row')[1]).getByRole('button',{name:'Reject application'}));
+  const dialog=screen.getByRole('dialog',{name:'Reject application'});
   expect(within(dialog).queryByRole('combobox')).not.toBeInTheDocument();
   expect(reject).not.toHaveBeenCalled();
-  await ui.click(within(dialog).getByRole('button',{name:'Confirm Rejection'}));
-  await waitFor(()=>expect(reject).toHaveBeenCalledWith({applicationId:'app-1',reason:'Application closed by HR.',notify:true}));
+  await ui.click(within(dialog).getByRole('button',{name:'Save'}));
+  await waitFor(()=>expect(reject).toHaveBeenCalledWith({applicationId:'app-1',reason:'Application closed by HR.',notes:'',notify:false}));
   expect(await screen.findByText('Application rejected.')).toBeVisible();
 });
 
@@ -151,7 +151,7 @@ it("blocks scheduling for closed jobs and approves offers after confirmation", a
   expect(within(dialog).getByText("SGD 5,200")).toBeVisible();
   await ui.click(within(dialog).getByRole("button", { name: "Approve Offer" }));
   expect(approve).not.toHaveBeenCalled();
-  await ui.click(within(dialog).getByRole("button", { name: "Confirm approval" }));
+  await ui.click(within(dialog).getByRole("button", { name: "Save" }));
   await waitFor(() => expect(approve).toHaveBeenCalledWith({ applicationId: "app-3" }));
 });
 
@@ -208,5 +208,14 @@ it("explains disabled actions and opens details from every row", async () => {
   const rows = within(table).getAllByRole("row");
   expect(within(rows[1]).getByRole("button", { name: "Prepare Offer" })).toHaveAttribute("title", "Record interview feedback first");
   expect(within(rows[1]).getByRole("link", { name: "Details" })).toHaveAttribute("href", "/applications?view=candidate/candidate-1/app-5");
-  expect(within(rows[2]).getByRole("button", { name: "Move to Interview" })).toHaveAttribute("title", "Activate this job to progress the application");
+  expect(within(rows[2]).getByRole("button", { name: "Arrange interview" })).toHaveAttribute("title", "Activate this job to progress the application");
+});
+
+it.each(['Offer','Interview Results'])('shows only candidate name and decision status in %s',async(stage)=>{
+ const db=workspace();db.applications=[{...db.applications[0],stage,feedback:{recommendation:'Proceed'},offer:{approval:'Approved'}}];
+ mount(fetcherFor(db),'/applications',stage);
+ const table=await screen.findByRole('table',{name:'Applications'});
+ expect(within(table).getAllByRole('columnheader').map(cell=>cell.textContent)).toEqual(['APPLICANT','STATUS']);
+ expect(within(table).getAllByRole('cell').map(cell=>cell.textContent)).toEqual(['Alex Tan',stage==='Offer'?'Approved':'Passed']);
+ expect(within(table).queryByRole('button')).not.toBeInTheDocument();
 });

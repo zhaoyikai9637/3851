@@ -18,7 +18,8 @@ import "./applications.css";
 // (Review.jsx) and the candidate profile (Profile.jsx) open through ?view= and
 // are native as well.
 
-export const STAGES = ["Pending Review", "Interview", "Interview Results", "Offer", "Rejected", "Hired"];
+export const summaryStatus=application=>application.stage==='Interview Results'?({Proceed:'Passed',Hold:'On hold',Reject:'Not passed'}[application.feedback?.recommendation]||'Pending'):application.offer?.approval||'Pending';
+export const STAGES = ["Pending Review", "Interview", "Interview Results", "Offer", "Rejected"];
 export const stagePath = (stage) => "applications" + (stage ? "/" + (stage === "Pending Review" ? "pending-review" : stage.toLowerCase().replaceAll(" ", "-")) : "");
 
 // "" for the full queue, the stage for a stage queue, undefined for any other view.
@@ -107,6 +108,7 @@ export function Applications({ stage = "", fetcher }) {
     if (!db) return [];
     const q = filters.q.toLowerCase();
     return db.applications.filter((application) => {
+      if(application.stage==="Hired")return false;
       const person = candidateOf(db, application);
       const job = jobOf(db, application);
       return (!q || (person.name + " " + person.email + " " + job.title + " " + application.id).toLowerCase().includes(q))
@@ -154,14 +156,14 @@ export function Applications({ stage = "", fetcher }) {
     const active = jobOf(db, application).status === "Active";
     const details = <Link className="button secondary compact" to={open("candidate/" + application.candidateId + "/" + application.id)} state={from}>Details</Link>;
     const blocked = active ? undefined : "Activate this job to progress the application";
-    const reject = <button type="button" className="button danger compact" onClick={() => act("reject", application)}>Reject</button>;
+    const reject = <button type="button" className="button danger compact" onClick={() => act("reject", application)}>Reject application</button>;
     const meeting = application.stage === "Interview" && db.interviews.find((interview) => interview.applicationId === application.id && interview.status === "Scheduled");
     if (application.stage === "Interview" && !meeting) {
       return <><button type="button" className="button primary compact" disabled={!active} title={blocked} onClick={() => act("schedule", application)}>Schedule Interview</button>{reject}{details}</>;
     }
     switch (application.stage) {
       case "Pending Review":
-        return <><button type="button" className="button primary compact" disabled={!active} title={blocked} onClick={() => act("move-interview", application)}>Move to Interview</button>{reject}{details}</>;
+        return <><button type="button" className="button primary compact" disabled={!active} title={blocked} onClick={() => act("move-interview", application)}>Arrange interview</button>{reject}{details}</>;
       case "Interview":
         return <><button type="button" className="button primary compact" onClick={() => act("review", application)}>View Interview</button>{reject}{details}</>;
       case "Interview Results":
@@ -194,6 +196,7 @@ export function Applications({ stage = "", fetcher }) {
     filters.from ? "From " + formatDate(filters.from) : "",
     filters.to ? "To " + formatDate(filters.to) : "",
   ].filter(Boolean);
+  const summaryOnly=["Offer","Interview Results"].includes(stage);
   const showStage = !stage;
 
   return (
@@ -231,7 +234,7 @@ export function Applications({ stage = "", fetcher }) {
             <div className="table-scroll fit-body">
               <table className="application-table" aria-label="Applications">
                 <thead>
-                  <tr><th>APPLICANT</th><th>POSITION</th>{showStage && <th>STATUS</th>}<th>ATTENTION NEEDED</th><th className="align-right">ACTIONS</th></tr>
+                  <tr><th>APPLICANT</th>{summaryOnly?<th>STATUS</th>:<><th>POSITION</th>{showStage && <th>STATUS</th>}<th>ATTENTION NEEDED</th><th className="align-right">ACTIONS</th></>}</tr>
                 </thead>
                 <tbody>
                   {visible.map((application) => {
@@ -239,15 +242,15 @@ export function Applications({ stage = "", fetcher }) {
                     const [headline, detail] = attention(db, application);
                     return (
                       <tr key={application.id}>
-                        <td>
-                          <Link to={open(resumePath(application))} state={from} className="applicant-resume-link" aria-label={"View resume for " + person.name} title="View resume">
+                        {summaryOnly?<><td><strong>{person.name}</strong></td><td><Badge status={summaryStatus(application)}/></td></>:<>                        <td>
+                          <Link to={open(resumePath(application))} state={from} className="applicant-resume-link" aria-label={"Assess application for " + person.name} title="Assess application">
                             <div className="person"><Avatar person={person} /><div><strong>{person.name}</strong><small>{person.email}</small></div></div>
                           </Link>
                         </td>
                         <td className="muted">{jobOf(db, application).title}</td>
                         {showStage && <td><Badge status={application.stage} /></td>}
                         <td>{headline}<small className={application.priority === "High" ? "danger-text" : "muted"}>{detail}</small></td>
-                        <td className="align-right"><div className="row-actions">{rowActions(application)}</div></td>
+                        <td className="align-right"><div className="row-actions">{rowActions(application)}</div></td></>}
                       </tr>
                     );
                   })}

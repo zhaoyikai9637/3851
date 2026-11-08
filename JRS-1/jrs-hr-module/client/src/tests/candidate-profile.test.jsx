@@ -74,7 +74,7 @@ it("shows the candidate details for the first application and switches between a
   expect(await screen.findByRole("heading", { name: "Alex Tan", level: 2 })).toBeVisible();
   expect(screen.getByText("Software Developer Applicant")).toBeVisible();
   expect(screen.getByText("app-1")).toBeVisible();
-  expect(screen.getByRole("link", { name: "View Resume" })).toHaveAttribute("href", "/applications?view=review/app-1");
+  expect(screen.getByRole("link", { name: "Assess application" })).toHaveAttribute("href", "/applications?view=review/app-1");
   const tabs = screen.getByRole("navigation", { name: "Candidate applications" });
   expect(within(tabs).getByRole("link", { name: "Software Developer · Interview" })).toHaveClass("active");
   await ui.click(within(tabs).getByRole("link", { name: "Data Analyst · Pending Review" }));

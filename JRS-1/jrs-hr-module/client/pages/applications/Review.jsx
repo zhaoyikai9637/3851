@@ -228,10 +228,10 @@ export function CandidateEmails({ db, application, act }) {
 function Decisions({ db, application, results, act }) {
   const active = jobOf(db, application).status === "Active";
   if (results && application.stage === "Interview Results") {
-    return <><button type="button" className="button primary" disabled={!(active && application.feedback)} title={!active ? "Activate this job to progress the application" : application.feedback ? undefined : "Record interview feedback first"} onClick={() => act("offer-edit", application)}>Prepare Offer</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button></>;
+    return <><button type="button" className="button primary" disabled={!(active && application.feedback)} title={!active ? "Activate this job to progress the application" : application.feedback ? undefined : "Record interview feedback first"} onClick={() => act("offer-edit", application)}>Prepare Offer</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject application</button></>;
   }
   if (!results && application.stage === "Pending Review") {
-    return <><button type="button" className="button primary" disabled={!active} title={active ? undefined : "Activate this job to progress the application"} onClick={() => act("move-interview", application)}>Move to Interview</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button></>;
+    return <><button type="button" className="button primary" disabled={!active} title={active ? undefined : "Activate this job to progress the application"} onClick={() => act("move-interview", application)}>Arrange interview</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject application</button></>;
   }
   if (application.stage === "Interview") {
     const meeting = db.interviews.find((interview) => interview.applicationId === application.id && interview.status === "Scheduled");
@@ -240,12 +240,12 @@ function Decisions({ db, application, results, act }) {
         {meeting
           ? <button type="button" className="button primary" onClick={() => act("interview", meeting)}>View Interview</button>
           : <button type="button" className="button primary" disabled={!active} title={active ? undefined : "Activate this job to schedule interviews"} onClick={() => act("schedule", application)}>Schedule Interview</button>}
-        <button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button>
+        <button type="button" className="button danger" onClick={() => act("reject", application)}>Reject application</button>
       </>
     );
   }
   if (application.stage === "Offer") {
-    return <><button type="button" className="button primary" onClick={() => act("review", application)}>Review Offer</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject</button></>;
+    return <><button type="button" className="button primary" onClick={() => act("review", application)}>Review Offer</button><button type="button" className="button danger" onClick={() => act("reject", application)}>Reject application</button></>;
   }
   return <button type="button" className="button secondary" onClick={() => act("review", application)}>{"Application details"}</button>;
 }
@@ -294,7 +294,7 @@ export function Review({ id, results: resultsRoute = false, fetcher, compose=fal
             <div><h2>{person.name}</h2><p>{job.title} · {application.id}</p></div>
             <Badge status={application.stage} />
           </div>
-          <nav className="review-actions" aria-label="Application review actions"><Link className="button secondary" to={back}>{backLabel}</Link><button className="button secondary" type="button" disabled={!next} onClick={()=>navigate('/applications?view=review/'+next.id,{state:{from:back}})}>Next application</button><button type="button" className="button secondary" onClick={()=>act('application',application)}>Application details</button></nav>
+          <nav className="review-actions" aria-label="Application review actions"><button className="button secondary" type="button" disabled={!next} onClick={()=>navigate('/applications?view=review/'+next.id,{state:{from:back}})}>Next application</button><button type="button" className="button secondary" onClick={()=>act('application',application)}>Application details</button></nav>
         </div>
         <div className={"review-grid " + (results ? "results-grid" : "")}>
           <ResumeViewer db={db} application={application} onUpload={(candidateId) => act("resume-upload", candidateId)} onError={setToast} />

@@ -35,9 +35,9 @@ test('top-level pages do not repeat their title as a one-item breadcrumb', async
 test('nested pages keep their parent link and current location', async () => {
   const dom = await views();
   try {
-    dom.window.document.body.innerHTML = dom.window.HRViews.secondaryNavigation(['applications', 'interview-results'], { applications: [] }, {});
+    dom.window.document.body.innerHTML = dom.window.HRViews.secondaryNavigation(['review', 'app-1'], { applications: [{id:'app-1',stage:'Pending Review'}] }, {});
     assert.equal(dom.window.document.querySelector('a').getAttribute('href'), '#/applications');
-    assert.equal(dom.window.document.querySelector('[aria-current="page"]').textContent, 'Interview Results');
+    assert.equal(dom.window.document.querySelector('[aria-current="page"]').textContent, 'Assess application');
   } finally { dom.window.close(); }
 });
 
