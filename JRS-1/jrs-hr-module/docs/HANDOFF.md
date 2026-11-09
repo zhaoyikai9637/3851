@@ -1,3 +1,7 @@
+## Draft publication and active-application notice - 2026-11-09
+
+Add explicit Publish posting confirmation to saved draft details while preserving draft-only Save and current publication rules. Restore the reference applicant notice and early form guard for existing applications. Remove retired acceptance wording/actions without restoring Hired. Visitor login and result-summary queues remain unchanged. Verified 784 unit/API cases, both builds, English, isolated SQL and Edge desktop/mobile publishing, active-application blocking and post-withdrawal re-entry. See ../../docs/DRAFT_PUBLICATION_AND_ACTIVE_APPLICATION.md. No production data/configuration or deployment changed.
+
 ## YYB job posting and feedback UI restoration - 2026-11-08
 
 Restore YYB-owned job/interview/feedback presentation in a scoped stylesheet while retaining the integrated HR shell and business APIs. New postings save as Draft; existing posting status is preserved. Restore full-page feedback with custom assessments and no addition success reminder. English dates remain. Verified 742 combined unit/API cases, both builds, English, isolated real SQL and Edge desktop/mobile draft/feedback submission. See ../../docs/YYB_JOB_AND_FEEDBACK_UI.md. No applicant, production data, cloud setting or deployment change.

@@ -1,3 +1,5 @@
+import ActiveApplicationNotice from "../../components/ActiveApplicationNotice";
+import useCurrentApplication from "../../hooks/useCurrentApplication";
 import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
 import { BriefcaseBusiness, Clock3, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -13,6 +15,7 @@ const initialFilters = {
 };
 
 export default function JobsPage({ authenticated = false }) {
+  const current = useCurrentApplication(authenticated);
   const [filters, setFilters] = useState(initialFilters);
   const [jobs, setJobs] = useState([]);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
@@ -56,6 +59,7 @@ export default function JobsPage({ authenticated = false }) {
 
   return (
     <div className="page-stack">
+      {authenticated && current.active && <ActiveApplicationNotice application={current.application} />}
       <section className="search-surface surface">
         <form className="job-search-form" onSubmit={handleSearch}>
           <label className="visually-hidden" htmlFor="job-search">Search roles</label>

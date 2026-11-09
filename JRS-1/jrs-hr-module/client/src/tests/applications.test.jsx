@@ -149,6 +149,8 @@ it("blocks scheduling for closed jobs and approves offers after confirmation", a
   await ui.click(within(rows[2]).getByRole("button", { name: "Review Offer" }));
   const dialog = screen.getByRole("dialog", { name: "Review Offer" });
   expect(within(dialog).getByText("SGD 5,200")).toBeVisible();
+  expect(within(dialog).queryByText(/Record acceptance/)).not.toBeInTheDocument();
+  expect(within(dialog).queryByRole("button",{name:"Record Acceptance"})).not.toBeInTheDocument();
   await ui.click(within(dialog).getByRole("button", { name: "Approve Offer" }));
   expect(approve).not.toHaveBeenCalled();
   await ui.click(within(dialog).getByRole("button", { name: "Save" }));

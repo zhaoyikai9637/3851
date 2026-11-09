@@ -2180,3 +2180,9 @@ a.applicant-identity:focus-visible { outline: 2px solid #2563eb; outline-offset:
 .public-brand .brand-mark::before { background:#0f172a; border:1px solid #8293b2; }
 .public-brand .brand-mark::after { left:15px; background:#416be0; }
 .public-brand .brand-mark span { display:none; }
+
+/* Restore the reference notice for an application already in progress. */
+.active-application-notice { display:flex; align-items:flex-start; gap:12px; }
+.active-application-notice > div { flex:1; }
+.active-application-notice .btn { align-self:center; white-space:nowrap; }
+@media(max-width:600px){.active-application-notice{flex-wrap:wrap;}.active-application-notice>div{min-width:0;flex-basis:calc(100% - 44px);}}

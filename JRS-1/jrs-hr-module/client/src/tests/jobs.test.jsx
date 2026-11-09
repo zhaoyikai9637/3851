@@ -61,6 +61,7 @@ beforeEach(() => {
       return json(structuredClone(data));
     }
     if (url === endpoint + "/job-a/status") {
+      if(failure)return json({error:{message:failure}},409);
       data.items[0].status = JSON.parse(options.body).status;
       data.revision++;
       return json(structuredClone(data));
@@ -394,4 +395,33 @@ it("combines department, status and search and clears all filters from an empty 
   expect(screen.getByRole("combobox", { name: "Filter by department" })).toHaveValue("");
   expect(screen.getByRole("combobox", { name: "Filter by recruitment status" })).toHaveValue("All");
   expect(screen.getByText("Showing 1–3 of 3 jobs")).toBeVisible();
+});
+
+it("publishes an existing draft only after explicit confirmation without resaving its fields",async()=>{
+ data.items[0].status='Draft';const ui=mount();
+ await ui.click(await screen.findByRole('button',{name:'View Software Developer'}));
+ expect(screen.getByText(/This posting is a draft/)).toBeVisible();
+ expect(screen.queryByRole('button',{name:'Close recruitment'})).not.toBeInTheDocument();
+ await ui.click(screen.getByRole('button',{name:'Publish posting',exact:true}));
+ let confirmation=screen.getByRole('alertdialog',{name:'Publish posting?'});
+ expect(fetcher.mock.calls.some(([url])=>url.endsWith('/status'))).toBe(false);
+ await ui.click(within(confirmation).getByRole('button',{name:'Cancel',exact:true}));
+ expect(data.items[0].status).toBe('Draft');
+ await ui.click(screen.getByRole('button',{name:'Publish posting',exact:true}));
+ confirmation=screen.getByRole('alertdialog',{name:'Publish posting?'});
+ await ui.click(within(confirmation).getByRole('button',{name:'Publish posting',exact:true}));
+ expect(await screen.findByText('Active',{selector:'.job-status'})).toBeVisible();
+ const [,options]=fetcher.mock.calls.find(([url])=>url===endpoint+'/job-a/status');
+ expect(JSON.parse(options.body)).toEqual({status:'Active'});
+ expect(options.headers).toMatchObject({'If-Match':'4','X-CSRF-Token':'shared-token'});
+ expect(fetcher.mock.calls.some(([url,options])=>url===endpoint&&options.method==='POST')).toBe(false);
+});
+it("retains the draft and shows a conflict if publication is rejected",async()=>{
+ data.items[0].status='Draft';failure='Another user changed this workspace.';const ui=mount();
+ await ui.click(await screen.findByRole('button',{name:'View Software Developer'}));
+ await ui.click(screen.getByRole('button',{name:'Publish posting',exact:true}));
+ await ui.click(within(screen.getByRole('alertdialog',{name:'Publish posting?'})).getByRole('button',{name:'Publish posting',exact:true}));
+ expect(await screen.findByRole('alert')).toHaveTextContent('Another user changed');
+ expect(data.items[0].status).toBe('Draft');
+ expect(screen.getByRole('button',{name:'Publish posting',exact:true})).toBeVisible();
 });

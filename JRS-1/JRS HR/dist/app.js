@@ -115,8 +115,8 @@
     const a=app(id),o=a.offer;if(!o)throw Error('No offer is available.');
     const expired=o.expiry<HRModel.day();
     const approvalBlock=expired?'Offer expired':store.db.currentUser.role!=='HR_MANAGER'?'HR Manager approval required':'';
-    const title='Review Offer',subtitle='Prepare, approve and record candidate responses.';
-    open(title,subtitle,`<div class="modal-content">${candidateCard(a)}<dl class="details"><dt>Monthly salary</dt><dd>SGD ${Number(o.salary).toLocaleString('en-SG')}</dd><dt>Start date</dt><dd>${V.date(o.startDate)}</dd><dt>Expiry</dt><dd class="${expired?'danger-text':''}">${V.date(o.expiry)}${expired?' · Expired':''}</dd><dt>Approval</dt><dd>${e(o.approval)}</dd><dt>Response</dt><dd>${e(o.status)}</dd></dl><div class="note-box spaced">${e(o.terms)}</div><div class="modal-actions">${button('offer-edit','Edit Offer',id,'secondary')}${o.approval!=='Approved'?button('offer-approve','Approve Offer',id,'primary',approvalBlock?'disabled title="'+e(approvalBlock)+'"':''):button('offer-message','Send offer email',id,'primary',expired?'disabled':'')}${button('offer-accept','Record Acceptance',id,'secondary',o.approval!=='Approved'||expired?'disabled':'')}${button('reject','Reject / Close application',id,'text-button')}</div><p class="privacy-note">Approval and acceptance are recorded in the application history. Record acceptance only when the candidate has confirmed.</p></div>`,'offer','green');
+    const title='Review Offer',subtitle='Review and approve the offer terms.';
+    open(title,subtitle,`<div class="modal-content">${candidateCard(a)}<dl class="details"><dt>Monthly salary</dt><dd>SGD ${Number(o.salary).toLocaleString('en-SG')}</dd><dt>Start date</dt><dd>${V.date(o.startDate)}</dd><dt>Expiry</dt><dd class="${expired?'danger-text':''}">${V.date(o.expiry)}${expired?' · Expired':''}</dd><dt>Approval</dt><dd>${e(o.approval)}</dd><dt>Response</dt><dd>${e(o.status)}</dd></dl><div class="note-box spaced">${e(o.terms)}</div><div class="modal-actions">${button('offer-edit','Edit Offer',id,'secondary')}${o.approval!=='Approved'?button('offer-approve','Approve Offer',id,'primary',approvalBlock?'disabled title="'+e(approvalBlock)+'"':''):button('offer-message','Send offer email',id,'primary',expired?'disabled':'')}${button('reject','Reject / Close application',id,'text-button')}</div></div>`,'offer','green');
   }
   function offerEdit(id){const a=app(id),o=a.offer||{};open('Prepare Employment Offer','Changes require approval before preparing an offer email.',form('offer',id,candidateCard(a)+field('Monthly salary (SGD)','salary',o.salary||5200,'number','required min="1" max="1000000" step="0.01"')+`<div class="form-grid">${field('Start date','startDate',o.startDate||HRModel.day(30),'date','required')}${field('Respond by','expiry',o.expiry||HRModel.day(7),'date',`required min="${HRModel.day()}"`)}</div>`+area('Offer terms','terms',o.terms||'Full-time position. Standard company benefits.','required maxlength="3000"'),'Save Offer'),'offer','green');}
   function schedule(id,interviewId){
@@ -203,7 +203,6 @@
       const messages={
         'move-interview':'Interview scheduled. The application is now in Interview.',
         reject:'Application rejected.',offer:'Offer saved. Manager approval is required.',
-        'accept-offer':'Acceptance recorded. The application is now Hired.',
         feedback:'Feedback saved. The application is now in Interview Results.',
         schedule:'Interview schedule saved.',message:'Email draft saved. No email has been sent.',
         'job-save':'Job posting saved.'
@@ -263,7 +262,6 @@
         case 'offer-edit':offerEdit(id);break;
         case 'offer-approve':if(confirm('Approve these offer terms?')){await commit('approve-offer',{applicationId:id});render();offerDetails(id);}break;
         case 'offer-message':await commit('offer-message',{applicationId:id});close(true);render();notify('Offer saved. Check Email Outbox for sending status.');break;
-        case 'offer-accept':open('Record Offer Acceptance','Use this after the candidate has confirmed acceptance.',form('accept-offer',id,candidateCard(app(id))+area('Acceptance record','notes','','required maxlength="1000" placeholder="Record when and how the candidate accepted."'),'Confirm Acceptance'),'check','green');break;
         case 'application-outbox':case 'application-notifications':case 'application-templates':case 'application-logs':{app(id);const context=await store.request('hr/applications/'+encodeURIComponent(id)+'/communication-context'),target=action.slice('application-'.length),path='/'+target+'?application='+context.applicationId;if(window.parent!==window)window.parent.postMessage({type:'jrs:navigate',path},location.origin);else location.assign('/hr'+path);break;}
         case 'message':messageForm(id);break;
         case 'message-edit':{const n=store.db.notifications.find(n=>n.id===id);if(n.status!=='Draft'){open(n.status+' Message',n.status==='Sent'?'This message was accepted by the email server.':'This message is read-only.',`<div class="modal-content"><h3>${e(n.subject)}</h3><p class="muted">${e(n.to)}</p><div class="note-box spaced">${e(n.body)}</div></div>`,'mail','gray');}else messageForm(n.applicationId,id);break;}

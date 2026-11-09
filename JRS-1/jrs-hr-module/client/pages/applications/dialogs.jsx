@@ -127,7 +127,7 @@ export function OfferReview({ db, application, onAction, onClose, busy }) {
         </div>
       }
     >
-      <p className="subtle">Prepare, approve and record candidate responses.</p>
+      <p className="subtle">Review and approve the offer terms.</p>
       <ApplicantCard db={db} application={application} />
       <dl className="interview-details">
         <dt>Monthly salary</dt><dd>SGD {Number(offer.salary).toLocaleString("en-SG")}</dd>
@@ -138,7 +138,6 @@ export function OfferReview({ db, application, onAction, onClose, busy }) {
       </dl>
       <div className="interview-note">{offer.terms}</div>
       {confirming && <p className="subtle">Approve these offer terms? Select Save to continue.</p>}
-      <p className="subtle mb-0">Approval and acceptance are recorded in the application history. Record acceptance only when the candidate has confirmed.</p>
     </Modal>
   );
 }

@@ -227,7 +227,8 @@ test('offer actions depend on approval, expiry and manager permission rather tha
     assert.equal(JSON.stringify({application,applicant}),before);
   }
   application.offer.expiry=M.day(-1);const expired=await controller('#/applications/offer',{db});await expired.action('application',application.id);
-  assert.match(expired.e('#modal-body').innerHTML,/data-action="offer-accept"[^>]*disabled/);
+  assert.match(expired.e('#modal-body').innerHTML,/data-action="offer-message"[^>]*disabled/);
+  assert.doesNotMatch(expired.e('#modal-body').innerHTML,/offer-accept|Record acceptance|Record Acceptance/);
 });
 
 test('rejecting uses one confirmation and prepares an unsent draft without a reason-selection screen',async()=>{

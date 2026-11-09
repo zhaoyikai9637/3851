@@ -1,3 +1,5 @@
+import ActiveApplicationNotice from "../../components/ActiveApplicationNotice";
+import useCurrentApplication from "../../hooks/useCurrentApplication";
 import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
 import { ArrowLeft, BriefcaseBusiness, CalendarDays, CircleDollarSign, LogIn, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -7,6 +9,7 @@ import { jobLabel } from "../../utils/jobLabels";
 import { jobBulletPoints } from "../../../../jrs-hr-module/shared/job-text.mjs";
 
 export default function JobDetailsPage({ authenticated = false }) {
+  const current = useCurrentApplication(authenticated);
   const { jobId } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
@@ -41,8 +44,8 @@ export default function JobDetailsPage({ authenticated = false }) {
           </div>
         </div>
         {authenticated ? (
-          <button className="btn btn-primary btn-lg" type="button" disabled={!job.isOpen} onClick={() => navigate("/applicant/apply/" + job.id)}>
-            {job.isOpen ? "Apply for this role" : "Applications closed"}
+          <button className="btn btn-primary btn-lg" type="button" disabled={!job.isOpen || current.loading || current.active} onClick={() => navigate("/applicant/apply/" + job.id)}>
+            {!job.isOpen ? "Applications closed" : current.active ? "Application in progress" : "Apply for this role"}
           </button>
         ) : job.isOpen ? (
           <Link className="btn btn-primary btn-lg" to={"/connect?returnTo=" + encodeURIComponent("/applicant/jobs/" + job.id)}>
@@ -52,6 +55,7 @@ export default function JobDetailsPage({ authenticated = false }) {
         ) : <button className="btn btn-primary btn-lg" type="button" disabled>Applications closed</button>}
       </section>
 
+      {authenticated && job.isOpen && current.active && <ActiveApplicationNotice application={current.application} />}
       <div>
         <div className="role-information surface">
           <section>

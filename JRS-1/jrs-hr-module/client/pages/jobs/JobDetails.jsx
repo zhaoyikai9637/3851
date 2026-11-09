@@ -108,11 +108,16 @@ export function JobDetails({
       setBusy(false);
     }
   }
+  const draftPosting = job?.status === "Draft";
+  const closedPosting = ["Closed", "Stopped"].includes(job?.status);
+  const statusTitle = draftPosting ? "Publish posting?" : closedPosting ? "Reopen recruitment?" : "Close recruitment?";
+  const statusConfirm = draftPosting ? "Publish posting" : closedPosting ? "Confirm reopen" : "Confirm close";
+  const statusDescription = draftPosting ? "This posting will become active. Applicants can see and apply for it when its publication dates allow." : closedPosting ? "New applications and existing application processing will resume. Publication dates still control candidate visibility." : "New applications and advancement through interviews and offers will stop. Existing records remain available.";
   async function status() {
     setBusy(true);
     setError(null);
     try {
-      await onStatus(job.id, ["Closed", "Stopped"].includes(job.status) ? "Active" : "Closed");
+      await onStatus(job.id, draftPosting || closedPosting ? "Active" : "Closed");
       onClose();
     } catch (error) {
       setError(error);
@@ -154,24 +159,18 @@ export function JobDetails({
             aria-label={
               confirmation === "discard"
                 ? "Discard unsaved changes?"
-                : ["Closed", "Stopped"].includes(job.status)
-                  ? "Reopen recruitment?"
-                  : "Close recruitment?"
+                : statusTitle
             }
           >
             <h3>
               {confirmation === "discard"
                 ? "Discard unsaved changes?"
-                : ["Closed", "Stopped"].includes(job.status)
-                  ? "Reopen recruitment?"
-                  : "Close recruitment?"}
+                : statusTitle}
             </h3>
             <p>
               {confirmation === "discard"
                 ? "Your unsaved edits will be discarded."
-                : ["Closed", "Stopped"].includes(job.status)
-                  ? "New applications and existing application processing will resume. Publication dates still control candidate visibility."
-                  : "New applications and advancement through interviews and offers will stop. Existing records remain available."}
+                : statusDescription}
             </p>
             <div className="job-confirmation-actions">
               <button
@@ -190,9 +189,7 @@ export function JobDetails({
               >
                 {confirmation === "discard"
                   ? "Discard changes"
-                  : ["Closed", "Stopped"].includes(job.status)
-                    ? "Confirm reopen"
-                    : "Confirm close"}
+                  : statusConfirm}
               </button>
             </div>
           </section>
@@ -312,6 +309,7 @@ export function JobDetails({
           </form>
         ) : (
           <section className="job-read-details" aria-label="Job information">
+              {draftPosting && <p className="notice gray">This posting is a draft. Select Publish posting when it is ready for applicants.</p>}
               <>
                 <h3>Position information</h3>
                 <dl>
@@ -386,7 +384,7 @@ export function JobDetails({
               disabled={busy}
               onClick={() => setConfirmation("status")}
             >
-              {["Closed", "Stopped"].includes(job.status) ? "Reopen recruitment" : "Close recruitment"}
+              {draftPosting ? "Publish posting" : closedPosting ? "Reopen recruitment" : "Close recruitment"}
             </button>
             <div>
               <button
