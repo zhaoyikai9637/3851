@@ -1,3 +1,7 @@
+## Four online audit fixes - 2026-11-09
+
+Preserve layout while adding early same-job history checks, batching canonical/snapshot reads, hiding interview duration display and updating logout wording. Real local SQL and Edge desktop/mobile verification passed. See ../../docs/ONLINE_AUDIT_FOUR_FIXES.md for scope, performance evidence and deployment limits. No production data, schema or cloud configuration changed.
+
 ## Draft publication and active-application notice - 2026-11-09
 
 Add explicit Publish posting confirmation to saved draft details while preserving draft-only Save and current publication rules. Restore the reference applicant notice and early form guard for existing applications. Remove retired acceptance wording/actions without restoring Hired. Visitor login and result-summary queues remain unchanged. Verified 784 unit/API cases, both builds, English, isolated SQL and Edge desktop/mobile publishing, active-application blocking and post-withdrawal re-entry. See ../../docs/DRAFT_PUBLICATION_AND_ACTIVE_APPLICATION.md. No production data/configuration or deployment changed.

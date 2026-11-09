@@ -137,6 +137,10 @@ export class IntegratedApplicantData extends MySqlDataLayer {
     if(removed&&/^[a-f0-9]{64}$/.test(removed.storageKey))await this.fileStore.remove(removed.storageKey).catch(()=>console.error('Resume cleanup failed: STORAGE_UNAVAILABLE'));
     return removed;
   }
+  async getPreviousJobApplication(userId,jobId,transaction) {
+    const record=await this.models.Application.findOne({where:{userId,jobId},attributes:['id','jobId','status'],order:[['createdAt','DESC']],...(transaction?{transaction}:{})});
+    return record?.toJSON()||null;
+  }
   async createApplication(userId, values) {
     if(values.declarationAccepted!==true)throw httpError(422,'Accept the applicant declaration before submitting.');
     const facts = workFacts(values.experiences);
@@ -148,6 +152,7 @@ export class IntegratedApplicantData extends MySqlDataLayer {
       await query('SELECT account_id FROM MODULE_ACCOUNT WHERE account_id=? FOR UPDATE', [userId]);
       const active = await this.models.Application.findOne({ where: { userId, status: { [(await import('sequelize')).Op.notIn]: ['Withdrawn', 'Rejected', 'Accepted'] } }, transaction });
       if (active) throw httpError(409, 'You already have an active application. Withdraw it before applying again.');
+      if(await this.getPreviousJobApplication(userId,values.jobId,transaction))throw httpError(409,'You have already applied for this role. You can apply for a different role.');
       const [job, resume] = await Promise.all([
         this.models.Job.findOne({ where: { id: values.jobId, isOpen: true }, transaction }),
         this.models.Resume.findOne({ where: { id: values.resumeId, userId }, transaction }),

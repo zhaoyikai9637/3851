@@ -41,7 +41,7 @@ function sqlDatabase(db,{failOn}={}){
       if(sql.startsWith('SET TRANSACTION'))return [[]];
       if(sql.includes('FOR UPDATE')){const previous=queue;queue=new Promise(r=>releaseLock=r);await previous;saved=M.clone(tables);return [[{revision:tables.hr_workspace[0].revision}]];}
       if(sql.includes(' AS entity,JSON_OBJECT(')) {
-        return [maps.flatMap(map=>(tables[map.table]||[]).map(record=>({entity:map.key,record:M.clone(record)})))];
+        return [[{entity:'__workspace',record:M.clone(tables.hr_workspace[0])},...maps.flatMap(map=>(tables[map.table]||[]).map(record=>({entity:map.key,record:M.clone(record)})))]];
       }
       if(sql.startsWith('SELECT')){
         const table=sql.match(/ FROM (hr_\w+)/)?.[1];if(!table)throw Error('Unsupported SELECT '+sql);

@@ -78,7 +78,8 @@ it("shows interview results with the assessment and allows preparing an offer", 
   expect(await screen.findByText("Proceed")).toBeVisible();
   expect(screen.getByText("Communication")).toBeVisible();
   expect(screen.getByText("Strong answers.")).toBeVisible();
-  expect(screen.getByText("Riley Morgan · Video · 45 min")).toBeVisible();
+  expect(screen.getByText("Riley Morgan · Video")).toBeVisible();
+  expect(screen.queryByText(/45 min/)).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Prepare Offer" })).toBeEnabled();
 });
 

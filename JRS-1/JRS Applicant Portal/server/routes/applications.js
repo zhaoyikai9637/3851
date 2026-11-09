@@ -45,7 +45,14 @@ const applicationValidators = [
 
 router.get("/me", async (req, res, next) => {
   try {
-    res.json({ application: await req.app.locals.data.getCurrentApplication(req.user.id) });
+    const jobId=req.query.jobId;
+    if(jobId!==undefined&&(!/^\d+$/.test(String(jobId))||!Number.isSafeInteger(Number(jobId))||Number(jobId)<1))return res.status(400).json({message:'Invalid job identifier.'});
+    const data=req.app.locals.data;
+    const [application,previousApplication]=await Promise.all([
+      data.getCurrentApplication(req.user.id),
+      jobId!==undefined&&data.getPreviousJobApplication?data.getPreviousJobApplication(req.user.id,Number(jobId)):null,
+    ]);
+    res.json({application,...(jobId!==undefined?{previousApplication}:{} )});
   } catch (error) {
     next(error);
   }

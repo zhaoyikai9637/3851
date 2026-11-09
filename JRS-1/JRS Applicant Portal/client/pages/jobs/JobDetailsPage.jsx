@@ -9,8 +9,8 @@ import { jobLabel } from "../../utils/jobLabels";
 import { jobBulletPoints } from "../../../../jrs-hr-module/shared/job-text.mjs";
 
 export default function JobDetailsPage({ authenticated = false }) {
-  const current = useCurrentApplication(authenticated);
   const { jobId } = useParams();
+  const current = useCurrentApplication(authenticated, jobId);
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,8 +44,8 @@ export default function JobDetailsPage({ authenticated = false }) {
           </div>
         </div>
         {authenticated ? (
-          <button className="btn btn-primary btn-lg" type="button" disabled={!job.isOpen || current.loading || current.active} onClick={() => navigate("/applicant/apply/" + job.id)}>
-            {!job.isOpen ? "Applications closed" : current.active ? "Application in progress" : "Apply for this role"}
+          <button className="btn btn-primary btn-lg" type="button" disabled={!job.isOpen || current.loading || current.active || Boolean(current.previous)} onClick={() => navigate("/applicant/apply/" + job.id)}>
+            {!job.isOpen ? "Applications closed" : current.active ? "Application in progress" : current.previous ? "Already applied" : "Apply for this role"}
           </button>
         ) : job.isOpen ? (
           <Link className="btn btn-primary btn-lg" to={"/connect?returnTo=" + encodeURIComponent("/applicant/jobs/" + job.id)}>
@@ -55,7 +55,7 @@ export default function JobDetailsPage({ authenticated = false }) {
         ) : <button className="btn btn-primary btn-lg" type="button" disabled>Applications closed</button>}
       </section>
 
-      {authenticated && job.isOpen && current.active && <ActiveApplicationNotice application={current.application} />}
+      {authenticated && job.isOpen && (current.active || current.previous) && <ActiveApplicationNotice application={current.active ? current.application : current.previous} previous={!current.active} />}
       <div>
         <div className="role-information surface">
           <section>

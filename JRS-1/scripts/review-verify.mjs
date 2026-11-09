@@ -87,6 +87,15 @@ try{
  await candidate.post('/applicant-api/applications/'+submission.body.application.id+'/withdraw').set('X-CSRF-Token',csrf).send({}).expect(200);
  workspace=(await manager.get('/recruitment/api/hr/workspace').expect(200)).body;assert.equal(workspace.applications.find(a=>a.id===application.id).rejectionReason,'Candidate withdrew their application');const withdrawn=await candidate.get('/applicant-api/applications/me').expect(200);assert.equal(withdrawn.body.application.status,'Withdrawn');
  passed.push('Interview scheduling, applicant status synchronization and withdrawal synchronization');
+ const prior=await candidate.get('/applicant-api/applications/me').query({jobId:job.id}).expect(200);assert.equal(prior.body.previousApplication.id,submission.body.application.id);
+ const duplicate=await candidate.post('/applicant-api/applications').set('X-CSRF-Token',csrf).send(payload).expect(409);assert.match(duplicate.body.message,/already applied for this role/);
+ const differentJob=jobs.body.jobs.find(j=>j.id!==job.id);assert.ok(differentJob);
+ const other=await candidate.get('/applicant-api/applications/me').query({jobId:differentJob.id}).expect(200);assert.equal(other.body.previousApplication,null);
+ const next=await candidate.post('/applicant-api/applications').set('X-CSRF-Token',csrf).send({...payload,jobId:differentJob.id}).expect(201);
+ await candidate.post('/applicant-api/applications/'+next.body.application.id+'/withdraw').set('X-CSRF-Token',csrf).send({}).expect(200);
+ const older=await candidate.get('/applicant-api/applications/me').query({jobId:job.id}).expect(200);assert.equal(older.body.previousApplication.id,submission.body.application.id);
+ passed.push('Same-job history blocks duplicate submissions, including older withdrawn applications; different roles remain available');
+
  await candidate.post('/api/logout').set('X-CSRF-Token',csrf).send({}).expect(200);
  passed.push('Applicant logout');
  const manualEmail='manual-'+randomUUID()+'@example.test';let manualState=(await manager.get('/recruitment/api/hr/workspace').expect(200)).body;

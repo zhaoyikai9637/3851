@@ -9,11 +9,11 @@ import {isActiveApplication} from '../../../../JRS Applicant Portal/client/hooks
 import api from '../../../../JRS Applicant Portal/client/api/client';
 vi.mock('../../../../JRS Applicant Portal/client/api/client',()=>({default:{get:vi.fn(),post:vi.fn()},getApiError:()=> 'Request failed'}));
 const job={id:1,title:'Example Engineer',summary:'Build software',location:'Singapore',employmentType:'FULL_TIME',experienceLevel:'ENTRY',isOpen:true,responsibilities:['Build software'],requirements:['Testing'],benefits:[],roleQuestions:[]};
-let application;
+let application,previous;
 beforeEach(()=>{
- application={id:2,status:'Interview',job:{title:'Previous role'}};
+ previous=null;application={id:2,status:'Interview',job:{title:'Previous role'}};
  vi.spyOn(window,'scrollTo').mockImplementation(()=>{});api.post.mockReset();api.get.mockReset();
- api.get.mockImplementation(async url=>({data:url==='/applications/me'?{application}:url==='/jobs'?{jobs:[job],filters:{locations:[],employmentTypes:[],experienceLevels:[]}}:url==='/jobs/1'?{job}:url==='/profile'?{profile:{phone:'+6581234567',location:'Singapore'}}:url==='/resumes'?{resumes:[]}:{options:[]}}));
+ api.get.mockImplementation(async url=>({data:url.startsWith('/applications/me')?{application,previousApplication:previous}:url==='/jobs'?{jobs:[job],filters:{locations:[],employmentTypes:[],experienceLevels:[]}}:url==='/jobs/1'?{job}:url==='/profile'?{profile:{phone:'+6581234567',location:'Singapore'}}:url==='/resumes'?{resumes:[]}:{options:[]}}));
 });
 function mount(element,path='/applicant/jobs/1') {render(<MemoryRouter initialEntries={[path]}><Routes><Route path='/applicant/jobs' element={element}/><Route path='/applicant/jobs/:jobId' element={element}/><Route path='/applicant/apply/:jobId' element={element}/><Route path='/applicant/status' element={<p>Existing application status</p>}/></Routes></MemoryRouter>);return userEvent.setup();}
 it.each(['Submitted','Pending Review','Interview','Interview Results','Offer'])('recognizes an active %s application',status=>expect(isActiveApplication({status})).toBe(true));
@@ -41,4 +41,16 @@ it('retains the normal role application entry after withdrawal',async()=>{
 it('keeps visitors on their existing login flow without fetching a personal application',async()=>{
  mount(<JobDetailsPage/>);expect(await screen.findByRole('link',{name:'Sign in to apply'})).toHaveAttribute('href','/connect?returnTo=%2Fapplicant%2Fjobs%2F1');
  expect(api.get.mock.calls.some(([url])=>url==='/applications/me')).toBe(false);
+});
+
+it.each(['Withdrawn','Rejected','Accepted'])('blocks the same previously applied job after %s before form entry',async status=>{
+ application={id:9,status:'Withdrawn',jobId:2};previous={id:2,jobId:1,status};
+ mount(<JobDetailsPage authenticated/>);expect(await screen.findByRole('button',{name:'Already applied'})).toBeDisabled();
+ expect(screen.getByText('You have already applied for this role')).toBeVisible();
+});
+it('blocks a direct form URL for an older withdrawn job while allowing different jobs',async()=>{
+ application={id:9,status:'Withdrawn',jobId:2};previous={id:2,jobId:1,status:'Withdrawn'};
+ mount(<ApplicationPage/>,'/applicant/apply/1');expect(await screen.findByText('You have already applied for this role')).toBeVisible();
+ expect(screen.queryByRole('button',{name:'Continue',exact:true})).not.toBeInTheDocument();expect(api.post).not.toHaveBeenCalled();
+ expect(api.get).toHaveBeenCalledWith('/applications/me?jobId=1');
 });

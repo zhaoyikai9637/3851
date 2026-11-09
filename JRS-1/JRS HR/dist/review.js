@@ -25,11 +25,11 @@
   }
   function meetingSummary(db,a){
     const i=db.interviews.find(i=>i.applicationId===a.id&&i.status==='Scheduled');
-    return i?`<section class="review-meeting" aria-label="Scheduled interview"><h3>Interview scheduled</h3><p>${V.date(i.date)} · ${e(i.time)} · ${e(i.duration)} min</p><p>${e(i.location)}</p><small>${e(i.interviewer)} · ${e(i.format)}</small></section>`:'';
+    return i?`<section class="review-meeting" aria-label="Scheduled interview"><h3>Interview scheduled</h3><p>${V.date(i.date)} · ${e(i.time)}</p><p>${e(i.location)}</p><small>${e(i.interviewer)} · ${e(i.format)}</small></section>`:'';
   }
   function resultsContent(db,a){
     const f=a.feedback,meetings=db.interviews.filter(i=>i.applicationId===a.id).sort((x,y)=>(y.date+y.time).localeCompare(x.date+x.time));
-    return `<section class="result-feedback"><h3>Interview feedback</h3>${f?`<div class="result-score"><strong>${e(f.rating)}<small> / 5</small></strong><span>${e(f.recommendation)}</span></div>${V.assessmentSummary(f.assessment)}<p class="feedback-notes">${e(f.notes)}</p><p class="muted">Recorded ${V.datetime(f.recordedAt)}</p>`:V.empty('Feedback not available','Complete feedback from the Interviews page.')}<h3>Interview details</h3>${meetings.length?meetings.map(i=>`<article class="result-meeting"><strong>${V.date(i.date)} · ${e(i.time)}</strong>${badge(i.status)}<p>${e(i.interviewer)} · ${e(i.format)} · ${i.duration} min</p><p class="muted">${e(i.location)}</p>${i.notes?'<p class="feedback-notes">'+e(i.notes)+'</p>':''}</article>`).join(''):'<p class="muted">No interview record is available.</p>'}</section>`;
+    return `<section class="result-feedback"><h3>Interview feedback</h3>${f?`<div class="result-score"><strong>${e(f.rating)}<small> / 5</small></strong><span>${e(f.recommendation)}</span></div>${V.assessmentSummary(f.assessment)}<p class="feedback-notes">${e(f.notes)}</p><p class="muted">Recorded ${V.datetime(f.recordedAt)}</p>`:V.empty('Feedback not available','Complete feedback from the Interviews page.')}<h3>Interview details</h3>${meetings.length?meetings.map(i=>`<article class="result-meeting"><strong>${V.date(i.date)} · ${e(i.time)}</strong>${badge(i.status)}<p>${e(i.interviewer)} · ${e(i.format)}</p><p class="muted">${e(i.location)}</p>${i.notes?'<p class="feedback-notes">'+e(i.notes)+'</p>':''}</article>`).join(''):'<p class="muted">No interview record is available.</p>'}</section>`;
   }
   function render(route,db,ui){
     const a=db.applications.find(a=>a.id===route[1]);if(!a)return V.empty('Application not found','Return to Applications and select an existing record.');

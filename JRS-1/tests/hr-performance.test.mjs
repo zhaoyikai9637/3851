@@ -29,6 +29,6 @@ test('changed canonical HR details update once and expose canonical identity',as
 test('canonical refresh batches reads independently of candidate count and does not rewrite unchanged profiles',async()=>{
  const people=Array.from({length:40},(_,i)=>({candidate_id:i+1,account_id:i+1,full_name:'Person '+i,email:'p'+i+'@example.test',contact_number:'',home_location:'',availability_status:'AVAILABLE'}));
  const stored=people.map((c,i)=>({id:'account-'+c.account_id,name:c.full_name,email:c.email,phone:'',location:'',experience:0,education:'Not recorded',skills:[]}));
- const calls=[],db={beginTransaction:async()=>{},commit:async()=>{},rollback:async()=>{},release(){},query:async(sql)=>{calls.push(sql);if(sql.includes('FROM CANDIDATE'))return [people];if(sql.includes('FROM recruiting_candidate'))return [stored];if(sql.includes('FROM JRS_CANDIDATE_LINK'))return [people.map(c=>({canonical_id:c.candidate_id,recruiting_id:'account-'+c.account_id}))];return [[]];}};
- await refreshCanonicalPeople({getConnection:async()=>db});assert.equal(calls.length,6);assert.ok(!calls.some(sql=>/^(UPDATE|INSERT|DELETE)/.test(sql)));
+ const calls=[],db={beginTransaction:async()=>{},commit:async()=>{},rollback:async()=>{},release(){},query:async(sql)=>{calls.push(sql);if(sql.includes('UNION ALL'))return [[...people.map(record=>({entity:'people',record})),...stored.map(record=>({entity:'stored',record})),...people.map(c=>({entity:'links',record:{canonical_id:c.candidate_id,recruiting_id:'account-'+c.account_id}}))]];return [[]];}};
+ await refreshCanonicalPeople({getConnection:async()=>db});assert.equal(calls.length,2);assert.ok(!calls.some(sql=>/^(UPDATE|INSERT|DELETE)/.test(sql)));
 });

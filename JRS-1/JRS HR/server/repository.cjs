@@ -28,15 +28,17 @@ function flatten(db) {
     noteRows: db.applications.flatMap(a=>a.notes.map((n,k)=>({id:`${a.id}-note-${k}`,applicationId:a.id,...n,sequence:k})))
   };
 }
-async function load(conn) {
-  const [heads]=await conn.query('SELECT * FROM hr_workspace WHERE id=1');
-  if(!heads.length) fail(503,'Database has not been initialized. Run npm run db:init.');
-  const h=heads[0], db={schemaVersion:2,revision:h.revision,createdAt:h.created_at,updatedAt:h.updated_at};
+async function load(conn, userId) {
   // A connection stays inside one repeatable-read transaction for a coherent snapshot.
   // A single fixed UNION statement avoids one network round trip per table.
   // Identifiers and JSON keys come only from the trusted repository mappings.
   const sql=maps.map(m=>"SELECT '"+m.key+"' AS entity,JSON_OBJECT("+m.fields.map(f=>"'"+f.col+"',"+(f.type==='decimal'?"CAST(`"+f.col+"` AS CHAR)":"`"+f.col+"`")).join(',')+") AS record FROM "+m.table).join(' UNION ALL ');
-  const [records]=await conn.query(sql);
+  const extras=userId===undefined?'':" UNION ALL SELECT '__read',JSON_OBJECT('id',notification_id) FROM hr_notification_read WHERE user_id=? UNION ALL SELECT '__resume',JSON_OBJECT('candidate_id',candidate_id,'filename',filename,'size_bytes',size_bytes,'uploaded_at',uploaded_at) FROM hr_resume";
+  const [all]=await conn.query("SELECT '__workspace' AS entity,JSON_OBJECT('revision',revision,'created_at',created_at,'updated_at',updated_at) AS record FROM hr_workspace WHERE id=1 UNION ALL "+sql+extras,userId===undefined?[]:[userId]);
+  const head=all.find(row=>row.entity==='__workspace');
+  if(!head)fail(503,'Database has not been initialized. Run npm run db:init.');
+  const h=parseJSON(head.record),db={schemaVersion:2,revision:h.revision,createdAt:h.created_at,updatedAt:h.updated_at};
+  const records=all.filter(row=>!row.entity.startsWith('__'));
   const mapping=new Map(maps.map(m=>[m.key,m]));
   for(const m of maps)db[m.key]=[];
   for(const record of records) {
@@ -50,6 +52,12 @@ async function load(conn) {
   db.activity.sort((a,b)=>b.at.localeCompare(a.at));db.notifications.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
   db.systemNotifications.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));db.mailLogs.sort((a,b)=>b.sentAt.localeCompare(a.sentAt));
   delete db.feedbackRows;delete db.offerRows;delete db.noteRows;
+  if(userId!==undefined){
+    const read=new Set(all.filter(row=>row.entity==='__read').map(row=>parseJSON(row.record).id));
+    db.systemNotifications.forEach(n=>{n.read=read.has(n.id);});
+    const resumes=new Map(all.filter(row=>row.entity==='__resume').map(row=>{const r=parseJSON(row.record);return [r.candidate_id,r];}));
+    db.candidates.forEach(c=>{const r=resumes.get(c.id);c.resume=r?{filename:r.filename,size:r.size_bytes,uploadedAt:r.uploaded_at}:null;});
+  }
   M.validate(db);return db;
 }
 async function save(conn, before, after) {
@@ -76,12 +84,7 @@ function createRepository(pool) {
     } catch(e) {try{await conn.rollback();}catch{}throw e;} finally {conn.release();}
   }
   async function snapshot(userId) {return transaction(async conn=>{
-    const db=await load(conn);
-    const [read]=await conn.execute('SELECT notification_id FROM hr_notification_read WHERE user_id=?',[userId]);
-    const ids=new Set(read.map(r=>r.notification_id));db.systemNotifications.forEach(n=>n.read=ids.has(n.id));
-    const [resumes]=await conn.query('SELECT candidate_id,filename,size_bytes,uploaded_at FROM hr_resume');
-    db.candidates.forEach(c=>{const r=resumes.find(r=>r.candidate_id===c.id);c.resume=r?{filename:r.filename,size:r.size_bytes,uploadedAt:r.uploaded_at}:null;});
-    return db;
+    return load(conn,userId);
   });}
   return {pool,transaction,snapshot,load,save};
 }

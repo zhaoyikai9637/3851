@@ -33,7 +33,7 @@ function CharacterCount({ value, limit }) {
 export default function ApplicationPage() {
   const { jobId } = useParams();
   const navigate = useNavigate();
-  const current = useCurrentApplication();
+  const current = useCurrentApplication(true, jobId);
   const [job, setJob] = useState(null);
   const [resumes, setResumes] = useState([]);
   const [step, setStep] = useState(0);
@@ -187,9 +187,9 @@ export default function ApplicationPage() {
 
   if (loading || current.loading) return <div className="full-page-message inline"><div className="spinner-border text-primary" /><p>Preparing your application...</p></div>;
   if (!job) return <div className="alert alert-danger" role="alert">{error || "Role not found."}</div>;
-  if (current.active) return <div className="page-stack application-page">
+  if (current.active || current.previous) return <div className="page-stack application-page">
     <Link className="back-link" to={"/applicant/jobs/" + job.id}><ArrowLeft size={20} />Back to role details</Link>
-    <ActiveApplicationNotice application={current.application} />
+    <ActiveApplicationNotice application={current.active ? current.application : current.previous} previous={!current.active} />
   </div>;
 
   return (

@@ -216,7 +216,7 @@ export function WorkspaceLayout() {
           }
         >
           <p>
-            This will end your session. Use the team sign-in page to access your HR workspace again.
+            This will end your session. You can log in again when you are ready.
           </p>
           <ErrorBox error={error} />
         </Modal>

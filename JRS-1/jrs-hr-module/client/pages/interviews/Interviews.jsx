@@ -164,7 +164,7 @@ export function Interviews({ fetcher, now }) {
                       <td>{interview.location}</td>
                       <td>{interview.format}</td>
                       <td>{interview.interviewer}</td>
-                      <td>{formatDate(interview.date)}<small className="d-block subtle">{interview.time} · {interview.duration} min</small></td>
+                      <td>{formatDate(interview.date)}<small className="d-block subtle">{interview.time}</small></td>
                       <td><StatusBadge status={interview.status} /></td>
                       <td><button type="button" className="job-secondary" onClick={() => setDialog({ kind: "details", interview })}>View</button></td>
                     </tr>

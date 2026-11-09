@@ -44,7 +44,7 @@ function MeetingSummary({ db, application }) {
   return (
     <section className="review-meeting" aria-label="Scheduled interview">
       <h3>Interview scheduled</h3>
-      <p>{formatDate(meeting.date)} · {meeting.time} · {meeting.duration} min</p>
+      <p>{formatDate(meeting.date)} · {meeting.time}</p>
       <p>{meeting.location}</p>
       <small>{meeting.interviewer} · {meeting.format}</small>
     </section>
@@ -74,7 +74,7 @@ function Results({ db, application }) {
         <article className="result-meeting" key={interview.id}>
           <strong>{formatDate(interview.date)} · {interview.time}</strong>
           <Badge status={interview.status} />
-          <p>{interview.interviewer} · {interview.format} · {interview.duration} min</p>
+          <p>{interview.interviewer} · {interview.format}</p>
           <p className="muted">{interview.location}</p>
           {interview.notes && <p className="feedback-notes">{interview.notes}</p>}
         </article>

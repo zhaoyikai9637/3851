@@ -259,7 +259,7 @@ export function DetailsDialog({ db, interview, onAction, onClose, now }) {
       <div className="interview-candidate"><Person db={db} application={application} /><small>{jobOf(db, application).title}</small></div>
       <dl className="interview-details">
         <dt>Date</dt><dd>{formatDate(interview.date)}</dd>
-        <dt>Time</dt><dd>{interview.time} · {interview.duration} minutes</dd>
+        <dt>Time</dt><dd>{interview.time}</dd>
         <dt>Interviewer</dt><dd>{interview.interviewer}</dd>
         <dt>Format</dt><dd>{interview.format}</dd>
         <dt>Details</dt><dd>{interview.location}</dd>

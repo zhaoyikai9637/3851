@@ -99,12 +99,13 @@ export async function refreshCanonicalPeople(pool) {
   await db.beginTransaction();
   await db.query('SELECT revision FROM recruiting_workspace WHERE id=1 FOR UPDATE');
   // Read shared profiles once per workspace refresh, never once per authentication.
-  const [people]=await db.query("SELECT c.*,a.email AS account_email FROM CANDIDATE c JOIN MODULE_ACCOUNT a ON a.account_id=c.account_id LEFT JOIN JRS_CANDIDATE_LINK owned ON owned.canonical_id=c.candidate_id WHERE a.role='candidate' AND EXISTS(SELECT 1 FROM recruiting_application p WHERE p.candidate_id=COALESCE(owned.recruiting_id,CONCAT('account-',c.account_id)))");
+  // Fixed UNION keeps canonical refresh coherent without five remote round trips.
+  const [records]=await db.query(`SELECT 'people' AS entity,JSON_OBJECT('candidate_id',c.candidate_id,'account_id',c.account_id,'full_name',c.full_name,'email',c.email,'country_code',c.country_code,'contact_number',c.contact_number,'structured_location',c.structured_location,'home_location',c.home_location,'availability_status',c.availability_status,'account_email',a.email) AS record FROM CANDIDATE c JOIN MODULE_ACCOUNT a ON a.account_id=c.account_id LEFT JOIN JRS_CANDIDATE_LINK owned ON owned.canonical_id=c.candidate_id WHERE a.role='candidate' AND EXISTS(SELECT 1 FROM recruiting_application p WHERE p.candidate_id=COALESCE(owned.recruiting_id,CONCAT('account-',c.account_id))) UNION ALL SELECT 'education' AS entity,JSON_OBJECT('candidate_id',candidate_id,'education_id',education_id,'institution',institution,'qualification',qualification,'qualification_level',qualification_level,'start_year',start_year,'finished_year',finished_year,'is_current_study',is_current_study,'description',description,'end_month_year',end_month_year) AS record FROM EDUCATION UNION ALL SELECT 'career' AS entity,JSON_OBJECT('candidate_id',candidate_id,'role_id',role_id,'company_name',company_name,'job_title',job_title,'start_month_year',start_month_year,'end_month_year',end_month_year,'is_current_role',is_current_role,'description',description,'achievements',achievements,'skill_codes',skill_codes) AS record FROM CAREER_HISTORY UNION ALL SELECT 'links' AS entity,JSON_OBJECT('canonical_id',canonical_id,'recruiting_id',recruiting_id) AS record FROM JRS_CANDIDATE_LINK UNION ALL SELECT 'stored' AS entity,JSON_OBJECT('id',id,'name',name,'email',email,'phone',phone,'location',location,'experience',experience,'education',education,'skills',skills) AS record FROM recruiting_candidate`);
+  const groupedRecords={people:[],education:[],career:[],links:[],stored:[]};
+  for(const row of records)groupedRecords[row.entity].push(typeof row.record==='string'?JSON.parse(row.record):row.record);
+  const {people,education,career,links,stored}=groupedRecords;
+  education.sort((a,b)=>a.education_id-b.education_id);career.sort((a,b)=>a.role_id-b.role_id);
   if (!people.length) { await db.commit(); return; }
-  const [education]=await db.query('SELECT * FROM EDUCATION ORDER BY education_id');
-  const [career]=await db.query('SELECT * FROM CAREER_HISTORY ORDER BY role_id');
-  const [links]=await db.query('SELECT canonical_id,recruiting_id FROM JRS_CANDIDATE_LINK');
-  const [stored]=await db.query('SELECT * FROM recruiting_candidate');
   const grouped=rows=>{const groups=new Map();for(const row of rows){const list=groups.get(row.candidate_id)||[];list.push(row);groups.set(row.candidate_id,list);}return groups;};
   const schools=grouped(education),roles=grouped(career),linkMap=new Map(links.map(r=>[r.canonical_id,r])),oldMap=new Map(stored.map(r=>[r.id,r]));
   let changed=false;
