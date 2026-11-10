@@ -199,17 +199,19 @@ export function CandidateEmails({ db, application, act }) {
   const items = (db.notifications || []).filter((notification) => notification.applicationId === application.id);
   return (
     <section className="panel padded spaced">
-      <section aria-label="Candidate emails">
-        <div className="section-heading bare">
+      <section aria-label="Candidate emails" className="candidate-emails">
+        <div className="section-heading bare candidate-email-heading">
           <h3>Candidate emails</h3>
-          <button type="button" className="button secondary compact" onClick={openOutbox}>Email Outbox</button>
-          <button type="button" className="button primary compact" onClick={() => act("message", application)}>New email</button>
+          <div className="card-actions candidate-email-actions">
+            <button type="button" className="button secondary compact" onClick={openOutbox}>Email Outbox</button>
+            <button type="button" className="button primary compact" onClick={() => act("message", application)}>New email</button>
+          </div>
         </div>
         {linkError&&<p role="alert">{linkError}</p>}
         {!db.mailEnabled && <p className="notice gray">Email sending is off. Drafts are saved for later.</p>}
         {items.length ? items.map((notification) => (
           <article className="notification-item" key={notification.id}>
-            <div>
+            <div className="candidate-email-copy">
               <strong>{notification.subject}</strong>
               <small>{notification.status} · {formatDateTime(notification.createdAt)}</small>
               {notification.lastError && <p>{notification.lastError}</p>}

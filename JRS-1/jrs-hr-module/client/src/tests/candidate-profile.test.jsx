@@ -71,7 +71,7 @@ function Profiled({ fetcher }) {
 
 it("shows the candidate details for the first application and switches between applications", async () => {
   const ui = mount(fetcherFor(workspace()));
-  expect(await screen.findByRole("heading", { name: "Alex Tan", level: 2 })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: "Alex Tan", level: 3 })).toBeVisible();
   expect(screen.getByText("Software Developer Applicant")).toBeVisible();
   expect(screen.getByText("app-1")).toBeVisible();
   expect(screen.getByRole("link", { name: "Assess application" })).toHaveAttribute("href", "/applications?view=review/app-1");
@@ -85,7 +85,7 @@ it("shows the candidate details for the first application and switches between a
 it("keeps tasks and history in their own section and completes tasks", async () => {
   const completed = vi.fn();
   const ui = mount(fetcherFor(workspace(), { "complete-task": completed }));
-  await screen.findByRole("heading", { name: "Alex Tan", level: 2 });
+  await screen.findByRole("heading", { name: "Alex Tan", level: 3 });
   expect(screen.getByText("Prepare questions")).not.toBeVisible();
   await ui.click(screen.getByRole("button", { name: "Tasks & history" }));
   expect(screen.getByText("Prepare questions")).toBeVisible();

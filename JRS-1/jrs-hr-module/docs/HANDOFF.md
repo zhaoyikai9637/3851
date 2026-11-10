@@ -1,3 +1,7 @@
+## Candidate email and profile layout - 2026-11-10
+
+Separate email metadata, group the existing email buttons and remove the duplicate candidate name. Keep candidate ownership permissions, dialogs and business handlers unchanged. See ../../docs/CANDIDATE_EMAIL_LAYOUT.md for scope and verification.
+
 ## Four online audit fixes - 2026-11-09
 
 Preserve layout while adding early same-job history checks, batching canonical/snapshot reads, hiding interview duration display and updating logout wording. Real local SQL and Edge desktop/mobile verification passed. See ../../docs/ONLINE_AUDIT_FOUR_FIXES.md for scope, performance evidence and deployment limits. No production data, schema or cloud configuration changed.

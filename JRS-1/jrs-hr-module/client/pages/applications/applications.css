@@ -27,3 +27,18 @@
 @media(max-width:600px){.hr-legacy .email-outbox-item{display:block}.hr-legacy .email-outbox-item .card-actions{margin-top:12px;justify-content:flex-start;flex-wrap:wrap}.hr-legacy .review-actions{flex-wrap:wrap;gap:8px}}
 
 @media(max-width:700px){.hr-legacy .row-actions{flex-wrap:wrap;white-space:normal;justify-content:flex-start}}
+
+/* Keep candidate email layout local to the application and candidate pages. */
+.hr-legacy .candidate-emails .candidate-email-heading { align-items:center; gap:12px; flex-wrap:wrap; }
+.hr-legacy .candidate-emails .candidate-email-heading h3 { margin:0; }
+.hr-legacy .candidate-emails .candidate-email-actions { margin-left:auto; flex-wrap:wrap; }
+.hr-legacy .candidate-emails .notification-item { align-items:center; gap:20px; }
+.hr-legacy .candidate-emails .candidate-email-copy { min-width:0; }
+.hr-legacy .candidate-emails .candidate-email-copy > strong { display:block; overflow-wrap:anywhere; }
+.hr-legacy .candidate-emails .candidate-email-copy > small { display:block; margin-top:6px; }
+.hr-legacy .candidate-emails .notification-item > .card-actions { flex-shrink:0; flex-wrap:wrap; }
+.hr-legacy[data-page="candidate"] .candidate-action-heading { justify-content:flex-end; }
+@media(max-width:700px) {
+  .hr-legacy .candidate-emails .notification-item { flex-direction:column; align-items:stretch; gap:12px; }
+  .hr-legacy .candidate-emails .notification-item > .card-actions { justify-content:flex-start; }
+}

@@ -77,7 +77,6 @@ export function CandidateProfile({ candidateId, applicationId, applicationLink, 
   if (!application) {
     return (
       <div className="hr-legacy" data-page="candidate">
-        <div className="page-heading"><div><h2>{person.name}</h2></div><div className="heading-actions" /></div>
         <section className="panel padded">
           <h3>{person.name}</h3>
           <p>{person.email}</p>
@@ -96,8 +95,7 @@ export function CandidateProfile({ candidateId, applicationId, applicationLink, 
   return (
     <>
       <div className="hr-legacy" data-page="candidate">
-        <div className="page-heading">
-          <div><h2>{person.name}</h2></div>
+        <div className="page-heading candidate-action-heading">
           <div className="heading-actions">
             <Link className="button secondary" to={"/applications?view=" + resumePath(application)} state={here}>Assess application</Link>
             <button type="button" className="button primary" onClick={() => act("review", application)}>Manage Application</button>
