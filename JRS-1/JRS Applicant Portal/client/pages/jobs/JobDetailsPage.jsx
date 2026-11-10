@@ -26,12 +26,13 @@ export default function JobDetailsPage({ authenticated = false }) {
   }, [jobId]);
 
 
-  if (loading) return <div className="full-page-message inline"><div className="spinner-border text-primary" /><p>Loading role details...</p></div>;
-  if (error || !job) return <div className="alert alert-danger" role="alert">{error || "Role not found."}</div>;
+  const breadcrumbItems = [{label:"Jobs",to:authenticated?"/applicant/jobs":"/jobs"},{label:job?.title || "Role Details"}];
+  if (loading) return <><ApplicantBreadcrumbs items={breadcrumbItems} /><div className="full-page-message inline" role="status"><div className="spinner-border text-primary" /><p>Loading role details...</p></div></>;
+  if (error || !job) return <><ApplicantBreadcrumbs items={breadcrumbItems} /><div className="alert alert-danger" role="alert">{error || "Role not found."}</div></>;
 
   return (
     <div className="page-stack role-details-page">
-      <ApplicantBreadcrumbs items={[{label: "Jobs", to: authenticated ? "/applicant/jobs" : "/jobs"}, {label: job.title}]} />
+      <ApplicantBreadcrumbs items={breadcrumbItems} />
 
       <section className="role-header surface">
         <div>

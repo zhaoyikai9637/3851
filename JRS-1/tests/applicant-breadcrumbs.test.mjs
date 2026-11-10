@@ -13,3 +13,10 @@ for(const [name,items,links] of [
 test('job titles remain plain text in breadcrumbs',()=>{
  const title='<img src=x onerror=alert(1)> & Software Developer';const dom=new JSDOM(renderToStaticMarkup(React.createElement(MemoryRouter,null,React.createElement(Breadcrumbs,{items:[{label:'Jobs',to:'/jobs'},{label:title}]}))));try{assert.equal(dom.window.document.querySelector('img'),null);assert.equal(dom.window.document.querySelector('[aria-current]').textContent,title);}finally{dom.window.close();}
 });
+
+
+test('root and loading header navigation use the same current-page heading without a portal',()=>{
+ for(const items of [[{label:'Find a Suitable Role'}],[{label:'Jobs',to:'/applicant/jobs'},{label:'Role Details'}]]) {
+  const dom=new JSDOM(renderToStaticMarkup(React.createElement(MemoryRouter,null,React.createElement(Breadcrumbs,{items,inline:true}))));try{assert.equal(dom.window.document.querySelectorAll('h1').length,1);assert.equal(dom.window.document.querySelector('h1').getAttribute('aria-current'),'page');assert.equal(dom.window.document.querySelectorAll('a').length,items.length-1);}finally{dom.window.close();}
+ }
+});

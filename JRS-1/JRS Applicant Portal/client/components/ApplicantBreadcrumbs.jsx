@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 
 export const ApplicantBreadcrumbTarget = createContext(null);
 
-export default function ApplicantBreadcrumbs({ items }) {
-  const target = useContext(ApplicantBreadcrumbTarget);
-  const Current = target ? "h1" : "span";
+export default function ApplicantBreadcrumbs({ items, inline = false }) {
+  const headerTarget = useContext(ApplicantBreadcrumbTarget);
+  const target = inline ? null : headerTarget;
+  const Current = target || inline ? "h1" : "span";
   const breadcrumb = <nav className="applicant-breadcrumbs" aria-label="Breadcrumb">
     <ol>
       {items.map((item, index) => <Fragment key={index}>

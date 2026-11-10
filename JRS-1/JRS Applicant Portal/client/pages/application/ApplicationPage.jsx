@@ -186,16 +186,17 @@ export default function ApplicationPage() {
     }
   }
 
-  if (loading || current.loading) return <div className="full-page-message inline"><div className="spinner-border text-primary" /><p>Preparing your application...</p></div>;
-  if (!job) return <div className="alert alert-danger" role="alert">{error || "Role not found."}</div>;
+  const breadcrumbItems = [{label:"Jobs",to:"/applicant/jobs"},{label:job?.title || "Role Details",to:"/applicant/jobs/"+jobId},{label:"Apply"}];
+  if (loading || current.loading) return <><ApplicantBreadcrumbs items={breadcrumbItems} /><div className="full-page-message inline" role="status"><div className="spinner-border text-primary" /><p>Preparing your application...</p></div></>;
+  if (!job) return <><ApplicantBreadcrumbs items={breadcrumbItems} /><div className="alert alert-danger" role="alert">{error || "Role not found."}</div></>;
   if (current.active || current.previous) return <div className="page-stack application-page">
-    <ApplicantBreadcrumbs items={[{label: "Jobs", to: "/applicant/jobs"}, {label: job.title, to: "/applicant/jobs/" + job.id}, {label: "Apply"}]} />
+    <ApplicantBreadcrumbs items={breadcrumbItems} />
     <ActiveApplicationNotice application={current.active ? current.application : current.previous} previous={!current.active} />
   </div>;
 
   return (
     <div className="page-stack application-page">
-      <ApplicantBreadcrumbs items={[{label: "Jobs", to: "/applicant/jobs"}, {label: job.title, to: "/applicant/jobs/" + job.id}, {label: "Apply"}]} />
+      <ApplicantBreadcrumbs items={breadcrumbItems} />
 
       <section className="application-heading surface">
         <div>

@@ -1,4 +1,4 @@
-import { ApplicantBreadcrumbTarget } from "./ApplicantBreadcrumbs";
+import ApplicantBreadcrumbs, { ApplicantBreadcrumbTarget } from "./ApplicantBreadcrumbs";
 import { BriefcaseBusiness, FileText, LogOut, Menu, Search, UserRoundSearch, X } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
@@ -28,6 +28,13 @@ export default function AppLayout() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [breadcrumbTarget, setBreadcrumbTarget] = useState(null);
+  const fallbackItems = location.pathname.startsWith("/applicant/jobs/")
+    ? [{label:"Jobs",to:"/applicant/jobs"},{label:"Role Details"}]
+    : location.pathname.startsWith("/applicant/apply/")
+      ? [{label:"Jobs",to:"/applicant/jobs"},{label:"Role Details",to:"/applicant/jobs/"+location.pathname.split("/").pop()},{label:"Apply"}]
+      : location.pathname === "/applicant/resume/upload"
+        ? [{label:"My Resume",to:"/applicant/resume"},{label:"Upload resume"}]
+        : [{label:titleForPath(location.pathname)}];
 
   async function handleLogout() {
     await logout();
@@ -74,7 +81,7 @@ export default function AppLayout() {
             </button>
             <div className="applicant-header-title">
               <div className="applicant-breadcrumb-target" ref={setBreadcrumbTarget} />
-              <h1 className="applicant-default-title">{titleForPath(location.pathname)}</h1>
+              <div className="applicant-default-title"><ApplicantBreadcrumbs items={fallbackItems} inline /></div>
             </div>
           </div>
 
