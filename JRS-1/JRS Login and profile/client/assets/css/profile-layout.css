@@ -290,3 +290,11 @@
  .dashboard-body .profile-entry-form .date-fields .checkbox-label { grid-column:1/-1; }
  .dashboard-body .profile-skill-add-row { grid-template-columns:1fr; }
 }
+
+/* Saved values return to compact cards; editors open only for Add or Edit. */
+.dashboard-body .profile-entry-form[hidden],.dashboard-body .profile-saved-view[hidden] { display:none!important; }
+.dashboard-body .profile-saved-view { position:relative; margin-bottom:0; min-width:0; }
+.dashboard-body .profile-saved-skills { display:flex; flex-wrap:wrap; gap:10px; padding-right:70px; }
+.dashboard-body .profile-visually-hidden { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip-path:inset(50%); white-space:nowrap; border:0!important; }
+.dashboard-body .profile-section:has(#educationList),.dashboard-body .profile-section:has(#certList) { grid-column:1/-1; }
+.dashboard-body .profile-entry-form .profile-structured-entry > legend { font-size:17px; font-weight:650; }

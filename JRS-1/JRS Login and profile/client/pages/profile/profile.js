@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function bind(entry, fill, save, remove, hasRecord) {
         fill();
         entry.cancel.addEventListener('click', () => {
-            if (!hasRecord()) entry.form.remove(); else fill();
+            if (!hasRecord()) { entry.form.remove(); entry.view?.remove(); } else { fill(); entry.showSaved?.(); }
             message('', false, entry.form);
         });
         entry.form.addEventListener('submit', event => {
@@ -120,17 +120,59 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Read values before disabling inputs during the request.
             let persist;
             try { persist = save(); } catch (error) { message(error.message, true, entry.form); return; }
-            action(entry.form, async () => { await persist(); fill(); message('Changes saved.', false, entry.form); });
+            action(entry.form, async () => { await persist(); fill(); entry.showSaved?.(); message('Changes saved.', false, entry.form); });
         });
         entry.remove.addEventListener('click', () => {
             if (!hasRecord()) { entry.form.remove(); return; }
             if (!window.confirm('Delete this record?')) return;
-            action(entry.form, async () => { await remove(); message('Record deleted.'); });
+            action(entry.form, async () => { await remove(); entry.view?.remove(); message('Record deleted.'); });
         });
     }
+    function savedView(entry, render, options = {}) {
+        const view = node('article', undefined, 'profile-card-item profile-record profile-saved-view');
+        entry.view = view; entry.form.before(view);
+        function edit() {
+            view.hidden = true; entry.form.hidden = false;
+            if (options.trigger) $(options.trigger).hidden = true;
+            entry.form.querySelector('input:not(:disabled),select:not(:disabled),textarea')?.focus({preventScroll:true});
+        }
+        entry.showSaved = () => {
+            entry.form.hidden = true; view.replaceChildren(); render(view);
+            view.hidden = options.empty?.() || false;
+            if (options.trigger) $(options.trigger).hidden = !view.hidden && options.hideTrigger;
+            const actions = node('div', undefined, 'record-actions');
+            const editButton = node('button', undefined, 'record-edit'); editButton.type = 'button'; editButton.setAttribute('aria-label', options.editLabel || 'Edit record');
+            editButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 4 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15Z"/></svg>';
+            editButton.addEventListener('click', edit); actions.append(editButton);
+            if (!options.noDelete) {
+                const remove = node('button', undefined, 'record-edit record-trash'); remove.type = 'button'; remove.setAttribute('aria-label', options.deleteLabel || 'Delete record');
+                remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>';
+                remove.addEventListener('click', () => entry.remove.click()); actions.append(remove);
+            }
+            view.append(actions);
+        };
+        if (options.noDelete) entry.remove.remove();
+        if (options.trigger) $(options.trigger).addEventListener('click', () => { entry.cancel.click(); edit(); });
+        if (options.newRecord) { view.hidden = true; entry.form.hidden = false; }
+        else entry.showSaved();
+    }
+    function savedText(view, title, subtitle, dates, description) {
+        if (title) view.append(node('h4', title, 'record-title'));
+        if (subtitle) view.append(node('p', subtitle, 'record-subtitle'));
+        if (dates) view.append(node('p', dates, 'record-dates'));
+        if (description) {
+            const text = node('p', description, 'record-description'); view.append(text);
+            if (description.length > 180) {
+                const more = node('button', 'More', 'record-more'); more.type = 'button'; more.setAttribute('aria-expanded','false');
+                more.addEventListener('click', () => { const expanded = more.getAttribute('aria-expanded') !== 'true'; more.setAttribute('aria-expanded',String(expanded)); text.classList.toggle('is-expanded',expanded); more.textContent = expanded ? 'Less' : 'More'; }); view.append(more);
+            }
+        }
+    }
+    function monthLabel(value) { const [year,month] = (value || '').split('-'); return months[Number(month)-1] ? months[Number(month)-1].slice(0,3) + ' ' + year : 'Not specified'; }
     function materialForm() {
         const entry = card(document.querySelector('.user-info-card'), 'Personal information', templates.materials);
-        $('editMaterialsBtn').hidden = true; entry.remove.remove();
+        entry.remove.remove();
+        entry.form.querySelector('legend').classList.add('profile-visually-hidden');
         const fill = () => {
             const parts = (profile.full_name || '').split(' ');
             entry.put('editFirstName', profile.first_name || parts.shift() || ''); entry.put('editLastName', profile.first_name ? profile.last_name : parts.join(' '));
@@ -143,6 +185,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const body = { first_name: entry.value('editFirstName'), last_name: entry.value('editLastName'), home_location: entry.value('editHomeLocation'), country_code: entry.value('editCountryCode'), contact_number: entry.value('editContactNumber') };
             return async () => { await JRS.request('/profile', { method: 'PUT', body }); Object.assign(profile, body, {full_name: [body.first_name, body.last_name].filter(Boolean).join(' ')}); identity(); };
         }, async () => {}, () => true);
+        entry.showSaved = () => { entry.form.hidden = true; $('editMaterialsBtn').hidden = false; };
+        $('editMaterialsBtn').addEventListener('click', () => { fill(); entry.form.hidden = false; $('editMaterialsBtn').hidden = true; });
+        entry.showSaved();
     }
     function summaryForm() {
         const entry = card($('summaryContent'), 'Personal summary', templates.summary); $('addSummaryBtn').hidden = true;
@@ -150,6 +195,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const body = { personal_summary: entry.value('summaryInput') };
             return async () => { await JRS.request('/profile/summary', { method: 'PUT', body }); profile.personal_summary = body.personal_summary; };
         }, async () => { await JRS.request('/profile/summary', { method: 'PUT', body: { personal_summary: '' } }); profile.personal_summary = ''; entry.put('summaryInput', ''); }, () => true);
+        entry.form.querySelector('legend').classList.add('profile-visually-hidden');
+        savedView(entry, view => savedText(view, '', '', '', profile.personal_summary), {noDelete:true, empty:()=>!profile.personal_summary, trigger:'addSummaryBtn', hideTrigger:true, editLabel:'Edit personal summary'});
     }
     const sections = { career: ['careerList', 'role', 'Career history', 'role_id'], education: ['educationList', 'education', 'Education', 'education_id'], certifications: ['certList', 'licence', 'Licence or certification', 'cert_id'] };
     function recordForm(section, record = {}) {
@@ -190,6 +237,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 profile[section] = id ? profile[section].map(row => row[key] === id ? saved : row) : [...profile[section], saved]; baseline = saved;
             };
         }, async () => { await JRS.request('/profile/' + section + '/' + baseline[key], { method: 'DELETE' }); profile[section] = profile[section].filter(row => row[key] !== baseline[key]); entry.form.remove(); }, () => Boolean(baseline[key]));
+        savedView(entry, view => {
+            if (section === 'career') savedText(view, baseline.job_title, baseline.company_name, monthLabel(baseline.start_month_year) + ' – ' + (baseline.is_current_role ? 'Present' : monthLabel(baseline.end_month_year)), baseline.description);
+            else if (section === 'education') savedText(view, baseline.qualification, baseline.institution, baseline.is_current_study ? 'Expected finish ' + (baseline.finished_year || monthLabel(baseline.end_month_year)) : 'Finished ' + (baseline.finished_year || 'Not specified'), baseline.description);
+            else savedText(view, baseline.cert_name, baseline.issuing_org, [baseline.issue_month_year ? 'Issued ' + monthLabel(baseline.issue_month_year) : '', baseline.no_expiry ? 'No expiry' : baseline.expiry_month_year ? (baseline.expiry_month_year < new Date().toISOString().slice(0,7) ? 'Expired ' : 'Expires ') + monthLabel(baseline.expiry_month_year) : ''].filter(Boolean).join(' · '), baseline.description);
+        }, {newRecord:!baseline[key], editLabel:'Edit ' + label.toLowerCase(), deleteLabel:'Delete ' + label.toLowerCase()});
         return entry;
     }
     function skillForm() {
@@ -218,6 +270,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         bind(entry, () => { draft = [...profile.skills]; input.value = ''; renderTags(); }, () => {
             const skills = [...draft]; return async () => { await JRS.request('/profile/skills', {method: 'PUT', body: {skills}}); profile.skills = skills; };
         }, async () => {}, () => true);
+        entry.form.querySelector('legend').classList.add('profile-visually-hidden');
+        savedView(entry, view => {
+            view.classList.add('profile-saved-skills');
+            for (const skill of profile.skills) {
+                const chip = node('span',undefined,'skill-chip'), remove = node('button','×','remove-skill-btn'); remove.type = 'button'; remove.setAttribute('aria-label','Remove ' + skill);
+                remove.addEventListener('click',()=>action(null,async()=>{const skills=profile.skills.filter(item=>item!==skill);await JRS.request('/profile/skills',{method:'PUT',body:{skills}});profile.skills=skills;entry.showSaved();}));
+                chip.append(node('span',skill),remove);view.append(chip);
+            }
+        }, {noDelete:true,trigger:'addSkillBtn',empty:()=>!profile.skills.length,editLabel:'Edit skills'});
     }
     function languageForm(record = {}) {
         let baseline = {...record};
@@ -250,6 +311,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (list.some(row => row.language_name.toLowerCase() === saved.language_name.toLowerCase())) throw Error('This language has already been added.');
             return async () => { await JRS.request('/profile/languages', {method: 'PUT', body: {languages: [...list, saved]}}); profile.languages = [...list, saved]; baseline = saved; };
         }, async () => { const list = profile.languages.filter(row => row.language_name !== baseline.language_name); await JRS.request('/profile/languages', {method: 'PUT', body: {languages: list}}); profile.languages = list; entry.form.remove(); }, () => Boolean(baseline.language_name));
+        savedView(entry, view => {
+            savedText(view, baseline.language_name, '', '', '');
+            for (const [label,level,flag] of [['Reading',baseline.reading_level,baseline.can_read],['Writing',baseline.writing_level,baseline.can_write]]) view.append(node('p', label + ': ' + (level || (flag ? 'Yes' : 'Not specified')), 'language-detail'));
+        }, {newRecord:!baseline.language_name,editLabel:'Edit language',deleteLabel:'Delete language'});
         return entry;
     }
     function addRecord(section) { const entry = recordForm(section); entry.form.scrollIntoView?.({behavior: 'smooth', block: 'nearest'}); entry.form.querySelector('input,select,textarea')?.focus({preventScroll: true}); }
