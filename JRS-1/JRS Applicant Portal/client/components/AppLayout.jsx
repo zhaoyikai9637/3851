@@ -1,3 +1,4 @@
+import { ApplicantBreadcrumbTarget } from "./ApplicantBreadcrumbs";
 import { BriefcaseBusiness, FileText, LogOut, Menu, Search, UserRoundSearch, X } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
@@ -26,12 +27,14 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [breadcrumbTarget, setBreadcrumbTarget] = useState(null);
 
   async function handleLogout() {
     await logout();
   }
 
   return (
+    <ApplicantBreadcrumbTarget.Provider value={breadcrumbTarget}>
     <div className="app-shell">
       <aside className={`sidebar ${menuOpen ? "open" : ""}`} aria-label="Applicant navigation">
         <div className="sidebar-brand">
@@ -65,11 +68,14 @@ export default function AppLayout() {
 
       <div className="main-column">
         <header className="topbar">
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-3 applicant-title-row">
             <button className="icon-button d-lg-none" type="button" onClick={() => setMenuOpen(true)} aria-label="Open navigation">
               <Menu size={26} />
             </button>
-            <h1>{titleForPath(location.pathname)}</h1>
+            <div className="applicant-header-title">
+              <div className="applicant-breadcrumb-target" ref={setBreadcrumbTarget} />
+              <h1 className="applicant-default-title">{titleForPath(location.pathname)}</h1>
+            </div>
           </div>
 
           <a className="applicant-identity" href="/pages/profile/profile.html" aria-label="Open my profile">
@@ -87,5 +93,6 @@ export default function AppLayout() {
         </main>
       </div>
     </div>
+    </ApplicantBreadcrumbTarget.Provider>
   );
 }

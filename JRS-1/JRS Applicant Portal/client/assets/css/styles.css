@@ -2187,14 +2187,26 @@ a.applicant-identity:focus-visible { outline: 2px solid #2563eb; outline-offset:
 .active-application-notice .btn { align-self:center; white-space:nowrap; }
 @media(max-width:600px){.active-application-notice{flex-wrap:wrap;}.active-application-notice>div{min-width:0;flex-basis:calc(100% - 44px);}}
 
-/* Context navigation for applicant subpages; main-page titles and step navigation stay unchanged. */
-.applicant-breadcrumbs { min-width:0; color:var(--jrs-muted); font-size:15px; font-weight:600; }
-.applicant-breadcrumbs ol { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; list-style:none; margin:0; padding:0; }
-.applicant-breadcrumbs li { display:flex; align-items:center; gap:12px; min-width:0; max-width:100%; }
-.applicant-breadcrumbs li > svg { flex-shrink:0; color:var(--jrs-muted); }
-.applicant-breadcrumbs a,.applicant-breadcrumbs [aria-current] { overflow-wrap:anywhere; }
-.applicant-breadcrumbs a { color:var(--jrs-muted); text-decoration:none; }
-.applicant-breadcrumbs a:hover { color:var(--jrs-blue); text-decoration:underline; text-underline-offset:3px; }
-.applicant-breadcrumbs a:focus-visible { outline:2px solid var(--jrs-blue); outline-offset:4px; border-radius:2px; }
-.applicant-breadcrumbs [aria-current] { color:var(--jrs-blue); }
-@media(max-width:720px) { .applicant-breadcrumbs { font-size:14px; } .applicant-breadcrumbs ol { gap:6px 8px; } .applicant-breadcrumbs li { gap:8px; } }
+/* Applicant subpage navigation follows the HR WorkspacePath header. */
+.applicant-title-row,.applicant-header-title { flex:1; min-width:0; }
+.applicant-breadcrumb-target:not(:empty) + .applicant-default-title { display:none; }
+.applicant-breadcrumb-target:empty { display:none; }
+.applicant-breadcrumbs { flex:1; min-width:0; font-size:14px; color:var(--jrs-muted); overflow-x:auto; }
+.applicant-breadcrumbs ol { display:flex; align-items:center; gap:10px; list-style:none; margin:0; padding:2px 0; white-space:nowrap; }
+.applicant-breadcrumbs li { flex-shrink:0; }
+.applicant-breadcrumbs a { display:inline-block; padding:5px 7px; border:0; border-radius:5px; background:transparent; color:inherit; font:inherit; text-decoration:none; }
+.applicant-breadcrumbs a:hover { color:var(--jrs-blue); background:var(--jrs-bg); }
+.applicant-breadcrumbs a:focus-visible { outline:2px solid var(--jrs-blue); outline-offset:1px; }
+.applicant-breadcrumbs [aria-current="page"] { color:var(--jrs-text); font-weight:600; }
+.applicant-breadcrumbs h1,.topbar .applicant-breadcrumbs h1 { margin:0; font-size:20px; line-height:1.35; letter-spacing:-0.02em; }
+.applicant-path-separator { opacity:0.6; }
+.public-shell:has(> .public-breadcrumb-bar:not(:empty)) { grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto 1fr; }
+.public-breadcrumb-bar { min-width:0; max-width:100%; padding:12px max(20px,calc((100vw - 1360px)/2)); background:var(--jrs-surface); border-bottom:1px solid var(--jrs-border); }
+@media(max-width:650px) {
+ .applicant-breadcrumbs { font-size:12px; }
+ .applicant-breadcrumbs ol { gap:3px; }
+ .applicant-breadcrumbs h1,.topbar .applicant-breadcrumbs h1 { font-size:16px; }
+ .applicant-title-row { gap:8px!important; }
+ .public-shell:has(> .public-breadcrumb-bar:not(:empty)) { grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto 1fr; }
+.public-breadcrumb-bar { min-width:0; max-width:100%; padding:10px 14px; }
+}
