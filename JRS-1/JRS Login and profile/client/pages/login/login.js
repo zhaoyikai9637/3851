@@ -3,7 +3,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = $('loginForm'), button = $('loginBtn'), toggle = $('registerToggle');
     const email = $('email'), password = $('password');
     let registering = new URLSearchParams(window.location.search).get('mode') === 'register', submitted = false;
-    ['token', 'account_id', 'user_email', 'userEmail'].forEach(key => localStorage.removeItem(key));
+    const rememberedEmailKey = 'jrs_applicant_email';
+    const validRememberedEmail = value => typeof value === 'string' && value.length <= 150 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    function rememberedEmail() {
+        try {
+            const value = localStorage.getItem(rememberedEmailKey);
+            if (validRememberedEmail(value)) return value;
+            localStorage.removeItem(rememberedEmailKey);
+        } catch { /* Browser storage is optional; sign-in must still work. */ }
+        return '';
+    }
+    function rememberApplicant(user) {
+        // Persist only a successfully authenticated applicant's email, never HR identity or credentials.
+        if (user?.role !== 'candidate' || !validRememberedEmail(user.email)) return;
+        try { localStorage.setItem(rememberedEmailKey, user.email); } catch { /* Storage may be disabled. */ }
+    }
+    try { ['token', 'account_id', 'user_email', 'userEmail'].forEach(key => localStorage.removeItem(key)); } catch { /* Storage may be disabled. */ }
+    password.value = '';
+    email.value = registering ? '' : rememberedEmail();
     function feedback(text, success = false) {
         $('formMessage').textContent = text;
         $('formMessage').hidden = !text;
@@ -46,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggle.textContent = registering ? 'Log in' : 'Register';
         $('registerPrompt').textContent = registering ? 'Already have an account?' : 'Don’t have an account?';
         $('forgotPasswordLink').hidden = registering;
-        password.autocomplete = registering ? 'new-password' : 'current-password';
+        password.autocomplete = 'off';
         if ($('passwordHint')) $('passwordHint').hidden = true;
     }
     function setPasswordVisible(visible) {
@@ -59,9 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
     toggle.addEventListener('click', () => {
         registering = !registering;
         submitted = false;
-        if (registering) {
-            email.value = ''; password.value = '';
-        }
+        email.value = registering ? '' : rememberedEmail();
+        password.value = '';
         setPasswordVisible(false);
         clearErrors(); syncMode();
     });
@@ -70,7 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     setPasswordVisible(false);
     syncMode();
-    window.addEventListener('pageshow', () => setPasswordVisible(false));
+    window.addEventListener('pageshow', () => {
+        setPasswordVisible(false);
+        password.value = '';
+        email.value = registering ? '' : rememberedEmail();
+    });
+    window.addEventListener('pagehide', () => { password.value = ''; email.value = ''; });
     form.addEventListener('submit', async event => {
         event.preventDefault();
         if (button.disabled) return;
@@ -83,10 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (registering) {
                 await JRS.request('/register', { method: 'POST', body: { email: email.value.trim(), password: password.value,
                     first_name: $('registerFirstName').value, last_name: $('registerLastName').value } });
+                password.value = '';
                 registering = false; submitted = false; clearErrors(); setPasswordVisible(false); syncMode();
                 feedback('Account created. You can now log in.', true);
             } else {
                 const result = await JRS.request('/login', { method: 'POST', body: { email: email.value.trim(), password: password.value } });
+                rememberApplicant(result.user);
                 const requested = new URLSearchParams(window.location.search).get('returnTo');
                 let safeTarget = '../profile/profile.html';
                 if (requested && requested.startsWith('/applicant/') && !requested.includes('\\') && !/[\r\n]/.test(requested)) {
@@ -94,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (features.experimentalApplicantPortal) safeTarget = requested;
                 }
                 const hrTarget = requested && !/[\\\r\n]/.test(requested) && /^\/hr\/(?:dashboard|job-postings|applications|candidates|interviews|reports|tasks|notifications|templates|logs|profile(?:\/edit)?)\/?(?:[?#].*)?$/.test(requested) ? requested : '/hr/';
+                password.value = ''; email.value = '';
                 window.location.href = result.user.role === 'hr' ? hrTarget : safeTarget;
             }
         } catch (err) {

@@ -22,13 +22,13 @@ for (const [role, experimental, query, expected] of [
   const dom = new JSDOM(html, { url: `http://localhost/pages/login/login.html${query}`, runScripts: 'outside-only' });
   await new Promise(resolve => dom.window.addEventListener('load', resolve, { once: true }));
   dom.window.TextEncoder = TextEncoder;
-  dom.window.document.getElementById('email').value = 'test@example.test';
-  dom.window.document.getElementById('password').value = 'test-password';
   // Network and navigation are external boundaries; exercise the actual submit handler.
   const location = { search: query, href: '' };
   dom.window.JRS = { request: async endpoint => endpoint === '/login' ? { user: { role } } : { experimentalApplicantPortal: experimental } };
   dom.window.Function('window', source)( { location, addEventListener: dom.window.addEventListener.bind(dom.window) } );
   dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
+  dom.window.document.getElementById('email').value = 'test@example.test';
+  dom.window.document.getElementById('password').value = 'test-password';
   dom.window.document.getElementById('loginForm').dispatchEvent(new dom.window.Event('submit', { cancelable: true }));
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(location.href, expected);

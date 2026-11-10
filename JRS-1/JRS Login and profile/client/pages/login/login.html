@@ -29,7 +29,7 @@
             <h1 class="auth-title" id="authTitle">Log in</h1>
             <p id="authReadyMessage" class="login-feedback" role="status">Preparing sign-in. If this message remains, reload the page.</p>
             <noscript><p class="login-feedback">Enable JavaScript to log in or register.</p></noscript>
-            <form id="loginForm" method="post" action="/api/login" aria-busy="true" novalidate>
+            <form id="loginForm" autocomplete="off" method="post" action="/api/login" aria-busy="true" novalidate>
                 <fieldset id="authFields" class="auth-fields" aria-label="Account details" disabled>
                 <div id="registerNames" hidden>
                     <div class="form-group"><label for="registerFirstName">First name</label><input id="registerFirstName" type="text" maxlength="50" autocomplete="given-name" aria-describedby="registerNameError"><div class="error-message" id="registerNameError" aria-live="polite"></div></div>
@@ -37,7 +37,7 @@
                 </div>
                 <div class="form-group">
                     <label for="email">Email address</label>
-                    <input type="email" id="email" name="email" placeholder="Input your email address" autocomplete="username" aria-describedby="emailError" required>
+                    <input type="email" id="email" name="email" placeholder="Input your email address" autocomplete="off" aria-describedby="emailError" required>
                     <div class="error-message" id="emailError" aria-live="polite"></div>
                 </div>
                 <div class="form-group">
@@ -46,7 +46,7 @@
                         <a id="forgotPasswordLink" href="../forgot-password/forgot-password.html" class="forgot-link">Forgot password?</a>
                     </div>
                     <div class="password-wrapper">
-                        <input type="password" id="password" name="password" placeholder="Input your password" autocomplete="current-password" aria-describedby="passwordError" required>
+                        <input type="password" id="password" name="password" placeholder="Input your password" autocomplete="off" aria-describedby="passwordError" required>
                         <button type="button" id="togglePassword" class="toggle-password" aria-label="Show password" aria-pressed="false" aria-controls="password">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path id="passwordSlash" d="m3 3 18 18" hidden/></svg>
                         </button>

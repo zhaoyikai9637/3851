@@ -2,13 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {TextEncoder} from 'node:util';
-import {JSDOM} from 'jsdom';
+import {JSDOM, VirtualConsole} from 'jsdom';
 const base = new URL('../JRS Login and profile/client/pages/login/', import.meta.url);
-async function loginPage(query='') {
+async function loginPage(query='', remembered={}) {
+  const virtualConsole = new VirtualConsole();
+  virtualConsole.on('jsdomError', error => { if (!error.message.startsWith('Not implemented: navigation')) throw error; });
   const dom = new JSDOM(await fs.readFile(new URL('login.html', base), 'utf8'), {
-    url: 'http://localhost/pages/login/login.html'+query, runScripts: 'outside-only'
+    url: 'http://localhost/pages/login/login.html'+query, runScripts: 'outside-only', virtualConsole
   });
   await new Promise(resolve => dom.window.addEventListener('load', resolve, {once:true}));
+  for (const [key,value] of Object.entries(remembered)) dom.window.localStorage.setItem(key,value);
   dom.window.TextEncoder = TextEncoder;
   const policyPath = new URL('../../utils/password-policy.js', base);
   dom.window.eval(await fs.readFile(policyPath, 'utf8'));
@@ -37,7 +40,7 @@ test('password visibility is accessible and registration restores private passwo
     assert.equal(toggle.getAttribute('aria-pressed'), 'true');
     d.getElementById('registerToggle').click();
     assert.equal(d.getElementById('password').type, 'password');
-    assert.equal(d.getElementById('password').autocomplete, 'new-password');
+    assert.equal(d.getElementById('password').autocomplete, 'off');
     assert.equal(d.getElementById('registerNames').hidden, false);
     assert.equal(d.getElementById('forgotPasswordLink').hidden, true);
   } finally { w.close(); }
@@ -46,7 +49,7 @@ test('the visitor registration link opens account creation without losing its ap
  const dom=await loginPage('?mode=register&returnTo=%2Fapplicant%2Fapply%2Frole-a');
  try{
   assert.equal(dom.window.document.getElementById('registerNames').hidden,false);
-  assert.equal(dom.window.document.getElementById('password').autocomplete,'new-password');
+  assert.equal(dom.window.document.getElementById('password').autocomplete,'off');
   assert.equal(new URLSearchParams(dom.window.location.search).get('returnTo'),'/applicant/apply/role-a');
  }finally{dom.window.close();}
 });
@@ -131,10 +134,80 @@ test('registration uses the shared endpoint and returns to sign-in without trimm
     d.getElementById('password').value = ' Password123 ';
     d.getElementById('loginForm').dispatchEvent(new w.Event('submit', {cancelable:true}));
     await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(d.getElementById('password').value, '');
+    assert.equal(w.localStorage.getItem('jrs_applicant_email'), null);
     assert.equal(submitted.path, '/register');
     assert.equal(submitted.body.password, ' Password123 ');
     assert.equal(d.getElementById('registerNames').hidden, true);
-    assert.equal(d.getElementById('password').autocomplete, 'current-password');
+    assert.equal(d.getElementById('password').autocomplete, 'off');
     assert.equal(d.getElementById('formMessage').hidden, false);
   } finally { w.close(); }
+});
+
+const storedEmails = w => Object.fromEntries(Array.from({length:w.localStorage.length}, (_,i) => {
+  const key=w.localStorage.key(i); return [key,w.localStorage.getItem(key)];
+}));
+async function submitLogin(dom, user, failure=false) {
+  const w=dom.window,d=w.document;
+  w.JRS={request:async()=>{if(failure) throw Object.assign(new Error('Invalid'),{status:401});return {user};}};
+  d.getElementById('email').value='entered@example.test';
+  d.getElementById('password').value='Example123';
+  d.getElementById('loginForm').requestSubmit();
+  await new Promise(resolve=>setTimeout(resolve,0));
+}
+test('only the authenticated applicant email is remembered; no passwords or credentials are stored',async()=>{
+ const dom=await loginPage();
+ try{
+  await submitLogin(dom,{role:'candidate',email:'canonical@example.test',account_id:42});
+  assert.deepEqual(storedEmails(dom.window),{jrs_applicant_email:'canonical@example.test'});
+  assert.equal(dom.window.document.getElementById('password').value,'');
+ }finally{dom.window.close();}
+});
+for(const existing of ['', 'previous@example.test']) test('HR login never stores HR identity or replaces applicant memory: '+existing,async()=>{
+ const initial=existing?{jrs_applicant_email:existing}:{};
+ const dom=await loginPage('',initial);
+ try{
+  await submitLogin(dom,{role:'hr',email:'staff@example.test',account_id:43});
+  assert.deepEqual(storedEmails(dom.window),initial);
+  assert.equal(dom.window.document.getElementById('password').value,'');
+  dom.window.dispatchEvent(new dom.window.Event('pageshow'));
+  assert.equal(dom.window.document.getElementById('email').value,existing);
+ }finally{dom.window.close();}
+});
+test('failed sign-in does not remember submitted identity or password',async()=>{
+ const dom=await loginPage('',{jrs_applicant_email:'previous@example.test'});
+ try{
+  await submitLogin(dom,null,true);
+  assert.deepEqual(storedEmails(dom.window),{jrs_applicant_email:'previous@example.test'});
+  assert.equal(dom.window.document.getElementById('emailError').textContent,'Invalid email or password.');
+ }finally{dom.window.close();}
+});
+test('registration and browser history never restore passwords; another browser has no remembered account',async()=>{
+ const dom=await loginPage('',{jrs_applicant_email:'previous@example.test'}),other=await loginPage();
+ try{
+  const w=dom.window,d=w.document;
+  assert.equal(d.getElementById('email').value,'previous@example.test');
+  assert.equal(other.window.document.getElementById('email').value,'');
+  d.getElementById('registerToggle').click();
+  assert.equal(d.getElementById('email').value,'');
+  d.getElementById('password').value='Example123';
+  d.getElementById('registerToggle').click();
+  assert.equal(d.getElementById('email').value,'previous@example.test');
+  assert.equal(d.getElementById('password').value,'');
+  d.getElementById('email').value='staff@example.test';
+  d.getElementById('password').value='Example123';
+  w.dispatchEvent(new w.Event('pagehide'));
+  assert.equal(d.getElementById('email').value,'');
+  assert.equal(d.getElementById('password').value,'');
+  w.dispatchEvent(new w.Event('pageshow'));
+  assert.equal(d.getElementById('email').value,'previous@example.test');
+  assert.equal(d.getElementById('password').value,'');
+ }finally{dom.window.close();other.window.close();}
+});
+test('invalid remembered values are discarded along with legacy identities',async()=>{
+ const dom=await loginPage('',{jrs_applicant_email:'not-an-email',user_email:'staff@example.test',token:'obsolete'});
+ try{
+  assert.equal(dom.window.document.getElementById('email').value,'');
+  assert.deepEqual(storedEmails(dom.window),{});
+ }finally{dom.window.close();}
 });
