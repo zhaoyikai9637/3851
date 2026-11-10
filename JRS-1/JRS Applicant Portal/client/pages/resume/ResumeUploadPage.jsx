@@ -1,5 +1,6 @@
+import ApplicantBreadcrumbs from "../../components/ApplicantBreadcrumbs";
 import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
-import { ArrowLeft, CheckCircle2, FileText, FolderOpen, Trash2, UploadCloud, X } from "lucide-react";
+import { CheckCircle2, FileText, FolderOpen, Trash2, UploadCloud, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
@@ -123,9 +124,9 @@ export default function ResumeUploadPage() {
 
   return (
     <div className="page-stack resume-upload-page">
-      <Link className="back-link" to={returnTo || "/applicant/resume"}>
-        <ArrowLeft size={20} />{returnTo ? "Back to application" : "Back to resume and profile"}
-      </Link>
+      <ApplicantBreadcrumbs items={returnTo
+        ? [{label: "Jobs", to: "/applicant/jobs"}, {label: "Apply", to: returnTo}, {label: "Upload resume"}]
+        : [{label: "My Resume", to: "/applicant/resume"}, {label: "Upload resume"}]} />
 
       {message && <div className={`alert alert-${message.type} mb-0`} role="alert">{message.text}</div>}
 

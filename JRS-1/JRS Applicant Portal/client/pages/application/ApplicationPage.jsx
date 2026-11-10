@@ -1,3 +1,4 @@
+import ApplicantBreadcrumbs from "../../components/ApplicantBreadcrumbs";
 import ActiveApplicationNotice from "../../components/ActiveApplicationNotice";
 import useCurrentApplication from "../../hooks/useCurrentApplication";
 import { AlertTriangle, ArrowLeft, ArrowRight, Check, FileText, FileUp, Pencil, Plus, Trash2 } from "lucide-react";
@@ -188,13 +189,13 @@ export default function ApplicationPage() {
   if (loading || current.loading) return <div className="full-page-message inline"><div className="spinner-border text-primary" /><p>Preparing your application...</p></div>;
   if (!job) return <div className="alert alert-danger" role="alert">{error || "Role not found."}</div>;
   if (current.active || current.previous) return <div className="page-stack application-page">
-    <Link className="back-link" to={"/applicant/jobs/" + job.id}><ArrowLeft size={20} />Back to role details</Link>
+    <ApplicantBreadcrumbs items={[{label: "Jobs", to: "/applicant/jobs"}, {label: job.title, to: "/applicant/jobs/" + job.id}, {label: "Apply"}]} />
     <ActiveApplicationNotice application={current.active ? current.application : current.previous} previous={!current.active} />
   </div>;
 
   return (
     <div className="page-stack application-page">
-      <Link className="back-link" to={"/applicant/jobs/" + job.id}><ArrowLeft size={20} />Back to role details</Link>
+      <ApplicantBreadcrumbs items={[{label: "Jobs", to: "/applicant/jobs"}, {label: job.title, to: "/applicant/jobs/" + job.id}, {label: "Apply"}]} />
 
       <section className="application-heading surface">
         <div>

@@ -2186,3 +2186,15 @@ a.applicant-identity:focus-visible { outline: 2px solid #2563eb; outline-offset:
 .active-application-notice > div { flex:1; }
 .active-application-notice .btn { align-self:center; white-space:nowrap; }
 @media(max-width:600px){.active-application-notice{flex-wrap:wrap;}.active-application-notice>div{min-width:0;flex-basis:calc(100% - 44px);}}
+
+/* Context navigation for applicant subpages; main-page titles and step navigation stay unchanged. */
+.applicant-breadcrumbs { min-width:0; color:var(--jrs-muted); font-size:15px; font-weight:600; }
+.applicant-breadcrumbs ol { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; list-style:none; margin:0; padding:0; }
+.applicant-breadcrumbs li { display:flex; align-items:center; gap:12px; min-width:0; max-width:100%; }
+.applicant-breadcrumbs li > svg { flex-shrink:0; color:var(--jrs-muted); }
+.applicant-breadcrumbs a,.applicant-breadcrumbs [aria-current] { overflow-wrap:anywhere; }
+.applicant-breadcrumbs a { color:var(--jrs-muted); text-decoration:none; }
+.applicant-breadcrumbs a:hover { color:var(--jrs-blue); text-decoration:underline; text-underline-offset:3px; }
+.applicant-breadcrumbs a:focus-visible { outline:2px solid var(--jrs-blue); outline-offset:4px; border-radius:2px; }
+.applicant-breadcrumbs [aria-current] { color:var(--jrs-blue); }
+@media(max-width:720px) { .applicant-breadcrumbs { font-size:14px; } .applicant-breadcrumbs ol { gap:6px 8px; } .applicant-breadcrumbs li { gap:8px; } }

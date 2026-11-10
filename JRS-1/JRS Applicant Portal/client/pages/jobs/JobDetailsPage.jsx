@@ -1,7 +1,8 @@
+import ApplicantBreadcrumbs from "../../components/ApplicantBreadcrumbs";
 import ActiveApplicationNotice from "../../components/ActiveApplicationNotice";
 import useCurrentApplication from "../../hooks/useCurrentApplication";
 import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
-import { ArrowLeft, BriefcaseBusiness, CalendarDays, CircleDollarSign, LogIn, MapPin } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, CircleDollarSign, LogIn, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
@@ -30,7 +31,7 @@ export default function JobDetailsPage({ authenticated = false }) {
 
   return (
     <div className="page-stack role-details-page">
-      <Link className="back-link" to={authenticated ? "/applicant/jobs" : "/jobs"}><ArrowLeft size={20} />Back to jobs</Link>
+      <ApplicantBreadcrumbs items={[{label: "Jobs", to: authenticated ? "/applicant/jobs" : "/jobs"}, {label: job.title}]} />
 
       <section className="role-header surface">
         <div>
