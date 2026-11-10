@@ -1,3 +1,4 @@
+import {formatExperience} from "../../../shared/experience-format.mjs";
 import {CandidatePersonalInformation} from "./PersonalInformation";
 import { useEffect } from "react";
 import { Link, useLocation, useOutletContext, useSearchParams } from "react-router-dom";
@@ -127,7 +128,7 @@ export function CandidateProfile({ candidateId, applicationId, applicationLink, 
               <dt>Email</dt><dd>{person.email}</dd>
               <dt>Phone</dt><dd>{person.phone}</dd>
               <dt>Location</dt><dd>{person.location}</dd>
-              <dt>Experience</dt><dd>{person.experience} years</dd>
+              <dt>Experience</dt><dd>{formatExperience(person.experience)}</dd>
               {person.education && person.education !== "Not recorded" && <><dt>Education</dt><dd>{person.education}</dd></>}
               <dt>Application</dt><dd>{application.id}</dd>
             </dl>

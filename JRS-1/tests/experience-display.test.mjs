@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {formatExperience} from '../jrs-hr-module/shared/experience-format.mjs';
+for(const [input,expected] of [[4,'4 years'],['4.0','4 years'],['4.50','4.5 years'],[4.5,'4.5 years'],['1.0','1 year'],[1,'1 year'],['0.0','0 years'],[0.5,'0.5 years'],[' 2.00 ','2 years'],[null,'Not provided'],[undefined,'Not provided'],['','Not provided'],['  ','Not provided'],[NaN,'Not provided'],[Infinity,'Not provided'],[-1,'Not provided'],['bad data','Not provided']])test('natural experience display for '+String(input),()=>assert.equal(formatExperience(input),expected));

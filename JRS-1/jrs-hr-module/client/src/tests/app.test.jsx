@@ -1159,3 +1159,13 @@ it('scopes the native outbox to the mapped application without exposing other re
  expect(screen.queryByText('Other recipient')).not.toBeInTheDocument();
  expect(screen.queryByRole('iframe')).not.toBeInTheDocument();
 });
+
+
+it.each([["4.0", "4 years"], ["4.50", "4.5 years"], ["1.0", "1 year"]])("displays candidate experience %s naturally as %s", async (experience, expected) => {
+  overrides["GET /recruitment/api/hr/candidates"] = () => json({items:[{id:"person-1",name:"Casey"}],total:1,page:1,limit:20});
+  overrides["GET /recruitment/api/hr/workspace"] = () => json({revision:1,jobs:[{id:"job-a",title:"Analyst",status:"Active"}],candidates:[{id:"person-1",name:"Casey",email:"casey@example.test",experience,skills:[]}],applications:[{id:"app-1",candidateId:"person-1",jobId:"job-a",stage:"Pending Review"}],interviews:[],tasks:[],activity:[],notifications:[]});
+  mount("/candidates?candidate=person-1");
+  expect(await screen.findByRole("heading",{name:"Casey",level:3})).toBeVisible();
+  expect(screen.getByText(expected,{exact:true})).toBeVisible();
+  expect(screen.queryByText(experience+" years",{exact:true})).not.toBeInTheDocument();
+});
