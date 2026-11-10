@@ -253,3 +253,40 @@
  .dashboard-body .profile-inline-editor .form-row:not(:has(#addSkillTagBtn)) { flex-direction: column; }
 }
 @media(max-width:380px) { .dashboard-body .profile-section > .profile-inline-editor { grid-row: 5; } }
+
+/* Editable profile cards use the My Resume structured-entry layout. */
+.dashboard-body .profile-entry-form { grid-column:1/-1; width:100%; min-width:0; margin:0; flex:0 0 100%; }
+.dashboard-body .user-info-card:has(.profile-entry-form) { flex-wrap:wrap; }
+.dashboard-body .user-info-card > .profile-entry-form { margin-top:20px; }
+.dashboard-body .section-data,.dashboard-body #skillTags { display:grid; gap:24px; width:100%; min-width:0; }
+.dashboard-body .profile-structured-entry { display:grid; gap:18px; margin:0; padding:20px; border:1px solid #cbd8e9; border-radius:7px; background:#fbfcfe; min-width:0; }
+.dashboard-body .profile-structured-entry > legend { float:left; width:100%; margin:0; padding:0; font-size:20px; font-weight:800; line-height:1.4; color:#172033; }
+.dashboard-body .profile-entry-form .form-group { display:grid; gap:8px; margin:0; min-width:0; }
+.dashboard-body .profile-entry-form .form-group > label,.dashboard-body .profile-entry-form .form-group > span { margin:0; font-size:15px; font-weight:700; color:#344055; }
+.dashboard-body .profile-entry-form :is(input:not([type=checkbox]),select,textarea) { box-sizing:border-box; width:100%; min-width:0; margin:0; min-height:48px; padding:12px; border:1px solid #cbd8e9; border-radius:6px; background:#fff; color:#172033; font:inherit; font-size:15px; }
+.dashboard-body .profile-entry-form :is(input,select,textarea):disabled { background:#f1f5f9; color:#64748b; }
+.dashboard-body .profile-entry-form .profile-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.dashboard-body .profile-entry-form .profile-language-grid { grid-template-columns:1.2fr 1fr 1fr; }
+.dashboard-body .profile-entry-form .drawer-footer { margin-top:0; display:flex; flex-wrap:wrap; gap:14px; }
+.dashboard-body .profile-entry-form .drawer-hint,.dashboard-body .profile-entry-form .safety-notice { margin:0; }
+.dashboard-body .profile-entry-form .profile-entry-delete { color:#b91c1c; margin-left:auto; }
+.dashboard-body .profile-form-feedback { margin:0; color:#166534; }
+.dashboard-body .profile-form-feedback.is-error { color:#b91c1c; }
+.dashboard-body .profile-skill-selector .profile-structured-entry { gap:12px; }
+.dashboard-body .profile-selected-skills { display:flex; flex-wrap:wrap; gap:7px; }
+.dashboard-body .profile-selected-skill { display:inline-flex; align-items:center; gap:5px; padding:5px 8px; border:1px solid #b8ccec; border-radius:5px; background:#edf4ff; color:#214c94; font:inherit; font-weight:700; cursor:pointer; }
+.dashboard-body .profile-skill-add-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; max-width:700px; }
+.dashboard-body .profile-skill-selector small { display:block; color:#64748b; }
+.dashboard-body .profile-entry-form .date-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) 104px; gap:16px; align-items:center; }
+.dashboard-body .profile-entry-form .date-fields > select { width:100%; min-width:0; }
+.dashboard-body .profile-entry-form .btn-primary-small { background:#2563eb; min-height:44px; padding:10px 18px; border:1px solid #2563eb; border-radius:6px; font:inherit; font-size:15px; font-weight:700; }
+.dashboard-body .profile-skill-add-row .btn-outline { border:1px solid #2563eb; border-radius:6px; padding:10px 16px; color:#2563eb; font:inherit; font-size:15px; font-weight:700; }
+.dashboard-body .profile-entry-form [hidden] { display:none!important; }
+@media(max-width:720px) {
+ .dashboard-body .profile-entry-form .profile-form-grid,.dashboard-body .profile-entry-form .profile-language-grid { grid-template-columns:1fr; }
+ .dashboard-body .profile-structured-entry { padding:16px; }
+ .dashboard-body .profile-entry-form .form-row { flex-direction:column; }
+ .dashboard-body .profile-entry-form .date-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+ .dashboard-body .profile-entry-form .date-fields .checkbox-label { grid-column:1/-1; }
+ .dashboard-body .profile-skill-add-row { grid-template-columns:1fr; }
+}

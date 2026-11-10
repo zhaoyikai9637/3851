@@ -464,76 +464,17 @@
         </div>
     </div>
 
-    <!-- 4. Add Education Editor -->
-    <div class="profile-inline-editor" hidden id="educationDrawer">
-        <div class="drawer-header">
-            <button type="button" class="drawer-close" id="closeEducationBtn">&times;</button>
-            <h2>Add education</h2>
+    <!-- Education form template; mounted as directly editable cards. -->
+    <div hidden id="educationDrawer"><form id="educationForm">
+        <div class="profile-form-grid">
+            <div class="form-group"><label>School or university</label><input id="eduInstitution" type="text" maxlength="150" required></div>
+            <div class="form-group"><label>Qualification</label><input id="eduCourse" type="text" maxlength="150" required></div>
+            <div class="form-group"><label>Qualification level</label><select id="eduLevel"><option value="">Select level</option></select></div>
+            <div class="form-group"><label>Start year</label><select id="eduStartYear" class="education-year"><option value="">Select year</option></select></div>
+            <div class="form-group"><label>Graduation / expected graduation year</label><select id="eduFinishedYear" class="education-year"><option value="">Select year</option></select></div>
         </div>
-        <div class="drawer-body">
-            <form id="educationForm">
-                <div class="form-group">
-                    <label>Course or qualification</label>
-                    <input type="text" id="eduCourse" placeholder="Add course or qualification" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Institution</label>
-                    <input type="text" id="eduInstitution" placeholder="--" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="eduComplete" checked> Qualification complete
-                    </label>
-                </div>
-
-                <div class="form-group" id="finishedFieldGroup">
-                    <label>Finished (optional)</label>
-                    <div class="form-row date-fields">
-                        <select id="eduFinishedYear" class="date-year" aria-label="Year"><option value="" selected>Year</option></select>
-                    </div>
-                </div>
-
-                <div class="form-group" id="expectedFinishFieldGroup" style="display: none;">
-                    <label>Expected finish (optional)</label>
-                    <div class="form-row date-fields">
-                        <select id="eduExpectedMonth" class="flex-1">
-                            <option value="" disabled selected>Month</option>
-                            <option value="January">January</option>
-                            <option value="February">February</option>
-                            <option value="March">March</option>
-                            <option value="April">April</option>
-                            <option value="May">May</option>
-                            <option value="June">June</option>
-                            <option value="July">July</option>
-                            <option value="August">August</option>
-                            <option value="September">September</option>
-                            <option value="October">October</option>
-                            <option value="November">November</option>
-                            <option value="December">December</option>
-                        </select>
-                        <select id="eduExpectedYear" class="date-year" aria-label="Year"><option value="" selected>Year</option></select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <h3 class="drawer-subtitle">Course highlights (optional)</h3>
-                    <p class="drawer-hint">Add activities, projects, awards or achievements during your study.</p>
-                    <textarea id="eduHighlights" rows="5" placeholder="Input"></textarea>
-                </div>
-
-                <div class="safety-notice">
-                    Stay safe. Don't include sensitive personal information such as identity documents, health, race, religion or financial data.
-                </div>
-
-                <div class="drawer-footer">
-                    <button type="submit" class="btn-primary-small">Save</button>
-                    <button type="button" class="btn-text" id="cancelEducationBtn">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
+        <div class="drawer-footer"><button type="submit" class="btn-primary-small">Save</button><button type="button" class="btn-text" id="cancelEducationBtn">Cancel</button></div>
+    </form></div>
 
     <!-- 5. Add Licence or Certification Editor -->
     <div class="profile-inline-editor" hidden id="licenceDrawer">
@@ -620,71 +561,9 @@
         </div>
     </div>
 
-    <!-- 6. Add Skills Editor -->
-    <div class="profile-inline-editor" hidden id="skillsDrawer">
-        <div class="drawer-header">
-            <button type="button" class="drawer-close" id="closeSkillsBtn">&times;</button>
-            <h2>Add skills</h2>
-        </div>
-        <div class="drawer-body">
-            <p class="drawer-hint">Help employers find you by showcasing all of your skills.</p>
-
-            <div class="form-group">
-                <label>Add new skill</label>
-                <div class="form-row">
-                    <input type="text" id="skillInput" class="flex-1" placeholder="e.g. Team building">
-                    <button type="button" id="addSkillTagBtn" class="btn-primary-small" style="width: 80px;">Add</button>
-                </div>
-                <p class="drawer-hint" style="margin-top: 6px; font-size: 11px;">Click add or press enter</p>
-            </div>
-
-            <div class="form-group" style="margin-top: 25px;">
-                <label>Added skills</label>
-                <div id="addedSkillsContainer" class="skills-tag-wrapper">
-                    <span class="empty-skills-text" id="emptySkillsText">No skills have been added</span>
-                </div>
-            </div>
-
-            <div class="safety-notice">
-                Stay safe. Don't include sensitive personal information such as identity documents, health, race, religion or financial data.
-            </div>
-
-            <div class="drawer-footer">
-                <button type="button" id="saveSkillsBtn" class="btn-primary-small">Save</button>
-                <button type="button" class="btn-text" id="cancelSkillsBtn">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 7. Add Language Editor -->
-    <div class="profile-inline-editor" hidden id="languageDrawer">
-        <div class="drawer-header">
-            <button type="button" class="drawer-close" id="closeLanguageBtn">&times;</button>
-            <h2>Add language</h2>
-        </div>
-        <div class="drawer-body">
-            <form id="languageForm">
-                <div class="form-group">
-                    <label>For reading</label>
-                    <input type="text" id="langReading" placeholder="e.g. English, German, Chinese">
-                </div>
-
-                <div class="form-group">
-                    <label>For writing</label>
-                    <input type="text" id="langWriting" placeholder="e.g. English, German, Chinese">
-                </div>
-
-                <div class="safety-notice">
-                    Stay safe. Don't include sensitive personal information such as identity documents, health, race, religion or financial data.
-                </div>
-
-                <div class="drawer-footer">
-                    <button type="submit" class="btn-primary-small">Save</button>
-                    <button type="button" class="btn-text" id="cancelLanguageBtn">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Skills and languages are rendered as editable cards. -->
+    <div hidden id="skillsDrawer"></div>
+    <div hidden id="languageDrawer"></div>
 
     <!-- Page Scripts -->
     <script src="../../utils/api.js"></script>

@@ -162,7 +162,7 @@ class Repository {
                 const [skills] = await this.pool.query('SELECT skill_name FROM SKILL WHERE candidate_id = ? ORDER BY skill_id', [row.candidate_id]);
                 row.skills = skills.map(s => s.skill_name);
             })(),
-            (async () => { [row.languages] = await this.pool.query('SELECT language_name, can_read, can_write FROM LANGUAGE WHERE candidate_id = ? ORDER BY language_id', [row.candidate_id]); })(),
+            (async () => { [row.languages] = await this.pool.query(`SELECT language_name, can_read, can_write${this.integratedRoot ? ', language_code, reading_level, writing_level' : ''} FROM LANGUAGE WHERE candidate_id = ? ORDER BY language_id`, [row.candidate_id]); })(),
             (async () => { [row.resumes] = await this.pool.query('SELECT file_id, file_name, file_type, file_size, uploaded_at FROM RESUME_FILE WHERE candidate_id = ? ORDER BY file_id DESC', [row.candidate_id]); })(),
         ]);
         return row;
@@ -197,7 +197,10 @@ class Repository {
             await db.query(`DELETE FROM ${table} WHERE candidate_id = ?`, [candidateId]);
             for (const item of items) {
                 if (type === 'skills') await db.query('INSERT INTO SKILL (candidate_id, skill_name) VALUES (?, ?)', [candidateId, item]);
-                else await db.query('INSERT INTO LANGUAGE (candidate_id, language_name, can_read, can_write) VALUES (?, ?, ?, ?)', [candidateId, item.language_name, item.can_read, item.can_write]);
+                else {
+                    const fields = ['language_name', 'can_read', 'can_write', ...(this.integratedRoot ? ['language_code', 'reading_level', 'writing_level'].filter(key => Object.hasOwn(item, key)) : [])];
+                    await db.query(`INSERT INTO LANGUAGE (candidate_id, ${fields.join(', ')}) VALUES (?, ${fields.map(() => '?').join(', ')})`, [candidateId, ...fields.map(key => item[key])]);
+                }
             }
         });
     }

@@ -34,40 +34,39 @@ beforeEach(async () => {
 afterEach(async () => { await settle(); dom.window.close(); await settle(); });
 test('untrusted summary is rendered literally, without injected DOM elements', () => {
     const summary = dom.window.document.getElementById('summaryContent');
-    expect(summary.textContent).toContain('<img src=x');
+    expect(summary.querySelector('textarea').value).toContain('<img src=x');
     expect(summary.querySelector('img')).toBeNull();
 });
 test('editing a career record fills fields and submits PUT to the original ID', async () => {
     const doc = dom.window.document;
-    doc.querySelector('#careerList button').click();
-    expect(doc.getElementById('roleTitle').value).toBe('Developer');
-    expect(doc.getElementById('roleDescription').value).toBe('Original details');
-    expect(doc.getElementById('roleStillInRole').checked).toBe(true);
-    doc.getElementById('roleTitle').value = 'Updated role';
-    doc.getElementById('roleForm').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+    expect(doc.querySelector('[data-field="roleTitle"]').value).toBe('Developer');
+    expect(doc.querySelector('[data-field="roleDescription"]').value).toBe('Original details');
+    expect(doc.querySelector('[data-field="roleStillInRole"]').checked).toBe(true);
+    doc.querySelector('[data-field="roleTitle"]').value = 'Updated role';
+    doc.querySelector('#careerList form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
     await settle();
     expect(request).toHaveBeenCalledWith('/profile/career/7', expect.objectContaining({ method: 'PUT', body: expect.objectContaining({ job_title: 'Updated role' }) }));
-    expect(doc.querySelectorAll('#careerList .profile-card-item')).toHaveLength(1);
-    expect(doc.getElementById('careerList').textContent).toContain('Updated role');
+    expect(doc.querySelectorAll('#careerList form')).toHaveLength(1);
+    expect(doc.querySelector('[data-field="roleTitle"]').value).toBe('Updated role');
 });
 test('skills draft changes are discarded by Cancel', () => {
     const doc = dom.window.document;
-    doc.getElementById('addSkillBtn').click();
-    doc.getElementById('skillInput').value = 'JavaScript'; doc.getElementById('addSkillTagBtn').click();
-    expect(doc.getElementById('addedSkillsContainer').textContent).toContain('JavaScript');
-    doc.getElementById('cancelSkillsBtn').click(); doc.getElementById('addSkillBtn').click();
-    expect(doc.getElementById('addedSkillsContainer').textContent).not.toContain('JavaScript');
+    const form = doc.querySelector('#skillTags form'), input = form.querySelector('input');
+    input.value = 'JavaScript'; input.dispatchEvent(new dom.window.Event('input'));
+    form.querySelector('.profile-skill-add-row button').click();
+    expect(form.querySelector('.profile-selected-skills').textContent).toContain('JavaScript');
+    [...form.querySelectorAll('button')].find(button => button.textContent === 'Cancel').click();
+    expect(form.querySelector('.profile-selected-skills').textContent).not.toContain('JavaScript');
     expect(state.skills).toEqual(['SQL']);
 });
 test('basic details submit phone and home location; failed saves keep the inline editor open', async () => {
     const doc = dom.window.document;
-    doc.getElementById('editMaterialsBtn').click();
-    doc.getElementById('editHomeLocation').value = 'Singapore';
-    doc.getElementById('editContactNumber').value = '91234567';
+    doc.querySelector('[data-field="editHomeLocation"]').value = 'Singapore';
+    doc.querySelector('[data-field="editContactNumber"]').value = '91234567';
     request.mockRejectedValueOnce(new Error('Connection lost'));
-    doc.getElementById('materialsForm').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+    doc.querySelector('.user-info-card form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
     await settle();
-    expect(!doc.getElementById('materialsDrawer').hidden).toBe(true);
+    expect(doc.querySelector('.user-info-card form')).not.toBeNull();
     expect(doc.getElementById('profileMessage').textContent).toBe('Connection lost');
     expect(request).toHaveBeenCalledWith('/profile', expect.objectContaining({ body: expect.objectContaining({ home_location: 'Singapore', contact_number: '91234567' }) }));
 });

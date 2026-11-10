@@ -49,8 +49,18 @@ const sections = {
         const is_current_study = bool(b.is_current_study);
         const finished_year = text(b.finished_year, 'Finished year', 4);
         if (finished_year && !/^(19|20|21)\d{2}$/.test(finished_year)) fail('Invalid finished year.');
-        return { institution: text(b.institution, 'Institution', 150, true), qualification: text(b.qualification, 'Qualification', 150, true),
-            is_current_study, finished_year: is_current_study ? null : finished_year || null,
+        const structured = {};
+        if (Object.hasOwn(b, 'start_year')) {
+            structured.start_year = text(b.start_year, 'Start year', 4) || null;
+            if (structured.start_year && !/^(19|20|21)\d{2}$/.test(structured.start_year)) fail('Invalid start year.');
+            if (structured.start_year && finished_year && structured.start_year > finished_year) fail('Graduation year must not precede start year.');
+        }
+        if (Object.hasOwn(b, 'qualification_level')) {
+            structured.qualification_level = text(b.qualification_level, 'Qualification level', 32) || null;
+            if (structured.qualification_level && !['SECONDARY','CERTIFICATE','DIPLOMA','ASSOCIATE','BACHELOR','MASTER','DOCTORATE','OTHER'].includes(structured.qualification_level)) fail('Select a valid qualification level.');
+        }
+        return { ...structured, institution: text(b.institution, 'Institution', 150, true), qualification: text(b.qualification, 'Qualification', 150, true),
+            is_current_study, finished_year: is_current_study && !Object.hasOwn(b, 'start_year') ? null : finished_year || null,
             end_month_year: is_current_study ? month(b.end_month_year, 'Expected finish') : null,
             description: text(b.description, 'Course highlights', 5000) };
     } },
@@ -70,7 +80,18 @@ function skills(value) {
 }
 function languages(value) {
     if (!Array.isArray(value) || value.length > 50) fail('Provide at most 50 languages.');
-    const result = value.map(v => ({ language_name: text(v.language_name, 'Language', 80, true), can_read: bool(v.can_read), can_write: bool(v.can_write) }));
+    const result = value.map(v => {
+        const row = { language_name: text(v.language_name, 'Language', 80, true), can_read: bool(v.can_read), can_write: bool(v.can_write) };
+        if (Object.hasOwn(v, 'language_code')) {
+            row.language_code = text(v.language_code, 'Language code', 16) || null;
+            if (row.language_code && !['en','zh','ms','ta','hi','id','vi','th','ja','ko','fr','de','es','ar','pt','ru','bn','ur','fil','other'].includes(row.language_code)) fail('Select a valid language.');
+        }
+        for (const key of ['reading_level', 'writing_level']) if (Object.hasOwn(v, key)) {
+            row[key] = text(v[key], 'Language level', 16) || null;
+            if (row[key] && !['Basic','Intermediate','Advanced','Native'].includes(row[key])) fail('Select a valid language level.');
+        }
+        return row;
+    });
     if (result.some(v => !v.can_read && !v.can_write)) fail('Select reading or writing for each language.');
     if (new Set(result.map(v => v.language_name.toLowerCase())).size !== result.length) fail('Duplicate languages are not allowed.');
     return result;
