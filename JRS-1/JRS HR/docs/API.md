@@ -48,7 +48,7 @@ task, complete-task, candidate-notes, template-save, template-delete, system-rea
 See the adjacent login/profile API.md for the full shared-login command payload table.
 The source of truth for branch-specific fields is server/service.cjs and dist/state.js.
 
-Only managers may approve offers or manage templates. A notify flag prepares a draft; it never sends automatically.
+HR staff and managers may approve offers. Template management requires a manager. A notify flag prepares a draft; it never sends automatically.
 Interview schedules use Asia/Singapore dates and must avoid candidate, interviewer and room conflicts.
 Feedback requires a completed interview. Offers require valid dates and the appropriate approval state.
 

@@ -124,7 +124,7 @@ export function useApplicationActions({ workspace, onCreated }) {
       )}
 
       {kind === "offer-edit" && target && (
-        <OfferForm db={db} application={target} onClose={close} onSubmit={(payload) => run("offer", payload, "Offer saved. Manager approval is required.")} />
+        <OfferForm db={db} application={target} onClose={close} onSubmit={(payload) => run("offer", payload, "Offer saved. Review and approve it before sending.")} />
       )}
       {kind === "offer-review" && target?.offer && (
         <OfferReview db={db} application={target} busy={dialog.busy} onClose={close} onAction={(next) => offerAction(next, target)} />

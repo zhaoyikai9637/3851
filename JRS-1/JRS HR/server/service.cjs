@@ -12,7 +12,7 @@ const email=v=>{const s=text(v,'Email',254).toLowerCase();if(!/^[a-z0-9.!#$%&'*+
 const find=(arr,id)=>{const r=arr.find(r=>r.id===id);if(!r)fail(404,'Record not found.');return r;};
 const standard=new Set(['move-interview','reject','schedule','cancel-interview','feedback','offer','approve-offer','offer-message','confirm-rejection','message','read-notification','read-all','task','complete-task','candidate-notes','job-save','job-status']);
 const custom=new Set(['application-create','candidate-save','profile-save','template-save','template-delete','system-read','system-read-all']);
-const managerOnly=new Set(['approve-offer','template-save','template-delete']);
+const managerOnly=new Set(['template-save','template-delete']);
 const variables=['candidateName','jobTitle','companyName','hrName','date','time','interviewer','location','format','salary','currency','startDate','expiry'];
 function checkTemplate(value) {
   for(const match of value.matchAll(/{{\s*([^{}]+)\s*}}/g))if(!variables.includes(match[1].trim()))fail(422,`Unknown template variable: ${match[1]}`);

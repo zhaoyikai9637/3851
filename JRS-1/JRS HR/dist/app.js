@@ -114,7 +114,7 @@
   function offerDetails(id){
     const a=app(id),o=a.offer;if(!o)throw Error('No offer is available.');
     const expired=o.expiry<HRModel.day();
-    const approvalBlock=expired?'Offer expired':store.db.currentUser.role!=='HR_MANAGER'?'HR Manager approval required':'';
+    const approvalBlock=expired?'Offer expired':'';
     const title='Review Offer',subtitle='Review and approve the offer terms.';
     open(title,subtitle,`<div class="modal-content">${candidateCard(a)}<dl class="details"><dt>Monthly salary</dt><dd>SGD ${Number(o.salary).toLocaleString('en-SG')}</dd><dt>Start date</dt><dd>${V.date(o.startDate)}</dd><dt>Expiry</dt><dd class="${expired?'danger-text':''}">${V.date(o.expiry)}${expired?' · Expired':''}</dd><dt>Approval</dt><dd>${e(o.approval)}</dd><dt>Response</dt><dd>${e(o.status)}</dd></dl><div class="note-box spaced">${e(o.terms)}</div><div class="modal-actions">${button('offer-edit','Edit Offer',id,'secondary')}${o.approval!=='Approved'?button('offer-approve','Approve Offer',id,'primary',approvalBlock?'disabled title="'+e(approvalBlock)+'"':''):button('offer-message','Send offer email',id,'primary',expired?'disabled':'')}${button('reject','Reject / Close application',id,'text-button')}</div></div>`,'offer','green');
   }
@@ -202,7 +202,7 @@
       const r=await commit(cmd,p);close(true);render();
       const messages={
         'move-interview':'Interview scheduled. The application is now in Interview.',
-        reject:'Application rejected.',offer:'Offer saved. Manager approval is required.',
+        reject:'Application rejected.',offer:'Offer saved. Review and approve it before sending.',
         feedback:'Feedback saved. The application is now in Interview Results.',
         schedule:'Interview schedule saved.',message:'Email draft saved. No email has been sent.',
         'job-save':'Job posting saved.'

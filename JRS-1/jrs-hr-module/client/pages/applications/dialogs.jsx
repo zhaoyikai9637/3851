@@ -111,7 +111,7 @@ export function OfferReview({ db, application, onAction, onClose, busy }) {
   const offer = application.offer;
   const [confirming, setConfirming] = useState(false);
   const expired = offer.expiry < singaporeToday();
-  const block = expired ? "Offer expired" : db.currentUser?.role !== "HR_MANAGER" ? "HR Manager approval required" : "";
+  const block = expired ? "Offer expired" : "";
   const approved = offer.approval === "Approved";
   return (
     <Modal

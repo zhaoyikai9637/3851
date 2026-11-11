@@ -23,7 +23,7 @@ Start with LOCAL_REVIEW.md. Record the source commit, Node/MySQL versions, brows
 - Log in with each generated role. Check dashboard, jobs, candidates, applications, interviews, offers and communication pages.
 - Create/edit a job and check guest publication. Check draft/closed roles, dates and unchanged applicant submission snapshots.
 - Review the applicant's submitted resume and details; schedule/reschedule/cancel an interview. Confirm required date/time/location and conflict validation.
-- Record feedback after the appointment. Create an offer, verify staff cannot approve it, approve as manager, send it to the captured mailbox, and record acceptance/decline.
+- As HR Staff, record feedback after the appointment, create and approve an offer, then send it to the captured mailbox.
 - Test rejection and notification history. Confirm sent bodies are immutable and duplicate sends are prevented.
 - Check notification/template/profile controls and logout. Confirm an applicant cannot access HR APIs and HR cannot submit an applicant application.
 

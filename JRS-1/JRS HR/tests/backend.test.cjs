@@ -125,10 +125,13 @@ test('authenticated actor owns the audit and status notifications omit internal 
   assert.equal(db.systemNotifications.length,1);assert.ok(!JSON.stringify(db.systemNotifications).includes('PRIVATE REVIEW'));
   assert.ok(result.notification.body.includes(user.name));assert.ok(!result.notification.body.includes('PRIVATE REVIEW'));
 });
-test('manager approval cannot be forged by a staff payload',()=>{
+test('staff can approve an offer and cannot gain template permissions through a payload',()=>{
   const d=setup(),a=d.applications.find(a=>a.stage==='Offer'&&a.offer.approval!=='Approved');
-  assert.throws(()=>run(d,'approve-offer',{applicationId:a.id,role:'HR_MANAGER'},{...user,role:'HR_STAFF'}),/HR Manager/);
-  assert.equal(a.offer.approval,'Awaiting approval');
+  const staff={...user,id:'staff-test',name:'HR Officer',role:'HR_STAFF'};
+  const {db}=run(d,'approve-offer',{applicationId:a.id},staff);
+  assert.equal(db.applications.find(item=>item.id===a.id).offer.approval,'Approved');
+  assert.equal(db.activity[0].actor,'HR Officer');
+  assert.throws(()=>run(d,'template-save',{role:'HR_MANAGER'},staff),/HR Manager/);
 });
 test('receiving an application creates candidate, application and one internal update',()=>{
   const d=setup(),payload={jobId:d.jobs[0].id,candidate:{name:'Test Applicant',email:'test@jrs.local',phone:'+65 8000 1111',location:'Singapore',experience:3,education:'Diploma',skills:'SQL, JavaScript'}};

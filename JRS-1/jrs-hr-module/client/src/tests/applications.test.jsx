@@ -137,9 +137,9 @@ it("rejects with one confirmation and prepares an unsent notification", async ()
   expect(await screen.findByText('Application rejected.')).toBeVisible();
 });
 
-it("blocks scheduling for closed jobs and approves offers after confirmation", async () => {
+it("blocks scheduling for closed jobs and lets staff approve offers after confirmation", async () => {
   const approve = vi.fn(() => ({}));
-  const ui = mount(fetcherFor(workspace({ applications: [
+  const ui = mount(fetcherFor(workspace({ currentUser: { name: "HR Officer", role: "HR_STAFF" }, applications: [
     { id: "app-4", candidateId: "candidate-1", jobId: "job-b", stage: "Interview", priority: "Normal", appliedDate: "2026-11-01" },
     workspace().applications[2],
   ] }), { "approve-offer": approve }));

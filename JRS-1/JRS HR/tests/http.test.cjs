@@ -47,13 +47,15 @@ test('HR profile only changes editable fields, and logout invalidates the sessio
   assert.equal(r.status,200);assert.equal(r.data.db.currentUser.phone,'+65 8123 4567');assert.equal(r.data.db.currentUser.role,'HR_MANAGER');assert.equal(r.data.db.currentUser.email,'manager@jrs.local');
   assert.equal((await request('/api/auth/logout',{...s,method:'POST',body:{}})).status,200);assert.equal((await request('/api/hr/workspace',s)).status,401);
 }));
-test('system notification read status is per user, and staff cannot approve offers',async()=>fixture(async({request,login,repo})=>{
+test('system notification read status is per user, and staff can approve offers',async()=>fixture(async({request,login,repo})=>{
   const m=await login(),s=await login('staff@jrs.local'),d=repo.inspect();
   const moved=await request('/api/hr/commands/move-interview',{...m,method:'POST',body:booking(d.applications[0].id),headers:{'If-Match':'0','Idempotency-Key':randomUUID()}});
   const n=moved.data.db.systemNotifications[0];await request('/api/hr/commands/system-read',{...m,method:'POST',body:{id:n.id},headers:{'If-Match':'1','Idempotency-Key':randomUUID()}});
   assert.equal((await request('/api/hr/workspace',m)).data.systemNotifications[0].read,true);assert.equal((await request('/api/hr/workspace',s)).data.systemNotifications[0].read,false);
   const offer=d.applications.find(a=>a.stage==='Offer'&&a.offer.approval!=='Approved');
-  const r=await request('/api/hr/commands/approve-offer',{...s,method:'POST',body:{applicationId:offer.id},headers:{'If-Match':'2','Idempotency-Key':randomUUID()}});assert.equal(r.status,403);
+  const r=await request('/api/hr/commands/approve-offer',{...s,method:'POST',body:{applicationId:offer.id},headers:{'If-Match':'2','Idempotency-Key':randomUUID()}});
+  assert.equal(r.status,200);
+  assert.equal(repo.inspect().applications.find(a=>a.id===offer.id).offer.approval,'Approved');
 }));
 
 
