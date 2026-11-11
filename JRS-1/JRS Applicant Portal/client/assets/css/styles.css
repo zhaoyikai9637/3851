@@ -2200,13 +2200,9 @@ a.applicant-identity:focus-visible { outline: 2px solid #2563eb; outline-offset:
 .applicant-breadcrumbs [aria-current="page"] { color:var(--jrs-text); font-weight:600; }
 .applicant-breadcrumbs h1,.topbar .applicant-breadcrumbs h1 { margin:0; font-size:20px; line-height:1.35; letter-spacing:-0.02em; }
 .applicant-path-separator { opacity:0.6; }
-.public-shell:has(> .public-breadcrumb-bar:not(:empty)) { grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto 1fr; }
-.public-breadcrumb-bar { min-width:0; max-width:100%; padding:12px max(20px,calc((100vw - 1360px)/2)); background:var(--jrs-surface); border-bottom:1px solid var(--jrs-border); }
 @media(max-width:650px) {
  .applicant-breadcrumbs { font-size:12px; }
  .applicant-breadcrumbs ol { gap:3px; }
  .applicant-breadcrumbs h1,.topbar .applicant-breadcrumbs h1 { font-size:16px; }
  .applicant-title-row { gap:8px!important; }
- .public-shell:has(> .public-breadcrumb-bar:not(:empty)) { grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto 1fr; }
-.public-breadcrumb-bar { min-width:0; max-width:100%; padding:10px 14px; }
 }

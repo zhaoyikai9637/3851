@@ -2,7 +2,7 @@ import ApplicantBreadcrumbs from "../../components/ApplicantBreadcrumbs";
 import ActiveApplicationNotice from "../../components/ActiveApplicationNotice";
 import useCurrentApplication from "../../hooks/useCurrentApplication";
 import {formatDate} from '../../../../jrs-hr-module/shared/date-format.mjs';
-import { BriefcaseBusiness, CalendarDays, CircleDollarSign, LogIn, MapPin } from "lucide-react";
+import { ArrowLeft, BriefcaseBusiness, CalendarDays, CircleDollarSign, LogIn, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api, { getApiError } from "../../api/client";
@@ -26,13 +26,15 @@ export default function JobDetailsPage({ authenticated = false }) {
   }, [jobId]);
 
 
-  const breadcrumbItems = [{label:"Jobs",to:authenticated?"/applicant/jobs":"/jobs"},{label:job?.title || "Role Details"}];
-  if (loading) return <><ApplicantBreadcrumbs items={breadcrumbItems} /><div className="full-page-message inline" role="status"><div className="spinner-border text-primary" /><p>Loading role details...</p></div></>;
-  if (error || !job) return <><ApplicantBreadcrumbs items={breadcrumbItems} /><div className="alert alert-danger" role="alert">{error || "Role not found."}</div></>;
+  const navigation = authenticated
+    ? <ApplicantBreadcrumbs items={[{ label: "Jobs", to: "/applicant/jobs" }, { label: job?.title || "Role Details" }]} />
+    : <Link className="back-link" to="/jobs"><ArrowLeft size={20} aria-hidden="true" />Back to jobs</Link>;
+  if (loading) return <>{navigation}<div className="full-page-message inline" role="status"><div className="spinner-border text-primary" /><p>Loading role details...</p></div></>;
+  if (error || !job) return <>{navigation}<div className="alert alert-danger" role="alert">{error || "Role not found."}</div></>;
 
   return (
     <div className="page-stack role-details-page">
-      <ApplicantBreadcrumbs items={breadcrumbItems} />
+      {navigation}
 
       <section className="role-header surface">
         <div>
