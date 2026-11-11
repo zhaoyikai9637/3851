@@ -96,7 +96,7 @@ export async function createRuntime({mailTransport}={}) {
     if(settings.production)app.set('trust proxy',1);
     mountReadiness(app,{pool,uploadDir,fileStore});
     app.locals.data = data;
-    app.get('/', (req, res) => res.redirect(settings.ENABLE_EXPERIMENTAL_APPLICANT_PORTAL !== 'false' ? '/jobs' : '/pages/login/login.html'));
+    app.get('/', (req, res) => res.redirect(experimental ? '/jobs' : '/pages/login/login.html'));
     app.get('/api/integration-config', (req, res) => res.json({ valid:true, experimentalApplicantPortal: experimental }));
     app.get('/login', (req, res) => res.redirect('/pages/login/login.html'));
     for (const feature of ['job-management', 'create-job', 'edit-job', 'interview-schedule', 'interview-feedback']) {
