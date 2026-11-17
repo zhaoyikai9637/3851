@@ -135,6 +135,10 @@
   font-size: var(--jrs-text-sm);
   min-width: 850px;
 }
+/* Keep filtered results at their natural row height inside the full-height panel. */
+html:not(.fit-measuring) .jobs-table-scroll.fit-body > .jobs-table {
+  flex: 0 0 auto;
+}
 .jobs-table th {
   position: relative;
   padding: 14px 20px;
